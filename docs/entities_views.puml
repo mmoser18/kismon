@@ -1,0 +1,18 @@
+@startuml
+
+package "net.mmo.utils.kism"  [[../src/main/java/net/mmo/utils/kism]] #FFFFFF {
+
+	!include entities_nodes.puml
+	!include ui_view_nodes.puml
+
+	IntermediateNodeForm o--> IntermediateNode
+	RootNodeForm         o--> RootNode
+	
+	RESTConnectionForm o--> RESTConnection
+	SOAPConnectionForm o--> SOAPConnection
+	JDBCConnectionForm o--> JDBCConnection
+	PingConnectionForm o--> PingConnection
+	SSHConnectionForm  o--> SSHConnection
+}
+
+@enduml

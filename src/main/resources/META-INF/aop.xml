@@ -1,0 +1,11 @@
+<!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
+<aspectj>
+	<!-- which classes to weave: -->
+	<weaver options="-Xset:weaveJavaxPackages=true">
+		<include within="net.mmo.utils.kism.**" />
+	</weaver>
+	<!-- where to look for aspects: -->
+	<aspects>
+		<aspect name="net.mmo.utils.kism.**" />
+	</aspects>
+</aspectj>

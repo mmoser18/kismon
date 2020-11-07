@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.mmo.utils.kism</groupId>
+	<artifactId>kis-monitoring</artifactId>
+	<name>KIS-Monitoring</name>
+	<version>1.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<description>Keep-it-simple Monitoring</description>
+	<!-- url>tbd</url -->
+	<inceptionYear>2021</inceptionYear>
+	<developers>
+		<developer>
+			<roles>
+				<role>All-in-one</role>
+			</roles>
+			<id>mmo</id>
+			<name>Michael Moser</name>
+			<email>michael.moser@alumni.ethz.ch</email>
+			<timezone>"Europe/Zurich" (UTC+01:00)</timezone>
+		</developer>
+	</developers>
+
+	<!-- to be finalized if/when I move this to GitHub / MMO
+	<issueManagement>
+		<system>github</system>
+		<url>http://github.com/tbd/issues</url>
+	</issueManagement>
+
+	<scm>
+		<connection>scm:git:git://github.com/tbd/kism.git</connection>
+		<developerConnection>scm:git:git@github.com:mmo/kism.git</developerConnection>
+		<url>http://github.com/tbd/kism</url>
+	</scm>
+	 -->
+
+	<properties>
+		<java.version>17</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- some local settings: -->
+		<user.home>${env.USERPROFILE}</user.home>
+		<user.repo>${user.home}/.m2/m2repository/</user.repo>
+		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1, but did NOT work with v19.0.x..v21.0.4: -->
+		<!-- worked: 22.0.2, 23.0.1, 23.0.2 -->
+		<!-- last version that does NOT validate the Chart licenses during build time -->
+		<vaadin.version>23.1.7</vaadin.version> 
+		<!-- -->
+		<!-- not working / refuses to build without license: ->
+		<vaadin.version>23.2.0</vaadin.version>
+		<!- -->
+		<!-- newest version ->
+		<vaadin.version>24.3.5</vaadin.version>
+		<!- -->
+		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
+		<!-- should be passed in via an environment variable or some -D option -->
+		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
+		
+		<h2.version>2.2.224</h2.version>
+		<archunit-junit5.version>1.2.1</archunit-junit5.version>
+		
+		<sshj.version>0.38.0</sshj.version>
+		<mail.version>1.4</mail.version>
+		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+	</properties>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.7.18</version>
+	</parent>
+
+	<repositories>
+		<!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+		<repository>
+			<id>central</id> <!-- Main Maven repository -->
+			<url>https://repo.maven.apache.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- Repository used by many Vaadin add-ons: -->
+		<repository>
+			<id>Vaadin Directory</id>
+			<url>https://maven.vaadin.com/vaadin-addons</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<!-- Main Maven repository -->
+		<pluginRepository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-bom</artifactId>
+				<version>${vaadin.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- Vaadin stuff: -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<!-- Replace artifactId 'vaadin' with 'vaadin-core' to use only free components -->
+			<!--  artifactId>vaadin-core</artifactId -->
+			<artifactId>vaadin</artifactId>
+			<exclusions>
+				<!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
+				<exclusion>
+					<groupId>com.vaadin.webjar</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.webjars.bowergithub.insites</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.webjars.bowergithub.polymer</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.webjars.bowergithub.polymerelements</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.webjars.bowergithub.vaadin</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.webjars.bowergithub.webcomponents</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-spring-boot-starter</artifactId>
+			<exclusions>
+				<!-- Excluding so that webjars are not included. -->
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- to enable live reload in the application (see https://vaadin.com/docs/latest/configuration/live-reload/spring-boot): -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- for some reasons I got occasional(!) compile errors claiming that ""java.lang.annotation.Annotation"" was missing - this dependency fixed this -->
+		<!-- https://mvnrepository.com/artifact/javax.annotation/javax.annotation-api -->
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+		</dependency>
+		<!--
+		<dependency>
+			<groupId>org.vaadin.addons</groupId>
+			<artifactId>sizereporter</artifactId>
+			<version>0.1.4</version>
+		</dependency>
+		-->
+		<!-- an apparently non-declared dependency of the above: -->
+		<dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-testbench</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- SpringBoot security (for login screen) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+		</dependency>
+		<!-- Spring Security references HttpServletRequest and -Response. 
+			When building for a barebones servlet container (Tomcat, Jetty, etc) 
+			instead of a full fledged Java EE application server (WildFly, TomEE, GlassFish, 
+			Liberty, etc), one thus needs to add the javax.servlet API to the compile time 
+			dependencies. It's not needed to include it in the build, it's already provided 
+			by the target servlet container:
+		-->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!-- If you happen to actually deploy to a Java EE 7+ application server 
+			like WildFly, use the below dependency instead. It covers the entire Java 
+			EE API, including javax.servlet 
+		->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<!- -->
+
+		<dependency>
+			<groupId>com.hierynomus</groupId>
+			<artifactId>sshj</artifactId>
+			<version>${sshj.version}</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>${mail.version}</version>
+		</dependency>
+
+		<!-- dependency already included in SpringBoot: ->
+		<!- jackson-core ->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<!- -->
+		
+		<!-- JUnit 5 = JUnit Platform + JUnit Jupiter + JUnit Vintage -->
+
+		<!-- required for IT tests with SpringBoot: -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!--database dependencies - this is also required to enable auto-configuration for the h2 database -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<!--
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		-->
+		<!-- Spring's JPA apparently also requires spring-aop (but doesn't seem 
+			to declare it ||-( It got <some error>... Caused by: java.lang.NoClassDefFoundError: 
+			org.springframework.data.jpa.repository.JpaRepository ... but after having 
+			declared it ONCE, everything worked. Even after removing it again?!? And 
+			even after I cleared the local m2repo. Very Odd! 
+		<dependency>
+			<groupId>org.springframework</groupId> 
+			<artifactId>spring-aop</artifactId>
+		</dependency>
+		-->
+
+		<!-- Using in-memory database H2 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!--  -->
+		<!-- Using PostGres DB / not tested ->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-   -->
+		<!-- Using MySQL DB / not tested ->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-  -->
+		<!-- https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc8 -->
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc8</artifactId>
+			<version>23.3.0.23.09</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
+		<dependency>
+			<groupId>org.mariadb.jdbc</groupId>
+			<artifactId>mariadb-java-client</artifactId>
+			<version>3.3.1</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+
+		<!-- required when using Vaadin BeanValidators: -->
+		<!-- Hibernate validator - Bean validation API Implementation -->
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+		</dependency>
+		<!-- the following are obviously referenced by hibernate validator - why are these not in its pom? -->
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.web</groupId>
+			<artifactId>javax.el</artifactId>
+			<version>2.2.4</version>
+		</dependency>
+
+		<!-- webdriver-manager to allow running the Integration Tests on Chrome
+			This is used from the JUnit test class and downloads the correct version 
+			of the Chrome web driver, if it is missing. 
+			The webdriver itself is then used by the integration tests. 
+		-->
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>${wdm.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Lombok - generates setters and getters and allows for other goodies like @Slf4j, toString(), etc. -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<!-- fitting version is already defined in spring-boot-dependencies -->
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+
+
+		<!-- for AspectJ: -->
+		<!-- Instrumentations are enabled as a javaagent that run on the JVM. Springs org.springframework:spring-instrument.jar 
+			ships the InstrumentationSavingAgent which saves the instrumentation.
+			To run AspectJ load-time weaving in a spring environment it is necessary to have these two instrumentations: 
+		-->
+		<!-- AspectJ version is mentioned in springboot-starter ->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjtools</artifactId> 
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-instrument</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+		</dependency>
+		<!- -->
+		<!-- for ArchUnit-tests (executed during UTs): -->
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit-junit5.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- using javamelody-core for monitoring ->
+		<dependency>
+			<groupId>net.bull.javamelody</groupId>
+			<artifactId>javamelody-core</artifactId>
+			<version>1.86.0</version>
+		</dependency>
+		<!- -->
+		<!-- itext, option to add PDF export ->
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>bcmail-jdk14</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcprov-jdk14</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bctsp-jdk14</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!- -->
+	</dependencies>
+
+	<build>
+	
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.22.2</version>
+				</plugin>
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.cxf</groupId>
+										<artifactId>cxf-codegen-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>generate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore/> <!-` ignored while the execution of this plugin on a Java>v8-JRE always yields:
+												Execution generate-sources of goal org.apache.cxf:cxf-codegen-plugin:3.1.5:wsdl2java failed:
+												A required class was missing while executing org.apache.cxf:cxf-codegen-plugin:3.1.5:wsdl2java:
+												javax/xml/bind/annotation/adapters/HexBinaryAdapter
+											->
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				<!- -->
+			</plugins>
+		</pluginManagement>
+		
+		<defaultGoal>spring-boot:run</defaultGoal>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse> <!-- use "true" to force usage of javac if the default maven compiler crashes -->
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!-- Clean build and startup time for Vaadin apps sometimes may exceed the default Spring Boot's 30sec timeout. -->
+					<wait>500</wait>
+					<maxAttempts>240</maxAttempts>
+					<!-- the following is for the co-existence of Lombok and AspectJ: -> 
+					<agent>
+						<agentElement>
+							${user.repo}org/springframework/spring-instrument/${spring.version}/spring-instrument-${spring.version}.jar
+						</agentElement>
+						<agentElement>
+							${user.repo}org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar
+						</agentElement>
+					</agent>
+					<systemPropertyVariables>
+						<aj.weaving.loadersToSkip>
+							org.springframework.context.support.ContextTypeMatchClassLoader$ContextOverridingClassLoader,
+							org.springframework.data.jpa.repository.config.InspectionClassLoader
+						</aj.weaving.loadersToSkip>
+					</systemPropertyVariables>
+					<!- -->
+				</configuration>
+			</plugin>
+
+			<!-- Take care of synchronizing java dependencies and imports in package.json 
+				and main.js files. It also creates webpack.config.js if not exists yet. -->
+			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-frontend</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin> <!-- according to Vaadin docs required for Java v9+ - but it doesn't tell which version :-( -->
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<dependencies>
+					<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+					<dependency>
+						<groupId>com.sun.xml.bind</groupId>
+						<artifactId>jaxb-impl</artifactId>
+						<version>${jaxb.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<excludes> <!-- these should be provided externally to the .jar: -->
+						<exclude>**/application.properties</exclude>
+						<exclude>**/logback.xml</exclude>
+					</excludes>
+					<archive>
+						<manifestEntries>
+							<!-- to be able to locate application.properties and logback.xml files in the same folder as the .jar: -->
+							<Class-Path>.</Class-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<!-- Production mode is activated using -Pproduction -->
+			<id>production</id>
+			<properties>
+				<vaadin.productionMode>true</vaadin.productionMode>
+			</properties>
+
+			<dependencies>
+				<dependency>
+					<groupId>com.vaadin</groupId>
+					<artifactId>flow-server-production-mode</artifactId>
+				</dependency>
+			</dependencies>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<jvmArguments>-Dvaadin.productionMode</jvmArguments>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>com.vaadin</groupId>
+						<artifactId>vaadin-maven-plugin</artifactId>
+						<version>${vaadin.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>prepare-frontend</goal>
+									<goal>build-frontend</goal>
+								</goals>
+								<phase>compile</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>unit-tests</id> <!-- will only be executed if "-Punit-tests" is passed on the mvn cmd-line -->
+			<build>
+				<plugins>
+					<plugin> <!-- this plugin runs the Unit Tests (Integrations Tests are excluded) -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>3.0.0-M8</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>test</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<excludes>
+								<exclude>**/*IT.java</exclude> <!-- Excludes integration tests when unit tests are run. -->
+							</excludes>
+							<!-- Found here: https://www.robingander.de/blog/2019/aspectj-spring-boot-lombok.html
+								See https://github.com/subes/invesdwin-instrument instead, this can load the spring-instrument into the running JVM
+								There arose some problems in a real application where the spring instrumentation and aspectjweaver did weave 
+								classes in a circular loop. Happily the aspectjweaver has an undocumented system property (-Daj.weaving.loadersToSkip=...) 
+								to exclude springs classloaders, to overcome this problem ->
+							<argLine>
+								-javaagent:${user.home}/.m2/repository/org/springframework/spring-instrument/${spring.version}/spring-instrument-${spring.version}.jar
+								-javaagent:${user.home}/.m2/repository/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar
+								-Daj.weaving.loadersToSkip=org.springframework.context.support.ContextTypeMatchClassLoader$ContextOverridingClassLoader,org.springframework.data.jpa.repository.config.InspectionClassLoader
+							</argLine>
+							<!- -->
+						</configuration>
+					</plugin>
+
+					<!-- JaCoCo: Code Coverage (runs as part of unit tests)
+					     Note: When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a 
+					     forkCount of 0 or set the forkMode to never as this would prevent the execution of the 
+					     tests with the javaagent set and no coverage would be recorded. 
+					-->
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>0.8.5</version>
+						<executions>
+							<!-- Prepares the property pointing to the JaCoCo runtime agent which 
+								is passed as VM argument when the Maven Surefire plugin is executed. -->
+							<execution>
+								<id>pre-unit-test</id>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+								<configuration>
+									<!-- Sets the name of the property containing the settings for JaCoCo runtime agent. -->
+									<propertyName>surefireArgLine</propertyName>
+								</configuration>
+							</execution>
+							<!-- Ensures that the code coverage report for unit tests is created after unit tests have been run. -->
+							<execution>
+								<id>post-unit-test</id>
+								<phase>test</phase>
+								<goals>
+									<goal>report</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>integration-tests</id>	<!-- will only be executed if "-Pintegration-tests" is passed on the mvn cmd-line -->
+			<build>
+				<plugins>
+					<!-- To run the integration test the webserver must be started before and stopped afterwards. -->
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<executions>
+							<execution> <!-- in phase "pre-integration-test" run the plugin's goal "start": -->
+								<id>start-spring-boot</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>start</goal>
+								</goals>
+							</execution>
+							<execution> <!-- in phase "post-integration-test" run the plugin's goal "stop": -->
+								<id>stop-spring-boot</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- This plugin runs the integration tests:
+					     Note: The name of the test classes needs to end in '...IT' for the test runner to pick it up as an 
+					     integration test. Otherwise they will be picked up as unit-test and the test will most likely fail 
+					-->
+					<plugin> <!-- This plugin runs the integration tests (i.e. tests named *IT) after the server is started -->
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<trimStackTrace>false</trimStackTrace>
+							<enableAssertions>true</enableAssertions>
+							<!--  ->
+							<argLine>
+								-javaagent:${user.home}/.m2/repository/org/springframework/spring-instrument/${spring.version}/spring-instrument-${spring.version}.jar
+								-javaagent:${user.home}/.m2/repository/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar
+								-Daj.weaving.loadersToSkip=org.springframework.context.support.ContextTypeMatchClassLoader$ContextOverridingClassLoader,org.springframework.data.jpa.repository.config.InspectionClassLoader
+							</argLine>
+							<!- -->
+						</configuration>
+					</plugin>
+					
+					<plugin>
+						<groupId>org.owasp</groupId>
+						<artifactId>dependency-check-maven</artifactId>
+						<version>9.0.9</version>
+
+						<configuration>
+							<formats>
+								<format>html</format>
+								<format>json</format>
+							</formats>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+</project>

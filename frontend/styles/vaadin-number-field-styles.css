@@ -1,0 +1,14 @@
+[part="label"] {
+	padding-top: 2px;
+	padding-bottom: 1px;
+}
+
+[part="input-field"] {
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+[part="value"] {
+	height: 0.8em;
+	width: 15em;
+}

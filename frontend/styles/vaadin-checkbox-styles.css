@@ -1,0 +1,16 @@
+/* these did not work...
+
+:host([class~="halted"]) [part="checkbox"] input {
+	--lumo-primary-color: red;
+}
+:host([class~="enabled"]) [part="checkbox"] input {
+	--lumo-primary-color: green;
+}
+
+:host(.halted) [part="checkbox"] {
+	--lumo-primary-color: red;
+}
+:host(.enabled) [part="checkbox"] {
+	--lumo-contrast-20pct: green;
+}
+*/

@@ -1,0 +1,14 @@
+[part="label"] {
+	padding-top: 2px;
+	padding-bottom: 1px;
+}
+
+[part="input-field"] {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+vaadin-text-field {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}

@@ -1,0 +1,59 @@
+@startuml
+
+package "entities.nodes" [[../src/main/java/net/mmo/utils/kism/entities/nodes]] #EEEEEE {
+
+	abstract class ActionableNode [[../src/main/java/net/mmo/utils/kism/entities/nodes/ActionableNode.java]]
+	abstract class Node [[../src/main/java/net/mmo/utils/kism/entities/nodes/Node.java]]
+	
+	class LeafNode [[../src/main/java/net/mmo/utils/kism/entities/nodes/LeafNode.java]]
+	class IntermediateNode [[../src/main/java/net/mmo/utils/kism/entities/nodes/IntermediateNode.java]]
+	class RootNode [[../src/main/java/net/mmo/utils/kism/entities/nodes/RootNode.java]]
+	class NodeFactory [[../src/main/java/net/mmo/utils/kism/entities/nodes/NodeFactory.java]]
+	
+	AbstractEntity --|> AbstractBaseClass
+	Node --|> AbstractEntity
+	LeafNode --|> Node
+	IntermediateNode --|> Node
+	RootNode --|> IntermediateNode
+	
+	package "entities.nodes.connections" [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections]] #DDDDDD {
+		class CheckableConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/CheckableConnection.java]]
+		class HTTPConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/HTTPConnection.java]]
+		class RESTConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/RESTConnection.java]]
+		class SOAPConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/SOAPConnection.java]]
+		class JDBCConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/JDBCConnection.java]]
+		class IPConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/IPConnection.java]]
+		class PingConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/PingConnection.java]]
+		class SSHConnection [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections/SSHConnection.java]]
+
+		CheckableConnection --|> LeafNode
+		HTTPConnection --|> CheckableConnection
+		IPConnection   --|> CheckableConnection
+		RESTConnection --|> HTTPConnection
+		SOAPConnection --|> HTTPConnection
+		JDBCConnection --|> HTTPConnection
+		PingConnection --|> IPConnection
+		SSHConnection  --|> IPConnection
+	}
+
+	enum VisibleNodeType [[../src/main/java/net/mmo/utils/kism/entities/nodes/VisibleNodeType.java]] {
+		RootNode,
+		IntermediateNode
+		RESTConnection
+		SOAPConnection
+		JDBCConnection
+		PingConnection
+		SSHConnection
+	}	
+	
+	NodeFactory --> RootNode
+	NodeFactory --> IntermediateNode
+	NodeFactory --> RESTConnection
+	NodeFactory --> SOAPConnection
+	NodeFactory --> JDBCConnection
+	NodeFactory --> PingConnection
+	NodeFactory --> SSHConnection
+	NodeFactory --> VisibleNodeType
+}
+
+@enduml

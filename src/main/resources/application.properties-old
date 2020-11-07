@@ -1,0 +1,151 @@
+server.port=${PORT:8085}
+
+# Ensure application is run in Vaadin 14/npm mode
+vaadin.compatibilityMode=false
+vaadin.whitelisted-packages=net/mmo/utils/kism
+logging.level.org.atmosphere=warn
+#logging.level.org.springframework.web=DEBUG
+
+# files to open:
+#config.files=ksta.kmc zhservices.kmc test.kmc
+#config.files=zhservices.kmc
+config.files=frobi.kmc
+
+# default config file name and type (when creating new files):
+config_dflt_name=new
+config_dflt_type=kmc
+
+# This allows to override the system settings:
+# de_CH is not supported :-(
+Locale=de
+
+# User mgmt: (TODO: this should be handled via some vault)
+# first list: a comma-separated list of all users:roles (supported roles are "READ_ONLY" and "ADMIN") 
+user.names=mms:ADMIN,mmo:ADMIN,user:READ_ONLY
+# second list: the passwords for the above users
+user.pwd.mms=mysecret
+user.pwd.mmo=mysecret
+user.pwd.user=password
+
+# Hibernate ddl auto (create, create-drop, validate, update)
+spring.jpa.hibernate.ddl-auto=create
+#spring.jpa.hibernate.ddl-auto=update
+#spring.jpa.show-sql=true
+# settings for in-memory DB H2:
+spring.datasource.driverClassName=org.h2.Driver
+# Hibernate Properties
+# The SQL dialect makes Hibernate generate better SQL for the chosen database
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+# == settings for DB H2:
+# -- variant 1: temporary in-memory data storage:
+#spring.datasource.url=jdbc:h2:mem:testdb
+# -- variant 2: using persistent data storage at a specific filesystem location:
+# in user's home directory:
+spring.datasource.url=jdbc:h2:file:./data/monitoring
+# in a specific location:
+#spring.datasource.url=jdbc:h2:file:U:/data/monitoring
+# -- variant 3: using a local DB server:
+# data in a specific location:
+#spring.datasource.url=jdbc:h2:tcp://localhost/U:/Documents/eclipse/workspace_Vaadin/KIS-Monitoring/data/monitoring;AUTO_SERVER=TRUE
+# data in user's home directory:
+#spring.datasource.url=jdbc:h2:tcp://localhost/data/monitoring;AUTO_SERVER=TRUE
+spring.datasource.username=kismon
+spring.datasource.password=kismon
+# values are always/embedded/never:
+spring.datasource.initialization-mode=always
+# H2 Console:
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2
+# end of H2 settings
+
+## settings for PostGres DB / not tested!:
+#spring.datasource.url=jdbc:postgresql://localhost:5432/monitoring
+## Hibernate Properties
+## The SQL dialect makes Hibernate generate better SQL for the chosen database
+#spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+## end of PostGres settings
+
+## settings for MySQL DB / not tested!:
+#spring.datasource.driver=com.mysql.jdbc.Driver
+#spring.datasource.url=jdbc:mysql://localhost:3306/monitoring
+### Hibernate Properties
+## The SQL dialect makes Hibernate generate better SQL for the chosen database
+#spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+## end of MySQL settings
+
+# To improve the performance during development. 
+# For more information https://vaadin.com/docs/v14/flow/spring/tutorial-spring-configuration.html#special-configuration-parameters
+# vaadin.whitelisted-packages= org/vaadin/example
+
+# This allows to disable requests at startup. They then first have to be enabled via the UI:
+StartupWithHaltedRequests=false
+# Requests should be sent asynchronously in the background thereby not blocking the GUI thread:
+LeafNode.AsyncRequests=true
+# If something is not working enabling more verbose log entries (plus stacktrace) of failing requests 
+# may help to identify the issue. But normally one is not interested in such detailed info...
+LeafNode.ShortRequestLogEntries=true
+
+# for some odd reason Java does not use the same separators as defined in the OS' settings (at least on WIndows 10) ||-(
+# so we allow to override this, if necessary:
+DigitGroupingSeparator='
+DecimalSeparator=.
+
+# See https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html for the applicable codes:
+LocalDateTimeStamp.Format=yyyy-MM-dd HH:mm:ss.SS
+
+# Keystore used by application:
+KeyStoreType=pkcs12
+#KeyStorePath=ELCA_certificates\\other_system_fake.p12
+KeyStorePath=keystore.p12
+KeyStorePassword=password
+
+# Truststore used by application
+TrustStoreType=pkcs12
+#TrustStorePath=ELCA_certificates\\elca_dev_server_certificates.pkcs12
+TrustStorePath=truststore.p12
+TrustStorePassword=changeit
+
+# Do we trust all certificates without checking?
+TrustAllCertificates=true
+# speeds up things a bit:
+DisableHostnameVerification=true
+jdk.httpclient.allowRestrictedHeaders=host,connection
+
+# We enable ALL SSL and TLS protocol versions. We only want to connect and *monitor*
+# those systems not impose any new requirements (e.g. on our old dev-environments):
+# Format: comma-separated list of: TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3
+SupportedSslVersions=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3
+
+NodeView.alwaysSaveAfterEdit=false
+NodeForm.ClearButtonsVisible=true
+# how much of the description is shown in the overview panel
+NodeForm.MaxDescriptionLength=100
+
+# Threshold for action check - comma-separated values for Failed,Degraded,OK:
+ActionCheck.DefaultThresholdValues=5,3,2
+
+# default DB driver (not for our own DB but for outgoing JDBC connections):
+JDBC.DriverName.Default=oracle.jdbc.driver.OracleDriver
+JDBC.ResultSet.Row.Separator=\n
+JDBC.ResultSet.Col.Separator=\t
+JDBC.ResultSet.NrRresults=#results: {}
+JDBC.ResultSet.NoRresults=no results
+
+# settings for HTTPS connection attempts:
+#HttpAuthRetryLimit: same as setting: "jdk.httpclient.auth.retrylimit" (default is 3)
+HttpAuthRetryLimit=5
+#HttpRedirectsRetryLimit: same as setting "jdk.httpclient.redirects.retrylimit" (default is 5)
+HttpRedirectsRetryLimit=7
+
+SendMailAction.mailHost=smtp.elcaDev.local
+SendMailAction.mailPort=25
+SendMailAction.mailProtocol=smtp
+SendMailAction.mailUser=anonymous
+SendMailAction.mailPwd=ksta-zh-tools.elcadev.local
+SendMailAction.auth=false
+SendMailAction.starttls=false
+SendMailAction.debug=false
+
+SendMailForm.To.Default=michael.moser@elca.ch
+SendMailForm.Cc.Default=
+SendMailForm.From.Default=ksta-zh-tools.elcadev.local

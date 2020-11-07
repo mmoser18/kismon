@@ -1,0 +1,49 @@
+@startuml
+
+package "ui.views.nodes" [[../src/main/java/net/mmo/utils/kism/ui/views/nodes]] #EEEEEE {
+
+	abstract class NodeForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/NodeForm.java]]
+	abstract class LeafNodeForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/LeafNodeForm.java]]
+	
+	class IntermediateNodeForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/IntermediateNodeForm.java]]
+	class RootNodeForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/RootNodeForm.java]]
+	
+	LeafNodeForm --|> NodeForm
+	
+	IntermediateNodeForm --|> NodeForm
+	RootNodeForm --|> IntermediateNodeForm
+
+	package "ui.view.nodes.connections" [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections]] #DDDDDD {
+		abstract class CheckableConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/CheckableConnectionForm.java]]
+		
+		class HTTPConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/HTTPConnectionForm.java]]
+		class RESTConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/RESTConnectionForm.java]]
+		class SOAPConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/SOAPConnectionForm.java]]
+		class JDBCConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/JDBCConnectionForm.java]]
+		class IPConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/IPConnectionForm.java]]
+		class PingConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/PingConnectionForm.java]]
+		class SSHConnectionForm [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/SSHConnectionForm.java]]
+		
+		CheckableConnectionForm --|> LeafNodeForm
+		HTTPConnectionForm --|> CheckableConnectionForm
+		IPConnectionForm   --|> CheckableConnectionForm
+		RESTConnectionForm --|> HTTPConnectionForm
+		SOAPConnectionForm --|> HTTPConnectionForm
+		JDBCConnectionForm --|> HTTPConnectionForm
+		PingConnectionForm --|> IPConnectionForm
+		SSHConnectionForm  --|> IPConnectionForm
+	}
+
+	class FormFactory [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connections/FormFactory.java]]
+	FormFactory --> RootNodeForm
+	FormFactory --> IntermediateNodeForm
+	FormFactory --> RESTConnectionForm
+	FormFactory --> SOAPConnectionForm
+	FormFactory --> JDBCConnectionForm
+	FormFactory --> PingConnectionForm
+	FormFactory --> SSHConnectionForm
+
+	NodeView --> FormFactory
+}
+
+@enduml

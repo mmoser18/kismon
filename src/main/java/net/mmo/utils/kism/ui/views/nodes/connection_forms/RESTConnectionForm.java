@@ -1,0 +1,22 @@
+/**
+ * @author Michael Moser (michael.moser@freesurf.ch)
+ * @since 06.12.2020
+ */
+
+package net.mmo.utils.kism.ui.views.nodes.connection_forms;
+
+import com.vaadin.flow.router.PreserveOnRefresh;
+import net.mmo.utils.kism.backend.service.NodeService;
+import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
+
+@SuppressWarnings("javadoc")
+@PreserveOnRefresh
+public class RESTConnectionForm extends HTTPConnectionForm<RESTConnection>
+{
+	private static final long serialVersionUID = 7200842663851555372L;
+
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(RESTConnection.class, nodeService);
+	}
+}

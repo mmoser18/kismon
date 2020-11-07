@@ -1,0 +1,262 @@
+/*
+<tag>
+.<class>
+#<id>
+
+*/
+
+/* Nodes-View: */
+.node-view .node-view-content {
+	display: flex;
+}
+
+.node-view-toolbar {
+	flex-wrap: wrap;
+	align-items: flex-end;
+	/* align-items: baseline; */
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.node-view .node-view-tree {
+	flex: 1;
+}
+
+/* Node-Form: */
+.node-view .node-form {
+	flex: 1; /* takes 1/2 (=1+1) of width */
+	align-self: flex-start;
+	align-items: flex-start;
+	flex-direction: column;
+	padding: 1px;
+}
+
+/* main level of node-form fields: */
+.node-view .node-form .node-form-fields {
+	padding: 2px;
+	margin-top: 5px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
+	margin-bottom: 0px;
+	align-items: stretch;
+	width: 100%;
+}
+
+.node-form-field-action-Thresholds {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.node-form-field-action-StateResetAndTrigger {
+	align-items: flex-end;
+	justify-content: space-between;
+}
+
+.node-form-field-action-SameStateCounter {
+	width: 12em;
+}
+.node-form-field-action-ResetStateCounter {
+	width: 12em;
+}
+.node-form-field-action-TriggerAction {
+	width: 12em;
+}
+	
+/* main level of node-form fields: */
+.node-form-field-execute {
+	align-items: flex-start;
+}
+
+/* stretch ResultCheckerForm inside node-form fields to full width: */
+.node-view .node-form .node-form-fields vaadin-vertical-layout {
+	padding: 2px;
+	margin-top: 5px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
+	margin-bottom: 0px;
+	align-items: stretch;
+	width: 100%;
+}
+
+vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-select[class^='node-form-field-'],vaadin-date-time-picker[class^='node-form-field-'],vaadin-upload,vaadin-horizontal-layout[class^='node-form-field-'],vaadin-accordion[class^='node-form-field-'],super-date-time-picker[class^='node-form-field-'] {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.fields-combined {
+	margin-left: 12px;
+	align-items: baseline;
+}
+
+#nodeform-save-button {
+	margin-left: 20px	
+}
+
+vaadin-form-layout {
+	align-items: flex-start;
+}
+
+.history-view-toolbar {
+	margin-top: 25px;
+	margin-bottom: 0px;
+	margin-left: 25px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	display: flex;
+	justify-content: flex-center; /* space-evenly; */
+	align-items: center;
+	/* width: 100%; */
+}
+
+.history-view-field-filters {
+	margin: 0px;
+	padding: 0px;
+	width: 10em;
+}
+
+.history-view-field-filter-name {
+	margin-top: 15px;
+	padding: 0px;
+}
+.history-view-field-filter-type {
+	margin-top: 0px;
+	padding: 0px;
+}
+
+.history-view-field-filter-type vaadin-select-text-field {
+	margin: 0px;
+	padding: 0px;
+}
+
+vaadin-button {
+	margin: 5px;
+	padding-top: 0px;
+	padding-bottom: 0px;	
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+vaadin-combo-box {
+	margin-right: 5px;
+}
+
+.halted {
+	color: red;
+	--lumo-primary-color: red;
+}
+.enabled {
+	color: green;
+	--lumo-contrast-20pct: green;
+}
+
+/* for high-lighting buttons:
+.highlight {
+	color: green;
+	--lumo-contrast-20pct: green;
+}
+*/
+
+vaadin-upload {
+	margin-left: 5px;
+	margin-right: 5px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.icon-OK {
+	color: green;
+}
+.icon-DEGRADED {
+	color: orange;
+}
+.icon-FAILED {
+	color: red;
+}
+.label-OK {
+	color: green;
+}
+.label-DEGRADED {
+	color: orange;
+}
+.label-FAILED {
+	color: red;
+}
+
+.Horizontal {
+	/*
+	orientation: horizontal;
+	*/
+	flex-direction: row;
+}
+.Vertical {
+	/*
+	orientation: vertical;
+	*/
+	flex-direction: column;
+}
+
+.history-view-field-duration-extremes {
+	padding: 0px;
+	margin: 3px; 
+	width: 12em; /* for some reason this does not work while the other values are applied! ||-( */
+}
+
+.history-view-field-timestamp-extremes {
+	padding: 0px;
+	margin: 3px; 
+	width: 26em; /* for some reason this does not work while the other values are applied! ||-( */
+}
+
+vaadin-horizontal-layout[class^='history-view-field-'],vaadin-vertical-layout[class^='history-view-field-'],vaadin-text-field[class^='history-view-field-'],vaadin-number-field[class^='history-view-field-'],vaadin-integer-field[class^='history-view-field-'],vaadin-combo-box[class^='history-view-field-'],vaadin-date-time-picker-custom-field[class^='history-view-field-'],vaadin-date-time-picker[class^='history-view-field-'],vaadin-time-picker[class^='history-view-field-'],vaadin-date-time-picker-custom-field {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+vaadin-date-time-picker-custom-field {
+	margin: 0px;
+	padding: 0px;
+}
+
+@media all and (max-width: 1100px) {
+	.list-view.editing .list-view-toolbar, .list-view.editing .contact-grid 
+	.node-view.editing .node-view-toolbar, .node-view.editing .node-grid 
+	{
+		display: none;
+	}
+}
+
+/* Dashboard view */
+.dashboard-view .contact-stats {
+	font-size: 4em;
+	margin: 1em 0;
+}
+
+vaadin-chart {
+	width: 100%;
+	height: 100%;
+}
+
+.main-title {
+	width: 85%;
+}
+
+.main-header {
+	height: 3em;
+	width: 100%;
+	align-items: flex-end;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.main-header h1 {
+	margin: 0px;
+}
+
+.logout-link {
+	padding: 10px;
+	text-decoration: underline;
+}
+
+/* to get rid of this stupid message box: */
+vaadin-license-box {
+	visibility: hidden;
+}

@@ -1,0 +1,84 @@
+@startuml
+
+package "Main" <<net.mmo.utils.kism>> as main [[../src/main/java/net/mmo/utils/kism]] {
+
+	class Application <<@SpringBootApplication>> [[../src/main/java/net/mmo/utils/kism/Application.java]]
+
+	package "UI" <<..ui..>> as ui [[../src/main/java/net/mmo/utils/kism/ui]] #EEEEEE {
+
+		class MainLayout [[../src/main/java/net/mmo/utils/kism/ui/MainLayout.java]]
+
+		package "Views" <<..ui/views..>> as views [[../src/main/java/net/mmo/utils/kism/ui/views]] #DDDDDD {
+			package "NodeForms" <<..ui/views/nodes..>> as node_forms [[../src/main/java/net/mmo/utils/kism/ui/views/nodes]] #CCCCCC {
+				class NodeView <<@Route, @Component>> [[../src/main/java/net/mmo/utils/kism/ui/nodes/NodeView.java]]
+				class NodeFactory [[../src/main/java/net/mmo/utils/kism/ui/nodes/NodeFactory.java]]
+				class NodeForm [[../src/main/java/net/mmo/utils/kism/ui/nodes/NodeForm.java]]
+			
+				package "ConnectionForms" <<..ui/views/nodes/connection_forms..>> as connection_forms [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/connection_forms]] #BBBBBB {
+				}
+				package "ActionForms" <<..ui/views/nodes/actions..>> as action_forms [[../src/main/java/net/mmo/utils/kism/ui/views/nodes/actions]] #BBBBBB {
+				}
+			}
+			package "History" <<..history..>> as history [[../src/main/java/net/mmo/utils/kism/ui/views/history]] #CCCCCC {
+			}
+			package "Login" <<..login..>> as login [[../src/main/java/net/mmo/utils/kism/ui/views/login]] #CCCCCC {
+			}
+			package "Dashboard" <<..dashboard..>> as dashboard [[../src/main/java/net/mmo/utils/kism/ui/views/dashboard]] #CCCCCC {
+			}
+		}
+		
+		class MainLayout [[../src/main/java/net/mmo/utils/kism/ui/MainLayout.java]]
+		class AppShellConfig <<@PWA>> [[../src/main/java/net/mmo/utils/kism/ui/AppShellConfig.java]]
+		class ServiceListener [[../src/main/java/net/mmo/utils/kism/ui/ServiceListener.java]]
+	}
+
+	package "Entities" <<..entities..>> as entities #EEEEEE {
+
+		abstract class AbstractEntity [[../src/main/java/net/mmo/utils/kism/entities/AbstractEntity.java]]
+		
+		package "Nodes" <<..entities.nodes..>> as nodes [[../src/main/java/net/mmo/utils/kism/entities/nodes]] #DDDDDD {
+		
+			class Node [[../src/main/java/net/mmo/utils/kism/entities/nodes/Node.java]]
+			class RootNode [[../src/main/java/net/mmo/utils/kism/entities/nodes/RootNode.java]]
+		
+			package "Connections" <<..entities.nodes.connections..>> as connections [[../src/main/java/net/mmo/utils/kism/entities/nodes/connections]] #CCCCCC {
+			}
+			package "Actions" <<..entities.nodes.actions..>> as actions [[../src/main/java/net/mmo/utils/kism/entities/nodes/actions]] #CCCCCC {
+			}
+		}
+	}
+
+	package "Backend" <<..backend..>> as backend #EEEEEE {
+		package "Services" <<..service..>> as service #DDDDDD {
+			class NodeService <<Service>> [[../src/main/java/net/mmo/utils/kism/backend/service/NodeService.java]]
+			class HistoryInfoService <<Service>> [[../src/main/java/net/mmo/utils/kism/backend/service/HistoryInfoService.java]]
+
+		}
+		package "Repositories" <<..repositories..>> as repositories #DDDDDD {
+			class HistoryInfoRepository <<Service>> [[../src/main/java/net/mmo/utils/kism/backend/repositories/HistoryInfoRepository.java]]		
+		}
+	}
+
+	package "Security" <<..security..>> as security #EEEEEE {
+		class SecurityConfiguration [[../src/main/java/net/mmo/utils/kism/security/SecurityConfiguration.java]]
+		class ConfigureUIServiceInitListener [[../src/main/java/net/mmo/utils/kism/security/ConfigureUIServiceInitListener.java]]
+	}
+
+	Application ..> MainLayout
+	Application ..> NodeService
+
+	node_forms --> nodes
+	connection_forms --> connections
+	action_forms --> actions
+	node_forms --> NodeService
+
+	MainLayout --> NodeForm
+	NodeService --> RootNode
+	NodeService --> Node
+	RootNode --|> Node
+	Node --|> AbstractEntity
+	
+	HistoryInfoService --> HistoryInfoRepository
+}
+
+@enduml
