@@ -124,11 +124,18 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- non-declared dependency of the above -->
+		<dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-testbench</artifactId>
 			<scope>test</scope>
 		</dependency>
+		 -->
 
 		<!-- SpringBoot security (for login screen) -->
 		<dependency>
@@ -207,6 +214,17 @@
 			<artifactId>hibernate-validator</artifactId>
 			<version>6.0.21.Final</version>
 		</dependency>
+		<!-- the following are obviously referenced by hibernate validator - why are these not in its pom? -->
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.web</groupId>
+			<artifactId>javax.el</artifactId>
+			<version>2.2.4</version>
+		</dependency>
 
 		<!-- webdriver-manager to allow running the Integration Tests on Chrome
 			This is used from the JUnit test class and downloads the correct version 
@@ -224,7 +242,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<!-- fitting version defined in spring-boot-dependencies -->
+			<!-- fitting version is already defined in spring-boot-dependencies -->
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
