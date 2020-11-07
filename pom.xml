@@ -139,18 +139,30 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
 		</dependency>
-		<!-- When building for a barebones servlet container (Tomcat, Jetty, etc) 
-		instead of a full fledged Java EE application server (WildFly, TomEE, GlassFish, 
-		Liberty, etc), one needs to add the javax.servlet API to the compile time 
-		dependencies. It's not needed to include it in the build, it's already provided 
-		by the target servlet container:
+		<!-- Spring Security references HttpServletRequest and -Response. 
+			When building for a barebones servlet container (Tomcat, Jetty, etc) 
+			instead of a full fledged Java EE application server (WildFly, TomEE, GlassFish, 
+			Liberty, etc), one thus needs to add the javax.servlet API to the compile time 
+			dependencies. It's not needed to include it in the build, it's already provided 
+			by the target servlet container:
 		-->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
+		<!-- If you happen to actually deploy to a Java EE 7+ application server 
+			like WildFly, use the below dependency instead. It covers the entire Java 
+			EE API, including javax.servlet 
+		->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<!- -->
+		
 		<!-- JUnit 5 = JUnit Platform + JUnit Jupiter + JUnit Vintage -->
 
 		<!-- required for IT tests with SpringBoot: -->
@@ -198,8 +210,8 @@
 
 		<!-- webdriver-manager to allow running the Integration Tests on Chrome
 			This is used from the JUnit test class and downloads the correct version 
-			of the Chrome web driver, if it is missing. The webdriver itself is then 
-			used by the integration tests. 
+			of the Chrome web driver, if it is missing. 
+			The webdriver itself is then used by the integration tests. 
 		-->
 		<dependency>
 			<groupId>io.github.bonigarcia</groupId>
@@ -208,7 +220,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Lombok - generates setters and getters and allows for other goodies like @Slf4j -->
+		<!-- Lombok - generates setters and getters and allows for other goodies like @Slf4j, toString(), etc. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
