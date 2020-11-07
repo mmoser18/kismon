@@ -10,11 +10,15 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import net.mmo.utils.monitoring_kiss.backend.entity.Contact;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-// The @RunWith(SpringRunner.class) and @SpringBootTest annotations make sure that the Spring Boot 
-// application is initialized before the tests are run and allow you to use @Autowired in the test.
+//The @RunWith(SpringRunner.class) (for JUnit4)/@ExtendWith(SpringExtension.class) (for JUnit5) and
+//@SpringBootTest annotations make sure that the Spring Boot application is initialized before the
+//tests are run and allow you to use @Autowired in the test.
+@ExtendWith(SpringExtension.class)
 @SpringBootTest // makes sure that the Spring Boot application is initialized before the tests are run and allows you to use @Autowire in the test.
 public class ListViewTest
 {
