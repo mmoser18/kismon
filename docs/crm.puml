@@ -1,0 +1,10 @@
+@startuml
+
+[UI] <<..ui..>> as ui
+[Backend] <<..backend..>> as backend
+[Security] <<..security..>> as security
+[Main] <<com.vaadin.tutorial.crm>> as main
+
+ui --> backend
+
+@enduml
