@@ -1,5 +1,5 @@
 
-package net.mmo.utils.monitoring_kiss.backend.entity;
+package net.mmo.utils.monitoring_kiss.entities;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

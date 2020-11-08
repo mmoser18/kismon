@@ -1,8 +1,8 @@
 
 package net.mmo.utils.monitoring_kiss.backend.service;
 
-import net.mmo.utils.monitoring_kiss.backend.entity.Company;
 import net.mmo.utils.monitoring_kiss.backend.repository.CompanyRepository;
+import net.mmo.utils.monitoring_kiss.entities.Company;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;

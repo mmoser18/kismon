@@ -7,7 +7,7 @@ package net.mmo.utils.monitoring_kiss.ui.view.list;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import net.mmo.utils.monitoring_kiss.backend.entity.Contact;
+import net.mmo.utils.monitoring_kiss.entities.Contact;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

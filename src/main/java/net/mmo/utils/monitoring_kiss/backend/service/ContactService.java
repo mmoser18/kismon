@@ -1,10 +1,10 @@
 
 package net.mmo.utils.monitoring_kiss.backend.service;
 
-import net.mmo.utils.monitoring_kiss.backend.entity.Company;
-import net.mmo.utils.monitoring_kiss.backend.entity.Contact;
 import net.mmo.utils.monitoring_kiss.backend.repository.CompanyRepository;
 import net.mmo.utils.monitoring_kiss.backend.repository.ContactRepository;
+import net.mmo.utils.monitoring_kiss.entities.Company;
+import net.mmo.utils.monitoring_kiss.entities.Contact;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Random;

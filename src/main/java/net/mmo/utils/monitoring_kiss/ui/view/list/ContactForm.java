@@ -18,8 +18,8 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
-import net.mmo.utils.monitoring_kiss.backend.entity.Company;
-import net.mmo.utils.monitoring_kiss.backend.entity.Contact;
+import net.mmo.utils.monitoring_kiss.entities.Company;
+import net.mmo.utils.monitoring_kiss.entities.Contact;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

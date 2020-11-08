@@ -1,6 +1,6 @@
 package net.mmo.utils.monitoring_kiss.backend.repository;
 
-import net.mmo.utils.monitoring_kiss.backend.entity.Company;
+import net.mmo.utils.monitoring_kiss.entities.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /** 

@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.mmo.utils.monitoring_kiss.backend.entity.Company;
-import net.mmo.utils.monitoring_kiss.backend.entity.Contact;
+import net.mmo.utils.monitoring_kiss.entities.Company;
+import net.mmo.utils.monitoring_kiss.entities.Contact;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

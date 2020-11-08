@@ -2,7 +2,7 @@ package net.mmo.utils.monitoring_kiss.backend.repository;
 
 import java.util.List;
 
-import net.mmo.utils.monitoring_kiss.backend.entity.Contact;
+import net.mmo.utils.monitoring_kiss.entities.Contact;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
