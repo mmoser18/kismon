@@ -3,7 +3,7 @@
  * @since 01.11.2020
  */
 
-package net.mmo.utils.monitoring_kiss.arch;
+package net.mmo.utils.kism.arch;
 
 import javax.persistence.Entity;
 

@@ -2,10 +2,10 @@
 <aspectj>
 	<!-- which classes to weave: -->
 	<weaver options="-Xset:weaveJavaxPackages=true">
-		<include within="net.mmo.utils.monitoring_kiss.**" />
+		<include within="net.mmo.utils.kism.**" />
 	</weaver>
 	<!-- where to look for aspects: -->
 	<aspects>
-		<aspect name="net.mmo.utils.monitoring_kiss.**" />
+		<aspect name="net.mmo.utils.kism.**" />
 	</aspects>
 </aspectj>
