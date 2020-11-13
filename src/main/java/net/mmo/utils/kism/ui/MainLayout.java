@@ -18,6 +18,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 import net.mmo.utils.kism.ui.view.dashboard.DashboardView;
 import net.mmo.utils.kism.ui.view.list.ListView;
+import net.mmo.utils.kism.ui.view.nodes.NodeView;
 
 @CssImport("./styles/shared-styles.css")
 @PWA(
@@ -57,9 +58,11 @@ public class MainLayout extends AppLayout
 	}
 
 	private void createDrawer() {
-		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.List.Label"), ListView.class); //$NON-NLS-1$
+		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.ListView.Label"), ListView.class); //$NON-NLS-1$
 		listLink.setHighlightCondition(HighlightConditions.sameLocation());
+		RouterLink treeLink = new RouterLink(Messages.getString("MainLayout.Tab.NodeView.Label"), NodeView.class); //$NON-NLS-1$
+		treeLink.setHighlightCondition(HighlightConditions.sameLocation());
 		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.DashBoard.Label"), DashboardView.class); //$NON-NLS-1$
-		addToDrawer(new VerticalLayout(listLink, dashboardLink));
+		addToDrawer(new VerticalLayout(listLink, treeLink, dashboardLink));
 	}
 }

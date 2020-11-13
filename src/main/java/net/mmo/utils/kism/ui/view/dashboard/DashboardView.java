@@ -16,6 +16,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.CompanyService;
 import net.mmo.utils.kism.backend.service.ContactService;
 import net.mmo.utils.kism.ui.CommonConstants;
@@ -23,6 +24,7 @@ import net.mmo.utils.kism.ui.MainLayout;
 
 @Route(value = "dashboard", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
 @PageTitle("Dashboard | " + CommonConstants.ApplicationFullName)
+@Slf4j
 public class DashboardView extends VerticalLayout
 {
 	private static final long serialVersionUID = -1954281705187898725L;
@@ -31,11 +33,15 @@ public class DashboardView extends VerticalLayout
 	private CompanyService companyService;
 
 	public DashboardView(ContactService contactService, CompanyService companyService) {
-		this.contactService = contactService;
-		this.companyService = companyService;
-		addClassName("dashboard-view"); //$NON-NLS-1$
-		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-		add(getContactStats(), getCompaniesChart());
+		try {
+			this.contactService = contactService;
+			this.companyService = companyService;
+			addClassName("dashboard-view"); //$NON-NLS-1$
+			setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+			add(getContactStats(), getCompaniesChart());
+		} catch (Throwable t) {
+			log.error("Exception in c'tor:", t); //$NON-NLS-1$
+		}
 	}
 
 	private Component getContactStats() {

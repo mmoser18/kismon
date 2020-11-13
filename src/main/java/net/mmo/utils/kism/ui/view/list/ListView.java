@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 /**
  * Defines the application's main view, routed to via the base URL
  */
-@Route(value="", layout = MainLayout.class)
+@Route(value="list", layout = MainLayout.class)
 @PageTitle("Contacts | " + CommonConstants.ApplicationFullName)
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
@@ -33,8 +33,9 @@ public class ListView extends VerticalLayout
 
 	// public to allow access by test classes
 	public static final String ViewClassName = "list-view";  //$NON-NLS-1$
-	public static final String GridClassName = "list-view-grid"; //$NON-NLS-1$
 	public static final String FilterFieldClassName = "list-view-filter";  //$NON-NLS-1$
+	public static final String GridClassName = "list-view-grid"; //$NON-NLS-1$
+	public static final String TreeClassName = "list-view-tree"; //$NON-NLS-1$
 
 	private ContactService contactService;
 	private CompanyService companyService;
@@ -46,7 +47,7 @@ public class ListView extends VerticalLayout
 	// This gets autowired but still puzzled which annotation causes this...
 	public ListView(ContactService contactService,
 	                CompanyService companyService) {
-		log.debug("creating ListView:"); //$NON-NLS-1$
+		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		this.contactService = contactService;
 		this.companyService = companyService;
 
@@ -54,12 +55,7 @@ public class ListView extends VerticalLayout
 		setSizeFull(); // use entire browser window
 
 		configureGrid();
-
-		this.form = new ContactForm(this.companyService.findAll());
-		this.form.addListener(ContactForm.SaveEvent.class, this::saveContact);
-		this.form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
-		this.form.addListener(ContactForm.CloseEvent.class, e -> closeEditor());
-		this.form.setVisible(false); // initially the ContactForm is not shown
+		configureContactForm();
 
 		log.trace("Creating content:"); //$NON-NLS-1$
 		Div content = new Div(this.grid, this.form);
@@ -69,7 +65,7 @@ public class ListView extends VerticalLayout
 		add(getToolbar(), content);
 
 		updateList();
-		log.debug("ListView complete."); //$NON-NLS-1$
+		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
 	void addContact() {
@@ -112,7 +108,10 @@ public class ListView extends VerticalLayout
 		log.trace("Configuring Grid:"); //$NON-NLS-1$
 		this.grid.addClassName(GridClassName);
 		this.grid.setSizeFull();
-		this.grid.setColumns("firstName", "lastName", "email", "status"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		this.grid.setColumns(Messages.getString("ListView.Grid.ColumnName.FirstName"), //$NON-NLS-1$
+		                     Messages.getString("ListView.Grid.ColumnName.LastName"), //$NON-NLS-1$
+		                     Messages.getString("ListView.Grid.ColumnName.Email"), //$NON-NLS-1$
+		                     Messages.getString("ListView.Grid.ColumnName.Status")); //$NON-NLS-1$
 		this.grid.addColumn(contact ->
 			{
 				Company company = contact.getCompany();
@@ -120,7 +119,15 @@ public class ListView extends VerticalLayout
 			}).setHeader("Company"); //$NON-NLS-1$
 		this.grid.getColumns().forEach(col -> col.setAutoWidth(true));
 		this.grid.asSingleSelect()
-			.addValueChangeListener(event -> editContact(event.getValue(), Messages.getString("ListView.Form.EditOrDeleteContact.Title"))); // getValue() returns the selected Contact or null if none is selected //$NON-NLS-1$
+		         .addValueChangeListener(event -> editContact(event.getValue(), Messages.getString("ListView.Form.EditOrDeleteContact.Title"))); // getValue() returns the selected Contact or null if none is selected //$NON-NLS-1$
+	}
+
+	void configureContactForm() {
+		this.form = new ContactForm(this.companyService.findAll());
+		this.form.addListener(ContactForm.SaveEvent.class, this::saveContact);
+		this.form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
+		this.form.addListener(ContactForm.CloseEvent.class, e -> closeEditor());
+		this.form.setVisible(false); // initially the ContactForm is not shown
 	}
 
 	public void editContact(Contact contact, String header) {

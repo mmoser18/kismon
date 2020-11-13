@@ -30,14 +30,18 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver
 
 	public LoginView() {
 		log.info("Creating LoginView:");
-		addClassName(ViewClassName);
-		setSizeFull();
-		setAlignItems(Alignment.CENTER);
-		setJustifyContentMode(JustifyContentMode.CENTER);
-		this.login.setAction(CommonConstants.LoginURLSuffix);
-		add(new H1(CommonConstants.ApplicationFullName), this.login);
+		try {
+			addClassName(ViewClassName);
+			setSizeFull();
+			setAlignItems(Alignment.CENTER);
+			setJustifyContentMode(JustifyContentMode.CENTER);
+			this.login.setAction(CommonConstants.LoginURLSuffix);
+			add(new H1(CommonConstants.ApplicationFullName), this.login);
 
-		this.login.addLoginListener(ev -> { log.info("user '{}' logging in:", ev.getUsername());});
+			this.login.addLoginListener(ev -> { log.info("user '{}' logging in:", ev.getUsername());});
+		} catch (Throwable t) {
+			log.error("Exception in c'tor:", t);// TODO: handle exception
+		}
 	}
 
 	@Override

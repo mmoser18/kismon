@@ -1,5 +1,5 @@
 /**
- * @author Michael Moser (mmo@zurich.ibm.com)
+ * @author Michael Moser (michael.moser@freesurf.ch)
  * @since 08.11.2020
  */
 

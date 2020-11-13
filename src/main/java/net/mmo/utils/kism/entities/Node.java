@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public abstract class Node extends AbstractEntity implements Cloneable, Serializable
+public class Node extends AbstractEntity implements Cloneable, Serializable
 {
 	private static final long serialVersionUID = 3875470009216934341L;
 
@@ -41,18 +41,21 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	protected IntermediateNode parent;
 
-	private boolean disabled; // child is not to be considered for bubbling up state
+	private boolean enabled; // child is to be considered for bubbling up state
 
 	private boolean ignored; // child is not to be considered for bubbling up state
 
+	public Node() {
+		this.enabled = true;
+		this.ignored = false;
+	}
 	protected Node(String name, String description, State state) {
+		this();
 		Assert.notNull(name, "node name must not be null");  //$NON-NLS-1$
 		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
 		this.name = name;
 		this.description = description;
 		this.state = state;
-		this.disabled = false;
-		this.ignored = false;
 	}
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
@@ -66,8 +69,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.parent != null) this.parent.reportStateChange(this);
 	}
 
-	public void setDisabled(boolean disabled) {
-		this.disabled = disabled;
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 		if (this.parent != null) this.parent.reportStateChange(this);
 	}
 

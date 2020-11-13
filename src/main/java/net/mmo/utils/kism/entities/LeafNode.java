@@ -1,5 +1,5 @@
 /**
- * @author Michael Moser (mmo@zurich.ibm.com)
+ * @author Michael Moser (michael.moser@freesurf.ch)
  * @since 08.11.2020
  */
 
@@ -21,7 +21,7 @@ public class LeafNode extends Node
 
 	public LeafNode(String name, String description, State state) {
 		super(name, description, state);
-	}	
+	}
 	public LeafNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
 	}

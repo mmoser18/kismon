@@ -1,5 +1,5 @@
 /**
- * @author Michael Moser (mmo@zurich.ibm.com)
+ * @author Michael Moser (michael.moser@freesurf.ch)
  * @since 08.11.2020
  */
 
@@ -56,7 +56,7 @@ public class IntermediateNode extends Node
 	}
 
 	protected void reportStateChange(Node child) {
-		final State childState = child.isDisabled() ? State.OK : child.getState();
+		final State childState = child.isEnabled() ? child.getState() : State.OK;
 		if (childState.ordinal() < this.getState().ordinal()) { // OK -> DEGRADED/NOT_OK, DEGRADED -> NOT_OK
 			setState(childState);
 		} else if (childState.ordinal() > this.getState().ordinal()) { // getting better:
