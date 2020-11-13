@@ -14,7 +14,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.Architectures;
 
-@AnalyzeClasses(packages = "net.mmo.utils.monitoring_kiss..")
+@AnalyzeClasses(packages = "net.mmo.utils.kism..")
 @SuppressWarnings("nls")
 public class ArchitectureTests
 {
@@ -64,7 +64,7 @@ public class ArchitectureTests
 	@ArchTest
 	void checkLayers(JavaClasses classes) {
 		ArchRule rule = Architectures.layeredArchitecture()
-			.layer("Main").definedBy("net.mmo.utils.monitoring_kiss")
+			.layer("Main").definedBy("net.mmo.utils.kism")
 			.layer("Backend").definedBy("..backend..")
 			.layer("UI").definedBy("..ui..")
 			.layer("Security").definedBy("..security")

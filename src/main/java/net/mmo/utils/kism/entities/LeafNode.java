@@ -1,0 +1,28 @@
+/**
+ * @author Michael Moser (mmo@zurich.ibm.com)
+ * @since 08.11.2020
+ */
+
+package net.mmo.utils.kism.entities;
+
+import javax.persistence.Entity;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Setter
+@Getter
+@EqualsAndHashCode(callSuper = true)
+public class LeafNode extends Node
+{
+	private static final long serialVersionUID = 265720619758262963L;
+
+	public LeafNode(String name, String description, State state) {
+		super(name, description, state);
+	}	
+	public LeafNode(String name, String description, State state, IntermediateNode parent) {
+		super(name, description, state, parent);
+	}
+}
