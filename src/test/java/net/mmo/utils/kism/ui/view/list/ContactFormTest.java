@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.mmo.utils.kism.entities.Company;
 import net.mmo.utils.kism.entities.Contact;
-import net.mmo.utils.kism.ui.view.list.ContactForm;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

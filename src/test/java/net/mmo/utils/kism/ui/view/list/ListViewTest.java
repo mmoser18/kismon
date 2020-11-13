@@ -8,8 +8,6 @@ package net.mmo.utils.kism.ui.view.list;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import net.mmo.utils.kism.entities.Contact;
-import net.mmo.utils.kism.ui.view.list.ContactForm;
-import net.mmo.utils.kism.ui.view.list.ListView;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
