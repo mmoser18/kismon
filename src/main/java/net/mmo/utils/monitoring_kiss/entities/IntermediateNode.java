@@ -6,7 +6,6 @@
 package net.mmo.utils.monitoring_kiss.entities;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.function.Function;
 
 import javax.persistence.Entity;
@@ -23,7 +22,7 @@ public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
-	private Collection<Node>	children = new ArrayList<>();
+	private ArrayList<Node>	children = new ArrayList<>();
 
 	private IntermediateNode(String name, String description, State state) {
 		super(name, description, state);
@@ -34,12 +33,12 @@ public class IntermediateNode extends Node
 
 	/** this is the one and only node that has no parent! */
 	private final static IntermediateNode root = new IntermediateNode(Messages.getString("mk_root"), //$NON-NLS-1$
-	                                                                  Messages.getString("mk_root-node"), //$NON-NLS-1$	
+	                                                                  Messages.getString("mk_root-node"), //$NON-NLS-1$
 	                                                                  State.OK);
 	public static IntermediateNode getRoot() {
 		return root;
 	}
-	
+
 	public void addChild(Node child) {
 		synchronized(this) {
 			child.setParent(this);
@@ -56,14 +55,14 @@ public class IntermediateNode extends Node
 			deriveNewState();
 		} // else: no change...
 	}
-	
+
 	// default implementation: find minimal child-state:
 	private void deriveNewState() {
 		State minimalState = State.OK;
 		synchronized(this) {
-			for (Node child: this.children) { 
+			for (Node child: this.children) {
 				if (child.isIgnored()) continue; // child is not to be considered
-				if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState(); 
+				if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
 			}
 		}
 		setState(minimalState);
@@ -72,14 +71,14 @@ public class IntermediateNode extends Node
 	@Override
 	public void applyToSubTree(Function<Node, Void> fn) {
 		super.applyToSubTree(fn);
-		for (Node child: this.children) { 
+		for (Node child: this.children) {
 			fn.apply(child);
 		}
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() 
+		return super.toString()
 			+ ", children:" + this.children //$NON-NLS-1$
 			+ "]"; //$NON-NLS-1$
 	}
