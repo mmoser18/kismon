@@ -17,34 +17,18 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
 	private ArrayList<Node>	children = new ArrayList<>();
 
-	private IntermediateNode(String name, String description, State state) {
+	protected IntermediateNode(String name, String description, State state) {
 		super(name, description, state);
 	}
 	public IntermediateNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
-	}
-
-	/** this is the one and only node that has no parent! */
-	private static IntermediateNode root;
-	/** enabled re-initialization of root for Unit-Tests */
-	static void init() {
-		root = new IntermediateNode(Messages.getString("mk_root"), //$NON-NLS-1$
-		                            Messages.getString("mk_root-node"), //$NON-NLS-1$
-		                            State.OK);
-	}
-	static void reset() {
-		root = null;
-	}
-	public static IntermediateNode getRoot() {
-		if (root == null) init();
-		return root;
 	}
 
 	public void addChild(Node child) {

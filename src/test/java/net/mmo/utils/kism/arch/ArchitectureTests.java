@@ -8,13 +8,14 @@ package net.mmo.utils.kism.arch;
 import javax.persistence.Entity;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.Architectures;
 
-@AnalyzeClasses(packages = "net.mmo.utils.kism..")
+@AnalyzeClasses(packages = "net.mmo.utils.kism..", importOptions = { ImportOption.DoNotIncludeTests.class })
 @SuppressWarnings("nls")
 public class ArchitectureTests
 {
@@ -25,7 +26,9 @@ public class ArchitectureTests
 	@ArchTest
 	void checkVisibility(JavaClasses classes) {
 		ArchRule rule = ArchRuleDefinition.classes()
-					.that().resideInAnyPackage("..entity..", "..service..", "")
+					.that().resideInAnyPackage("..entities..", "..service..", "")
+					.and().areNotAnonymousClasses()
+					.and().areNotInnerClasses()
 					.should().bePublic();
 				rule.check(classes);
 	}
@@ -35,12 +38,12 @@ public class ArchitectureTests
 		ArchRule rule;
 		rule = ArchRuleDefinition.classes()
 			.that().areAnnotatedWith(Entity.class)
-			.should().resideInAnyPackage("..backend.entity");
+			.should().resideInAnyPackage("..entities");
 		rule.check(classes);
 
 		rule = ArchRuleDefinition.classes()
 			.that().haveNameMatching("..Repository..")
-			.should().resideInAnyPackage("..repository");
+			.should().resideInAnyPackage("..repositories");
 		rule.check(classes);
 	}
 
@@ -49,14 +52,14 @@ public class ArchitectureTests
 		ArchRule rule;
 		rule = ArchRuleDefinition.classes()
 			.that().haveNameMatching("..Repository")
-			.should().dependOnClassesThat().resideInAnyPackage("..backend.entity")
+			.should().dependOnClassesThat().resideInAnyPackage("..entities")
 			;
 		rule.check(classes);
 
 		rule = ArchRuleDefinition.classes()
 			.that().haveNameMatching("..Service")
-			.should().dependOnClassesThat().resideInAnyPackage("..backend.entity")
-			.andShould().dependOnClassesThat().resideInAnyPackage("..backend.repository")
+			.should().dependOnClassesThat().resideInAnyPackage("..entities")
+			.andShould().dependOnClassesThat().resideInAnyPackage("..repositories")
 			;
 		rule.check(classes);
 	}

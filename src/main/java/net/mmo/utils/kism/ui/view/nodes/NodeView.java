@@ -146,6 +146,6 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void updateTree() {
-		this.tree.setItems(this.nodeService.getRootNode(/*this.filterText.getValue()*/));
+		this.tree.setItems(NodeService.getRootNode(/*this.filterText.getValue()*/));
 	}
 }

@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class Node extends AbstractEntity implements Cloneable, Serializable
+public abstract class Node extends AbstractEntity implements Cloneable, Serializable
 {
 	private static final long serialVersionUID = 3875470009216934341L;
 
@@ -45,7 +45,7 @@ public class Node extends AbstractEntity implements Cloneable, Serializable
 
 	private boolean ignored; // child is not to be considered for bubbling up state
 
-	public Node() {
+	private Node() {
 		this.enabled = true;
 		this.ignored = false;
 	}
