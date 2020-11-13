@@ -75,7 +75,7 @@ public class ListView extends VerticalLayout
 	void addContact() {
 		log.info("addContact"); //$NON-NLS-1$
 		this.grid.asSingleSelect().clear();
-		editContact(new Contact(), "new contact:"); //$NON-NLS-1$
+		editContact(new Contact(), Messages.getString("ListView.Form.NewContact.Title")); //$NON-NLS-1$
 	}
 
 	private void saveContact(ContactForm.SaveEvent event) {
@@ -95,12 +95,12 @@ public class ListView extends VerticalLayout
 	private HorizontalLayout getToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 		this.filterText.setClassName(FilterFieldClassName);
-		this.filterText.setPlaceholder("Filter by name...");
+		this.filterText.setPlaceholder(Messages.getString("ListView.TextField.FilterText.Label")); //$NON-NLS-1$
 		this.filterText.setClearButtonVisible(true);
 		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 		this.filterText.addValueChangeListener(e -> updateList());
 
-		Button addContactButton = new Button("Add contact");
+		Button addContactButton = new Button(Messages.getString("ListView.Button.Add_Contact.Label")); //$NON-NLS-1$
 		addContactButton.addClickListener(click -> addContact());
 
 		HorizontalLayout toolbar = new HorizontalLayout(this.filterText, addContactButton);
@@ -120,7 +120,7 @@ public class ListView extends VerticalLayout
 			}).setHeader("Company"); //$NON-NLS-1$
 		this.grid.getColumns().forEach(col -> col.setAutoWidth(true));
 		this.grid.asSingleSelect()
-			.addValueChangeListener(event -> editContact(event.getValue(), "Edit or delete contact:")); // getValue() returns the selected Contact or null if none is selected //$NON-NLS-1$
+			.addValueChangeListener(event -> editContact(event.getValue(), Messages.getString("ListView.Form.EditOrDeleteContact.Title"))); // getValue() returns the selected Contact or null if none is selected //$NON-NLS-1$
 	}
 
 	public void editContact(Contact contact, String header) {

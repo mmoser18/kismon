@@ -34,17 +34,17 @@ public class ContactForm extends FormLayout
 	public static final String EmailClassName = "contact-form-email"; //$NON-NLS-1$
 	public static final String StatusClassName = "contact-form-status"; //$NON-NLS-1$
 
-	Label header = new Label("Add or select a contact");
-	TextField firstName = new TextField("First name");
-	TextField lastName = new TextField("Last name");
-	EmailField email = new EmailField("Email");
+	Label header = new Label(Messages.getString("ContactForm.Label.Header.Text")); //$NON-NLS-1$
+	TextField firstName = new TextField(Messages.getString("ContactForm.TextField.FirstName.Label")); //$NON-NLS-1$
+	TextField lastName = new TextField(Messages.getString("ContactForm.TextField.LastName.Label")); //$NON-NLS-1$
+	EmailField email = new EmailField(Messages.getString("ContactForm.EmailField.Email.Label")); //$NON-NLS-1$
 
-	ComboBox<Contact.Status> status = new ComboBox<>("Status");
-	ComboBox<Company> company = new ComboBox<>("Company");
+	ComboBox<Contact.Status> status = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Status.Label")); //$NON-NLS-1$
+	ComboBox<Company> company = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Company.Label")); //$NON-NLS-1$
 
-	Button save   = new Button("Save");
-	Button delete = new Button("Delete");
-	Button close  = new Button("Cancel");
+	Button save   = new Button(Messages.getString("ContactForm.Button.Save.Label")); //$NON-NLS-1$
+	Button delete = new Button(Messages.getString("ContactForm.Button.Delete.Label")); //$NON-NLS-1$
+	Button close  = new Button(Messages.getString("ContactForm.Button.Cancel.Label")); //$NON-NLS-1$
 
 	private Contact contact;
 	Binder<Contact> binder = new BeanValidationBinder<>(Contact.class); // a Binder that is aware of bean validation annotations

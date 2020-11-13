@@ -32,7 +32,7 @@ public class MainLayout extends AppLayout
 {
 	private static final long serialVersionUID = 8922152078442380813L;
 
-	public static final String LogoutLinkLabel = "Log out";
+	public static final String LogoutLinkLabel = Messages.getString("MainLayout.Link.LogOut.Label"); //$NON-NLS-1$
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
 
 	public MainLayout() {
@@ -57,9 +57,9 @@ public class MainLayout extends AppLayout
 	}
 
 	private void createDrawer() {
-		RouterLink listLink = new RouterLink("List", ListView.class);
+		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.List.Label"), ListView.class); //$NON-NLS-1$
 		listLink.setHighlightCondition(HighlightConditions.sameLocation());
-		RouterLink dashboardLink = new RouterLink("Dashboard", DashboardView.class);
+		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.DashBoard.Label"), DashboardView.class); //$NON-NLS-1$
 		addToDrawer(new VerticalLayout(listLink, dashboardLink));
 	}
 }

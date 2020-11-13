@@ -39,7 +39,7 @@ public class DashboardView extends VerticalLayout
 	}
 
 	private Component getContactStats() {
-		Span stats = new Span(this.contactService.count() + " contacts");
+		Span stats = new Span(this.contactService.count() + Messages.getString("DashboardView.Title.Label.Suffix")); //$NON-NLS-1$
 		stats.addClassName("contact-stats"); //$NON-NLS-1$
 		return stats;
 	}
