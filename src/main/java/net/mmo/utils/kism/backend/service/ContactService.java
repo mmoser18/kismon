@@ -9,8 +9,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import net.mmo.utils.kism.backend.repository.CompanyRepository;
-import net.mmo.utils.kism.backend.repository.ContactRepository;
+import net.mmo.utils.kism.backend.repositories.CompanyRepository;
+import net.mmo.utils.kism.backend.repositories.ContactRepository;
 import net.mmo.utils.kism.entities.Company;
 import net.mmo.utils.kism.entities.Contact;
 import org.springframework.stereotype.Service;

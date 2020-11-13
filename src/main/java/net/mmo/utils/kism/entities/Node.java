@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true)
-abstract class Node extends AbstractEntity implements Cloneable, Serializable
+public abstract class Node extends AbstractEntity implements Cloneable, Serializable
 {
 	private static final long serialVersionUID = 3875470009216934341L;
 

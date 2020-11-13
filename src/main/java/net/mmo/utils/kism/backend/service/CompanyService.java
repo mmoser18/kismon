@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.mmo.utils.kism.backend.repository.CompanyRepository;
+import net.mmo.utils.kism.backend.repositories.CompanyRepository;
 import net.mmo.utils.kism.entities.Company;
 import org.springframework.stereotype.Service;
 

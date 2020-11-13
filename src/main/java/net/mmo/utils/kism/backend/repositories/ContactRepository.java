@@ -1,4 +1,4 @@
-package net.mmo.utils.kism.backend.repository;
+package net.mmo.utils.kism.backend.repositories;
 
 import java.util.List;
 

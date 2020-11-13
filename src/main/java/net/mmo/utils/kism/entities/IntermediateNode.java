@@ -32,10 +32,18 @@ public class IntermediateNode extends Node
 	}
 
 	/** this is the one and only node that has no parent! */
-	private final static IntermediateNode root = new IntermediateNode(Messages.getString("mk_root"), //$NON-NLS-1$
-	                                                                  Messages.getString("mk_root-node"), //$NON-NLS-1$
-	                                                                  State.OK);
+	private static IntermediateNode root;
+	/** enabled re-initialization of root for Unit-Tests */
+	static void init() {
+		root = new IntermediateNode(Messages.getString("mk_root"), //$NON-NLS-1$
+		                            Messages.getString("mk_root-node"), //$NON-NLS-1$
+		                            State.OK);
+	}
+	static void reset() {
+		root = null;
+	}
 	public static IntermediateNode getRoot() {
+		if (root == null) init();
 		return root;
 	}
 
