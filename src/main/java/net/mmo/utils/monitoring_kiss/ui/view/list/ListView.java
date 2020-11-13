@@ -9,13 +9,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.monitoring_kiss.backend.service.CompanyService;
 import net.mmo.utils.monitoring_kiss.backend.service.ContactService;
 import net.mmo.utils.monitoring_kiss.entities.Company;
 import net.mmo.utils.monitoring_kiss.entities.Contact;
 import net.mmo.utils.monitoring_kiss.ui.CommonConstants;
 import net.mmo.utils.monitoring_kiss.ui.MainLayout;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +32,9 @@ public class ListView extends VerticalLayout
 	private static final long serialVersionUID = -352635233754729967L;
 
 	// public to allow access by test classes
-	public static final String ViewClassName = "list-view"; 
-	public static final String GridClassName = "list-view-grid";
-	public static final String FilterFieldClassName = "list-view-filter"; 
+	public static final String ViewClassName = "list-view";  //$NON-NLS-1$
+	public static final String GridClassName = "list-view-grid"; //$NON-NLS-1$
+	public static final String FilterFieldClassName = "list-view-filter";  //$NON-NLS-1$
 
 	private ContactService contactService;
 	private CompanyService companyService;
@@ -42,107 +42,107 @@ public class ListView extends VerticalLayout
 	private TextField filterText = new TextField();
 	Grid<Contact> grid = new Grid<>(Contact.class); // package visible for UTs - is there no other way?
 	ContactForm form; // package visible for ITs - is there no other way?
-	
+
 	// This gets autowired but still puzzled which annotation causes this...
-	public ListView(ContactService contactService, 
+	public ListView(ContactService contactService,
 	                CompanyService companyService) {
-		log.debug("creating ListView:");
+		log.debug("creating ListView:"); //$NON-NLS-1$
 		this.contactService = contactService;
 		this.companyService = companyService;
-		
+
 		addClassName(ViewClassName);
 		setSizeFull(); // use entire browser window
-		
+
 		configureGrid();
-		
-		form = new ContactForm(this.companyService.findAll());
-		form.addListener(ContactForm.SaveEvent.class, this::saveContact);
-		form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
-		form.addListener(ContactForm.CloseEvent.class, e -> closeEditor());
-		form.setVisible(false); // initially the ContactForm is not shown
-		
-		log.trace("Creating content:");
-		Div content = new Div(grid, form);
-		content.addClassName("content");
+
+		this.form = new ContactForm(this.companyService.findAll());
+		this.form.addListener(ContactForm.SaveEvent.class, this::saveContact);
+		this.form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
+		this.form.addListener(ContactForm.CloseEvent.class, e -> closeEditor());
+		this.form.setVisible(false); // initially the ContactForm is not shown
+
+		log.trace("Creating content:"); //$NON-NLS-1$
+		Div content = new Div(this.grid, this.form);
+		content.addClassName("content"); //$NON-NLS-1$
 		content.setSizeFull();
-		
+
 		add(getToolbar(), content);
-		
+
 		updateList();
-		log.debug("ListView complete.");
+		log.debug("ListView complete."); //$NON-NLS-1$
 	}
-	
+
 	void addContact() {
-		log.info("addContact");
-		grid.asSingleSelect().clear();
-		editContact(new Contact(), "new contact:");
+		log.info("addContact"); //$NON-NLS-1$
+		this.grid.asSingleSelect().clear();
+		editContact(new Contact(), "new contact:"); //$NON-NLS-1$
 	}
-	
+
 	private void saveContact(ContactForm.SaveEvent event) {
-		log.info("saveContact");
-		contactService.save(event.getContact());
+		log.info("saveContact"); //$NON-NLS-1$
+		this.contactService.save(event.getContact());
 		updateList();
 		closeEditor();
 	}
 
 	private void deleteContact(ContactForm.DeleteEvent event) {
-		log.info("deleteContact");
-		contactService.delete(event.getContact());
+		log.info("deleteContact"); //$NON-NLS-1$
+		this.contactService.delete(event.getContact());
 		updateList();
 		closeEditor();
 	}
 
 	private HorizontalLayout getToolbar() {
-		log.trace("Creating toolbar:");
-		filterText.setClassName(FilterFieldClassName);
-		filterText.setPlaceholder("Filter by name...");
-		filterText.setClearButtonVisible(true);
-		filterText.setValueChangeMode(ValueChangeMode.LAZY);
-		filterText.addValueChangeListener(e -> updateList());
-		
+		log.trace("Creating toolbar:"); //$NON-NLS-1$
+		this.filterText.setClassName(FilterFieldClassName);
+		this.filterText.setPlaceholder("Filter by name...");
+		this.filterText.setClearButtonVisible(true);
+		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
+		this.filterText.addValueChangeListener(e -> updateList());
+
 		Button addContactButton = new Button("Add contact");
 		addContactButton.addClickListener(click -> addContact());
-		
-		HorizontalLayout toolbar = new HorizontalLayout(filterText, addContactButton);
-		toolbar.addClassName("toolbar");
+
+		HorizontalLayout toolbar = new HorizontalLayout(this.filterText, addContactButton);
+		toolbar.addClassName("toolbar"); //$NON-NLS-1$
 		return toolbar;
 	}
-	
+
 	private void configureGrid() {
-		log.trace("Configuring Grid:");
-		grid.addClassName(GridClassName);
-		grid.setSizeFull();
-		grid.setColumns("firstName", "lastName", "email", "status");
-		grid.addColumn(contact -> 
+		log.trace("Configuring Grid:"); //$NON-NLS-1$
+		this.grid.addClassName(GridClassName);
+		this.grid.setSizeFull();
+		this.grid.setColumns("firstName", "lastName", "email", "status"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		this.grid.addColumn(contact ->
 			{
 				Company company = contact.getCompany();
-				return company == null ? "-" : company.getName();
-			}).setHeader("Company");
-		grid.getColumns().forEach(col -> col.setAutoWidth(true));
-		grid.asSingleSelect()
-			.addValueChangeListener(event -> editContact(event.getValue(), "Edit or delete contact:")); // getValue() returns the selected Contact or null if none is selected
+				return company == null ? "-" : company.getName(); //$NON-NLS-1$
+			}).setHeader("Company"); //$NON-NLS-1$
+		this.grid.getColumns().forEach(col -> col.setAutoWidth(true));
+		this.grid.asSingleSelect()
+			.addValueChangeListener(event -> editContact(event.getValue(), "Edit or delete contact:")); // getValue() returns the selected Contact or null if none is selected //$NON-NLS-1$
 	}
 
 	public void editContact(Contact contact, String header) {
-		log.info("editContact: {}", contact);
+		log.info("editContact: {}", contact); //$NON-NLS-1$
 		if (contact == null) {
 			closeEditor();
 		} else {
-			form.setHeader(header);
-			form.setContact(contact);
-			form.setVisible(true);
-			addClassName("editing");
+			this.form.setHeader(header);
+			this.form.setContact(contact);
+			this.form.setVisible(true);
+			addClassName("editing"); //$NON-NLS-1$
 		}
 	}
 
 	private void closeEditor() {
-		log.info("closeEditor");
-		form.setContact(null);
-		form.setVisible(false);
-		removeClassName("editing");
+		log.info("closeEditor"); //$NON-NLS-1$
+		this.form.setContact(null);
+		this.form.setVisible(false);
+		removeClassName("editing"); //$NON-NLS-1$
 	}
-	
+
 	private void updateList() {
-		grid.setItems(contactService.findAll(filterText.getValue()));
+		this.grid.setItems(this.contactService.findAll(this.filterText.getValue()));
 	}
 }

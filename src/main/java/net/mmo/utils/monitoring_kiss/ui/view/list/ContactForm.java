@@ -18,9 +18,9 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.monitoring_kiss.entities.Company;
 import net.mmo.utils.monitoring_kiss.entities.Contact;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ContactForm extends FormLayout
@@ -28,12 +28,12 @@ public class ContactForm extends FormLayout
 	private static final long serialVersionUID = -4928837821374748141L;
 
 	// public to allow access by test classes
-	public static final String ViewClassName = "contact-form"; 
-	public static final String FirstNameClassName = "contact-form-first-name"; 
-	public static final String LastNameClassName = "contact-form-last-name"; 
-	public static final String EmailClassName = "contact-form-email"; 
-	public static final String StatusClassName = "contact-form-status"; 
-	
+	public static final String ViewClassName = "contact-form"; //$NON-NLS-1$
+	public static final String FirstNameClassName = "contact-form-first-name"; //$NON-NLS-1$
+	public static final String LastNameClassName = "contact-form-last-name"; //$NON-NLS-1$
+	public static final String EmailClassName = "contact-form-email"; //$NON-NLS-1$
+	public static final String StatusClassName = "contact-form-status"; //$NON-NLS-1$
+
 	Label header = new Label("Add or select a contact");
 	TextField firstName = new TextField("First name");
 	TextField lastName = new TextField("Last name");
@@ -50,20 +50,20 @@ public class ContactForm extends FormLayout
 	Binder<Contact> binder = new BeanValidationBinder<>(Contact.class); // a Binder that is aware of bean validation annotations
 
 	public ContactForm(List<Company> companies) {
-		log.debug("Creating ContactForm:");
+		log.debug("Creating ContactForm:"); //$NON-NLS-1$
 		addClassName(ViewClassName);
-		binder.bindInstanceFields(this);
+		this.binder.bindInstanceFields(this);
 
-		firstName.addClassName(FirstNameClassName);
-		lastName.addClassName(LastNameClassName);
-		email.addClassName(EmailClassName);
-		
-		company.setItems(companies);
-		company.setItemLabelGenerator(Company::getName);
-		status.setItems(Contact.Status.values());
-		status.addClassName(StatusClassName);
+		this.firstName.addClassName(FirstNameClassName);
+		this.lastName.addClassName(LastNameClassName);
+		this.email.addClassName(EmailClassName);
 
-		add(header, firstName, lastName, email, company, status, createButtonsLayout());
+		this.company.setItems(companies);
+		this.company.setItemLabelGenerator(Company::getName);
+		this.status.setItems(Contact.Status.values());
+		this.status.addClassName(StatusClassName);
+
+		add(this.header, this.firstName, this.lastName, this.email, this.company, this.status, createButtonsLayout());
 	}
 
 	public void setHeader(String header) {
@@ -72,34 +72,34 @@ public class ContactForm extends FormLayout
 
 	public void setContact(Contact contact) {
 		this.contact = contact;
-		binder.readBean(this.contact); // to bind the values from the contact to the UI fields. 
+		this.binder.readBean(this.contact); // to bind the values from the contact to the UI fields.
 		// Note: readBean() copies the values from the Contact to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
 	}
 
 	private HorizontalLayout createButtonsLayout() {
-		save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		save.setId("contactform-save-button");
-		save.addClickShortcut(Key.ENTER);
-		save.addClickListener(event -> validateAndSave());
-		binder.addStatusChangeListener(e -> save.setEnabled(binder.isValid()));
+		this.save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		this.save.setId("contactform-save-button"); //$NON-NLS-1$
+		this.save.addClickShortcut(Key.ENTER);
+		this.save.addClickListener(event -> validateAndSave());
+		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.isValid()));
 
-		delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-		save.setId("contactform-delete-button");
-		delete.addClickListener(event -> fireEvent(new DeleteEvent(this, contact)));
+		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		this.save.setId("contactform-delete-button"); //$NON-NLS-1$
+		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.contact)));
 
-		close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-		close.setId("contactform-close-button");
-		close.addClickShortcut(Key.ESCAPE);
-		close.addClickListener(event -> fireEvent(new CloseEvent(this)));
+		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		this.close.setId("contactform-close-button"); //$NON-NLS-1$
+		this.close.addClickShortcut(Key.ESCAPE);
+		this.close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
-		return new HorizontalLayout(save, delete, close);
+		return new HorizontalLayout(this.save, this.delete, this.close);
 	}
 
 	private void validateAndSave() {
-		log.info("Saving {}", contact);
+		log.info("Saving {}", this.contact); //$NON-NLS-1$
 		try {
-			binder.writeBean(contact);
-			fireEvent(new SaveEvent(this, contact));
+			this.binder.writeBean(this.contact);
+			fireEvent(new SaveEvent(this, this.contact));
 		} catch (ValidationException e) {
 			e.printStackTrace();
 		}
@@ -117,7 +117,7 @@ public class ContactForm extends FormLayout
 		}
 
 		public Contact getContact() {
-			return contact;
+			return this.contact;
 		}
 	}
 
@@ -147,7 +147,7 @@ public class ContactForm extends FormLayout
 	}
 
 	@Override
-	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType, 
+	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
 	                                                              ComponentEventListener<T> listener) {
 		return getEventBus().addListener(eventType, listener);
 	}

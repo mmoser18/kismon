@@ -19,8 +19,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 //Boot, you can no longer use plain JUnit tests. Instead, you can use the Spring Boot test
 //runner. This does add a little overhead, but it makes more features available to your test.
 //
-//The @RunWith(SpringRunner.class) (for JUnit4)/@ExtendWith(SpringExtension.class) (for JUnit5) 
-// and @SpringBootTest annotations make sure that the Spring Boot application is initialized 
+//The @RunWith(SpringRunner.class) (for JUnit4)/@ExtendWith(SpringExtension.class) (for JUnit5)
+// and @SpringBootTest annotations make sure that the Spring Boot application is initialized
 // before the tests are run and allow you to use @Autowired in the test.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest // makes sure that the Spring Boot application is initialized before the tests are run and allows you to use @Autowire in the test.
@@ -31,16 +31,16 @@ public class ListViewTest
 
 	@Test
 	public void formShownWhenContactSelected() {
-		Grid<Contact> grid = listView.grid;
+		Grid<Contact> grid = this.listView.grid;
 		Contact firstContact = getFirstItem(grid);
-		ContactForm form = listView.form;
+		ContactForm form = this.listView.form;
 		Assertions.assertFalse(form.isVisible());
 		grid.asSingleSelect().setValue(firstContact);
 		Assertions.assertTrue(form.isVisible());
 		Assertions.assertEquals(firstContact.getFirstName(), form.firstName.getValue());
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "static-method"})
 	private Contact getFirstItem(Grid<Contact> grid) {
 		return ((ListDataProvider<Contact>)grid.getDataProvider()).getItems().iterator().next();
 	}

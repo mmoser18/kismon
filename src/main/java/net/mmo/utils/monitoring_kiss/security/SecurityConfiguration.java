@@ -18,6 +18,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @EnableWebSecurity
 @Configuration
+@SuppressWarnings("nls")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 {
 	private static final String LOGIN_PROCESSING_URL = "/login";
@@ -28,7 +29,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable()  // Disables cross-site request forgery (CSRF) protection, as Vaadin already has CSRF protection
-			.requestCache() 
+			.requestCache()
 			.requestCache(new CustomRequestCache()) // Uses CustomRequestCache to track unauthorized requests so that users are redirected appropriately after login.
 			.and().authorizeRequests() // Turns on authorization
 			.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll() // Allows all internal traffic from the Vaadin framework.
@@ -39,7 +40,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 			.and().logout() // Configures the logout URL
 			.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
 	}
-	
+
 	@Bean
 	@Override
 	public UserDetailsService userDetailsService() {
@@ -49,20 +50,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 		                       .build();
 		return new InMemoryUserDetailsManager(user);
 	}
-	
+
 	/* exclude Vaadin-framework communication and static assets from Spring Security. */
 	@Override
 	public void configure(WebSecurity web) {
 		web.ignoring()
-			.antMatchers("/VAADIN/**", 
-			             "/favicon.ico", 
-			             "/robots.txt", 
-			             "/manifest.webmanifest", 
-			             "/sw.js", 
+			.antMatchers("/VAADIN/**",
+			             "/favicon.ico",
+			             "/robots.txt",
+			             "/manifest.webmanifest",
+			             "/sw.js",
 			             "/offline.html",
-			             "/icons/**", 
-			             "/images/**", 
-			             "/styles/**", 
+			             "/icons/**",
+			             "/images/**",
+			             "/styles/**",
 			             "/h2-console/**");
 	}
 }

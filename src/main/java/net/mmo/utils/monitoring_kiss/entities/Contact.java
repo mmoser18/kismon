@@ -3,7 +3,11 @@ package net.mmo.utils.monitoring_kiss.entities;
 
 import java.io.Serializable;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -27,16 +31,16 @@ public class Contact extends AbstractEntity implements Cloneable, Serializable
 		NotContacted,
 		Contacted,
 		Customer,
-		ClosedLost 
+		ClosedLost
 	}
 
 	@NotNull
 	@NotEmpty
-	private String firstName = "";
-	
+	private String firstName = ""; //$NON-NLS-1$
+
 	@NotNull
 	@NotEmpty
-	private String lastName = "";
+	private String lastName = ""; //$NON-NLS-1$
 
 	@ManyToOne
 	@JoinColumn(name = "company_id")
@@ -49,6 +53,6 @@ public class Contact extends AbstractEntity implements Cloneable, Serializable
 	@Email
 	@NotNull
 	@NotEmpty
-	private String email = "";
-	
+	private String email = ""; //$NON-NLS-1$
+
 }

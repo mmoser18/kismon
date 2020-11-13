@@ -7,13 +7,14 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 
 /**
  * The entry point of the Spring Boot application.
- * 
- * Note: We need to disable Spring MVC auto configuration on the Application class, 
+ *
+ * Note: We need to disable Spring MVC auto configuration on the Application class,
  * as this interferes with how Vaadin works and can cause strange reloading behavior.
  */
 @SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
-public class Application extends SpringBootServletInitializer 
+public class Application extends SpringBootServletInitializer
 {
+	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}

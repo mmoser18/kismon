@@ -33,24 +33,24 @@ public class DashboardView extends VerticalLayout
 	public DashboardView(ContactService contactService, CompanyService companyService) {
 		this.contactService = contactService;
 		this.companyService = companyService;
-		addClassName("dashboard-view");
+		addClassName("dashboard-view"); //$NON-NLS-1$
 		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 		add(getContactStats(), getCompaniesChart());
 	}
 
 	private Component getContactStats() {
-		Span stats = new Span(contactService.count() + " contacts");
-		stats.addClassName("contact-stats");
+		Span stats = new Span(this.contactService.count() + " contacts");
+		stats.addClassName("contact-stats"); //$NON-NLS-1$
 		return stats;
 	}
 
 	private Chart getCompaniesChart() {
 		Chart chart = new Chart(ChartType.PIE);
 		DataSeries dataSeries = new DataSeries();
-		Map<String, Integer> companies = companyService.getStats();
+		Map<String, Integer> companies = this.companyService.getStats();
 		companies.forEach((company, employees) -> dataSeries.add(new DataSeriesItem(company, employees)));
 		chart.getConfiguration().setSeries(dataSeries);
 		return chart;
 	}
-	
+
 }

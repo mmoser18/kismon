@@ -16,8 +16,8 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-@SuppressWarnings("deprecation")
 @Slf4j
+@SuppressWarnings({"nls","deprecation"})
 public final class SecurityUtils
 {
 	private SecurityUtils() {
@@ -26,14 +26,14 @@ public final class SecurityUtils
 
 	static boolean isFrameworkInternalRequest(HttpServletRequest request) {
 		final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-		return parameterValue != null 
+		return parameterValue != null
 			&& Stream.of(ServletHelper.RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
 	}
 
 	static boolean isUserLoggedIn() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		boolean userIsLoggedIn = 
-		       authentication != null 
+		boolean userIsLoggedIn =
+		       authentication != null
 		       && !(authentication instanceof AnonymousAuthenticationToken)
 			   && authentication.isAuthenticated();
 		log.info("user successfully logged-in.");

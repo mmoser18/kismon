@@ -21,10 +21,10 @@ import net.mmo.utils.monitoring_kiss.ui.view.list.ListView;
 
 @CssImport("./styles/shared-styles.css")
 @PWA(
-	name = CommonConstants.ApplicationFullName, 
+	name = CommonConstants.ApplicationFullName,
 	shortName = CommonConstants.ApplicationShortName,
 	offlineResources = {
-		"./styles/offline.css", 
+		"./styles/offline.css",
 		"./images/offline.png"
 	}
 )
@@ -33,8 +33,8 @@ public class MainLayout extends AppLayout
 	private static final long serialVersionUID = 8922152078442380813L;
 
 	public static final String LogoutLinkLabel = "Log out";
-	public static final String LogoutLinkClassName = "logout-link";
-	
+	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
+
 	public MainLayout() {
 		createHeader();
 		createDrawer();
@@ -42,17 +42,17 @@ public class MainLayout extends AppLayout
 
 	private void createHeader() {
 		H1 logo = new H1(CommonConstants.ApplicationFullName);
-		logo.addClassName("logo");
+		logo.addClassName("logo"); //$NON-NLS-1$
 		// add a logout link to the page:
 		Anchor logout = new Anchor(CommonConstants.LogoutURLSuffix, LogoutLinkLabel);
 		logout.addClassName(LogoutLinkClassName);
 
 		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
 		header.expand(logo);
-			
+
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-		header.setWidth("100%");
-		header.addClassName("header");
+		header.setWidth("100%"); //$NON-NLS-1$
+		header.addClassName("header"); //$NON-NLS-1$
 		addToNavbar(header);
 	}
 

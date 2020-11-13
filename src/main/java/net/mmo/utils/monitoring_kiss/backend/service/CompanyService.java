@@ -1,13 +1,13 @@
 
 package net.mmo.utils.monitoring_kiss.backend.service;
 
-import net.mmo.utils.monitoring_kiss.backend.repository.CompanyRepository;
-import net.mmo.utils.monitoring_kiss.entities.Company;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.mmo.utils.monitoring_kiss.backend.repository.CompanyRepository;
+import net.mmo.utils.monitoring_kiss.entities.Company;
+import org.springframework.stereotype.Service;
 
 /**
  * Implements the service to access and store Companies
@@ -22,9 +22,10 @@ public class CompanyService
 	}
 
 	public List<Company> findAll() {
-		return companyRepository.findAll();
+		return this.companyRepository.findAll();
 	}
-	
+
+	@SuppressWarnings("boxing")
 	public Map<String, Integer> getStats() {
 		HashMap<String, Integer> stats = new HashMap<>();
 		findAll().forEach(company -> stats.put(company.getName(), company.getEmployees().size()));
