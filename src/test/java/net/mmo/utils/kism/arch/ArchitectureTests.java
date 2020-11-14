@@ -19,7 +19,7 @@ import com.tngtech.archunit.library.Architectures;
 @SuppressWarnings("nls")
 public class ArchitectureTests
 {
-	// The boilerplate code
+	// Note: The boilerplate code
 	//		String myPackageName = this.getClass().getPackageName();
 	//		JavaClasses classes = new ClassFileImporter().importPackages(myPackageName.substring(0, myPackageName.lastIndexOf('.')));
 	// can be replaced by @ArchTest and parameters ("JavaClasses classes)"
