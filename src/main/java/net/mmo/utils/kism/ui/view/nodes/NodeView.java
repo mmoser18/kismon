@@ -1,6 +1,7 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -136,11 +137,11 @@ public class NodeView extends VerticalLayout
 		this.tree.addClassName(TreeClassName);
 		this.tree.setSizeFull();
 		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
-//		this.tree.setColumns(Messages.getString("NodeView.TreeGrid.ColumnName.Name"), //$NON-NLS-1$
-//		                     Messages.getString("NodeView.TreeGrid.ColumnName.Description"), //$NON-NLS-1$
-//		                     Messages.getString("NodeView.TreeGrid.ColumnName.State"), //$NON-NLS-1$
-//		                     Messages.getString("NodeView.TreeGrid.ColumnName.Enabled"), //$NON-NLS-1$
-//		                     Messages.getString("NodeView.TreeGrid.ColumnName.Ignored")); //$NON-NLS-1$
+		this.tree.addColumn(Node::getDescription).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")); //$NON-NLS-1$
+		this.tree.addColumn(Node::getState      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")); //$NON-NLS-1$
+		this.tree.addColumn(Node::isEnabled     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
+		this.tree.addColumn(Node::isIgnored     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Ignored")); //$NON-NLS-1$
+		this.tree.expandRecursively(Arrays.asList(NodeService.getRootNode()), 3);
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 		this.tree.asSingleSelect()
 		         .addValueChangeListener(event -> editNode(event.getValue(), Messages.getString("NodeView.Form.EditOrDeleteNode.Title"))); // getValue() returns the selected Node or null if none is selected //$NON-NLS-1$
