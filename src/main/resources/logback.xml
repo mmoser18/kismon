@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
 <configuration>
 
 	<property name="LOGS" value="./logs" />
@@ -33,12 +34,6 @@
 		</rollingPolicy>
 	</appender>
 
-	<!-- LOG everything at INFO level -->
-	<root level="info">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</root>
-
 	<!-- silence the ArchUnit analysis stuff: -->
 	<logger name="com.tngtech.archunit.core.importer.JavaClassProcessor" level="info" additivity="false">
 		<appender-ref ref="RollingFile" />
@@ -47,6 +42,11 @@
 	
 	<!-- silence the LogBacks startup mumbling : -->
 	<logger name="ch.qos.logback" level="warn" additivity="false">
+		<appender-ref ref="RollingFile" />
+		<appender-ref ref="Console" />
+	</logger>
+
+	<logger name="net.mmo.utils.kism" level="trace" additivity="false">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
