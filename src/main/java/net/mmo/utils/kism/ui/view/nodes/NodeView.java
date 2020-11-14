@@ -1,10 +1,17 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +41,11 @@ public class NodeView extends VerticalLayout
 
 	private NodeService nodeService;
 
-	TreeGrid<Node> tree = new TreeGrid<>(Node.class); // package visible for UTs - is there no other way?
+	List<Node> roots = new ArrayList<>();
+	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	NodeForm form; // package visible for ITs - is there no other way?
+
+
 
 	// This gets autowired but still puzzled which annotation causes this...
 	public NodeView(NodeService nodeService) {
@@ -104,15 +114,33 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void configureTree() {
+		NodeService.addSomeSubNodes(); // test only
+
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
+		this.roots.add(NodeService.getRootNode());
+		TreeData<Node> treeData = new TreeData<>();
+		treeData.addItems(this.roots, node -> {
+			if (node instanceof IntermediateNode) {
+				IntermediateNode iNode = (IntermediateNode)node;
+				List<Node> children = iNode.getChildren();
+				if (children != null) {
+					log.trace("ValueProvider({}) -> {}", node.getName(), children.stream().map(n -> n.getName()).collect(Collectors.toList())); //$NON-NLS-1$
+					return children;
+				}
+			}
+			log.trace("ValueProvider({}) -> <empty-list>", node.getName()); //$NON-NLS-1$
+			return Collections.emptyList();
+		});
+		this.tree = new TreeGrid<>(new TreeDataProvider<Node>(treeData)); // package visible for UTs - is there no other way?
+
 		this.tree.addClassName(TreeClassName);
-//		this.tree = new TreeGrid<>(new TreeDataProvider<Node>(new TreeData<Node>()));
 		this.tree.setSizeFull();
-		this.tree.setColumns(Messages.getString("NodeView.TreeGrid.ColumnName.Name"), //$NON-NLS-1$
-		                     Messages.getString("NodeView.TreeGrid.ColumnName.Description"), //$NON-NLS-1$
-		                     Messages.getString("NodeView.TreeGrid.ColumnName.State"), //$NON-NLS-1$
-		                     Messages.getString("NodeView.TreeGrid.ColumnName.Ignored"), //$NON-NLS-1$
-		                     Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
+		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
+//		this.tree.setColumns(Messages.getString("NodeView.TreeGrid.ColumnName.Name"), //$NON-NLS-1$
+//		                     Messages.getString("NodeView.TreeGrid.ColumnName.Description"), //$NON-NLS-1$
+//		                     Messages.getString("NodeView.TreeGrid.ColumnName.State"), //$NON-NLS-1$
+//		                     Messages.getString("NodeView.TreeGrid.ColumnName.Enabled"), //$NON-NLS-1$
+//		                     Messages.getString("NodeView.TreeGrid.ColumnName.Ignored")); //$NON-NLS-1$
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 		this.tree.asSingleSelect()
 		         .addValueChangeListener(event -> editNode(event.getValue(), Messages.getString("NodeView.Form.EditOrDeleteNode.Title"))); // getValue() returns the selected Node or null if none is selected //$NON-NLS-1$
@@ -146,6 +174,6 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void updateTree() {
-		this.tree.setItems(NodeService.getRootNode(/*this.filterText.getValue()*/));
+//		this.root.addRootItems(NodeService.getRootNode());
 	}
 }

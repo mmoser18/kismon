@@ -6,13 +6,13 @@
 package net.mmo.utils.kism.entities;
 
 import java.io.Serializable;
+import java.util.Properties;
 import java.util.function.Function;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
@@ -20,7 +20,7 @@ import org.springframework.util.Assert;
 @Entity
 @Setter
 @Getter
-@EqualsAndHashCode(callSuper = true)
+// @EqualsAndHashCode(callSuper = true)
 public abstract class Node extends AbstractEntity implements Cloneable, Serializable
 {
 	private static final long serialVersionUID = 3875470009216934341L;
@@ -44,6 +44,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	private boolean enabled; // child is to be considered for bubbling up state
 
 	private boolean ignored; // child is not to be considered for bubbling up state
+
+	private Properties customProperties;
 
 	private Node() {
 		this.enabled = true;
@@ -91,6 +93,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			+ ", state:" + getState() //$NON-NLS-1$
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
+			+ ", enabled:" + isEnabled() //$NON-NLS-1$
+			+ ", ignored:" + isIgnored() //$NON-NLS-1$
+			+ ", customProperties:" + getCustomProperties() //$NON-NLS-1$
 			+ "]"; //$NON-NLS-1$
 	}
 }

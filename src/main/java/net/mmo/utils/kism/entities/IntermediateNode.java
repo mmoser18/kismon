@@ -10,19 +10,18 @@ import java.util.function.Function;
 
 import javax.persistence.Entity;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Setter
 @Getter
-@EqualsAndHashCode(callSuper = false)
+// @EqualsAndHashCode(callSuper = true)
 public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
-	private ArrayList<Node>	children = new ArrayList<>();
+	private ArrayList<Node>	children;
 
 	protected IntermediateNode(String name, String description, State state) {
 		super(name, description, state);
@@ -31,12 +30,28 @@ public class IntermediateNode extends Node
 		super(name, description, state, parent);
 	}
 
-	public void addChild(Node child) {
+	public Node addChild(Node newChild) {
+		Node newChildsOldParent = newChild.getParent();
+		if ((newChildsOldParent != null) && (newChildsOldParent instanceof IntermediateNode)) {
+			((IntermediateNode)newChildsOldParent).removeChild(newChild);
+		}
 		synchronized(this) {
-			child.setParent(this);
-			this.getChildren().add(child);
+			newChild.setParent(this);
+			if (getChildren() == null) setChildren(new ArrayList<>());
+			getChildren().add(newChild);
 		}
 		deriveNewState();
+		return newChild;
+	}
+
+	public Node removeChild(Node child) {
+		synchronized(this) {
+			child.setParent(null);
+			getChildren().remove(child);
+			if (getChildren().size() <= 0) setChildren(null);
+		}
+		deriveNewState();
+		return child;
 	}
 
 	protected void reportStateChange(Node child) {
@@ -52,7 +67,7 @@ public class IntermediateNode extends Node
 	private void deriveNewState() {
 		State minimalState = State.OK;
 		synchronized(this) {
-			for (Node child: this.children) {
+			for (Node child: getChildren()) {
 				if (child.isIgnored()) continue; // child is not to be considered
 				if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
 			}
@@ -63,16 +78,18 @@ public class IntermediateNode extends Node
 	@Override
 	public void applyToSubTree(Function<Node, Void> fn) {
 		super.applyToSubTree(fn);
-		for (Node child: this.children) {
+		for (Node child: getChildren()) {
 			fn.apply(child);
 		}
 	}
 
 	@Override
 	public String toString() {
-		return super.toString()
-			+ ", children:" + this.children //$NON-NLS-1$
-			+ "]"; //$NON-NLS-1$
+		StringBuffer buf = new StringBuffer(super.toString());
+			buf.setLength(buf.length()-1);
+			return buf.append(", children:").append(getChildren()) //$NON-NLS-1$
+					.append("]") //$NON-NLS-1$
+					.toString();
 	}
 
 }

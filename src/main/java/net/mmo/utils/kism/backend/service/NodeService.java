@@ -6,6 +6,7 @@ import net.mmo.utils.kism.backend.repositories.IntermediateNodeRepository;
 import net.mmo.utils.kism.backend.repositories.LeafNodeRepository;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,40 +31,40 @@ public class NodeService
 
 	static void init() {
 		/** this is the one and only node that has no parent! */
-		root = new IntermediateNode(Messages.getString("km_root"), //$NON-NLS-1$
-		                            Messages.getString("km_root-node"), //$NON-NLS-1$
-		                            Node.State.OK)
+		NodeService.root = new IntermediateNode(Messages.getString("km_root"), //$NON-NLS-1$
+		                                        Messages.getString("km_root-node"), //$NON-NLS-1$
+		                                        Node.State.OK)
 			{
 				private static final long serialVersionUID = -7170243160659454761L;
 			};
 	}
 
-	@SuppressWarnings("boxing")
 	public static void addSomeSubNodes() {
-		addSomeSubNodes(root);
-		log.info("created root {} with {} children.", root, root.getChildren().size()); //$NON-NLS-1$
+		addSomeSubNodes(getRootNode());
+		log.info("created root: \n{}", PrettyPrint.prettyPrinted(getRootNode())); //$NON-NLS-1$
 	}
 
 	@SuppressWarnings({"nls", "boxing"})
 	private static void addSomeSubNodes(IntermediateNode parent) {
-		int max = parent != root ? (int)(Math.random() * 3.0) : 2; // [0.0 - 1.0) --> [0..4]
-		log.info("max: {}:", max);
+		int max = parent == NodeService.root ? 2 : (int)(Math.random() * 3.0); // maps [0.0 - 1.0) --> [0..2]
+		if (parent.getName().length() >= 8) max = 0; // limit depth...
+		log.info("adding {} children to {}:", max, parent);
 
 		for (int i = 0; i < max; i++) {
-			int idx = (int)(Math.random() * 3.0); // [0.0 - 1.0) --> [0..2]
+			int idx = (int)(Math.random() * 3.0); // maps [0.0 - 1.0) --> [0..2]
 			Node.State newState = Node.State.values()[idx];
 
-			addSomeSubNodes(new IntermediateNode(parent.getName() + "." + i,
-			                                     parent.getDescription() + "." + i,
+			addSomeSubNodes(new IntermediateNode(parent.getName() + "." + (i+1),
+			                                     parent.getDescription() + "." + (i+1),
 			                                     newState,
 			                                     parent));
 		}
-		log.info("{} children added to {}.", parent.getChildren().size(), parent);
+		log.info("{} children added to {}.", (parent.getChildren() != null ? parent.getChildren().size() : 0), parent);
 	}
 
 	/** enables re-initialization of root for Unit-Tests - not normally used */
 	public static void reset() {
-		root = null;
+		NodeService.root = null;
 	}
 
 	public static IntermediateNode getRootNode() {
