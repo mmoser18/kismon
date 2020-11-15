@@ -12,6 +12,20 @@
   padding: var(--lumo-space-m);
 }
 
+/* Nodes view */
+.nodes-view .content {
+  display: flex;
+}
+
+.nodes-view .node-grid {
+  flex: 2;
+}
+
+.nodes-view .node-form {
+  flex: 1;
+  padding: var(--lumo-space-m);
+}
+
 @media all and (max-width: 1100px) {
   .list-view.editing .toolbar, 
   .list-view.editing .contact-grid {
