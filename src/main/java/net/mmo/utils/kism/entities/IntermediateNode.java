@@ -12,11 +12,13 @@ import javax.persistence.Entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Setter
 @Getter
 // @EqualsAndHashCode(callSuper = true)
+@Slf4j
 public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
@@ -25,9 +27,11 @@ public class IntermediateNode extends Node
 
 	protected IntermediateNode(String name, String description, State state) {
 		super(name, description, state);
+		log.info("Created new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 	public IntermediateNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
+		log.info("Created new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 
 	public Node addChild(Node newChild) {

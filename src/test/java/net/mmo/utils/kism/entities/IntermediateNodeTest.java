@@ -22,7 +22,7 @@ public class IntermediateNodeTest
 	}
 	@Test
 	void rootShouldInitiallyBeEmptyTest() {
-		Node root = NodeService.getRootNode();
+		IntermediateNode root = NodeService.getRootNodes().get(0);
 		Assertions.assertNotNull(root, "root should be null"); //$NON-NLS-1$
 		Assertions.assertEquals(Messages.getString("km_root"), root.getName()); //$NON-NLS-1$
 		Assertions.assertEquals(Messages.getString("km_root-node"), root.getDescription()); //$NON-NLS-1$
@@ -30,7 +30,7 @@ public class IntermediateNodeTest
 
 	@Test
 	void checkNodesAdded() {
-		IntermediateNode root = NodeService.getRootNode();
+		IntermediateNode root = NodeService.getRootNodes().get(0);
 		Assertions.assertEquals(0, root.getChildren().size());
 		LeafNode leaf1 = new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(1, root.getChildren().size());
@@ -49,7 +49,7 @@ public class IntermediateNodeTest
 	@SuppressWarnings("unused")
 	@Test
 	void checkNodesIgnored() {
-		IntermediateNode root = NodeService.getRootNode();
+		IntermediateNode root = NodeService.getRootNodes().get(0);
 		new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
 		new LeafNode("leaf2", "leaf-node2", State.NOT_OK, root).setIgnored(true); //$NON-NLS-1$ //$NON-NLS-2$
 		new LeafNode("leaf3", "leaf-node3", State.DEGRADED, root); //$NON-NLS-1$ //$NON-NLS-2$

@@ -1,12 +1,12 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -32,21 +32,21 @@ import org.springframework.stereotype.Component;
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
+// This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
+// see https://github.com/vaadin/vaadin-grid/issues/1934
+@CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
 public class NodeView extends VerticalLayout
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
 	// public to allow access by test classes
-	public static final String ViewClassName = "node-view";  //$NON-NLS-1$
-	public static final String TreeClassName = "node-view-tree"; //$NON-NLS-1$
+	public static final String ViewClassName = "nodes-view";  //$NON-NLS-1$
+	public static final String TreeClassName = "nodes-view-tree"; //$NON-NLS-1$
 
 	private NodeService nodeService;
 
-	List<Node> roots = new ArrayList<>();
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	NodeForm form; // package visible for ITs - is there no other way?
-
-
 
 	// This gets autowired but still puzzled which annotation causes this...
 	public NodeView(NodeService nodeService) {
@@ -77,11 +77,13 @@ public class NodeView extends VerticalLayout
 	void addNode() {
 		log.info("addNode"); //$NON-NLS-1$
 		this.tree.asSingleSelect().clear();
-		editNode(new IntermediateNode("new node", //$NON-NLS-1$
-		                              "new node's description", //$NON-NLS-1$
+		log.info("addNode2"); //$NON-NLS-1$
+		editNode(new IntermediateNode(Messages.getString("NodeView.Form.NewNode.Name"), //$NON-NLS-1$
+		                              Messages.getString("NodeView.Form.NewNode.Name"), //$NON-NLS-1$
 		                              Node.State.OK,
 		                              null),
 		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
+		log.info("addNode3"); //$NON-NLS-1$
 	}
 
 	private void saveNode(NodeForm.SaveEvent event) {
@@ -118,9 +120,9 @@ public class NodeView extends VerticalLayout
 		NodeService.addSomeSubNodes(); // test only
 
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
-		this.roots.add(NodeService.getRootNode());
 		TreeData<Node> treeData = new TreeData<>();
-		treeData.addItems(this.roots, node -> {
+		// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!
+		treeData.addItems(NodeService.getRootNodesAsBareNodes(), node -> {
 			if (node instanceof IntermediateNode) {
 				IntermediateNode iNode = (IntermediateNode)node;
 				List<Node> children = iNode.getChildren();
@@ -132,8 +134,7 @@ public class NodeView extends VerticalLayout
 			log.trace("ValueProvider({}) -> <empty-list>", node.getName()); //$NON-NLS-1$
 			return Collections.emptyList();
 		});
-		this.tree = new TreeGrid<>(new TreeDataProvider<Node>(treeData)); // package visible for UTs - is there no other way?
-
+		this.tree = new TreeGrid<>(new TreeDataProvider<>(treeData)); // package visible for UTs - is there no other way?
 		this.tree.addClassName(TreeClassName);
 		this.tree.setSizeFull();
 		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
@@ -141,10 +142,22 @@ public class NodeView extends VerticalLayout
 		this.tree.addColumn(Node::getState      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")); //$NON-NLS-1$
 		this.tree.addColumn(Node::isEnabled     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
 		this.tree.addColumn(Node::isIgnored     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Ignored")); //$NON-NLS-1$
-		this.tree.expandRecursively(Arrays.asList(NodeService.getRootNode()), 3);
+		this.tree.expandRecursively(NodeService.getRootNodesAsBareNodes(), 3);
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
-		this.tree.asSingleSelect()
-		         .addValueChangeListener(event -> editNode(event.getValue(), Messages.getString("NodeView.Form.EditOrDeleteNode.Title"))); // getValue() returns the selected Node or null if none is selected //$NON-NLS-1$
+		this.tree.asSingleSelect().addValueChangeListener(event -> {
+			Node node = event.getValue(); // getValue() returns the selected Node or null if none is selected /
+			log.info("Selected node '{}'.", node); //$NON-NLS-1$
+			editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$
+		});
+		// this.tree.addAttachListener(e -> e.getUI().getPage().executeJS("customElements.get('vaadin-grid-tree-toggle').prototype._onClick=function(e){if(!this.leaf)this.expanded=!this.expanded;}", null)); //$NON-NLS-1$
+		this.tree.addExpandListener(event -> {
+			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
+			log.info("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
+		});
+		this.tree.addCollapseListener(event -> {
+			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
+			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
+		});
 	}
 
 	void configureNodeForm() {

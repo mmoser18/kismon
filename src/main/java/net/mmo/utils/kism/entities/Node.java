@@ -15,12 +15,14 @@ import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 
 @Entity
 @Setter
 @Getter
 // @EqualsAndHashCode(callSuper = true)
+@Slf4j
 public abstract class Node extends AbstractEntity implements Cloneable, Serializable
 {
 	private static final long serialVersionUID = 3875470009216934341L;
@@ -55,6 +57,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		this();
 		Assert.notNull(name, "node name must not be null");  //$NON-NLS-1$
 		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
+		log.info("Creating new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 		this.name = name;
 		this.description = description;
 		this.state = state;
@@ -62,7 +65,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
 		this(name, description, state);
-		Assert.notNull(parent, "parent node must not be null"); //$NON-NLS-1$
 		if (parent != null) parent.addChild(this);
 	}
 

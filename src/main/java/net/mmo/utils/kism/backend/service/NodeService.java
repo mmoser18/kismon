@@ -1,6 +1,11 @@
 
 package net.mmo.utils.kism.backend.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.repositories.IntermediateNodeRepository;
 import net.mmo.utils.kism.backend.repositories.LeafNodeRepository;
@@ -27,27 +32,29 @@ public class NodeService
 		this.leafNodeRepository = leafNodeRepository;
 	}
 
-	private static IntermediateNode root;
+	private static List<IntermediateNode> roots = new ArrayList<>();
 
 	static void init() {
 		/** this is the one and only node that has no parent! */
-		NodeService.root = new IntermediateNode(Messages.getString("km_root"), //$NON-NLS-1$
-		                                        Messages.getString("km_root-node"), //$NON-NLS-1$
-		                                        Node.State.OK)
+		NodeService.roots.add(new IntermediateNode(Messages.getString("km_root"), //$NON-NLS-1$
+		                                           Messages.getString("km_root-node"), //$NON-NLS-1$
+		                                           Node.State.OK)
 			{
 				private static final long serialVersionUID = -7170243160659454761L;
-			};
+			});
 	}
 
 	public static void addSomeSubNodes() {
-		addSomeSubNodes(getRootNode());
-		log.info("created root: \n{}", PrettyPrint.prettyPrinted(getRootNode())); //$NON-NLS-1$
+		for (IntermediateNode root: getRootNodes()) {
+			addSomeSubNodes(root);
+			log.info("created root: \n{}", PrettyPrint.prettyPrinted(root)); //$NON-NLS-1$
+		}
 	}
 
 	@SuppressWarnings({"nls", "boxing"})
 	private static void addSomeSubNodes(IntermediateNode parent) {
-		int max = parent == NodeService.root ? 2 : (int)(Math.random() * 3.0); // maps [0.0 - 1.0) --> [0..2]
-		if (parent.getName().length() >= 8) max = 0; // limit depth...
+		int max = (parent.getParent() == null ? 2 : (int)(Math.random() * 3.0)); // maps [0.0 - 1.0) --> [0..2]
+		if (parent.getName().length() >= Messages.getString("km_root").length() + 6) max = 0; // limit depth...
 		log.info("adding {} children to {}:", max, parent);
 
 		for (int i = 0; i < max; i++) {
@@ -64,12 +71,17 @@ public class NodeService
 
 	/** enables re-initialization of root for Unit-Tests - not normally used */
 	public static void reset() {
-		NodeService.root = null;
+		NodeService.roots.clear();
 	}
 
-	public static IntermediateNode getRootNode() {
-		if (NodeService.root == null) init();
-		return NodeService.root;
+	public static List<IntermediateNode> getRootNodes() {
+		if (NodeService.roots.isEmpty()) init();
+		return NodeService.roots;
+	}
+
+	// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!
+	public static Collection<Node> getRootNodesAsBareNodes() {
+		return Arrays.asList(getRootNodes().toArray(new Node[getRootNodes().size()]));
 	}
 
 	public void save(Node node) {

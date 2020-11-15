@@ -10,6 +10,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -17,7 +18,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
-import net.mmo.utils.kism.ui.view.list.Messages;
 
 @Slf4j
 public class NodeForm extends FormLayout
@@ -30,12 +30,14 @@ public class NodeForm extends FormLayout
 	public static final String DescriptionClassName = "node-form-last-name"; //$NON-NLS-1$
 	public static final String StateClassName = "node-form-state"; //$NON-NLS-1$
 	public static final String EnabledClassName = "node-form-enabled"; //$NON-NLS-1$
+	public static final String IgnoredClassName = "node-form-ignored"; //$NON-NLS-1$
 
 	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 	TextField name = new TextField(Messages.getString("NodeForm.TextField.Name.Label")); //$NON-NLS-1$
-	TextField description = new TextField(Messages.getString("NodeForm.TextField.Description.Label")); //$NON-NLS-1$
+	TextArea description = new TextArea(Messages.getString("NodeForm.TextField.Description.Label")); //$NON-NLS-1$
 	ComboBox<Node.State> state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
 	ComboBox<Boolean> enabled = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Enabled.Label")); //$NON-NLS-1$
+	ComboBox<Boolean> ignored = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Ignored.Label")); //$NON-NLS-1$
 
 	Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
 	Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
@@ -53,8 +55,13 @@ public class NodeForm extends FormLayout
 		this.description.addClassName(DescriptionClassName);
 		this.state.addClassName(StateClassName);
 		this.enabled.addClassName(EnabledClassName);
+		this.ignored.addClassName(IgnoredClassName);
 
-		add(this.header, this.name, this.description, this.state, this.enabled, createButtonsLayout());
+		this.state.setItems(Node.State.values());
+		this.enabled.setItems(Boolean.TRUE, Boolean.FALSE);
+		this.ignored.setItems(Boolean.FALSE, Boolean.TRUE);
+
+		add(this.header, this.name, this.description, this.state, this.enabled, this.ignored, createButtonsLayout());
 	}
 
 	public void setHeader(String header) {
