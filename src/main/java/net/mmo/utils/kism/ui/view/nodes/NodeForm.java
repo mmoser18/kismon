@@ -26,8 +26,8 @@ public class NodeForm extends FormLayout
 
 	// public to allow access by test classes
 	public static final String ViewClassName = "node-form"; //$NON-NLS-1$
-	public static final String NameClassName = "node-form-first-name"; //$NON-NLS-1$
-	public static final String DescriptionClassName = "node-form-last-name"; //$NON-NLS-1$
+	public static final String NameClassName = "node-form-name"; //$NON-NLS-1$
+	public static final String DescriptionClassName = "node-form-description"; //$NON-NLS-1$
 	public static final String StateClassName = "node-form-state"; //$NON-NLS-1$
 	public static final String EnabledClassName = "node-form-enabled"; //$NON-NLS-1$
 	public static final String IgnoredClassName = "node-form-ignored"; //$NON-NLS-1$
