@@ -96,6 +96,7 @@ public class NodeForm extends FormLayout
 	private void validateAndSave() {
 		log.info("Saving {}", this.node); //$NON-NLS-1$
 		try {
+			// TODO: validation
 			this.binder.writeBean(this.node);
 			fireEvent(new SaveEvent(this, this.node));
 		} catch (ValidationException e) {
