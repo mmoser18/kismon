@@ -15,6 +15,7 @@ import net.mmo.utils.kism.backend.service.ContactService;
 import net.mmo.utils.kism.entities.Company;
 import net.mmo.utils.kism.entities.Contact;
 import net.mmo.utils.kism.ui.CommonConstants;
+import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -33,9 +34,10 @@ public class ListView extends VerticalLayout
 
 	// public to allow access by test classes
 	public static final String ViewClassName = "list-view";  //$NON-NLS-1$
+	public static final String ToolbarClassName     = "list-view-toolbar";  //$NON-NLS-1$
+	public static final String ViewContentClassName = "list-view-content";  //$NON-NLS-1$
 	public static final String FilterFieldClassName = "list-view-filter";  //$NON-NLS-1$
-	public static final String GridClassName = "list-view-grid"; //$NON-NLS-1$
-	public static final String TreeClassName = "list-view-tree"; //$NON-NLS-1$
+	public static final String GridClassName        = "list-view-grid"; //$NON-NLS-1$
 
 	private ContactService contactService;
 	private CompanyService companyService;
@@ -43,6 +45,8 @@ public class ListView extends VerticalLayout
 	private TextField filterText = new TextField();
 	Grid<Contact> grid = new Grid<>(Contact.class); // package visible for UTs - is there no other way?
 	ContactForm form; // package visible for ITs - is there no other way?
+	Div content;
+	LayoutDirection contentDirection = LayoutDirection.direction_row;
 
 	// This gets autowired but still puzzled which annotation causes this...
 	public ListView(ContactService contactService,
@@ -58,11 +62,12 @@ public class ListView extends VerticalLayout
 		configureContactForm();
 
 		log.trace("Creating content:"); //$NON-NLS-1$
-		Div content = new Div(this.grid, this.form);
-		content.addClassName("content"); //$NON-NLS-1$
-		content.setSizeFull();
+		this.content = new Div(this.grid, this.form);
+		this.content.addClassName(ViewContentClassName);
+		this.content.setSizeFull();
+		CommonConstants.setClassName(this.content, this.contentDirection);
 
-		add(getToolbar(), content);
+		add(getToolbar(), this.content);
 
 		updateList();
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
@@ -99,8 +104,19 @@ public class ListView extends VerticalLayout
 		Button addContactButton = new Button(Messages.getString("ListView.Button.Add_Contact.Label")); //$NON-NLS-1$
 		addContactButton.addClickListener(click -> addContact());
 
-		HorizontalLayout toolbar = new HorizontalLayout(this.filterText, addContactButton);
-		toolbar.addClassName("toolbar"); //$NON-NLS-1$
+		Button directionButton = new Button(String.format(Messages.getString("ListView.Button.Direction.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
+		directionButton.addClickListener(click ->
+			{
+				// We re-label the button with the current direction...
+				directionButton.setText(String.format(Messages.getString("ListView.Button.Direction.Label"), this.contentDirection.toString())); //$NON-NLS-1$
+				// ... before changing the direction:
+				this.contentDirection = LayoutDirection.invert(this.contentDirection);
+				CommonConstants.setClassName(this.content, this.contentDirection);
+			});
+
+		HorizontalLayout toolbar = new HorizontalLayout(this.filterText, addContactButton, directionButton);
+
+		toolbar.addClassName(ToolbarClassName);
 		return toolbar;
 	}
 

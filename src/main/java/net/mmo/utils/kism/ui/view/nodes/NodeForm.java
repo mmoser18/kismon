@@ -10,6 +10,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -26,18 +27,23 @@ public class NodeForm extends FormLayout
 
 	// public to allow access by test classes
 	public static final String ViewClassName = "node-form"; //$NON-NLS-1$
-	public static final String NameClassName = "node-form-name"; //$NON-NLS-1$
+	public static final String FieldsClassName = "node-form-fields"; //$NON-NLS-1$
+	public static final String NameClassName        = "node-form-name"; //$NON-NLS-1$
 	public static final String DescriptionClassName = "node-form-description"; //$NON-NLS-1$
-	public static final String StateClassName = "node-form-state"; //$NON-NLS-1$
-	public static final String EnabledClassName = "node-form-enabled"; //$NON-NLS-1$
-	public static final String IgnoredClassName = "node-form-ignored"; //$NON-NLS-1$
+	public static final String StateClassName       = "node-form-state"; //$NON-NLS-1$
+	public static final String EnabledClassName     = "node-form-enabled"; //$NON-NLS-1$
+	public static final String IgnoredClassName     = "node-form-ignored"; //$NON-NLS-1$
 
 	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
+
 	TextField name = new TextField(Messages.getString("NodeForm.TextField.Name.Label")); //$NON-NLS-1$
 	TextArea description = new TextArea(Messages.getString("NodeForm.TextField.Description.Label")); //$NON-NLS-1$
-	ComboBox<Node.State> state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
+	// state is calculated automatically!
+	// ComboBox<Node.State> state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
 	ComboBox<Boolean> enabled = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Enabled.Label")); //$NON-NLS-1$
 	ComboBox<Boolean> ignored = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Ignored.Label")); //$NON-NLS-1$
+
+	VerticalLayout fields;
 
 	Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
 	Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
@@ -53,15 +59,21 @@ public class NodeForm extends FormLayout
 
 		this.name.addClassName(NameClassName);
 		this.description.addClassName(DescriptionClassName);
-		this.state.addClassName(StateClassName);
-		this.enabled.addClassName(EnabledClassName);
-		this.ignored.addClassName(IgnoredClassName);
 
-		this.state.setItems(Node.State.values());
+		// this.state.addClassName(StateClassName);
+		// this.state.setItems(Node.State.values());
+
+		this.enabled.addClassName(EnabledClassName);
 		this.enabled.setItems(Boolean.TRUE, Boolean.FALSE);
+
+		this.ignored.addClassName(IgnoredClassName);
 		this.ignored.setItems(Boolean.FALSE, Boolean.TRUE);
 
-		add(this.header, this.name, this.description, this.state, this.enabled, this.ignored, createButtonsLayout());
+		this.fields = new VerticalLayout(this.name, this.description, /*this.state,*/ this.enabled, this.ignored);
+		this.fields.setClassName(FieldsClassName);
+		this.fields.setSizeFull();
+
+		add(this.header, this.fields, createButtonsLayout());
 	}
 
 	public void setHeader(String header) {
@@ -96,7 +108,7 @@ public class NodeForm extends FormLayout
 	private void validateAndSave() {
 		log.info("Saving {}", this.node); //$NON-NLS-1$
 		try {
-			// TODO: validation
+			// TODO: more validation
 			this.binder.writeBean(this.node);
 			fireEvent(new SaveEvent(this, this.node));
 		} catch (ValidationException e) {

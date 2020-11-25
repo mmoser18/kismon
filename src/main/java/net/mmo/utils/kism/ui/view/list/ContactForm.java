@@ -12,6 +12,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -29,18 +30,21 @@ public class ContactForm extends FormLayout
 
 	// public to allow access by test classes
 	public static final String ViewClassName = "contact-form"; //$NON-NLS-1$
+	public static final String FieldsClassName = "contact-form-fields"; //$NON-NLS-1$
 	public static final String FirstNameClassName = "contact-form-first-name"; //$NON-NLS-1$
-	public static final String LastNameClassName = "contact-form-last-name"; //$NON-NLS-1$
-	public static final String EmailClassName = "contact-form-email"; //$NON-NLS-1$
-	public static final String StatusClassName = "contact-form-status"; //$NON-NLS-1$
+	public static final String LastNameClassName  = "contact-form-last-name"; //$NON-NLS-1$
+	public static final String EmailClassName     = "contact-form-email"; //$NON-NLS-1$
+	public static final String StatusClassName    = "contact-form-status"; //$NON-NLS-1$
 
 	Label header = new Label(Messages.getString("ContactForm.Label.Header.Text")); //$NON-NLS-1$
+
 	TextField firstName = new TextField(Messages.getString("ContactForm.TextField.FirstName.Label")); //$NON-NLS-1$
 	TextField lastName = new TextField(Messages.getString("ContactForm.TextField.LastName.Label")); //$NON-NLS-1$
 	EmailField email = new EmailField(Messages.getString("ContactForm.EmailField.Email.Label")); //$NON-NLS-1$
-
 	ComboBox<Contact.Status> status = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Status.Label")); //$NON-NLS-1$
 	ComboBox<Company> company = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Company.Label")); //$NON-NLS-1$
+
+	VerticalLayout fields;
 
 	Button save   = new Button(Messages.getString("ContactForm.Button.Save.Label")); //$NON-NLS-1$
 	Button delete = new Button(Messages.getString("ContactForm.Button.Delete.Label")); //$NON-NLS-1$
@@ -54,6 +58,7 @@ public class ContactForm extends FormLayout
 		addClassName(ViewClassName);
 		this.binder.bindInstanceFields(this);
 
+
 		this.firstName.addClassName(FirstNameClassName);
 		this.lastName.addClassName(LastNameClassName);
 		this.email.addClassName(EmailClassName);
@@ -63,7 +68,11 @@ public class ContactForm extends FormLayout
 		this.status.setItems(Contact.Status.values());
 		this.status.addClassName(StatusClassName);
 
-		add(this.header, this.firstName, this.lastName, this.email, this.company, this.status, createButtonsLayout());
+		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status);
+		this.fields.setClassName(FieldsClassName);
+		this.fields.setSizeFull();
+
+		add(this.header, this.fields, createButtonsLayout());
 	}
 
 	public void setHeader(String header) {

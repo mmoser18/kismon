@@ -10,7 +10,6 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
@@ -34,6 +33,8 @@ public class MainLayout extends AppLayout
 	private static final long serialVersionUID = 8922152078442380813L;
 
 	public static final String LogoutLinkLabel = Messages.getString("MainLayout.Link.LogOut.Label"); //$NON-NLS-1$
+	public static final String TitleClassName = "main-title"; //$NON-NLS-1$
+	public static final String HeaderClassName = "main-header"; //$NON-NLS-1$
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
 
 	public MainLayout() {
@@ -42,18 +43,17 @@ public class MainLayout extends AppLayout
 	}
 
 	private void createHeader() {
-		H1 logo = new H1(CommonConstants.ApplicationFullName);
-		logo.addClassName("logo"); //$NON-NLS-1$
+		H1 appTitle = new H1(CommonConstants.ApplicationFullName);
+		appTitle.addClassName(TitleClassName);
 		// add a logout link to the page:
 		Anchor logout = new Anchor(CommonConstants.LogoutURLSuffix, LogoutLinkLabel);
 		logout.addClassName(LogoutLinkClassName);
 
-		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
-		header.expand(logo);
+		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, logout);
+		header.addClassName(HeaderClassName);
+		header.expand(appTitle);
+		// header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-		header.setWidth("100%"); //$NON-NLS-1$
-		header.addClassName("header"); //$NON-NLS-1$
 		addToNavbar(header);
 	}
 

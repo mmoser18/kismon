@@ -51,7 +51,7 @@ public class NodeService
 		}
 	}
 
-	@SuppressWarnings({"nls", "boxing"})
+	@SuppressWarnings({"nls"})
 	private static void addSomeSubNodes(IntermediateNode parent) {
 		int max = (parent.getParent() == null ? 2 : (int)(Math.random() * 3.0)); // maps [0.0 - 1.0) --> [0..2]
 		if (parent.getName().length() >= Messages.getString("km_root").length() + 6) max = 0; // limit depth...
@@ -85,12 +85,35 @@ public class NodeService
 	}
 
 	public void save(Node node) {
-		// TODO Auto-generated method stub
+		log.warn("save node not yet implemented!"); //$NON-NLS-1$
 	}
 
-	public void delete(Node node) {
-		// TODO Auto-generated method stub
+	public void delete(Collection<Node> nodes, boolean liftUp) {
+		nodes.forEach(node -> {
+			IntermediateNode parent = node.getParent();
+			if (parent != null) { // we only delete non-root nodes:
+				ArrayList<Node> parentSiblings = parent.getChildren();
+				int index = parentSiblings.indexOf(node); // get the node's index:
+				node.setParent(null); // unhinge the node
+				parentSiblings.remove(index);
+				if (liftUp && node instanceof IntermediateNode) { // make all children a child of the parent-node:
+					ArrayList<Node> nodeSiblings = ((IntermediateNode)node).getChildren();
+					for (Node s: nodeSiblings) {
+						parentSiblings.set(index++, s);
+					}
+				}
+			}
+		});
+	}
 
+	// delete nodes, make all children a child of the parent-node:
+	public void delete(Collection<Node> nodes) {
+		delete(nodes, true);
+	}
+
+	// make all children a child of the parent-node:
+	public void deleteAll(Collection<Node> nodes) {
+		delete(nodes, false);
 	}
 
 //	public List<Node> findAll() {
