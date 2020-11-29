@@ -1,16 +1,20 @@
 
 package net.mmo.utils.kism.backend.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.repositories.IntermediateNodeRepository;
 import net.mmo.utils.kism.backend.repositories.LeafNodeRepository;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +25,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NodeService
 {
+	public final static String CONFIG_FILE_TYPE  = "kmc"; //$NON-NLS-1$
+	public final static String DEFAULT_FILE_NAME = "default"; //$NON-NLS-1$
+
 	@SuppressWarnings("unused")
 	private IntermediateNodeRepository intermediateNodeRepository;
 	@SuppressWarnings("unused")
 	private LeafNodeRepository leafNodeRepository;
+
+	private List<RootNode> roots = new ArrayList<>();
+	private JavaJSONHandler jsonHandler = new JavaJSONHandler();
 
 	public NodeService(IntermediateNodeRepository intermediateNodeRepository,
 	                   LeafNodeRepository leafNodeRepository) {
@@ -32,19 +42,21 @@ public class NodeService
 		this.leafNodeRepository = leafNodeRepository;
 	}
 
-	private static List<IntermediateNode> roots = new ArrayList<>();
-
-	static void init() {
-		/** this is the one and only node that has no parent! */
-		NodeService.roots.add(new IntermediateNode(Messages.getString("km_root"), //$NON-NLS-1$
-		                                           Messages.getString("km_root-node"), //$NON-NLS-1$
-		                                           Node.State.OK)
-			{
-				private static final long serialVersionUID = -7170243160659454761L;
-			});
+	/* create a new empty RootNode, if none exists */
+	void init() {
+		RootNode root;
+		try {
+			root = this.jsonHandler.read(new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE));
+		} catch (Throwable t) {
+			log.warn("File '{}' not found or not a valid configuration - creating dummy root node", DEFAULT_FILE_NAME); //$NON-NLS-1$
+			root = new RootNode(Messages.getString("km_root_name"), //$NON-NLS-1$
+			                    Messages.getString("km_root_description"), //$NON-NLS-1$
+			                    Node.State.OK);
+		}
+		this.roots.add(root);
 	}
 
-	public static void addSomeSubNodes() {
+	public void addSomeSubNodes() {
 		for (IntermediateNode root: getRootNodes()) {
 			addSomeSubNodes(root);
 			log.info("created root: \n{}", PrettyPrint.prettyPrinted(root)); //$NON-NLS-1$
@@ -54,7 +66,7 @@ public class NodeService
 	@SuppressWarnings({"nls"})
 	private static void addSomeSubNodes(IntermediateNode parent) {
 		int max = (parent.getParent() == null ? 2 : (int)(Math.random() * 3.0)); // maps [0.0 - 1.0) --> [0..2]
-		if (parent.getName().length() >= Messages.getString("km_root").length() + 6) max = 0; // limit depth...
+		if (parent.getName().length() >= Messages.getString("km_root_name").length() + 6) max = 0; // limit depth...
 		log.info("adding {} children to {}:", max, parent);
 
 		for (int i = 0; i < max; i++) {
@@ -69,23 +81,34 @@ public class NodeService
 		log.info("{} children added to {}.", (parent.getChildren() != null ? parent.getChildren().size() : 0), parent);
 	}
 
-	/** enables re-initialization of root for Unit-Tests - not normally used */
-	public static void reset() {
-		NodeService.roots.clear();
+	/** enables re-initialization of root nodes for Unit-Tests - not normally used */
+	public void reset() {
+		this.roots.clear();
 	}
 
-	public static List<IntermediateNode> getRootNodes() {
-		if (NodeService.roots.isEmpty()) init();
-		return NodeService.roots;
+	public List<RootNode> getRootNodes() {
+		if (this.roots.isEmpty()) {
+			init();
+		}
+		return this.roots;
 	}
 
-	// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!
-	public static Collection<Node> getRootNodesAsBareNodes() {
-		return Arrays.asList(getRootNodes().toArray(new Node[getRootNodes().size()]));
+	public static RootNode getRootNode(Node startNode) {
+		Node node = startNode;
+		while (node.getParent() != null) node = node.getParent();
+		return (RootNode)node;
 	}
 
-	public void save(Node node) {
-		log.warn("save node not yet implemented!"); //$NON-NLS-1$
+	public RootNode read(File file) throws IOException {
+		RootNode newNode = this.jsonHandler.read(file);
+		restoreParents(newNode);
+		getRootNodes().add(newNode);
+		return newNode;
+	}
+
+	public void saveAs(RootNode rootNode, File file) throws IOException {
+		log.info("saving rootNode {} to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
+		this.jsonHandler.save(rootNode, file);
 	}
 
 	public void delete(Collection<Node> nodes, boolean liftUp) {
@@ -116,6 +139,28 @@ public class NodeService
 		delete(nodes, false);
 	}
 
+//	/** utility to set all parents null (to avoid infinite recursion in some serialization library). */
+//	private void setParentsNull(Node node) {
+//	node.setParent(null);
+//	if (node instanceof IntermediateNode) {
+//		IntermediateNode parent = (IntermediateNode)node;
+//		if (parent.getChildren() != null) {
+//			parent.getChildren().forEach(child -> setParentsNull(child));
+//		}
+//	}
+//}
+
+	/** utility to restore parents after reading from file */
+	private void restoreParents(IntermediateNode parent) {
+		if (parent.getChildren() != null) {
+			parent.getChildren().forEach(n ->
+				{
+					n.setParent(parent);
+					if (n instanceof IntermediateNode) restoreParents((IntermediateNode)n);
+				});
+		}
+	}
+
 //	public List<Node> findAll() {
 //		return this.nodeRepository.findAll();
 //	}
@@ -128,4 +173,24 @@ public class NodeService
 //		}
 //	}
 
+	static class JavaJSONHandler
+	{
+		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+
+		public void save(RootNode rootNode, File file) throws IOException {
+			synchronized(rootNode) {
+				log.info("saving rootNode '{}' to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
+				this.mapper.writeValue(file, rootNode);
+				log.info("rootNode '{}' was saved to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
+			}
+		}
+
+		public RootNode read(File file) throws IOException {
+			log.info("JavaJSONHandler: reading from file {}:", file); //$NON-NLS-1$
+			RootNode rootNode = this.mapper.readValue(file, RootNode.class);
+			rootNode.setFilePath(file.getAbsolutePath().replace('.' + CONFIG_FILE_TYPE, "")); //$NON-NLS-1$
+			log.info("rootNode '{}' was read from file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
+			return rootNode;
+		}
+	}
 }

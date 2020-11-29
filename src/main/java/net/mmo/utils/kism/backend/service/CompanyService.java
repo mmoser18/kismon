@@ -25,7 +25,6 @@ public class CompanyService
 		return this.companyRepository.findAll();
 	}
 
-	@SuppressWarnings("boxing")
 	public Map<String, Integer> getStats() {
 		HashMap<String, Integer> stats = new HashMap<>();
 		findAll().forEach(company -> stats.put(company.getName(), company.getEmployees().size()));

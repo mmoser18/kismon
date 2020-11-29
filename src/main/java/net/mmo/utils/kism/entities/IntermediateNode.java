@@ -1,4 +1,5 @@
 /**
+
  * @author Michael Moser (michael.moser@freesurf.ch)
  * @since 08.11.2020
  */
@@ -10,28 +11,30 @@ import java.util.function.Function;
 
 import javax.persistence.Entity;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Setter
 @Getter
-// @EqualsAndHashCode(callSuper = true)
-@Slf4j
+@EqualsAndHashCode(callSuper = true, exclude = {"children"})
+// @Slf4j
 public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
 	private ArrayList<Node>	children;
 
+	protected IntermediateNode() {
+		super();
+	}
+
 	protected IntermediateNode(String name, String description, State state) {
 		super(name, description, state);
-		log.info("Created new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 	public IntermediateNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
-		log.info("Created new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 
 	public Node addChild(Node newChild) {
@@ -72,8 +75,9 @@ public class IntermediateNode extends Node
 		State minimalState = State.OK;
 		synchronized(this) {
 			for (Node child: getChildren()) {
-				if (child.isIgnored()) continue; // child is not to be considered
-				if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
+				if (child.isActive()) { // child is to be considered
+					if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
+				}
 			}
 		}
 		setState(minimalState);

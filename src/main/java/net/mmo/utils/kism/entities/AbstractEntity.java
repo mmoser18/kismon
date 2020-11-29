@@ -6,16 +6,22 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @MappedSuperclass
 public abstract class AbstractEntity
 {
+	//	private static long idCtr;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	private Long id;
+	@JsonIgnore
+	private Long id; // = idCtr++;
 	public Long getId() {
 		return this.id;
 	}
 
+	@JsonIgnore
 	public boolean isPersisted() {
 		return this.id != null;
 	}

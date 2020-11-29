@@ -1,5 +1,7 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -7,8 +9,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
@@ -20,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
@@ -54,7 +59,7 @@ public class NodeView extends VerticalLayout
 	Div content;
 	LayoutDirection contentDirection = LayoutDirection.direction_row;
 
-	// This gets autowired but still puzzled which annotation causes this...
+	// This gets autowired but I am still puzzled which annotation causes this...
 	public NodeView(NodeService nodeService) {
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		try {
@@ -97,7 +102,7 @@ public class NodeView extends VerticalLayout
 				if (nodes.isEmpty()) {
 					/// TODO: AlertUser("Select nodes to be deleted first!");
 				} else {
-					deleteNodes(nodes);
+					removeNodes(nodes);
 				}
 			});
 
@@ -108,7 +113,7 @@ public class NodeView extends VerticalLayout
 				if (nodes.isEmpty()) {
 					/// TODO: AlertUser("Select nodes to be deleted first!");
 				} else {
-					clearNodesList(nodes);
+					removeList(nodes);
 				}
 			});
 
@@ -122,19 +127,25 @@ public class NodeView extends VerticalLayout
 				CommonConstants.setClassName(this.content, this.contentDirection);
 			});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ addNodeButton, delNodeButton, clearListButton, directionButton);
+		Button readFileButton = new Button(String.format(Messages.getString("NodeView.Button.ReadFile.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
+		directionButton.addClickListener(click ->
+			{
+				readFile();
+			});
+
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ addNodeButton, delNodeButton, clearListButton, directionButton, readFileButton);
 		toolbar.addClassName(ViewToolbarClassName);
 
 		return toolbar;
 	}
 
 	private void configureTree() {
-		NodeService.addSomeSubNodes(); // test only
+		this.nodeService.addSomeSubNodes(); // test only
 
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
 		TreeData<Node> treeData = new TreeData<>();
 		// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!  ||-(
-		treeData.addItems(NodeService.getRootNodesAsBareNodes(), node -> {
+		treeData.addItems(getRootNodesAsBareNodes(), node -> {
 			if (node instanceof IntermediateNode) {
 				IntermediateNode iNode = (IntermediateNode)node;
 				List<Node> children = iNode.getChildren();
@@ -153,8 +164,8 @@ public class NodeView extends VerticalLayout
 		this.tree.addColumn(Node::getDescription).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")); //$NON-NLS-1$
 		this.tree.addColumn(Node::getState      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")); //$NON-NLS-1$
 		this.tree.addColumn(Node::isEnabled     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
-		this.tree.addColumn(Node::isIgnored     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Ignored")); //$NON-NLS-1$
-		this.tree.expandRecursively(NodeService.getRootNodesAsBareNodes(), 3);
+		this.tree.addColumn(Node::isActive      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Active")); //$NON-NLS-1$
+		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 
 		// connect view and model:
@@ -174,6 +185,12 @@ public class NodeView extends VerticalLayout
 			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			// any action?
 		});
+	}
+
+	// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!
+	public Collection<Node> getRootNodesAsBareNodes() {
+		List<RootNode> rootNodes = this.nodeService.getRootNodes();
+		return Arrays.asList(rootNodes.toArray(new Node[rootNodes.size()]));
 	}
 
 	void configureNodeForm() {
@@ -196,7 +213,7 @@ public class NodeView extends VerticalLayout
 
 	private void saveNode(NodeForm.SaveEvent event) {
 		Node node = event.getNode();
-		if (node.getParent() == null) { // adding a new node:
+		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
 			addNewNode(node);
 		} else { // updating an existing node:
 			updateNode(node);
@@ -205,7 +222,7 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void deleteNode(NodeForm.DeleteEvent event) {
-		deleteNode(event.getNode());
+		deleteNodes(Collections.singletonList(event.getNode()));
 		closeEditor();
 	}
 
@@ -230,31 +247,81 @@ public class NodeView extends VerticalLayout
 
 	private void addNewNode(Node node) {
 		log.info("addNewNode {}", node); //$NON-NLS-1$
-		this.nodeService.save(node);
-
+		// TODO: implement insertion
 		this.tree.getDataProvider().refreshAll();
+		saveNode(node);
 	}
 
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
-		this.nodeService.save(node);
-		this.tree.getDataProvider().refreshItem(node);
+		this.tree.getDataProvider().refreshItem(node, true);
+		saveNode(node);
 	}
 
-	private void deleteNode(Node node) {
-		log.info("deleteNode {}", node); //$NON-NLS-1$
-		this.nodeService.delete(Collections.singletonList(node));
-		this.tree.getDataProvider().refreshAll();
+	private void saveNode(Node node) {
+		try {
+			RootNode rootNode = NodeService.getRootNode(node);
+			String fileName = rootNode.getFilePath();
+			if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME;
+			// TODO : provide some file selection box...
+			File file = new File(fileName + '.' + NodeService.CONFIG_FILE_TYPE);
+			if (file.canWrite()) {
+				this.nodeService.saveAs(rootNode, file);
+				rootNode.setFilePath(fileName);
+			}
+		} catch (Throwable t) {
+			String msg = String.format("Exception saving node '%s': %s", node, t); //$NON-NLS-1$
+			log.error(msg, t);
+			new Notification(msg, 0).open();
+		}
+	}
+
+	@SuppressWarnings("null")
+	private void readFile() {
+		String fileName = null; // TODO : provide some file selection box...
+		if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME;
+		try {
+			File file = new File(fileName + '.' + NodeService.CONFIG_FILE_TYPE);
+			if (file.canRead()) {
+				RootNode rootNode = this.nodeService.read(file);
+				rootNode.setFilePath(fileName);
+			}
+		} catch (Throwable t) {
+			String msg = String.format("Exception reading from file '%s': %s", fileName, t); //$NON-NLS-1$
+			log.error(msg, t);
+			new Notification(msg, 0).open();
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private void removeNodes(Collection<Node> nodes) {
+		String question = nodes.stream()
+			.map(node -> node.getName())
+			.collect(Collectors.joining(", ", "Are you sure you want to delete node(s) '", "'?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
+		                  "Delete", evt -> deleteNodes(nodes), //$NON-NLS-1$
+		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
+	}
+
+	@SuppressWarnings("unused")
+	private void removeList(Collection<Node> nodes) {
+		String question = nodes.stream()
+			.map(node -> NodeService.getRootNode(node).getName())
+			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) '", "'?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
+		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getRootNode(node).getChildren())), //$NON-NLS-1$
+		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
 	}
 
 	private void deleteNodes(Collection<Node> nodes) {
 		log.info("deleteNodes {}", nodes); //$NON-NLS-1$
-		this.nodeService.delete(nodes);
+		try {
+			this.nodeService.delete(nodes);
+		} catch (Throwable t) {
+			String msg = String.format("Exception deleting node '%s': %s", nodes, t); //$NON-NLS-1$
+			log.error(msg, t);
+			new Notification(msg, 0).open();
+		}
 		this.tree.getDataProvider().refreshAll();
-	}
-
-	private void clearNodesList(Collection<Node> nodes) {
-		log.info("clearNodesList"); //$NON-NLS-1$
-		this.nodeService.deleteAll(nodes);
 	}
 }

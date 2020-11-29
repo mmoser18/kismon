@@ -12,17 +12,21 @@ import net.mmo.utils.kism.entities.Node.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 public class IntermediateNodeTest
 {
+	@Autowired
+	NodeService nodeService;
+
 	@BeforeEach
 	void setup() {
-		NodeService.reset(); // re-initialize the root to null before each test
+		this.nodeService.reset(); // re-initialize the root to null before each test
 	}
 	@Test
 	void rootShouldInitiallyBeEmptyTest() {
-		IntermediateNode root = NodeService.getRootNodes().get(0);
+		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		Assertions.assertNotNull(root, "root should be null"); //$NON-NLS-1$
 		Assertions.assertEquals(Messages.getString("km_root"), root.getName()); //$NON-NLS-1$
 		Assertions.assertEquals(Messages.getString("km_root-node"), root.getDescription()); //$NON-NLS-1$
@@ -30,7 +34,7 @@ public class IntermediateNodeTest
 
 	@Test
 	void checkNodesAdded() {
-		IntermediateNode root = NodeService.getRootNodes().get(0);
+		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		Assertions.assertEquals(0, root.getChildren().size());
 		LeafNode leaf1 = new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(1, root.getChildren().size());
@@ -48,10 +52,10 @@ public class IntermediateNodeTest
 
 	@SuppressWarnings("unused")
 	@Test
-	void checkNodesIgnored() {
-		IntermediateNode root = NodeService.getRootNodes().get(0);
+	void checkNodesActive() {
+		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
-		new LeafNode("leaf2", "leaf-node2", State.NOT_OK, root).setIgnored(true); //$NON-NLS-1$ //$NON-NLS-2$
+		new LeafNode("leaf2", "leaf-node2", State.NOT_OK, root).setActive(false); //$NON-NLS-1$ //$NON-NLS-2$
 		new LeafNode("leaf3", "leaf-node3", State.DEGRADED, root); //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(State.DEGRADED, root.getState()); // NOT_OK since the worst child (NOT_OK) is ignored
 	}

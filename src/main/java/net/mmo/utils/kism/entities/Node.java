@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,11 @@ import org.springframework.util.Assert;
 @Entity
 @Setter
 @Getter
-// @EqualsAndHashCode(callSuper = true)
+//@EqualsAndHashCode(callSuper = true)
+// This was supposed to avoid infinite recursion when serializing the tree as JSON:
+// @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
+// ...but it did not work. So I have set parent as @JsonIgnore. It is redundant and can
+// be reconstructed while reading the config from a file
 @Slf4j
 public abstract class Node extends AbstractEntity implements Cloneable, Serializable
 {
@@ -41,26 +46,28 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private State state;
 
+	@JsonIgnore
 	protected IntermediateNode parent;
 
-	private boolean enabled; // child is to be considered for bubbling up state
+	private boolean enabled = true; // child is to be considered for bubbling up state
 
-	private boolean ignored; // child is not to be considered for bubbling up state
+	private boolean active = true; // child is to be considered for bubbling up state
 
 	private Properties customProperties;
 
-	private Node() {
-		this.enabled = true;
-		this.ignored = false;
+	protected Node() {
+		super();
+		log.info("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	protected Node(String name, String description, State state) {
-		this();
+		super();
 		Assert.notNull(name, "node name must not be null");  //$NON-NLS-1$
 		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
-		log.info("Creating new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
+		log.info("Creating new {} {}.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 		this.name = name;
 		this.description = description;
 		this.state = state;
+		log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
@@ -78,8 +85,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.parent != null) this.parent.reportStateChange(this);
 	}
 
-	public void setIgnored(boolean ignored) {
-		this.ignored = ignored;
+	public void setActive(boolean active) {
+		this.active = active;
 		if (this.parent != null) this.parent.reportStateChange(this);
 	}
 
@@ -96,7 +103,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", enabled:" + isEnabled() //$NON-NLS-1$
-			+ ", ignored:" + isIgnored() //$NON-NLS-1$
+			+ ", active:" + isActive() //$NON-NLS-1$
 			+ ", customProperties:" + getCustomProperties() //$NON-NLS-1$
 			+ "]"; //$NON-NLS-1$
 	}

@@ -32,7 +32,7 @@ public class NodeForm extends FormLayout
 	public static final String DescriptionClassName = "node-form-description"; //$NON-NLS-1$
 	public static final String StateClassName       = "node-form-state"; //$NON-NLS-1$
 	public static final String EnabledClassName     = "node-form-enabled"; //$NON-NLS-1$
-	public static final String IgnoredClassName     = "node-form-ignored"; //$NON-NLS-1$
+	public static final String ActiveClassName      = "node-form-active"; //$NON-NLS-1$
 
 	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -41,7 +41,7 @@ public class NodeForm extends FormLayout
 	// state is calculated automatically!
 	// ComboBox<Node.State> state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
 	ComboBox<Boolean> enabled = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Enabled.Label")); //$NON-NLS-1$
-	ComboBox<Boolean> ignored = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Ignored.Label")); //$NON-NLS-1$
+	ComboBox<Boolean> active  = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Active.Label")); //$NON-NLS-1$
 
 	VerticalLayout fields;
 
@@ -66,10 +66,10 @@ public class NodeForm extends FormLayout
 		this.enabled.addClassName(EnabledClassName);
 		this.enabled.setItems(Boolean.TRUE, Boolean.FALSE);
 
-		this.ignored.addClassName(IgnoredClassName);
-		this.ignored.setItems(Boolean.FALSE, Boolean.TRUE);
+		this.active.addClassName(ActiveClassName);
+		this.active.setItems(Boolean.TRUE, Boolean.FALSE);
 
-		this.fields = new VerticalLayout(this.name, this.description, /*this.state,*/ this.enabled, this.ignored);
+		this.fields = new VerticalLayout(this.name, this.description, /*this.state,*/ this.enabled, this.active);
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();
 
