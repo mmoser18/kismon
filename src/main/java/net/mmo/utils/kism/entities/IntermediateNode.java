@@ -26,6 +26,7 @@ public class IntermediateNode extends Node
 
 	private ArrayList<Node>	children;
 
+	// required for deserialization only
 	protected IntermediateNode() {
 		super();
 	}

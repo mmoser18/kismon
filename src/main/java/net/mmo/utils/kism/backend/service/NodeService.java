@@ -15,7 +15,6 @@ import net.mmo.utils.kism.backend.repositories.LeafNodeRepository;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
-import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.stereotype.Service;
 
 /**
@@ -44,23 +43,26 @@ public class NodeService
 
 	/* create a new empty RootNode, if none exists */
 	void init() {
-		RootNode root;
+		RootNode rootNode = null;
+		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
-			root = this.jsonHandler.read(new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE));
+			rootNode = this.jsonHandler.read(file);
+			log.info("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
+		} catch (IOException t) {
+			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 		} catch (Throwable t) {
-			log.warn("File '{}' not found or not a valid configuration - creating dummy root node", DEFAULT_FILE_NAME); //$NON-NLS-1$
-			root = new RootNode(Messages.getString("km_root_name"), //$NON-NLS-1$
-			                    Messages.getString("km_root_description"), //$NON-NLS-1$
-			                    Node.State.OK);
+			log.error("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
+			t.printStackTrace();
 		}
-		this.roots.add(root);
-	}
-
-	public void addSomeSubNodes() {
-		for (IntermediateNode root: getRootNodes()) {
-			addSomeSubNodes(root);
-			log.info("created root: \n{}", PrettyPrint.prettyPrinted(root)); //$NON-NLS-1$
+		if (rootNode == null) {
+			log.warn("Creating dummy root node: {}"); //$NON-NLS-1$
+			rootNode = new RootNode(Messages.getString("km_root_name"), //$NON-NLS-1$
+			                        Messages.getString("km_root_description"), //$NON-NLS-1$
+			                        Node.State.OK);
+			addSomeSubNodes(rootNode);
+			log.info("Node '{}' created.", rootNode); //$NON-NLS-1$
 		}
+		this.roots.add(rootNode);
 	}
 
 	@SuppressWarnings({"nls"})

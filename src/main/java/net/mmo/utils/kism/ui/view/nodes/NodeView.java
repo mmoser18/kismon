@@ -93,7 +93,10 @@ public class NodeView extends VerticalLayout
 //		this.filterText.addValueChangeListener(e -> updateList());
 
 		Button addNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
-		addNodeButton.addClickListener(click -> addNewNode());
+		addNodeButton.addClickListener(click ->
+			{
+				addNewNode();
+			});
 
 		Button delNodeButton = new Button(Messages.getString("NodeView.Button.DeleteNode.Label")); //$NON-NLS-1$
 		delNodeButton.addClickListener(click ->
@@ -128,8 +131,9 @@ public class NodeView extends VerticalLayout
 			});
 
 		Button readFileButton = new Button(String.format(Messages.getString("NodeView.Button.ReadFile.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
-		directionButton.addClickListener(click ->
+		readFileButton.addClickListener(click ->
 			{
+				log.info("readFileButton clicked"); //$NON-NLS-1$
 				readFile();
 			});
 
@@ -140,24 +144,10 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void configureTree() {
-		this.nodeService.addSomeSubNodes(); // test only
 
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
-		TreeData<Node> treeData = new TreeData<>();
 		// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!  ||-(
-		treeData.addItems(getRootNodesAsBareNodes(), node -> {
-			if (node instanceof IntermediateNode) {
-				IntermediateNode iNode = (IntermediateNode)node;
-				List<Node> children = iNode.getChildren();
-				if (children != null) {
-					log.trace("ValueProvider({}) -> {}", node.getName(), children.stream().map(n -> n.getName()).collect(Collectors.toList())); //$NON-NLS-1$
-					return children;
-				}
-			}
-			log.trace("ValueProvider({}) -> <empty-list>", node.getName()); //$NON-NLS-1$
-			return Collections.emptyList();
-		});
-		this.tree = new TreeGrid<>(new TreeDataProvider<>(treeData)); // package visible for UTs - is there no other way?
+		this.tree = new TreeGrid<>(createDataProvider());
 		this.tree.addClassName(TreeClassName);
 		this.tree.setSizeFull();
 		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
@@ -185,6 +175,23 @@ public class NodeView extends VerticalLayout
 			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			// any action?
 		});
+	}
+
+	private TreeDataProvider<Node> createDataProvider() {
+		TreeData<Node> treeData = new TreeData<>();
+		treeData.addItems(getRootNodesAsBareNodes(), node -> {
+			if (node instanceof IntermediateNode) {
+				IntermediateNode iNode = (IntermediateNode)node;
+				List<Node> children = iNode.getChildren();
+				if (children != null) {
+					log.trace("ValueProvider({}) -> {}", node.getName(), children.stream().map(n -> n.getName()).collect(Collectors.toList())); //$NON-NLS-1$
+					return children;
+				}
+			}
+			log.trace("ValueProvider({}) -> <empty-list>", node.getName()); //$NON-NLS-1$
+			return Collections.emptyList();
+		});
+		return new TreeDataProvider<>(treeData);
 	}
 
 	// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!
@@ -248,14 +255,16 @@ public class NodeView extends VerticalLayout
 	private void addNewNode(Node node) {
 		log.info("addNewNode {}", node); //$NON-NLS-1$
 		// TODO: implement insertion
-		this.tree.getDataProvider().refreshAll();
 		saveNode(node);
+		this.tree.setDataProvider(createDataProvider());
+		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
+		// this.tree.getDataProvider().refreshAll();
 	}
 
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
-		this.tree.getDataProvider().refreshItem(node, true);
 		saveNode(node);
+		this.tree.getDataProvider().refreshItem(node);
 	}
 
 	private void saveNode(Node node) {
@@ -268,6 +277,10 @@ public class NodeView extends VerticalLayout
 			if (file.canWrite()) {
 				this.nodeService.saveAs(rootNode, file);
 				rootNode.setFilePath(fileName);
+			} else {
+				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
+				log.info(msg);
+				new Notification(msg, 0).open();
 			}
 		} catch (Throwable t) {
 			String msg = String.format("Exception saving node '%s': %s", node, t); //$NON-NLS-1$
@@ -285,6 +298,13 @@ public class NodeView extends VerticalLayout
 			if (file.canRead()) {
 				RootNode rootNode = this.nodeService.read(file);
 				rootNode.setFilePath(fileName);
+				this.tree.setDataProvider(createDataProvider());
+				this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
+				// this.tree.getDataProvider().refreshAll();
+			} else {
+				String msg = String.format("File '%s' does not exist or is not readable.", file); //$NON-NLS-1$
+				log.info(msg);
+				new Notification(msg, 0).open();
 			}
 		} catch (Throwable t) {
 			String msg = String.format("Exception reading from file '%s': %s", fileName, t); //$NON-NLS-1$
@@ -295,6 +315,7 @@ public class NodeView extends VerticalLayout
 
 	@SuppressWarnings("unused")
 	private void removeNodes(Collection<Node> nodes) {
+		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
 		String question = nodes.stream()
 			.map(node -> node.getName())
 			.collect(Collectors.joining(", ", "Are you sure you want to delete node(s) '", "'?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -305,6 +326,7 @@ public class NodeView extends VerticalLayout
 
 	@SuppressWarnings("unused")
 	private void removeList(Collection<Node> nodes) {
+		log.info("removeList {}.", nodes); //$NON-NLS-1$
 		String question = nodes.stream()
 			.map(node -> NodeService.getRootNode(node).getName())
 			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) '", "'?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

@@ -14,6 +14,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import org.springframework.util.Assert;
 // ...but it did not work. So I have set parent as @JsonIgnore. It is redundant and can
 // be reconstructed while reading the config from a file
 @Slf4j
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 public abstract class Node extends AbstractEntity implements Cloneable, Serializable
 {
 	private static final long serialVersionUID = 3875470009216934341L;
@@ -55,6 +57,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private Properties customProperties;
 
+	// required for deserialization
 	protected Node() {
 		super();
 		log.info("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$

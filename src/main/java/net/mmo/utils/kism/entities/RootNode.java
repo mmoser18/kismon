@@ -22,6 +22,12 @@ public class RootNode extends IntermediateNode
 	@JsonIgnore // no need to write that value into the file itself.
 	private String filePath;
 
+	/** required for deserialization only */
+	@SuppressWarnings("unused")
+	private RootNode() {
+		super();
+	}
+
 	public RootNode(String name, String description, State state) {
 		super(name, description, state);
 	}

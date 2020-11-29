@@ -21,6 +21,12 @@ public class LeafNode extends Node
 {
 	private static final long serialVersionUID = 265720619758262963L;
 
+	/** required for deserialization only */
+	@SuppressWarnings("unused")
+	private LeafNode() {
+		// empty
+	}
+
 	public LeafNode(String name, String description, State state) {
 		super(name, description, state);
 		log.info("Created new {} {}", this.getClass().getSimpleName(), name); //$NON-NLS-1$
