@@ -169,7 +169,15 @@
 			<scope>provided</scope>
 		</dependency>
 		<!- -->
-		
+
+		<!-- dependencies already included in SpringBoot: ->
+		<!- jackson-core ->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<!- -->
+			
 		<!-- JUnit 5 = JUnit Platform + JUnit Jupiter + JUnit Vintage -->
 
 		<!-- required for IT tests with SpringBoot: -->
