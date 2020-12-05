@@ -6,10 +6,10 @@
 package net.mmo.utils.kism.entities;
 
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.function.Function;
 
 import javax.persistence.Entity;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.NodeProperties;
 import org.springframework.util.Assert;
 
 @Entity
@@ -42,6 +43,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	@NotNull
 	@NotEmpty
+	@NotBlank
 	private String name;
 
 	private String description;
@@ -55,7 +57,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private boolean active = true; // child is to be considered for bubbling up state
 
-	private Properties customProperties;
+	private NodeProperties customProperties = new NodeProperties();
 
 	// required for deserialization
 	protected Node() {
@@ -75,7 +77,19 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
 		this(name, description, state);
-		if (parent != null) parent.addChild(this);
+		setParent(parent);
+	}
+
+	public void setParent(IntermediateNode parent) {
+		if (this.customProperties == null) this.customProperties = new NodeProperties();
+		if (parent != null) {
+			// parent.addChild(this);
+			this.customProperties.setParentProperties(parent.getCustomProperties());
+		} else { // remove (from) parent
+			// if (this.parent != null) this.parent.removeChild(this);
+			this.customProperties.setParentProperties(null);
+		}
+		this.parent = parent;
 	}
 
 	public void setState(State state) {

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.Button;
@@ -28,6 +29,7 @@ import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -58,6 +60,8 @@ public class NodeView extends VerticalLayout
 	NodeForm form; // package visible for ITs - is there no other way?
 	Div content;
 	LayoutDirection contentDirection = LayoutDirection.direction_row;
+
+	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	// This gets autowired but I am still puzzled which annotation causes this...
 	public NodeView(NodeService nodeService) {
@@ -92,10 +96,10 @@ public class NodeView extends VerticalLayout
 //		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 //		this.filterText.addValueChangeListener(e -> updateList());
 
-		Button addNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
-		addNodeButton.addClickListener(click ->
+		Button addChildNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
+		addChildNodeButton.addClickListener(click ->
 			{
-				addNewNode();
+				IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode()); // in the first step we only create a new node
 			});
 
 		Button delNodeButton = new Button(Messages.getString("NodeView.Button.DeleteNode.Label")); //$NON-NLS-1$
@@ -130,14 +134,21 @@ public class NodeView extends VerticalLayout
 				CommonConstants.setClassName(this.content, this.contentDirection);
 			});
 
-		Button readFileButton = new Button(String.format(Messages.getString("NodeView.Button.ReadFile.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
+		Button saveAllButton = new Button(Messages.getString("NodeView.Button.SaveAll.Label")); //$NON-NLS-1$
+		saveAllButton.addClickListener(click ->
+			{
+				log.info("saveAllButton clicked"); //$NON-NLS-1$
+				saveAllRoots();
+			});
+
+		Button readFileButton = new Button(Messages.getString("NodeView.Button.ReadFile.Label")); //$NON-NLS-1$
 		readFileButton.addClickListener(click ->
 			{
 				log.info("readFileButton clicked"); //$NON-NLS-1$
 				readFile();
 			});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ addNodeButton, delNodeButton, clearListButton, directionButton, readFileButton);
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, readFileButton);
 		toolbar.addClassName(ViewToolbarClassName);
 
 		return toolbar;
@@ -162,9 +173,22 @@ public class NodeView extends VerticalLayout
 		this.tree.asSingleSelect().addValueChangeListener(event -> {
 			Node node = event.getValue(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Selected node '{}'.", node); //$NON-NLS-1$
-			// action:
-			editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$
+			// any action?
 		});
+
+		this.tree.addItemClickListener(event -> {
+			Node node = event.getItem();
+			log.info("Clicked node '{}'.", node); //$NON-NLS-1$
+			// any action?
+		});
+
+		this.tree.addItemDoubleClickListener(event -> {
+			Node node = event.getItem(); // returns the selected Node or null if none is selected /
+			log.info("DoubleClicked node '{}'.", node); //$NON-NLS-1$
+			// action:
+			editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+		});
+
 		this.tree.addExpandListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
@@ -175,6 +199,7 @@ public class NodeView extends VerticalLayout
 			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			// any action?
 		});
+
 	}
 
 	private TreeDataProvider<Node> createDataProvider() {
@@ -201,21 +226,11 @@ public class NodeView extends VerticalLayout
 	}
 
 	void configureNodeForm() {
-		this.form = new NodeForm();
+		this.form = new NodeForm(this.nodeService);
 		this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 		this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 		this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
 		this.form.setVisible(false); // initially the NodeForm is hidden
-	}
-
-	void addNewNode() {
-		log.info("addNewNode"); //$NON-NLS-1$
-		this.tree.asSingleSelect().clear();
-		editNode(new IntermediateNode(Messages.getString("NodeView.Form.NewNode.Name"), //$NON-NLS-1$
-		                              Messages.getString("NodeView.Form.NewNode.Name"), //$NON-NLS-1$
-		                              Node.State.OK,
-		                              null), // the null also signals that this is a NEW node!
-		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
 	}
 
 	private void saveNode(NodeForm.SaveEvent event) {
@@ -229,8 +244,66 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void deleteNode(NodeForm.DeleteEvent event) {
-		deleteNodes(Collections.singletonList(event.getNode()));
+		Node node = event.getNode();
+		deleteNodes(Collections.singletonList(node));
+		if (this.alwaysSave) saveNode(node);
 		closeEditor();
+	}
+
+
+
+
+	private void addNewNode(Node node) {
+		log.info("addNewNode '{}'", node); //$NON-NLS-1$
+		IfSuitableNodeSelectedForAddition((selectedNode) -> // in the second step we add node to the selected node
+		{
+			log.info("addNewNode '{}' as child of '{}'", node, selectedNode); //$NON-NLS-1$
+			selectedNode.addChild(node);
+			this.tree.getDataProvider().refreshAll();
+		});
+		if (this.alwaysSave) saveNode(node);
+		this.tree.setDataProvider(createDataProvider());
+		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
+		// this.tree.getDataProvider().refreshAll();
+	}
+
+	private void IfSuitableNodeSelected(Consumer<Node> action) {
+		Set<Node> nodes = this.tree.getSelectedItems();
+		if (nodes.isEmpty()) {
+			UsageError("NodeView.ErrorMsg.AddChildNodeSelectNode"); //$NON-NLS-1$
+		} else if (nodes.size() > 1) {
+			UsageError("NodeView.ErrorMsg.AddChildNodeSelectOneNodeOnly"); //$NON-NLS-1$
+		} else {
+			Node selectedNode = nodes.iterator().next(); // get first selected node
+			action.accept(selectedNode);
+		}
+	}
+
+	private void IfSuitableNodeSelectedForAddition(Consumer<IntermediateNode> action) {
+		IfSuitableNodeSelected((selectedNode) ->
+		{
+			if (selectedNode instanceof IntermediateNode) {
+				action.accept((IntermediateNode)selectedNode);
+			} else {
+				UsageError("NodeView.ErrorMsg.AddChildNodeOnlyForIntermediateNodes"); //$NON-NLS-1$
+			}
+		});
+	}
+
+	void createNewChildNode() {
+		log.info("createNewChildNode"); //$NON-NLS-1$
+		// this.tree.asSingleSelect().clear();
+		editNode(new IntermediateNode(Messages.getString("NodeView.Form.NewNode.Name"), //$NON-NLS-1$
+		                              Messages.getString("NodeView.Form.NewNode.Description"), //$NON-NLS-1$
+		                              Node.State.OK,
+		                              null), // the null also signals that this is a NEW node!
+		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
+	}
+
+	private void updateNode(Node node) {
+		log.info("updateNode {}", node); //$NON-NLS-1$
+		if (this.alwaysSave) saveNode(node);
+		this.tree.getDataProvider().refreshItem(node);
 	}
 
 	public void editNode(Node node, String header) {
@@ -252,24 +325,43 @@ public class NodeView extends VerticalLayout
 		removeClassName("editing"); //$NON-NLS-1$
 	}
 
-	private void addNewNode(Node node) {
-		log.info("addNewNode {}", node); //$NON-NLS-1$
-		// TODO: implement insertion
-		saveNode(node);
-		this.tree.setDataProvider(createDataProvider());
-		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
-		// this.tree.getDataProvider().refreshAll();
+	@SuppressWarnings("unused")
+	private void removeNodes(Collection<Node> nodes) {
+		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
+//		String question = nodes.stream()
+//			.map(node -> node.getName())
+//			.collect(Collectors.joining(", ", "Are you sure you want to delete node(s) [", "]?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//		log.info("removeNodes: question: '{}'.", question); //$NON-NLS-1$
+//		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
+//		                  "Delete", evt -> { log.info("delete '{}':", nodes); //$NON-NLS-1$ //$NON-NLS-2$
+//		                                     deleteNodes(nodes); },
+//		                  "Cancel", evt -> { log.info("cancel '{}':", nodes); } //$NON-NLS-1$ //$NON-NLS-2$
+//		                 );
+		deleteNodes(nodes);
 	}
 
-	private void updateNode(Node node) {
-		log.info("updateNode {}", node); //$NON-NLS-1$
-		saveNode(node);
-		this.tree.getDataProvider().refreshItem(node);
+	@SuppressWarnings("unused")
+	private void removeList(Collection<Node> nodes) {
+		log.info("removeList {}.", nodes); //$NON-NLS-1$
+		String question = nodes.stream()
+			.map(node -> NodeService.getRootNode(node).getName())
+			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) [", "]?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
+		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getRootNode(node).getChildren())), //$NON-NLS-1$
+		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
 	}
 
 	private void saveNode(Node node) {
+		RootNode rootNode = NodeService.getRootNode(node);
+		saveRootNode(rootNode);
+	}
+
+	private void saveAllRoots() {
+		this.nodeService.getRootNodes().forEach(node -> saveRootNode(node));
+	}
+
+	private void saveRootNode(RootNode rootNode) {
 		try {
-			RootNode rootNode = NodeService.getRootNode(node);
 			String fileName = rootNode.getFilePath();
 			if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME;
 			// TODO : provide some file selection box...
@@ -283,7 +375,7 @@ public class NodeView extends VerticalLayout
 				new Notification(msg, 0).open();
 			}
 		} catch (Throwable t) {
-			String msg = String.format("Exception saving node '%s': %s", node, t); //$NON-NLS-1$
+			String msg = String.format("Exception saving node '%s': %s", rootNode, t); //$NON-NLS-1$
 			log.error(msg, t);
 			new Notification(msg, 0).open();
 		}
@@ -313,37 +405,45 @@ public class NodeView extends VerticalLayout
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private void removeNodes(Collection<Node> nodes) {
-		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
-		String question = nodes.stream()
-			.map(node -> node.getName())
-			.collect(Collectors.joining(", ", "Are you sure you want to delete node(s) '", "'?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
-		                  "Delete", evt -> deleteNodes(nodes), //$NON-NLS-1$
-		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
-	}
-
-	@SuppressWarnings("unused")
-	private void removeList(Collection<Node> nodes) {
-		log.info("removeList {}.", nodes); //$NON-NLS-1$
-		String question = nodes.stream()
-			.map(node -> NodeService.getRootNode(node).getName())
-			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) '", "'?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
-		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getRootNode(node).getChildren())), //$NON-NLS-1$
-		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
-	}
-
 	private void deleteNodes(Collection<Node> nodes) {
 		log.info("deleteNodes {}", nodes); //$NON-NLS-1$
 		try {
-			this.nodeService.delete(nodes);
+			nodes.forEach((node) -> {
+				log.info("deleting nodes '{}'", node); //$NON-NLS-1$
+				if (node instanceof RootNode) {
+					this.nodeService.getRootNodes().remove(NodeService.getRootNode(node));
+				} else {
+					IntermediateNode parent = node.getParent();
+					if (parent == null) {
+						ProgrammingError("Node-parent must not be null! Node: " + node); //$NON-NLS-1$
+					} else {
+						parent.removeChild(node);
+					}
+				}
+			});
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node '%s': %s", nodes, t); //$NON-NLS-1$
 			log.error(msg, t);
-			new Notification(msg, 0).open();
+			new Notification(msg, 10000).open();
+		} finally {
+			this.tree.getDataProvider().refreshAll();
 		}
-		this.tree.getDataProvider().refreshAll();
 	}
+
+	/* User operation error - this CAN happen but does no harm */
+	@SuppressWarnings("static-method")
+	private void UsageError(String msg) {
+		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), Messages.getString(msg)); //$NON-NLS-1$
+		log.info(text);
+		new Notification(text, 5000).open();
+	}
+
+	/* This should never happen... */
+	@SuppressWarnings({"static-method", "unused"})
+	private void ProgrammingError(String msg) {
+		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
+		log.warn(text);
+		new Notification(text, 10000).open();
+	}
+
 }

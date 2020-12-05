@@ -36,6 +36,12 @@
 	padding: 5px;
 }
 
+/*
+.node-view .node-view-tree vaadin-grid-cell-content {
+	color: blue;
+}
+*/
+
 .node-form-fields * {
 	padding: 0px;
 	margin: 0px;

@@ -38,18 +38,18 @@ public class IntermediateNode extends Node
 		super(name, description, state, parent);
 	}
 
-	public Node addChild(Node newChild) {
-		Node newChildsOldParent = newChild.getParent();
-		if ((newChildsOldParent != null) && (newChildsOldParent instanceof IntermediateNode)) {
-			((IntermediateNode)newChildsOldParent).removeChild(newChild);
+	public Node addChild(Node child) {
+		Node childsOldParent = child.getParent();
+		if ((childsOldParent != null) && (childsOldParent instanceof IntermediateNode)) {
+			((IntermediateNode)childsOldParent).removeChild(child);
 		}
 		synchronized(this) {
-			newChild.setParent(this);
+			child.setParent(this);
 			if (getChildren() == null) setChildren(new ArrayList<>());
-			getChildren().add(newChild);
+			getChildren().add(child);
 		}
 		deriveNewState();
-		return newChild;
+		return child;
 	}
 
 	public Node removeChild(Node child) {

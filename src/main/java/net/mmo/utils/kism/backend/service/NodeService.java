@@ -4,7 +4,6 @@ package net.mmo.utils.kism.backend.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -113,52 +112,52 @@ public class NodeService
 		this.jsonHandler.save(rootNode, file);
 	}
 
-	public void delete(Collection<Node> nodes, boolean liftUp) {
-		nodes.forEach(node -> {
-			IntermediateNode parent = node.getParent();
-			if (parent != null) { // we only delete non-root nodes:
-				ArrayList<Node> parentSiblings = parent.getChildren();
-				int index = parentSiblings.indexOf(node); // get the node's index:
-				node.setParent(null); // unhinge the node
-				parentSiblings.remove(index);
-				if (liftUp && node instanceof IntermediateNode) { // make all children a child of the parent-node:
-					ArrayList<Node> nodeSiblings = ((IntermediateNode)node).getChildren();
-					for (Node s: nodeSiblings) {
-						parentSiblings.set(index++, s);
-					}
-				}
-			}
-		});
-	}
-
-	// delete nodes, make all children a child of the parent-node:
-	public void delete(Collection<Node> nodes) {
-		delete(nodes, true);
-	}
-
-	// make all children a child of the parent-node:
-	public void deleteAll(Collection<Node> nodes) {
-		delete(nodes, false);
-	}
+//	public void delete(Collection<Node> nodes, boolean liftUp) {
+//		nodes.forEach(node -> {
+//			IntermediateNode parent = node.getParent();
+//			if (parent != null) { // we only delete non-root nodes:
+//				ArrayList<Node> parentSiblings = parent.getChildren();
+//				int index = parentSiblings.indexOf(node); // get the node's index:
+//				node.setParent(null); // unhinge the node
+//				parentSiblings.remove(index);
+//				if (liftUp && node instanceof IntermediateNode) { // make all children a child of the parent-node:
+//					ArrayList<Node> nodeSiblings = ((IntermediateNode)node).getChildren();
+//					for (Node s: nodeSiblings) {
+//						parentSiblings.set(index++, s);
+//					}
+//				}
+//			}
+//		});
+//	}
+//
+//	// delete nodes, make all children a child of the parent-node:
+//	public void delete(Collection<Node> nodes) {
+//		delete(nodes, true);
+//	}
+//
+//	// make all children a child of the parent-node:
+//	public void deleteAll(Collection<Node> nodes) {
+//		delete(nodes, false);
+//	}
 
 //	/** utility to set all parents null (to avoid infinite recursion in some serialization library). */
-//	private void setParentsNull(Node node) {
-//	node.setParent(null);
-//	if (node instanceof IntermediateNode) {
-//		IntermediateNode parent = (IntermediateNode)node;
-//		if (parent.getChildren() != null) {
-//			parent.getChildren().forEach(child -> setParentsNull(child));
+//	public void setParentNull(Node node) {
+//		node.setParent(null);
+//		if (node instanceof IntermediateNode) {
+//			IntermediateNode parent = (IntermediateNode)node;
+//			if (parent.getChildren() != null) {
+//				parent.getChildren().forEach(child -> setParentNull(child));
+//			}
 //		}
 //	}
-//}
 
-	/** utility to restore parents after reading from file */
-	private void restoreParents(IntermediateNode parent) {
+	/** utility to restore parents, e.g. after reading from a file */
+	public void restoreParents(IntermediateNode parent) {
 		if (parent.getChildren() != null) {
-			parent.getChildren().forEach(n ->
+			parent.getChildren().forEach(child ->
 				{
-					n.setParent(parent);
-					if (n instanceof IntermediateNode) restoreParents((IntermediateNode)n);
+					child.setParent(parent);
+					if (child instanceof IntermediateNode) restoreParents((IntermediateNode)child);
 				});
 		}
 	}

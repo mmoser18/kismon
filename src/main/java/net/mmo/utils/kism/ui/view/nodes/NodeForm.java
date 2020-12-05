@@ -9,6 +9,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -18,6 +19,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node;
 
 @Slf4j
@@ -52,10 +54,19 @@ public class NodeForm extends FormLayout
 	private Node node;
 	Binder<Node> binder = new BeanValidationBinder<>(Node.class); // a Binder that is aware of bean validation annotations
 
-	public NodeForm() {
+	public NodeForm(NodeService nodeService) {
 		log.debug("Creating ContactForm:"); //$NON-NLS-1$
 		addClassName(ViewClassName);
 		this.binder.bindInstanceFields(this);
+//		this.binder.forField(this.nameField)
+//			.withValidator(name ->
+//				{ // Explicit validator instance
+//					return nodeService.getRootNodes().stream()
+//						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
+//						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
+//						.findAny().isEmpty();
+//				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
+//			.bind(Node::getName, Node::setName);
 
 		this.name.addClassName(NameClassName);
 		this.description.addClassName(DescriptionClassName);
@@ -108,11 +119,12 @@ public class NodeForm extends FormLayout
 	private void validateAndSave() {
 		log.info("Saving {}", this.node); //$NON-NLS-1$
 		try {
-			// TODO: more validation
+			// TODO: more validation?
 			this.binder.writeBean(this.node);
 			fireEvent(new SaveEvent(this, this.node));
 		} catch (ValidationException e) {
 			e.printStackTrace();
+			new Notification(e.getMessage(), 0).open();
 		}
 	}
 
