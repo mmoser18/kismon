@@ -10,7 +10,7 @@ public class PrettyPrint
 	public static int indentation = 4;
 
 	public static String prettyPrinted(Object obj) {
-		StringBuilder buf = new StringBuilder(obj.getClass().getName());
+		StringBuilder buf = new StringBuilder();
 		prettyPrinted(obj.toString(), 0, 0, buf);
 		return buf.toString();
 	}

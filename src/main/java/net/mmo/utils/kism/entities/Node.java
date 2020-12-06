@@ -83,10 +83,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	public void setParent(IntermediateNode parent) {
 		if (this.customProperties == null) this.customProperties = new NodeProperties();
 		if (parent != null) {
-			// parent.addChild(this);
 			this.customProperties.setParentProperties(parent.getCustomProperties());
 		} else { // remove (from) parent
-			// if (this.parent != null) this.parent.removeChild(this);
 			this.customProperties.setParentProperties(null);
 		}
 		this.parent = parent;
@@ -94,17 +92,17 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public void setState(State state) {
 		this.state = state;
-		if (this.parent != null) this.parent.reportStateChange(this);
+		if (this.parent != null) this.parent.deriveNewState();
 	}
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-		if (this.parent != null) this.parent.reportStateChange(this);
+		if (this.parent != null) this.parent.deriveNewState();
 	}
 
 	public void setActive(boolean active) {
 		this.active = active;
-		if (this.parent != null) this.parent.reportStateChange(this);
+		if (this.parent != null) this.parent.deriveNewState();
 	}
 
 	public void applyToSubTree(Function<Node, Void> fn) {

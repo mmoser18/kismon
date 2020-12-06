@@ -55,6 +55,7 @@ public class NodeView extends VerticalLayout
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
 
 	private NodeService nodeService;
+	private FormFactory formFactory;
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	NodeForm form; // package visible for ITs - is there no other way?
@@ -63,20 +64,19 @@ public class NodeView extends VerticalLayout
 
 	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
-	// This gets autowired but I am still puzzled which annotation causes this...
-	public NodeView(NodeService nodeService) {
+	public NodeView(NodeService nodeService, FormFactory formFactory) { // defined as constructor args to force order
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
+			this.formFactory = formFactory;
 
 			addClassName(ViewClassName);
 			setSizeFull(); // use entire browser window
 
 			configureTree();
-			configureNodeForm();
 
 			log.trace("Creating content:"); //$NON-NLS-1$
-			this.content = new Div(this.tree, this.form);
+			this.content = new Div(this.tree);
 			this.content.addClassName(ViewContentClassName);
 			this.content.setSizeFull();
 			CommonConstants.setClassName(this.content, this.contentDirection);
@@ -173,7 +173,9 @@ public class NodeView extends VerticalLayout
 		this.tree.asSingleSelect().addValueChangeListener(event -> {
 			Node node = event.getValue(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Selected node '{}'.", node); //$NON-NLS-1$
-			// any action?
+			if (this.form != null && this.form.isVisible()) {
+				editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+			}
 		});
 
 		this.tree.addItemClickListener(event -> {
@@ -225,14 +227,6 @@ public class NodeView extends VerticalLayout
 		return Arrays.asList(rootNodes.toArray(new Node[rootNodes.size()]));
 	}
 
-	void configureNodeForm() {
-		this.form = new NodeForm(this.nodeService);
-		this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
-		this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-		this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-		this.form.setVisible(false); // initially the NodeForm is hidden
-	}
-
 	private void saveNode(NodeForm.SaveEvent event) {
 		Node node = event.getNode();
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
@@ -250,18 +244,14 @@ public class NodeView extends VerticalLayout
 		closeEditor();
 	}
 
-
-
-
-	private void addNewNode(Node node) {
-		log.info("addNewNode '{}'", node); //$NON-NLS-1$
+	private void addNewNode(Node newNode) {
+		log.info("addNewNode '{}'", newNode); //$NON-NLS-1$
 		IfSuitableNodeSelectedForAddition((selectedNode) -> // in the second step we add node to the selected node
 		{
-			log.info("addNewNode '{}' as child of '{}'", node, selectedNode); //$NON-NLS-1$
-			selectedNode.addChild(node);
-			this.tree.getDataProvider().refreshAll();
+			this.nodeService.addChild(selectedNode, newNode);
+			// this.tree.getDataProvider().refreshAll();
 		});
-		if (this.alwaysSave) saveNode(node);
+		if (this.alwaysSave) saveNode(newNode);
 		this.tree.setDataProvider(createDataProvider());
 		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
 		// this.tree.getDataProvider().refreshAll();
@@ -311,6 +301,16 @@ public class NodeView extends VerticalLayout
 		if (node == null) {
 			closeEditor();
 		} else {
+			NodeForm newForm = this.formFactory.createForm(node.getClass(), this.nodeService);
+			if (newForm != this.form) { // different form assigned:
+				if (this.form != null) this.content.remove(this.form); // remove old form:
+				this.form = newForm;
+				this.content.add(this.form); // add new form:
+				// add listeners (if not already present):
+				this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
+				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
+				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
+			}
 			this.form.setHeader(header);
 			this.form.setNode(node);
 			this.form.setVisible(true);
@@ -325,7 +325,6 @@ public class NodeView extends VerticalLayout
 		removeClassName("editing"); //$NON-NLS-1$
 	}
 
-	@SuppressWarnings("unused")
 	private void removeNodes(Collection<Node> nodes) {
 		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
 //		String question = nodes.stream()
@@ -413,12 +412,8 @@ public class NodeView extends VerticalLayout
 				if (node instanceof RootNode) {
 					this.nodeService.getRootNodes().remove(NodeService.getRootNode(node));
 				} else {
-					IntermediateNode parent = node.getParent();
-					if (parent == null) {
-						ProgrammingError("Node-parent must not be null! Node: " + node); //$NON-NLS-1$
-					} else {
-						parent.removeChild(node);
-					}
+					Node deletedNode = this.nodeService.removeChild(node.getParent(), node);
+					log.info("deleted node '{}'", deletedNode); //$NON-NLS-1$
 				}
 			});
 		} catch (Throwable t) {
@@ -426,7 +421,9 @@ public class NodeView extends VerticalLayout
 			log.error(msg, t);
 			new Notification(msg, 10000).open();
 		} finally {
-			this.tree.getDataProvider().refreshAll();
+			this.tree.setDataProvider(createDataProvider());
+			this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
+			// this.tree.getDataProvider().refreshAll();
 		}
 	}
 
@@ -438,12 +435,12 @@ public class NodeView extends VerticalLayout
 		new Notification(text, 5000).open();
 	}
 
-	/* This should never happen... */
-	@SuppressWarnings({"static-method", "unused"})
-	private void ProgrammingError(String msg) {
-		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
-		log.warn(text);
-		new Notification(text, 10000).open();
-	}
+//	/* This should never happen... */
+//	@SuppressWarnings({"static-method"})
+//	private void ProgrammingError(String msg) {
+//		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
+//		log.warn(text);
+//		new Notification(text, 10000).open();
+//	}
 
 }

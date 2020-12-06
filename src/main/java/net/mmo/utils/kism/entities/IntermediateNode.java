@@ -38,46 +38,15 @@ public class IntermediateNode extends Node
 		super(name, description, state, parent);
 	}
 
-	public Node addChild(Node child) {
-		Node childsOldParent = child.getParent();
-		if ((childsOldParent != null) && (childsOldParent instanceof IntermediateNode)) {
-			((IntermediateNode)childsOldParent).removeChild(child);
-		}
-		synchronized(this) {
-			child.setParent(this);
-			if (getChildren() == null) setChildren(new ArrayList<>());
-			getChildren().add(child);
-		}
-		deriveNewState();
-		return child;
-	}
-
-	public Node removeChild(Node child) {
-		synchronized(this) {
-			child.setParent(null);
-			getChildren().remove(child);
-			if (getChildren().size() <= 0) setChildren(null);
-		}
-		deriveNewState();
-		return child;
-	}
-
-	protected void reportStateChange(Node child) {
-		final State childState = child.isEnabled() ? child.getState() : State.OK;
-		if (childState.ordinal() < this.getState().ordinal()) { // OK -> DEGRADED/NOT_OK, DEGRADED -> NOT_OK
-			setState(childState);
-		} else if (childState.ordinal() > this.getState().ordinal()) { // getting better:
-			deriveNewState();
-		} // else: no change...
-	}
-
 	// default implementation: find minimal child-state:
-	private void deriveNewState() {
+	public void deriveNewState() {
 		State minimalState = State.OK;
 		synchronized(this) {
-			for (Node child: getChildren()) {
-				if (child.isActive()) { // child is to be considered
-					if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
+			if (getChildren() != null) {
+				for (Node child: getChildren()) {
+					if (child.isActive()) { // child is to be considered
+						if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
+					}
 				}
 			}
 		}

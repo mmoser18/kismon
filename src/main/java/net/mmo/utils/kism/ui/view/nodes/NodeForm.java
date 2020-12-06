@@ -23,7 +23,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node;
 
 @Slf4j
-public class NodeForm extends FormLayout
+public abstract class NodeForm extends FormLayout
 {
 	private static final long serialVersionUID = -4928837821374748141L;
 
@@ -55,7 +55,7 @@ public class NodeForm extends FormLayout
 	Binder<Node> binder = new BeanValidationBinder<>(Node.class); // a Binder that is aware of bean validation annotations
 
 	public NodeForm(NodeService nodeService) {
-		log.debug("Creating ContactForm:"); //$NON-NLS-1$
+		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
 		this.binder.bindInstanceFields(this);
 //		this.binder.forField(this.nameField)
@@ -173,6 +173,8 @@ public class NodeForm extends FormLayout
 	@Override
 	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
 	                                                              ComponentEventListener<T> listener) {
-		return getEventBus().addListener(eventType, listener);
+		return (!getEventBus().hasListener(eventType) // NOT!
+		        ? getEventBus().addListener(eventType, listener)
+		        : null);
 	}
 }

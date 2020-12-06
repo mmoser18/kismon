@@ -46,10 +46,20 @@
 		<appender-ref ref="Console" />
 	</logger>
 
+	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn" additivity="false">
+		<appender-ref ref="RollingFile" />
+		<appender-ref ref="Console" />
+	</logger>
+
 	<logger name="net.mmo.utils.kism" level="trace" additivity="false">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
+
+	<root level="WARN">
+		<appender-ref ref="RollingFile" />
+		<appender-ref ref="Console" />
+	</root>
 
 </configuration>
 	

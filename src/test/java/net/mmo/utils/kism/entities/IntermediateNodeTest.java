@@ -40,9 +40,9 @@ public class IntermediateNodeTest
 		Assertions.assertEquals(1, root.getChildren().size());
 		Assertions.assertEquals(State.OK, leaf1.getState());
 		LeafNode leaf2 = new LeafNode("leaf2", "leaf-node2", State.NOT_OK); //$NON-NLS-1$ //$NON-NLS-2$
-		root.addChild(leaf2);
+		this.nodeService.addChild(root, leaf2);
 		LeafNode leaf3 = new LeafNode("leaf3", "leaf-node3", State.DEGRADED); //$NON-NLS-1$ //$NON-NLS-2$
-		root.addChild(leaf3);
+		this.nodeService.addChild(root, leaf3);
 		Assertions.assertEquals(3, root.getChildren().size());
 		Assertions.assertEquals(State.NOT_OK, leaf2.getState());
 		Assertions.assertEquals(State.DEGRADED, leaf3.getState());
