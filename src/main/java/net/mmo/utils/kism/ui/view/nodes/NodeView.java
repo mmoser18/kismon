@@ -57,7 +57,7 @@ public class NodeView extends VerticalLayout
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
 
 	private NodeService nodeService;
-	@SuppressWarnings("unused")
+	private NodeFactory nodeFactory;
 	private FormFactory formFactory;
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
@@ -67,14 +67,16 @@ public class NodeView extends VerticalLayout
 
 	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
-	public NodeView(NodeService nodeService, FormFactory formFactory) { // defined as constructor args to force order
+	public NodeView(NodeService nodeService,
+	                NodeFactory nodeFactory,
+	                FormFactory formFactory) { // defined as constructor args to force order
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
 			if (this.nodeService.getRootNodes().isEmpty()) {
 				this.nodeService.init(); // load from file:
 			}
-
+			this.nodeFactory = nodeFactory;
 			this.formFactory = formFactory;
 
 			addClassName(ViewClassName);
@@ -306,7 +308,7 @@ public class NodeView extends VerticalLayout
 	void createNewChildNode(NodeType nodeType) {
 		log.info("createNewChildNode"); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
-		editNode(new IntermediateNode("foo", "bar"), //  NodeFactory.createNode(nodeType), //$NON-NLS-1$ //$NON-NLS-2$
+		editNode(this.nodeFactory.createNode(nodeType),
 		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
 	}
 
@@ -323,7 +325,7 @@ public class NodeView extends VerticalLayout
 		} else {
 			NodeForm newForm;
 			try {
-				newForm = new IntermediateNodeForm(); // this.formFactory.createForm(node, this.nodeService);
+				newForm = this.formFactory.createForm(node);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$

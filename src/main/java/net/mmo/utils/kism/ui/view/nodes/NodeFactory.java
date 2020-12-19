@@ -28,7 +28,7 @@ public class NodeFactory
 
 	private static int nodeCtr = 0;
 
-	public static Node createNode(NodeType type) {
+	public Node createNode(NodeType type) {
 		switch (type) {
 		case IntermediateNode:
 			return new IntermediateNode("Node" + nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$

@@ -8,7 +8,6 @@ package net.mmo.utils.kism.ui.view.nodes;
 import java.util.Hashtable;
 
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
@@ -23,7 +22,7 @@ public class FormFactory
 	// we cache the forms - one per type:
 	Hashtable<Class<?>, NodeForm> forms = new Hashtable<>();
 
-	NodeForm createForm(Node node, NodeService nodeService) {
+	NodeForm createForm(Node node) {
 		log.info("creating new form for node {}:", node); //$NON-NLS-1$
 		Class<?> clazz = node.getClass();
 		NodeForm form = this.forms.get(clazz);
