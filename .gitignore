@@ -19,6 +19,7 @@ webpack.generated.js
 /garage/
 /debug.log
 /src - Copy/
+/src - old/
 /default.kmc
 /tsconfig.json
 /types.d.ts
