@@ -10,7 +10,9 @@ import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.connections.RESTConnection;
 import net.mmo.utils.kism.entities.connections.SOAPConnection;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NodeFactory
 {
 	public enum NodeType {
