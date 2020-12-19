@@ -29,15 +29,15 @@ public class FormFactory
 		NodeForm form = this.forms.get(clazz);
 		if (form == null) {
 			if (clazz == RootNode.class) {
-				form = new RootNodeForm(nodeService);
+				form = new RootNodeForm();
 			} else if (clazz == IntermediateNode.class) {
-				form = new IntermediateNodeForm(nodeService);
+				form = new IntermediateNodeForm();
 			} else if (clazz == RESTConnection.class) {
-				form = new RESTConnectionForm(nodeService);
+				form = new RESTConnectionForm();
 //			} else if (clazz == SOAPConnection.class) {
-//				form = new SOAPConnectionForm(nodeService);
+//				form = new SOAPConnectionForm();
 //			} else if (clazz == JDBCConnection.class) {
-//				form = new JDBCConnectionForm(nodeService);
+//				form = new JDBCConnectionForm();
 			} else {
 				throw new IllegalArgumentException("No form defined for unexpected class " + clazz); //$NON-NLS-1$
 			}

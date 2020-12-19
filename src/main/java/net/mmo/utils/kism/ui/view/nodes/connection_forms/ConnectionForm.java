@@ -7,7 +7,6 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 @Slf4j
@@ -21,8 +20,8 @@ public class ConnectionForm extends NodeForm
 	TextField path;
 	TextField arguments;
 
-	public ConnectionForm(NodeService nodeService) {
-		super(nodeService);
+	public ConnectionForm() {
+		super();
 	}
 
 	@Override

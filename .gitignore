@@ -20,3 +20,8 @@ webpack.generated.js
 /debug.log
 /src - Copy/
 /default.kmc
+/tsconfig.json
+/types.d.ts
+/pnpmfile.js
+/pnpm-lock.yaml
+/package.json

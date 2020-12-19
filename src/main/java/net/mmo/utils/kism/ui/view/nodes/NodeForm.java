@@ -20,7 +20,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node;
 
 @Slf4j
@@ -55,7 +54,7 @@ public abstract class NodeForm extends FormLayout
 	private Node node;
 	Binder<Node> binder = new BeanValidationBinder<>(Node.class); // a Binder that is aware of bean validation annotations
 
-	public NodeForm(NodeService nodeService) {
+	public NodeForm() {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
 		this.binder.bindInstanceFields(this);
@@ -64,7 +63,6 @@ public abstract class NodeForm extends FormLayout
 //			.withValidator(name ->
 //				{ // Explicit validator instance
 //					return nodeService.getRootNodes().stream()
-//						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
 //						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
 //						.findAny().isEmpty();
 //				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$

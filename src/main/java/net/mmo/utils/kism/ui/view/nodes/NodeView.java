@@ -57,6 +57,7 @@ public class NodeView extends VerticalLayout
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
 
 	private NodeService nodeService;
+	@SuppressWarnings("unused")
 	private FormFactory formFactory;
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
@@ -305,7 +306,7 @@ public class NodeView extends VerticalLayout
 	void createNewChildNode(NodeType nodeType) {
 		log.info("createNewChildNode"); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
-		editNode(NodeFactory.createNode(nodeType),
+		editNode(new IntermediateNode("foo", "bar"), //  NodeFactory.createNode(nodeType), //$NON-NLS-1$ //$NON-NLS-2$
 		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
 	}
 
@@ -322,7 +323,7 @@ public class NodeView extends VerticalLayout
 		} else {
 			NodeForm newForm;
 			try {
-				newForm = this.formFactory.createForm(node, this.nodeService);
+				newForm = new IntermediateNodeForm(); // this.formFactory.createForm(node, this.nodeService);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$
