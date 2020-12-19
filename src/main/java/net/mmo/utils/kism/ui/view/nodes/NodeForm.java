@@ -59,6 +59,7 @@ public abstract class NodeForm extends FormLayout
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
 		this.binder.bindInstanceFields(this);
+
 //		this.binder.forField(this.nameField)
 //			.withValidator(name ->
 //				{ // Explicit validator instance

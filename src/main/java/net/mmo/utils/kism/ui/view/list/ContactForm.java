@@ -58,7 +58,6 @@ public class ContactForm extends FormLayout
 		addClassName(ViewClassName);
 		this.binder.bindInstanceFields(this);
 
-
 		this.firstName.addClassName(FirstNameClassName);
 		this.lastName.addClassName(LastNameClassName);
 		this.email.addClassName(EmailClassName);

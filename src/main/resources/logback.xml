@@ -51,7 +51,7 @@
 		<appender-ref ref="Console" />
 	</logger>
 
-	<logger name="net.mmo.utils.kism" level="trace" additivity="false">
+	<logger name="net.mmo.utils.kism" level="debug" additivity="false">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
