@@ -6,6 +6,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
@@ -38,14 +39,14 @@ public abstract class NodeForm extends FormLayout
 
 	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
-	TextField name = new TextField(Messages.getString("NodeForm.TextField.Name.Label")); //$NON-NLS-1$
-	TextArea description = new TextArea(Messages.getString("NodeForm.TextField.Description.Label")); //$NON-NLS-1$
+	TextField name;
+	TextArea description;
 	// state is calculated automatically!
-	// ComboBox<Node.State> state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
-	ComboBox<Boolean> enabled = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Enabled.Label")); //$NON-NLS-1$
-	ComboBox<Boolean> active  = new ComboBox<>(Messages.getString("NodeForm.ComboBox.Active.Label")); //$NON-NLS-1$
+	ComboBox<Node.State> state;
+	Checkbox enabled;
+	Checkbox active;
 
-	VerticalLayout fields;
+	protected VerticalLayout fields;
 
 	Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
 	Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
@@ -68,22 +69,7 @@ public abstract class NodeForm extends FormLayout
 //				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
 //			.bind(Node::getName, Node::setName);
 
-		this.name.addClassName(NameClassName);
-		this.description.addClassName(DescriptionClassName);
-
-		// this.state.addClassName(StateClassName);
-		// this.state.setItems(Node.State.values());
-
-		this.enabled.addClassName(EnabledClassName);
-		this.enabled.setItems(Boolean.TRUE, Boolean.FALSE);
-
-		this.active.addClassName(ActiveClassName);
-		this.active.setItems(Boolean.TRUE, Boolean.FALSE);
-
-		this.fields = new VerticalLayout(this.name, this.description, /*this.state,*/ this.enabled, this.active);
-		this.fields.setClassName(FieldsClassName);
-		this.fields.setSizeFull();
-
+		createFormFields();
 		add(this.header, this.fields, createButtonsLayout());
 	}
 
@@ -92,9 +78,35 @@ public abstract class NodeForm extends FormLayout
 	}
 
 	public void setNode(Node node) {
+		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
 		this.node = node;
 		this.binder.readBean(this.node); // to bind the values from the node to the UI fields.
-		// Note: readBean() copies the values from the Contact to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
+		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
+	}
+
+	protected void createFormFields() {
+		log.debug("NodeForm.createFields() - begin"); //$NON-NLS-1$
+		this.name = new TextField(Messages.getString("NodeForm.TextField.Name.Label")); //$NON-NLS-1$
+		this.name.addClassName(NameClassName);
+
+		this.description = new TextArea(Messages.getString("NodeForm.TextField.Description.Label")); //$NON-NLS-1$
+		this.description.addClassName(DescriptionClassName);
+
+		this.state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
+		this.state.addClassName(StateClassName);
+		this.state.setItems(Node.State.values());
+		this.state.setReadOnly(true); // state is calculated automatically!
+
+		this.enabled = new Checkbox(Messages.getString("NodeForm.ComboBox.Enabled.Label")); //$NON-NLS-1$
+		this.enabled.addClassName(EnabledClassName);
+
+		this.active  = new Checkbox(Messages.getString("NodeForm.ComboBox.Active.Label")); //$NON-NLS-1$
+		this.active.addClassName(ActiveClassName);
+
+		this.fields = new VerticalLayout(this.name, this.description, this.state, this.enabled, this.active);
+		this.fields.setClassName(FieldsClassName);
+		this.fields.setSizeFull();
+		log.debug("NodeForm.createFields() - end"); //$NON-NLS-1$
 	}
 
 	private HorizontalLayout createButtonsLayout() {
@@ -117,7 +129,7 @@ public abstract class NodeForm extends FormLayout
 	}
 
 	private void validateAndSave() {
-		log.info("Saving {}", this.node); //$NON-NLS-1$
+		log.info("Saving {}", this.node.getName()); //$NON-NLS-1$
 		try {
 			// TODO: more validation?
 			this.binder.writeBean(this.node);
@@ -132,6 +144,7 @@ public abstract class NodeForm extends FormLayout
 	public abstract static class NodeFormEvent extends ComponentEvent<NodeForm>
 	{
 		private static final long serialVersionUID = -7044223229837911727L;
+
 		private Node node;
 
 		protected NodeFormEvent(NodeForm source, Node node) {
@@ -146,7 +159,6 @@ public abstract class NodeForm extends FormLayout
 
 	public static class SaveEvent extends NodeFormEvent
 	{
-
 		private static final long serialVersionUID = -8255534604198398835L;
 
 		SaveEvent(NodeForm source, Node node) {

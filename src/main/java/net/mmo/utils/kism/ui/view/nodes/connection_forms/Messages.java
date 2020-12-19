@@ -1,0 +1,26 @@
+/**
+ * @author Michael Moser (michael.moser@freesurf.ch)
+ * @since 13.11.2020
+ */
+
+package net.mmo.utils.kism.ui.view.nodes.connection_forms;
+
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+public class Messages
+{
+	private static final String BUNDLE_NAME = "net.mmo.utils.kism.ui.view.nodes.connection_forms.messages"; //$NON-NLS-1$
+
+	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
+
+	private Messages() {}
+
+	public static String getString(String key) {
+		try {
+			return RESOURCE_BUNDLE.getString(key);
+		} catch (MissingResourceException e) {
+			return '!' + key + '!';
+		}
+	}
+}

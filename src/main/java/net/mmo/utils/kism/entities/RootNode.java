@@ -28,13 +28,23 @@ public class RootNode extends IntermediateNode
 		super();
 	}
 
-	public RootNode(String name, String description, State state) {
-		super(name, description, state);
+	public RootNode(String name, String description) {
+		super(name, description);
 	}
 
 	public void setParent(Node parent) {
 		if (parent != null) {
 			throw new RuntimeException("This should NEVER be called!"); //$NON-NLS-1$
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder(super.toString());
+		buf.setLength(buf.length()-1);
+		return buf
+			.append(", filePath:").append(this.filePath) //$NON-NLS-1$
+			.append("]") //$NON-NLS-1$
+			.toString();
 	}
 }

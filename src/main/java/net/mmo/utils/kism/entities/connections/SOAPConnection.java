@@ -19,8 +19,8 @@ public class SOAPConnection extends Connection
 
 	String requestPayload;
 
-	public SOAPConnection(String name, String description, State state) {
-		super(name, description, state);
+	public SOAPConnection(String name, String description) {
+		super(name, description);
 	}
 
 }

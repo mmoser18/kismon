@@ -10,30 +10,29 @@ import net.mmo.utils.kism.backend.service.Messages;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node.State;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 public class IntermediateNodeTest
 {
-	@Autowired
-	NodeService nodeService;
+	private NodeService nodeService = new NodeService(); // autowiring this didn't work, but what the heck!
 
-	@BeforeEach
-	void setup() {
-		this.nodeService.reset(); // re-initialize the root to null before each test
+	public IntermediateNodeTest() {
+		// empty
 	}
+
 	@Test
 	void rootShouldInitiallyBeEmptyTest() {
+		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
-		Assertions.assertNotNull(root, "root should be null"); //$NON-NLS-1$
-		Assertions.assertEquals(Messages.getString("km_root"), root.getName()); //$NON-NLS-1$
-		Assertions.assertEquals(Messages.getString("km_root-node"), root.getDescription()); //$NON-NLS-1$
+		Assertions.assertNotNull(root, "root should not be null"); //$NON-NLS-1$
+		Assertions.assertEquals(Messages.getString("km_root_name"), root.getName()); //$NON-NLS-1$
+		Assertions.assertEquals(Messages.getString("km_root_description"), root.getDescription()); //$NON-NLS-1$
 	}
 
 	@Test
 	void checkNodesAdded() {
+		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		Assertions.assertEquals(0, root.getChildren().size());
 		LeafNode leaf1 = new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
@@ -53,6 +52,7 @@ public class IntermediateNodeTest
 	@SuppressWarnings("unused")
 	@Test
 	void checkNodesActive() {
+		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
 		new LeafNode("leaf2", "leaf-node2", State.NOT_OK, root).setActive(false); //$NON-NLS-1$ //$NON-NLS-2$

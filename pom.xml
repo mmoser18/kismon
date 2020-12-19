@@ -18,7 +18,7 @@
 		<!-- some local settings: -->
 		<user.home>U:/</user.home>
 		<user.repo>${user.home}.m2/m2repository/</user.repo>
-		<vaadin.version>14.4.2</vaadin.version>
+		<vaadin.version>18.0.2</vaadin.version>
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>

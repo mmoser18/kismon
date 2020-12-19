@@ -24,29 +24,50 @@ public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
-	private ArrayList<Node>	children;
+	private ArrayList<Node>	children = new ArrayList<>();
 
 	// required for deserialization only
 	protected IntermediateNode() {
 		super();
 	}
 
-	protected IntermediateNode(String name, String description, State state) {
-		super(name, description, state);
+	public IntermediateNode(String name, String description) {
+		super(name, description);
 	}
 	public IntermediateNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
+	}
+
+	public Node addChild(Node child) {
+		if (child == null) throw new IllegalArgumentException("child must not be null for addChild"); //$NON-NLS-1$
+		Node oldParent = child.getParent();
+		if ((oldParent != null) && (oldParent instanceof IntermediateNode)) {
+			((IntermediateNode)oldParent).removeChild(child);
+		}
+		synchronized(this) {
+			child.setParent(this);
+			this.getChildren().add(child);
+			this.deriveNewState();
+		}
+		return child;
+	}
+
+	public Node removeChild(Node child) {
+		synchronized(this) {
+			child.setParent(null);
+			this.getChildren().remove(child);
+			this.deriveNewState();
+		}
+		return child;
 	}
 
 	// default implementation: find minimal child-state:
 	public void deriveNewState() {
 		State minimalState = State.OK;
 		synchronized(this) {
-			if (getChildren() != null) {
-				for (Node child: getChildren()) {
-					if (child.isActive()) { // child is to be considered
-						if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
-					}
+			for (Node child: getChildren()) {
+				if (child.isActive()) { // child is to be considered
+					if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
 				}
 			}
 		}

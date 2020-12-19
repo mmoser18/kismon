@@ -13,8 +13,7 @@ public class JDBCConnection extends Connection
 	String user;
 	String pwd;
 
-	public JDBCConnection(String name, String description, State state) {
-		super(name, description, state);
+	public JDBCConnection(String name, String description) {
+		super(name, description);
 	}
-
 }

@@ -14,20 +14,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.PWA;
 import net.mmo.utils.kism.ui.view.dashboard.DashboardView;
 import net.mmo.utils.kism.ui.view.list.ListView;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
 
 @CssImport("./styles/shared-styles.css")
-@PWA(
-	name = CommonConstants.ApplicationFullName,
-	shortName = CommonConstants.ApplicationShortName,
-	offlineResources = {
-		"./styles/offline.css",
-		"./images/offline.png"
-	}
-)
 public class MainLayout extends AppLayout
 {
 	private static final long serialVersionUID = 8922152078442380813L;

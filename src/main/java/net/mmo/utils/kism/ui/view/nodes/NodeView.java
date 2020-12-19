@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
@@ -29,6 +30,7 @@ import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -58,8 +60,8 @@ public class NodeView extends VerticalLayout
 	private FormFactory formFactory;
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
-	NodeForm form; // package visible for ITs - is there no other way?
 	Div content;
+	NodeForm form; // package visible for ITs - is there no other way?
 	LayoutDirection contentDirection = LayoutDirection.direction_row;
 
 	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -68,6 +70,10 @@ public class NodeView extends VerticalLayout
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
+			if (this.nodeService.getRootNodes().isEmpty()) {
+				this.nodeService.init(); // load from file:
+			}
+
 			this.formFactory = formFactory;
 
 			addClassName(ViewClassName);
@@ -96,10 +102,24 @@ public class NodeView extends VerticalLayout
 //		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 //		this.filterText.addValueChangeListener(e -> updateList());
 
+		ComboBox<NodeType> nodeTypeSelector = new ComboBox<>(Messages.getString("NodeForm.ComboBox.NodeTypes.Label")); //$NON-NLS-1$
+		nodeTypeSelector.setItems(NodeType.values());
+		nodeTypeSelector.setValue(NodeType.IntermediateNode);
+		nodeTypeSelector.addValueChangeListener(change ->
+		{
+			log.info("nodeTypeSelector changed to {}", change.getValue()); //$NON-NLS-1$
+		});
+
 		Button addChildNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
 		addChildNodeButton.addClickListener(click ->
 			{
-				IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode()); // in the first step we only create a new node
+				NodeType type = nodeTypeSelector.getValue();
+				log.info("add node (type={})", type); //$NON-NLS-1$
+				if (type.ordinal() <= 0) {
+					UsageError("NodeView.ErrorMsg.NodeTypeMustBeSelected"); //$NON-NLS-1$
+				} else {
+					IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode(type)); // in the first step we only create a new node
+				}
 			});
 
 		Button delNodeButton = new Button(Messages.getString("NodeView.Button.DeleteNode.Label")); //$NON-NLS-1$
@@ -148,7 +168,7 @@ public class NodeView extends VerticalLayout
 				readFile();
 			});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, readFileButton);
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, readFileButton);
 		toolbar.addClassName(ViewToolbarClassName);
 
 		return toolbar;
@@ -210,7 +230,7 @@ public class NodeView extends VerticalLayout
 			if (node instanceof IntermediateNode) {
 				IntermediateNode iNode = (IntermediateNode)node;
 				List<Node> children = iNode.getChildren();
-				if (children != null) {
+				if (!children.isEmpty()) {
 					log.trace("ValueProvider({}) -> {}", node.getName(), children.stream().map(n -> n.getName()).collect(Collectors.toList())); //$NON-NLS-1$
 					return children;
 				}
@@ -229,6 +249,7 @@ public class NodeView extends VerticalLayout
 
 	private void saveNode(NodeForm.SaveEvent event) {
 		Node node = event.getNode();
+		log.info("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
 			addNewNode(node);
 		} else { // updating an existing node:
@@ -239,6 +260,7 @@ public class NodeView extends VerticalLayout
 
 	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
+		log.info("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
 		deleteNodes(Collections.singletonList(node));
 		if (this.alwaysSave) saveNode(node);
 		closeEditor();
@@ -280,13 +302,10 @@ public class NodeView extends VerticalLayout
 		});
 	}
 
-	void createNewChildNode() {
+	void createNewChildNode(NodeType nodeType) {
 		log.info("createNewChildNode"); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
-		editNode(new IntermediateNode(Messages.getString("NodeView.Form.NewNode.Name"), //$NON-NLS-1$
-		                              Messages.getString("NodeView.Form.NewNode.Description"), //$NON-NLS-1$
-		                              Node.State.OK,
-		                              null), // the null also signals that this is a NEW node!
+		editNode(NodeFactory.createNode(nodeType),
 		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
 	}
 
@@ -301,11 +320,19 @@ public class NodeView extends VerticalLayout
 		if (node == null) {
 			closeEditor();
 		} else {
-			NodeForm newForm = this.formFactory.createForm(node.getClass(), this.nodeService);
+			NodeForm newForm;
+			try {
+				newForm = this.formFactory.createForm(node, this.nodeService);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$
+				return;
+			}
 			if (newForm != this.form) { // different form assigned:
-				if (this.form != null) this.content.remove(this.form); // remove old form:
+				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
+				if (this.form != null) this.content.remove(this.form); // remove old form
 				this.form = newForm;
-				this.content.add(this.form); // add new form:
+				this.content.add(this.form); // add new form
 				// add listeners (if not already present):
 				this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
@@ -319,7 +346,7 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void closeEditor() {
-		log.info("closeEditor"); //$NON-NLS-1$
+		log.info("NodeView.closeEditor"); //$NON-NLS-1$
 		this.form.setNode(null);
 		this.form.setVisible(false);
 		removeClassName("editing"); //$NON-NLS-1$
@@ -435,12 +462,12 @@ public class NodeView extends VerticalLayout
 		new Notification(text, 5000).open();
 	}
 
-//	/* This should never happen... */
-//	@SuppressWarnings({"static-method"})
-//	private void ProgrammingError(String msg) {
-//		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
-//		log.warn(text);
-//		new Notification(text, 10000).open();
-//	}
+	/* This should of course never happen... ;-) */
+	@SuppressWarnings({"static-method"})
+	private void ProgrammingError(String msg) {
+		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
+		log.warn(text);
+		new Notification(text, 10000).open();
+	}
 
 }

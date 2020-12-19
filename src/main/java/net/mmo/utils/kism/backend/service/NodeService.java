@@ -9,8 +9,6 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.repositories.IntermediateNodeRepository;
-import net.mmo.utils.kism.backend.repositories.LeafNodeRepository;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
@@ -18,7 +16,7 @@ import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.stereotype.Service;
 
 /**
- * Implements the service to access and store Companies
+ * Implements the service to access and store Nodes
  */
 @Service
 @Slf4j
@@ -27,71 +25,77 @@ public class NodeService
 	public final static String CONFIG_FILE_TYPE  = "kmc"; //$NON-NLS-1$
 	public final static String DEFAULT_FILE_NAME = "default"; //$NON-NLS-1$
 
+	/*
 	@SuppressWarnings("unused")
 	private IntermediateNodeRepository intermediateNodeRepository;
 	@SuppressWarnings("unused")
 	private LeafNodeRepository leafNodeRepository;
+	*/
 
 	private List<RootNode> roots = new ArrayList<>();
 	private JavaJSONHandler jsonHandler = new JavaJSONHandler();
 
-	public NodeService(IntermediateNodeRepository intermediateNodeRepository,
-	                   LeafNodeRepository leafNodeRepository) {
+	public NodeService(// IntermediateNodeRepository intermediateNodeRepository,
+	                   // LeafNodeRepository leafNodeRepository
+	                  ) {
+		/*
 		this.intermediateNodeRepository = intermediateNodeRepository;
 		this.leafNodeRepository = leafNodeRepository;
+		*/
 	}
 
 	/* create a new empty RootNode, if none exists */
-	private void init() {
+	public void init() {
 		RootNode rootNode = null;
 		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
 			rootNode = readInternal(file);
 			log.info("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
+			this.roots.add(rootNode);
+			return;
 		} catch (IOException t) {
 			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 		} catch (Throwable t) {
 			log.error("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 			t.printStackTrace();
 		}
-		if (rootNode == null) {
-			log.warn("File read failed - creating dummy root node: {}"); //$NON-NLS-1$
-			rootNode = new RootNode(Messages.getString("km_root_name"), //$NON-NLS-1$
-			                        Messages.getString("km_root_description"), //$NON-NLS-1$
-			                        Node.State.OK);
-			addSomeSubNodes(rootNode);
-			log.info("Node '{}' created.", rootNode); //$NON-NLS-1$
-		}
+		createDummyRootNode();
+	}
+
+	public void createDummyRootNode() {
+		log.info("Creating dummy root node: {}"); //$NON-NLS-1$
+		RootNode rootNode = new RootNode(Messages.getString("km_root_name"), //$NON-NLS-1$
+		                                 Messages.getString("km_root_description")); //$NON-NLS-1$
+		// addSomeSubNodes(rootNode);
+		log.info("Node '{}' created.", rootNode); //$NON-NLS-1$
 		this.roots.add(rootNode);
 	}
 
-	@SuppressWarnings({})
-	private static void addSomeSubNodes(IntermediateNode parent) {
-		int max = (parent.getParent() == null ? 2 : (int)(Math.random() * 3.0)); // maps [0.0 - 1.0) --> [0..2]
-		if (parent.getName().length() >= Messages.getString("km_root_name").length() + 6) max = 0; // limit depth... //$NON-NLS-1$
-		log.info("adding {} children to {}:", max, parent); //$NON-NLS-1$
-
-		for (int i = 0; i < max; i++) {
-			int idx = (int)(Math.random() * 3.0); // maps [0.0 - 1.0) --> [0..2]
-			Node.State newState = Node.State.values()[idx];
-
-			addSomeSubNodes(new IntermediateNode(parent.getName() + "." + (i+1), //$NON-NLS-1$
-			                                     parent.getDescription() + "." + (i+1), //$NON-NLS-1$
-			                                     newState,
-			                                     parent));
-		}
-		log.info("{} children added to {}.", (parent.getChildren() != null ? parent.getChildren().size() : 0), parent); //$NON-NLS-1$
-	}
+//	@SuppressWarnings({})
+//	private static void addSomeSubNodes(IntermediateNode parent) {
+//		int max = (parent.getParent() == null ? 2 : (int)(Math.random() * 3.0)); // maps [0.0 - 1.0) --> [0..2]
+//		if (parent.getName().length() >= Messages.getString("km_root_name").length() + 6) max = 0; // limit depth... //$NON-NLS-1$
+//		log.info("adding {} children to {}:", max, parent); //$NON-NLS-1$
+//
+//		for (int i = 0; i < max; i++) {
+//			int idx = (int)(Math.random() * 3.0); // maps [0.0 - 1.0) --> [0..2]
+//			Node.State newState = Node.State.values()[idx];
+//
+//			addSomeSubNodes(new IntermediateNode(parent.getName() + "." + (i+1), //$NON-NLS-1$
+//			                                     parent.getDescription() + "." + (i+1), //$NON-NLS-1$
+//			                                     newState,
+//			                                     parent));
+//		}
+//		log.info("{} children added to {}.", (parent.getChildren() != null ? parent.getChildren().size() : 0), parent); //$NON-NLS-1$
+//	}
 
 	/** enables re-initialization of root nodes for Unit-Tests - not normally used */
 	public void reset() {
 		this.roots.clear();
+		createDummyRootNode();
 	}
 
 	public List<RootNode> getRootNodes() {
-		if (this.roots.isEmpty()) {
-			init();
-		}
 		return this.roots;
 	}
 
@@ -122,27 +126,14 @@ public class NodeService
 
 	public Node addChild(IntermediateNode parent, Node child) {
 		if (parent == null) throw new IllegalArgumentException("parent must not be null for addChild"); //$NON-NLS-1$
-		if (child == null) throw new IllegalArgumentException("child must not be null for addChild"); //$NON-NLS-1$
-		Node oldParent = child.getParent();
-		if ((oldParent != null) && (oldParent instanceof IntermediateNode)) {
-			removeChild((IntermediateNode)oldParent, child);
-		}
-		synchronized(this) {
-			child.setParent(parent);
-			if (parent.getChildren() == null) parent.setChildren(new ArrayList<>());
-			parent.getChildren().add(child);
-		}
+		parent.addChild(child);
 		log.info("added child '{}': \n{}", child, PrettyPrint.prettyPrinted(parent)); //$NON-NLS-1$
 		return child;
 	}
 
 	public Node removeChild(IntermediateNode parent, Node child) {
-		synchronized(parent) {
-			child.setParent(null);
-			parent.getChildren().remove(child);
-			if (parent.getChildren().size() <= 0) parent.setChildren(null);
-		}
-		getRootNode(parent).deriveNewState();
+		if (parent == null) throw new IllegalArgumentException("parent must not be null for removeChild"); //$NON-NLS-1$
+		parent.removeChild(child);
 		log.info("removed child '{}': \n{}", child.getName(), PrettyPrint.prettyPrinted(parent)); //$NON-NLS-1$
 		return child;
 	}
@@ -181,15 +172,16 @@ public class NodeService
 //		node.setParent(null);
 //		if (node instanceof IntermediateNode) {
 //			IntermediateNode parent = (IntermediateNode)node;
-//			if (parent.getChildren() != null) {
-//				parent.getChildren().forEach(child -> setParentNull(child));
-//			}
+//			parent.getChildren().forEach(child -> setParentNull(child));
 //		}
 //	}
 
 	/** utility to restore parents, e.g. after reading from a file */
 	public void restoreParents(IntermediateNode node) {
-		if (node.getChildren() != null) {
+		List<Node> children = node.getChildren();
+		if (children == null) {
+			node.setChildren(new ArrayList<>());
+		} else {
 			node.getChildren().forEach(child ->
 				{
 					child.setParent(node);
@@ -210,7 +202,7 @@ public class NodeService
 //		}
 //	}
 
-	static class JavaJSONHandler
+	public static class JavaJSONHandler
 	{
 		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
@@ -225,7 +217,7 @@ public class NodeService
 		public RootNode read(File file) throws IOException {
 			log.info("JavaJSONHandler: reading from file {}:", file); //$NON-NLS-1$
 			RootNode rootNode = this.mapper.readValue(file, RootNode.class);
-			rootNode.setFilePath(file.getAbsolutePath().replace('.' + CONFIG_FILE_TYPE, "")); //$NON-NLS-1$
+			rootNode.setFilePath(file.getAbsolutePath());
 			log.info("rootNode '{}' was read from file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
 			return rootNode;
 		}

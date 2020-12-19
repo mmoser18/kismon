@@ -25,10 +25,10 @@ import org.springframework.util.Assert;
 @Setter
 @Getter
 //@EqualsAndHashCode(callSuper = true)
-// This was supposed to avoid infinite recursion when serializing the tree as JSON:
 // @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
-// ...but it did not work. So I have set parent as @JsonIgnore. It is redundant and can
-// be reconstructed while reading the config from a file
+// This was supposed to avoid infinite recursion when serializing the tree as JSON
+// but it did not work. Instead I have set "parent" as @JsonIgnore. It is redundant and can
+// be reconstructed after reading the config from a file
 @Slf4j
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 public abstract class Node extends AbstractEntity implements Cloneable, Serializable
@@ -64,20 +64,25 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		super();
 		log.info("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
-	protected Node(String name, String description, State state) {
-		super();
+	protected Node(String name, String description) {
 		Assert.notNull(name, "node name must not be null");  //$NON-NLS-1$
-		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
 		log.info("Creating new {} {}.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 		this.name = name;
 		this.description = description;
-		this.state = state;
 		log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
+	}
+	protected Node(String name, String description, State state) {
+		super();
+		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
+		this.state = state;
 	}
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
 		this(name, description, state);
-		setParent(parent);
+		if (parent != null) {
+			parent.getChildren().add(this);
+			parent.deriveNewState();
+		}
 	}
 
 	public void setParent(IntermediateNode parent) {

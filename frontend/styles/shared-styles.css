@@ -31,9 +31,11 @@
 }
 
 .node-view .node-form {
-	flex: 1;
+	flex: 1; /* takes 1/3 (=1+2) of width */
+	align-items: stretch;
+	flex-direction: column;
 	/* padding: var(- -lumo-space-m); */
-	padding: 5px;
+	padding: 1px;
 }
 
 /*
@@ -43,9 +45,12 @@
 */
 
 .node-form-fields * {
-	padding: 0px;
+	padding: 2px;
 	margin: 0px;
+	/*
+	flex-direction: row;
 	align-items: flex-start;
+	*/
 }
 
 
