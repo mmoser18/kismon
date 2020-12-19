@@ -38,12 +38,12 @@ public class ArchitectureTests
 		ArchRule rule;
 		rule = ArchRuleDefinition.classes()
 			.that().areAnnotatedWith(Entity.class)
-			.should().resideInAnyPackage("..entities");
+			.should().resideInAnyPackage("..entities..");
 		rule.check(classes);
 
 		rule = ArchRuleDefinition.classes()
 			.that().haveNameMatching("..Repository..")
-			.should().resideInAnyPackage("..repositories");
+			.should().resideInAnyPackage("..repositories..");
 		rule.check(classes);
 	}
 
@@ -63,6 +63,15 @@ public class ArchitectureTests
 			;
 		rule.check(classes);
 	}
+
+//	@ArchTest
+//	void preventReferencesToMessagesOutsideCurrentPackage(JavaClasses classes) {
+//		ArchRule rule;
+//		rule = ArchRuleDefinition.noClasses()
+//			.should().accessClassesThat().haveNameMatching("Messages")
+//			;
+//		rule.check(classes);
+//	}
 
 	@ArchTest
 	void checkLayers(JavaClasses classes) {
