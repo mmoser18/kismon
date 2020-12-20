@@ -7,7 +7,6 @@
 package net.mmo.utils.kism.entities;
 
 import java.util.ArrayList;
-import java.util.function.Function;
 
 import javax.persistence.Entity;
 
@@ -43,6 +42,7 @@ public class IntermediateNode extends Node
 		Node oldParent = child.getParent();
 		if ((oldParent != null) && (oldParent instanceof IntermediateNode)) {
 			((IntermediateNode)oldParent).removeChild(child);
+			((IntermediateNode)oldParent).deriveNewState();
 		}
 		synchronized(this) {
 			child.setParent(this);
@@ -71,16 +71,18 @@ public class IntermediateNode extends Node
 				}
 			}
 		}
-		setState(minimalState);
-	}
-
-	@Override
-	public void applyToSubTree(Function<Node, Void> fn) {
-		super.applyToSubTree(fn);
-		for (Node child: getChildren()) {
-			fn.apply(child);
+		if (getState() != minimalState) {
+			setState(minimalState); // this triggers deriveNewState() on parent, so no need to call that explicitly
 		}
 	}
+
+//	@Override
+//	public void applyToSubTree(Function<Node, Void> fn) {
+//		super.applyToSubTree(fn);
+//		for (Node child: getChildren()) {
+//			fn.apply(child);
+//		}
+//	}
 
 	@Override
 	public String toString() {

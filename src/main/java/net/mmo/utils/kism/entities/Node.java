@@ -53,28 +53,25 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	@JsonIgnore
 	protected IntermediateNode parent;
 
-	private boolean enabled = true; // child is to be considered for bubbling up state
-
 	private boolean active = true; // child is to be considered for bubbling up state
 
 	private NodeProperties customProperties = new NodeProperties();
 
 	// required for deserialization
 	protected Node() {
-		super();
 		log.info("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	protected Node(String name, String description) {
+		this(name, description, State.OK);
+	}
+	protected Node(String name, String description, State state) {
 		Assert.notNull(name, "node name must not be null");  //$NON-NLS-1$
+		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
 		log.info("Creating new {} {}.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 		this.name = name;
 		this.description = description;
-		log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
-	}
-	protected Node(String name, String description, State state) {
-		super();
-		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
 		this.state = state;
+		log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
@@ -100,11 +97,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.parent != null) this.parent.deriveNewState();
 	}
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-		if (this.parent != null) this.parent.deriveNewState();
-	}
-
 	public void setActive(boolean active) {
 		this.active = active;
 		if (this.parent != null) this.parent.deriveNewState();
@@ -122,7 +114,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			+ ", state:" + getState() //$NON-NLS-1$
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
-			+ ", enabled:" + isEnabled() //$NON-NLS-1$
 			+ ", active:" + isActive() //$NON-NLS-1$
 			+ ", customProperties:" + getCustomProperties() //$NON-NLS-1$
 			+ "]"; //$NON-NLS-1$

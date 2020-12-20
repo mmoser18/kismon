@@ -33,8 +33,8 @@ public abstract class NodeForm extends FormLayout
 	public static final String NameClassName        = "node-form-name"; //$NON-NLS-1$
 	public static final String DescriptionClassName = "node-form-description"; //$NON-NLS-1$
 	public static final String StateClassName       = "node-form-state"; //$NON-NLS-1$
-	public static final String EnabledClassName     = "node-form-enabled"; //$NON-NLS-1$
 	public static final String ActiveClassName      = "node-form-active"; //$NON-NLS-1$
+	public static final String PropertiesClassName  = "node-form-properties"; //$NON-NLS-1$
 
 	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -42,8 +42,8 @@ public abstract class NodeForm extends FormLayout
 	TextArea description;
 	// state is calculated automatically!
 	ComboBox<Node.State> state;
-	Checkbox enabled;
 	Checkbox active;
+	TextArea properties;
 
 	protected VerticalLayout fields;
 
@@ -71,7 +71,7 @@ public abstract class NodeForm extends FormLayout
 		createFormFields();
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
-		                                      // Took me a day to find this out... ||-(
+		                                      // Took me a day to find out why the binding was a No-op... ||-(
 
 		add(this.header, this.fields, createButtonsLayout());
 	}
@@ -88,28 +88,26 @@ public abstract class NodeForm extends FormLayout
 	}
 
 	protected void createFormFields() {
-		log.debug("NodeForm.createFields() - begin"); //$NON-NLS-1$
-		this.name = new TextField(Messages.getString("NodeForm.TextField.Name.Label")); //$NON-NLS-1$
+		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
 
-		this.description = new TextArea(Messages.getString("NodeForm.TextField.Description.Label")); //$NON-NLS-1$
+		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
 
-		this.state = new ComboBox<>(Messages.getString("NodeForm.ComboBox.State.Label")); //$NON-NLS-1$
+		this.state = new ComboBox<>(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.state.addClassName(StateClassName);
 		this.state.setItems(Node.State.values());
 		this.state.setReadOnly(true); // state is calculated automatically!
 
-		this.enabled = new Checkbox(Messages.getString("NodeForm.ComboBox.Enabled.Label")); //$NON-NLS-1$
-		this.enabled.addClassName(EnabledClassName);
-
-		this.active  = new Checkbox(Messages.getString("NodeForm.ComboBox.Active.Label")); //$NON-NLS-1$
+		this.active  = new Checkbox(Messages.getString("NodeForm.Active.Label")); //$NON-NLS-1$
 		this.active.addClassName(ActiveClassName);
 
-		this.fields = new VerticalLayout(this.name, this.description, this.state, this.enabled, this.active);
+		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
+		this.properties.addClassName(PropertiesClassName);
+
+		this.fields = new VerticalLayout(this.name, this.description, this.state, this.active);
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();
-		log.debug("NodeForm.createFields() - end"); //$NON-NLS-1$
 	}
 
 	private HorizontalLayout createButtonsLayout() {

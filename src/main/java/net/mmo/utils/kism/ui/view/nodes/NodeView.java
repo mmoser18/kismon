@@ -187,7 +187,6 @@ public class NodeView extends VerticalLayout
 		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
 		this.tree.addColumn(Node::getDescription).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")); //$NON-NLS-1$
 		this.tree.addColumn(Node::getState      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")); //$NON-NLS-1$
-		this.tree.addColumn(Node::isEnabled     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
 		this.tree.addColumn(Node::isActive      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Active")); //$NON-NLS-1$
 		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
@@ -392,9 +391,9 @@ public class NodeView extends VerticalLayout
 	private void saveRootNode(RootNode rootNode) {
 		try {
 			String fileName = rootNode.getFilePath();
-			if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME;
+			if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME + '.' + NodeService.CONFIG_FILE_TYPE;
 			// TODO : provide some file selection box...
-			File file = new File(fileName + '.' + NodeService.CONFIG_FILE_TYPE);
+			File file = new File(fileName);
 			if (file.canWrite()) {
 				this.nodeService.saveAs(rootNode, file);
 				rootNode.setFilePath(fileName);

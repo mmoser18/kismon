@@ -35,6 +35,5 @@ public class LeafNode extends Node
 	// required for Unit-Tests:
 	public LeafNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
-		parent.deriveNewState();
 	}
 }
