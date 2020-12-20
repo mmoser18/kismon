@@ -64,6 +64,7 @@ public class ContactForm extends FormLayout
 
 		this.company.setItems(companies);
 		this.company.setItemLabelGenerator(Company::getName);
+
 		this.status.setItems(Contact.Status.values());
 		this.status.addClassName(StatusClassName);
 

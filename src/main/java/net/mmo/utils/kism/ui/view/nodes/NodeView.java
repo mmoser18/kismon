@@ -252,7 +252,7 @@ public class NodeView extends VerticalLayout
 
 	private void saveNode(NodeForm.SaveEvent event) {
 		Node node = event.getNode();
-		log.info("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
+		log.debug("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
 			addNewNode(node);
 		} else { // updating an existing node:
@@ -263,7 +263,7 @@ public class NodeView extends VerticalLayout
 
 	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
-		log.info("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
+		log.debug("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
 		deleteNodes(Collections.singletonList(node));
 		if (this.alwaysSave) saveNode(node);
 		closeEditor();
@@ -349,7 +349,7 @@ public class NodeView extends VerticalLayout
 	}
 
 	private void closeEditor() {
-		log.info("NodeView.closeEditor"); //$NON-NLS-1$
+		log.debug("NodeView.closeEditor"); //$NON-NLS-1$
 		this.form.setNode(null);
 		this.form.setVisible(false);
 		removeClassName("editing"); //$NON-NLS-1$

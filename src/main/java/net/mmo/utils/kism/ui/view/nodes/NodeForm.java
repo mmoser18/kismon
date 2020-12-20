@@ -57,18 +57,22 @@ public abstract class NodeForm extends FormLayout
 	public NodeForm() {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
-		this.binder.bindInstanceFields(this);
 
 //		this.binder.forField(this.nameField)
 //			.withValidator(name ->
 //				{ // Explicit validator instance
 //					return nodeService.getRootNodes().stream()
+//						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
 //						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
 //						.findAny().isEmpty();
 //				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
 //			.bind(Node::getName, Node::setName);
 
 		createFormFields();
+		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
+		                                      // or else the later readBean/writeBean won't work!
+		                                      // Took me a day to find this out... ||-(
+
 		add(this.header, this.fields, createButtonsLayout());
 	}
 
