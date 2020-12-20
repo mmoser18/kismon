@@ -5,12 +5,14 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
-public class IntermediateNodeForm extends NodeForm
+import net.mmo.utils.kism.entities.IntermediateNode;
+
+public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 {
 	private static final long serialVersionUID = -6878512672974473759L;
 
 	public IntermediateNodeForm() {
-		super();
+		super(IntermediateNode.class);
 	}
 
 }

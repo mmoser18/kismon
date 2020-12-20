@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
 
 @Slf4j
-public abstract class NodeForm extends FormLayout
+public abstract class NodeForm <N extends Node> extends FormLayout
 {
 	private static final long serialVersionUID = -4928837821374748141L;
 
@@ -51,10 +51,10 @@ public abstract class NodeForm extends FormLayout
 	Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
 	Button close  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
 
-	private Node node;
-	Binder<Node> binder = new BeanValidationBinder<>(Node.class); // a Binder that is aware of bean validation annotations
+	private N node;
+	Binder<N> binder; // a Binder that is aware of bean validation annotations
 
-	public NodeForm() {
+	public NodeForm(Class<N> clazz) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
 
@@ -68,7 +68,9 @@ public abstract class NodeForm extends FormLayout
 //				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
 //			.bind(Node::getName, Node::setName);
 
-		createFormFields();
+		createFormFields(); // derived classes need to override this
+
+		this.binder = new BeanValidationBinder<>(clazz);
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-op... ||-(
@@ -80,7 +82,7 @@ public abstract class NodeForm extends FormLayout
 		this.header.setText(header);
 	}
 
-	public void setNode(Node node) {
+	public void setNode(N node) {
 		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
 		this.node = node;
 		this.binder.readBean(this.node); // to bind the values from the node to the UI fields.
@@ -124,12 +126,12 @@ public abstract class NodeForm extends FormLayout
 
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.save.setId("nodeform-delete-button"); //$NON-NLS-1$
-		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
+		this.delete.addClickListener(event -> fireEvent(new DeleteEvent<N>(this, this.node)));
 
 		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.close.setId("nodeform-close-button"); //$NON-NLS-1$
 		this.close.addClickShortcut(Key.ESCAPE);
-		this.close.addClickListener(event -> fireEvent(new CloseEvent(this)));
+		this.close.addClickListener(event -> fireEvent(new CloseEvent<N>(this)));
 
 		return new HorizontalLayout(this.save, this.delete, this.close);
 	}
@@ -139,7 +141,7 @@ public abstract class NodeForm extends FormLayout
 		try {
 			// TODO: more validation?
 			this.binder.writeBean(this.node);
-			fireEvent(new SaveEvent(this, this.node));
+			fireEvent(new SaveEvent<N>(this, this.node));
 		} catch (ValidationException e) {
 			e.printStackTrace();
 			new Notification(e.getMessage(), 0).open();
@@ -147,13 +149,13 @@ public abstract class NodeForm extends FormLayout
 	}
 
 	// Events - shared super class
-	public abstract static class NodeFormEvent extends ComponentEvent<NodeForm>
+	public abstract static class NodeFormEvent <N extends Node> extends ComponentEvent<NodeForm<N>>
 	{
 		private static final long serialVersionUID = -7044223229837911727L;
 
-		private Node node;
+		private N node;
 
-		protected NodeFormEvent(NodeForm source, Node node) {
+		protected NodeFormEvent(NodeForm<N> source, N node) {
 			super(source, false);
 			this.node = node;
 		}
@@ -163,27 +165,27 @@ public abstract class NodeForm extends FormLayout
 		}
 	}
 
-	public static class SaveEvent extends NodeFormEvent
+	public static class SaveEvent <N extends Node> extends NodeFormEvent<N>
 	{
 		private static final long serialVersionUID = -8255534604198398835L;
 
-		SaveEvent(NodeForm source, Node node) {
+		SaveEvent(NodeForm<N> source, N node) {
 			super(source, node);
 		}
 	}
-	public static class DeleteEvent extends NodeFormEvent
+	public static class DeleteEvent <N extends Node> extends NodeFormEvent<N>
 	{
 		private static final long serialVersionUID = -5394186746319400182L;
 
-		DeleteEvent(NodeForm source, Node node) {
+		DeleteEvent(NodeForm<N> source, N node) {
 			super(source, node);
 		}
 	}
-	public static class CloseEvent extends NodeFormEvent
+	public static class CloseEvent <N extends Node> extends NodeFormEvent<N>
 	{
 		private static final long serialVersionUID = -657451450305155687L;
 
-		CloseEvent(NodeForm source) {
+		CloseEvent(NodeForm<N> source) {
 			super(source, null);
 		}
 	}

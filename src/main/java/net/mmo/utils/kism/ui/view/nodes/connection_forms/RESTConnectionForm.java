@@ -5,12 +5,14 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
-public class RESTConnectionForm extends ConnectionForm
+import net.mmo.utils.kism.entities.connections.RESTConnection;
+
+public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
 	public RESTConnectionForm() {
-		super();
+		super(RESTConnection.class);
 	}
 
 }

@@ -13,7 +13,7 @@ import net.mmo.utils.kism.entities.connections.SOAPConnection;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NodeFactory
+public class NodeFactory <N extends Node>
 {
 	public enum NodeType {
 		RootNode,
@@ -30,16 +30,17 @@ public class NodeFactory
 
 	private static int nodeCtr = 0;
 
-	public Node createNode(NodeType type) {
+	@SuppressWarnings("unchecked")
+	public N createNode(NodeType type) {
 		switch (type) {
 		case IntermediateNode:
-			return new IntermediateNode("Node" + nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new IntermediateNode("Node_" + nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
 		case RESTConnection:
-			return new RESTConnection("REST" + nodeCtr, "REST Connection"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new RESTConnection("REST_" + nodeCtr, "REST Connection"); //$NON-NLS-1$ //$NON-NLS-2$
 		case SOAPConnection:
-			return new SOAPConnection("SOAP" + nodeCtr, "SOAP Connection"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new SOAPConnection("SOAP_" + nodeCtr, "SOAP Connection"); //$NON-NLS-1$ //$NON-NLS-2$
 		case JDBCConnection:
-			return new JDBCConnection("JDBC" + nodeCtr, "JDBC Connection"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new JDBCConnection("JDBC_" + nodeCtr, "JDBC Connection"); //$NON-NLS-1$ //$NON-NLS-2$
 		default: throw new IllegalArgumentException("Unexpected node type " + type + " in NodeFactory.createNode()"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}

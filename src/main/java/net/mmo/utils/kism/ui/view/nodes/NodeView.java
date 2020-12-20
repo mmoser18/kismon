@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
 // This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
 // see https://github.com/vaadin/vaadin-grid/issues/1934
 @CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
-public class NodeView extends VerticalLayout
+public class NodeView <N extends Node> extends VerticalLayout
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
@@ -57,19 +57,19 @@ public class NodeView extends VerticalLayout
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
 
 	private NodeService nodeService;
-	private NodeFactory nodeFactory;
-	private FormFactory formFactory;
+	private NodeFactory<N> nodeFactory;
+	private FormFactory<N> formFactory;
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	Div content;
-	NodeForm form; // package visible for ITs - is there no other way?
+	NodeForm<N> form; // package visible for ITs - is there no other way?
 	LayoutDirection contentDirection = LayoutDirection.direction_row;
 
 	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	public NodeView(NodeService nodeService,
-	                NodeFactory nodeFactory,
-	                FormFactory formFactory) { // defined as constructor args to force order
+	                NodeFactory<N> nodeFactory,
+	                FormFactory<N> formFactory) { // defined as constructor args to force order
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
@@ -193,7 +193,8 @@ public class NodeView extends VerticalLayout
 
 		// connect view and model:
 		this.tree.asSingleSelect().addValueChangeListener(event -> {
-			Node node = event.getValue(); // getValue() returns the selected Node or null if none is selected /
+			@SuppressWarnings("unchecked")
+			N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Selected node '{}'.", node); //$NON-NLS-1$
 			if (this.form != null && this.form.isVisible()) {
 				editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
@@ -207,7 +208,8 @@ public class NodeView extends VerticalLayout
 		});
 
 		this.tree.addItemDoubleClickListener(event -> {
-			Node node = event.getItem(); // returns the selected Node or null if none is selected /
+			@SuppressWarnings("unchecked")
+			N node = (N)event.getItem(); // returns the selected Node or null if none is selected /
 			log.info("DoubleClicked node '{}'.", node); //$NON-NLS-1$
 			// action:
 			editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
@@ -249,7 +251,7 @@ public class NodeView extends VerticalLayout
 		return Arrays.asList(rootNodes.toArray(new Node[rootNodes.size()]));
 	}
 
-	private void saveNode(NodeForm.SaveEvent event) {
+	private void saveNode(NodeForm.SaveEvent<N> event) {
 		Node node = event.getNode();
 		log.debug("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
@@ -260,7 +262,7 @@ public class NodeView extends VerticalLayout
 		// closeEditor();
 	}
 
-	private void deleteNode(NodeForm.DeleteEvent event) {
+	private void deleteNode(NodeForm.DeleteEvent<N> event) {
 		Node node = event.getNode();
 		log.debug("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
 		deleteNodes(Collections.singletonList(node));
@@ -317,16 +319,16 @@ public class NodeView extends VerticalLayout
 		this.tree.getDataProvider().refreshItem(node);
 	}
 
-	public void editNode(Node node, String header) {
+	public void editNode(N node, String header) {
 		log.info("editNode {}", node); //$NON-NLS-1$
 		if (node == null) {
 			closeEditor();
 		} else {
-			NodeForm newForm;
+			NodeForm<N> newForm;
 			try {
 				newForm = this.formFactory.createForm(node);
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				log.error("Error creating node:", ex); //$NON-NLS-1$
 				ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$
 				return;
 			}

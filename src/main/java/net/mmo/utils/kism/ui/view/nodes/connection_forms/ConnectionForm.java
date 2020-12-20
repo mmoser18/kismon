@@ -7,10 +7,15 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.textfield.TextField;
+import net.mmo.utils.kism.entities.connections.Connection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
-public class ConnectionForm extends NodeForm
+public class ConnectionForm <N extends Connection> extends NodeForm<N>
 {
+	public ConnectionForm(Class<N> clazz) {
+		super(clazz);
+	}
+
 	private static final long serialVersionUID = 5772018540738340331L;
 
 	public static final String ProtocolClassName  = "node-form-field-protocol"; //$NON-NLS-1$
@@ -27,24 +32,17 @@ public class ConnectionForm extends NodeForm
 	TextField arguments;
 	Checkbox enabled;
 
-	public ConnectionForm() {
-		super();
-	}
-
 	@Override
 	protected void createFormFields() {
 		super.createFormFields();
 		this.protocol  = new TextField(Messages.getString("ConnectionForm.Protocol.Label")); //$NON-NLS-1$
 		this.protocol.setClassName(ProtocolClassName);
-		this.protocol.setMaxLength(10); // is there anything longer than 5 characters?
 
 		this.host      = new TextField(Messages.getString("ConnectionForm.Host.Label")); //$NON-NLS-1$
 		this.host.setClassName(HostClassName);
-		this.host.setMaxLength(255); // official max. length for an FQDN
 
 		this.port      = new TextField(Messages.getString("ConnectionForm.Port.Label")); //$NON-NLS-1$
 		this.port.setClassName(PortClassName);
-		this.port.setMaxLength(5);
 
 		this.path      = new TextField(Messages.getString("ConnectionForm.Path.Label")); //$NON-NLS-1$
 		this.path.setClassName(PathClassName);

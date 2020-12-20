@@ -11,32 +11,37 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
+import net.mmo.utils.kism.entities.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.connections.RESTConnection;
+import net.mmo.utils.kism.entities.connections.SOAPConnection;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.JDBCConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.RESTConnectionForm;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.SOAPConnectionForm;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class FormFactory
+public class FormFactory <N extends Node>
 {
 	// we cache the forms - one per type:
-	Hashtable<Class<?>, NodeForm> forms = new Hashtable<>();
+	Hashtable<Class<N>, NodeForm<N>> forms = new Hashtable<>();
 
-	NodeForm createForm(Node node) {
+	@SuppressWarnings("unchecked")
+	NodeForm<N> createForm(N node) {
 		log.info("creating new form for node {}:", node); //$NON-NLS-1$
-		Class<?> clazz = node.getClass();
-		NodeForm form = this.forms.get(clazz);
+		Class<N> clazz = (Class<N>)node.getClass();
+		NodeForm<N> form = this.forms.get(clazz);
 		if (form == null) {
 			if (clazz == RootNode.class) {
-				form = new RootNodeForm();
+				form = (NodeForm<N>)new RootNodeForm();
 			} else if (clazz == IntermediateNode.class) {
-				form = new IntermediateNodeForm();
+				form = (NodeForm<N>)new IntermediateNodeForm();
 			} else if (clazz == RESTConnection.class) {
-				form = new RESTConnectionForm();
-//			} else if (clazz == SOAPConnection.class) {
-//				form = new SOAPConnectionForm();
-//			} else if (clazz == JDBCConnection.class) {
-//				form = new JDBCConnectionForm();
+				form = (NodeForm<N>)new RESTConnectionForm();
+			} else if (clazz == SOAPConnection.class) {
+				form = (NodeForm<N>)new SOAPConnectionForm();
+			} else if (clazz == JDBCConnection.class) {
+				form = (NodeForm<N>)new JDBCConnectionForm();
 			} else {
 				throw new IllegalArgumentException("No form defined for unexpected class " + clazz); //$NON-NLS-1$
 			}
