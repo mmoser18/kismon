@@ -1,4 +1,4 @@
-/* List-View:*/
+/* List-View: */
 .list-view .list-view-content {
 	display: flex;
 }
@@ -20,40 +20,79 @@
 	flex-direction: row;
 */
 }
-	
-/* Nodes-View:*/
+
+/* Nodes-View: */
 .node-view .node-view-content {
 	display: flex;
 }
+
+.node-view-toolbar {
+	flex-wrap: wrap;
+	align-items: flex-end;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+/*
+.node-view-toolbar vaadin-button {
+	align-self: flex-end;
+}
+*/
 
 .node-view .node-view-tree {
 	flex: 2;
 }
 
+.node-view .node-view-tree vaadin-grid-cell-content {
+	font-size: +2;
+}
+
+/* Node-Form: */
 .node-view .node-form {
 	flex: 1; /* takes 1/3 (=1+2) of width */
-	align-items: stretch;
+	align-self: flex-start;
+	align-items: flex-start;
 	flex-direction: column;
-	/* padding: var(- -lumo-space-m); */
 	padding: 1px;
+}
+
+.node-view .node-form .node-form-fields {
+	padding: 2px;
+	margin: 0px;
+	align-items: stretch;
+}
+
+.node-form-fields .node-form-field-name,.node-form-field-description,.node-form-field-state_node-form-field-active,.node-form-field-protocol,.node-form-field-host,.node-form-field-port,.node-form-field-path,.node-form-field-arguments {
+	margin: 0px;
+	padding: 0px;
+}
+
+label {
+	margin: 0px;
+	padding-top: 5px;
+	padding-bottom: 0px;
+}
+	
+.node-form-field-state_node-form-field-active {
+	align-items: baseline;
+}
+
+label[id^="vaadin-text-field-label"] {
+	padding: 2px;
+}
+label[id^="vaadin-text-area-label"] {
+	padding: 2px;
 }
 
 /*
 .node-view .node-view-tree vaadin-grid-cell-content {
 	color: blue;
 }
-*/
 
 .node-form-fields * {
-	padding: 2px;
-	margin: 0px;
-	/*
-	flex-direction: row;
-	align-items: flex-start;
-	*/
+	align-items: stretch;
 }
-
-
+*/
 
 .direction_row {
 	flex-direction: row;
@@ -81,9 +120,15 @@
 }
 
 .main-header {
-	height: 5em;
+	height: 3em;
 	width: 100%;
-	align-items: center;
+	align-items: flex-end;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.main-header h1 {
+	margin: 0px;
 }
 
 .logout-link {

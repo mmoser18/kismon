@@ -17,6 +17,9 @@ public class RESTConnection extends Connection
 {
 	private static final long serialVersionUID = -2228821478937714703L;
 
+	public RESTConnection() { // required for deserializatinon
+		super();
+	}
 	public RESTConnection(String name, String description) {
 		super(name, description);
 	}

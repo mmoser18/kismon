@@ -20,8 +20,7 @@ public class LeafNode extends Node
 	private static final long serialVersionUID = 265720619758262963L;
 
 	/** required for deserialization only */
-	@SuppressWarnings("unused")
-	private LeafNode() {
+	protected LeafNode() {
 		// empty
 	}
 

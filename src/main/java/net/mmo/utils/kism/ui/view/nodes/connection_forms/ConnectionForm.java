@@ -13,12 +13,12 @@ public class ConnectionForm extends NodeForm
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
-	public static final String ProtocolClassName  = "node-form-protocol"; //$NON-NLS-1$
-	public static final String HostClassName      = "node-form-host"; //$NON-NLS-1$
-	public static final String PortClassName      = "node-form-port"; //$NON-NLS-1$
-	public static final String PathClassName      = "node-form-path"; //$NON-NLS-1$
-	public static final String ArgumentsClassName = "node-form-arguments"; //$NON-NLS-1$
-	public static final String EnabledClassName   = "node-form-enabled"; //$NON-NLS-1$
+	public static final String ProtocolClassName  = "node-form-field-protocol"; //$NON-NLS-1$
+	public static final String HostClassName      = "node-form-field-host"; //$NON-NLS-1$
+	public static final String PortClassName      = "node-form-field-port"; //$NON-NLS-1$
+	public static final String PathClassName      = "node-form-field-path"; //$NON-NLS-1$
+	public static final String ArgumentsClassName = "node-form-field-arguments"; //$NON-NLS-1$
+	public static final String EnabledClassName   = "node-form-field-enabled"; //$NON-NLS-1$
 
 	TextField protocol;
 	TextField host;

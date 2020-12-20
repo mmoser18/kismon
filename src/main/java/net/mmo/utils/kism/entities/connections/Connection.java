@@ -45,6 +45,11 @@ public class Connection extends LeafNode
 
 	private boolean enabled = true; // should connection be regularly checked?
 
+	/** required for deserialization only */
+	protected Connection() {
+		// empty
+	}
+
 	protected Connection(String name, String description) {
 		super(name, description);
 		setState(State.values()[(int)(Math.random()*3.0)]);

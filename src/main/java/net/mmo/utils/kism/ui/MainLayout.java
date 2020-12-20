@@ -42,7 +42,7 @@ public class MainLayout extends AppLayout
 
 		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, logout);
 		header.addClassName(HeaderClassName);
-		header.expand(appTitle);
+		// header.expand(appTitle);
 		// header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
 		addToNavbar(header);

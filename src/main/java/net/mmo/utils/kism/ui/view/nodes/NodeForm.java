@@ -30,11 +30,11 @@ public abstract class NodeForm extends FormLayout
 	// public to allow access by test classes
 	public static final String ViewClassName = "node-form"; //$NON-NLS-1$
 	public static final String FieldsClassName = "node-form-fields"; //$NON-NLS-1$
-	public static final String NameClassName        = "node-form-name"; //$NON-NLS-1$
-	public static final String DescriptionClassName = "node-form-description"; //$NON-NLS-1$
-	public static final String StateClassName       = "node-form-state"; //$NON-NLS-1$
-	public static final String ActiveClassName      = "node-form-active"; //$NON-NLS-1$
-	public static final String PropertiesClassName  = "node-form-properties"; //$NON-NLS-1$
+	public static final String NameClassName        = "node-form-field-name"; //$NON-NLS-1$
+	public static final String DescriptionClassName = "node-form-field-description"; //$NON-NLS-1$
+	public static final String StateClassName       = "node-form-field-state"; //$NON-NLS-1$
+	public static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
+	public static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
 
 	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -102,12 +102,17 @@ public abstract class NodeForm extends FormLayout
 		this.active  = new Checkbox(Messages.getString("NodeForm.Active.Label")); //$NON-NLS-1$
 		this.active.addClassName(ActiveClassName);
 
+		HorizontalLayout stateAndActive = new HorizontalLayout(this.active, this.state);
+		stateAndActive.addClassName(StateClassName + '_' + ActiveClassName);
+
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
 
-		this.fields = new VerticalLayout(this.name, this.description, this.state, this.active);
+		this.fields = new VerticalLayout(this.name, this.description, stateAndActive);
 		this.fields.setClassName(FieldsClassName);
-		this.fields.setSizeFull();
+		// this.fields.setSizeFull();
+		this.fields.setWidthFull();
+		this.fields.setMargin(false);
 	}
 
 	private HorizontalLayout createButtonsLayout() {
