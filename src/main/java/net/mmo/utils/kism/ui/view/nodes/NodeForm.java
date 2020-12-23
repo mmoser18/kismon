@@ -36,7 +36,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 	public static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
 	public static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
 
-	Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
+	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
 	TextField name;
 	TextArea description;
@@ -47,12 +47,12 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 
 	protected VerticalLayout fields;
 
-	Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
-	Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
-	Button close  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
+	private Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
+	private Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
+	private Button close  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
 
-	private N node;
-	Binder<N> binder; // a Binder that is aware of bean validation annotations
+	protected N node;
+	protected Binder<N> binder; // a Binder that is aware of bean validation annotations
 
 	public NodeForm(Class<N> clazz) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
@@ -71,6 +71,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 		createFormFields(); // derived classes need to override this
 
 		this.binder = new BeanValidationBinder<>(clazz);
+		this.binder.forField(this.properties).bind(n -> n.getProperties().getProperties(), (n,values) -> n.getProperties().setProperties(values));
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-op... ||-(
@@ -110,7 +111,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
 
-		this.fields = new VerticalLayout(this.name, this.description, stateAndActive);
+		this.fields = new VerticalLayout(this.name, this.description, stateAndActive, this.properties);
 		this.fields.setClassName(FieldsClassName);
 		// this.fields.setSizeFull();
 		this.fields.setWidthFull();

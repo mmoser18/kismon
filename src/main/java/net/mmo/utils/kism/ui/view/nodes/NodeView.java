@@ -109,9 +109,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 		nodeTypeSelector.setItems(NodeType.values());
 		nodeTypeSelector.setValue(NodeType.IntermediateNode);
 		nodeTypeSelector.addValueChangeListener(change ->
-		{
-			log.info("nodeTypeSelector changed to {}", change.getValue()); //$NON-NLS-1$
-		});
+			{
+				log.info("nodeTypeSelector changed to {}", change.getValue()); //$NON-NLS-1$
+			});
 
 		Button addChildNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
 		addChildNodeButton.addClickListener(click ->
@@ -197,7 +197,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 			N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Selected node '{}'.", node); //$NON-NLS-1$
 			if (this.form != null && this.form.isVisible()) {
-				editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+				if (node != null) {
+					editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+				} else {
+					closeEditor();
+				}
 			}
 		});
 
@@ -319,34 +323,39 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.getDataProvider().refreshItem(node);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void editNode(N node, String header) {
 		log.info("editNode {}", node); //$NON-NLS-1$
-		if (node == null) {
-			closeEditor();
-		} else {
-			NodeForm<N> newForm;
+//		if (node == null) {
+//			closeEditor();
+//		} else {
 			try {
-				newForm = this.formFactory.createForm(node);
-			} catch (Exception ex) {
-				log.error("Error creating node:", ex); //$NON-NLS-1$
-				ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$
-				return;
+				NodeForm<N> newForm;
+				try {
+					newForm = this.formFactory.createForm((Class<N>)node.getClass());
+				} catch (Exception ex) {
+					log.error("Error creating node:", ex); //$NON-NLS-1$
+					ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$
+					return;
+				}
+				if (newForm != this.form) { // different form assigned:
+					log.info("editNode: new form {}", newForm); //$NON-NLS-1$
+					if (this.form != null) this.content.remove(this.form); // remove old form
+					this.form = newForm;
+					this.content.add(this.form); // add new form
+					// add listeners (if not already present):
+					this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
+					this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
+					this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
+				}
+				this.form.setHeader(header);
+				this.form.setNode(node);
+				this.form.setVisible(true);
+				addClassName("editing"); //$NON-NLS-1$
+			} catch (java.lang.IllegalStateException ex) {
+				log.error("wtf?", ex); //$NON-NLS-1$
 			}
-			if (newForm != this.form) { // different form assigned:
-				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
-				if (this.form != null) this.content.remove(this.form); // remove old form
-				this.form = newForm;
-				this.content.add(this.form); // add new form
-				// add listeners (if not already present):
-				this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
-				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-			}
-			this.form.setHeader(header);
-			this.form.setNode(node);
-			this.form.setVisible(true);
-			addClassName("editing"); //$NON-NLS-1$
-		}
+//		}
 	}
 
 	private void closeEditor() {

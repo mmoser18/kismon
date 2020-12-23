@@ -12,15 +12,16 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import net.mmo.utils.kism.ui.view.login.LoginView;
 import org.springframework.stereotype.Component;
 
-@SuppressWarnings("serial")
 @Component
 public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 {
+	private static final long serialVersionUID = -5024737646453081931L;
+
 	@Override
 	public void serviceInit(ServiceInitEvent event) {
-		// listens for the initialization of the UI (the internal root component 
+		// listens for the initialization of the UI (the internal root component
 		// in Vaadin and then add a listener before every view transition to the UI:
-		event.getSource().addUIInitListener(uiEvent -> 
+		event.getSource().addUIInitListener(uiEvent ->
 			{
     			final UI ui = uiEvent.getUI();
     			ui.addBeforeEnterListener(this::authenticateNavigation);
@@ -29,7 +30,7 @@ public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 
 	// the BeforeEnterListener that's called before each transition:
 	private void authenticateNavigation(BeforeEnterEvent event) {
-		// as long as the user is not logged in (and we are not already 
+		// as long as the user is not logged in (and we are not already
 		// on the login-view) the event is rerouted to the LoginView:
 		if (!LoginView.class.equals(event.getNavigationTarget()) && !SecurityUtils.isUserLoggedIn()) {
 			event.rerouteTo(LoginView.class);

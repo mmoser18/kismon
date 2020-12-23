@@ -5,7 +5,12 @@
 
 package net.mmo.utils.kism.entities.connections;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import javax.persistence.Entity;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -13,6 +18,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.LeafNode;
+import net.mmo.utils.kism.utils.PropertyReplacer;
 
 @Entity
 @Setter
@@ -21,29 +27,17 @@ public class Connection extends LeafNode
 {
 	private static final long serialVersionUID = -2584969925210734417L;
 
-	@SuppressWarnings("nls")
-	@NotNull
-	@NotEmpty
-	@NotBlank
-	private String protocol = "http";
-
-	@SuppressWarnings("nls")
-	@NotNull
-	@NotEmpty
-	@NotBlank
-	private String host = "localhost";
-
-	@SuppressWarnings("nls")
-	@NotNull
-	@NotEmpty
-	@NotBlank
-	private String port = "8080";
-
-	private String path;
-
-	private String args;
-
 	private boolean enabled = true; // should connection be regularly checked?
+
+	@Min(0) // 0 means off
+	@Max(3600) // means: 1x/hr
+	private int period = 10; // number of seconds every so often this connection should be checked.
+
+	@SuppressWarnings("nls")
+	@NotNull
+	@NotEmpty
+	@NotBlank
+	private String url = "http://localhost:8080";
 
 	/** required for deserialization only */
 	protected Connection() {
@@ -60,17 +54,19 @@ public class Connection extends LeafNode
 		if (this.parent != null) this.parent.deriveNewState();
 	}
 
+	public String getResultingURL(String str) throws URISyntaxException {
+		URI uri = new URI(PropertyReplacer.resolveExpression(str, getProperties()));
+		return uri.toString();
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-			.append(", protocol:").append(this.protocol) //$NON-NLS-1$
-			.append(", host:").append(this.host) //$NON-NLS-1$
-			.append(", port:").append(this.port) //$NON-NLS-1$
-			.append(", path:").append(this.path) //$NON-NLS-1$
-			.append(", args:").append(this.args) //$NON-NLS-1$
 			.append(", enabled:").append(this.enabled) //$NON-NLS-1$
+			.append(", period:").append(this.period) //$NON-NLS-1$
+			.append(", url:").append(this.url) //$NON-NLS-1$
 			.append("]") //$NON-NLS-1$
 			.toString();
 	}

@@ -55,7 +55,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private boolean active = true; // child is to be considered for bubbling up state
 
-	private NodeProperties customProperties = new NodeProperties();
+	private NodeProperties properties = new NodeProperties();
 
 	// required for deserialization
 	protected Node() {
@@ -83,11 +83,11 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	public void setParent(IntermediateNode parent) {
-		if (this.customProperties == null) this.customProperties = new NodeProperties();
+		if (this.properties == null) this.properties = new NodeProperties();
 		if (parent != null) {
-			this.customProperties.setParentProperties(parent.getCustomProperties());
+			this.properties.setParentProperties(parent.getProperties());
 		} else { // remove (from) parent
-			this.customProperties.setParentProperties(null);
+			this.properties.setParentProperties(null);
 		}
 		this.parent = parent;
 	}
@@ -115,7 +115,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", active:" + isActive() //$NON-NLS-1$
-			+ ", customProperties:" + getCustomProperties() //$NON-NLS-1$
+			+ ", customProperties:" + getProperties() //$NON-NLS-1$
 			+ "]"; //$NON-NLS-1$
 	}
 }

@@ -23,15 +23,15 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class FormFactory <N extends Node>
 {
-	// we cache the forms - one per type:
+	// Here we cache the forms - one per type. Since we don't have that many form types there is no cleanup nor eviction
 	Hashtable<Class<N>, NodeForm<N>> forms = new Hashtable<>();
 
+	// @Cacheable("forms") // tried using Spring cache here but didn't work. And as a sideeffect it caused darn slow application startup, so back to a good ol' Hashtable...
 	@SuppressWarnings("unchecked")
-	NodeForm<N> createForm(N node) {
-		log.info("creating new form for node {}:", node); //$NON-NLS-1$
-		Class<N> clazz = (Class<N>)node.getClass();
+	NodeForm<N> createForm(Class<N> clazz) {
 		NodeForm<N> form = this.forms.get(clazz);
 		if (form == null) {
+			log.info("creating new form for node-class {}:", clazz); //$NON-NLS-1$
 			if (clazz == RootNode.class) {
 				form = (NodeForm<N>)new RootNodeForm();
 			} else if (clazz == IntermediateNode.class) {
@@ -45,12 +45,11 @@ public class FormFactory <N extends Node>
 			} else {
 				throw new IllegalArgumentException("No form defined for unexpected class " + clazz); //$NON-NLS-1$
 			}
-			this.forms.put(clazz, form);
+			this.forms.put(clazz, form); // cache it
 			log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
 		} else {
 			log.info("found existing form for class {}: {}", clazz, form); //$NON-NLS-1$
 		}
 		return form;
 	}
-
 }

@@ -5,54 +5,69 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import java.net.URISyntaxException;
+
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import net.mmo.utils.kism.entities.connections.Connection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 public class ConnectionForm <N extends Connection> extends NodeForm<N>
 {
+	private static final long serialVersionUID = 5772018540738340331L;
+
+	public static final String EnabledClassName  = "node-form-field-enabled"; //$NON-NLS-1$
+	public static final String PeriodClassName   = "node-form-field-period"; //$NON-NLS-1$
+
+	public static final String URLClassName      = "node-form-field-url"; //$NON-NLS-1$
+	public static final String ResultingURLClassName = "node-form-field-resulting-url"; //$NON-NLS-1$
+
+	Checkbox enabled;
+	IntegerField period;
+	TextField url;
+	Label resultingURL;
+
 	public ConnectionForm(Class<N> clazz) {
 		super(clazz);
 	}
 
-	private static final long serialVersionUID = 5772018540738340331L;
-
-	public static final String ProtocolClassName  = "node-form-field-protocol"; //$NON-NLS-1$
-	public static final String HostClassName      = "node-form-field-host"; //$NON-NLS-1$
-	public static final String PortClassName      = "node-form-field-port"; //$NON-NLS-1$
-	public static final String PathClassName      = "node-form-field-path"; //$NON-NLS-1$
-	public static final String ArgumentsClassName = "node-form-field-arguments"; //$NON-NLS-1$
-	public static final String EnabledClassName   = "node-form-field-enabled"; //$NON-NLS-1$
-
-	TextField protocol;
-	TextField host;
-	TextField port;
-	TextField path;
-	TextField arguments;
-	Checkbox enabled;
-
 	@Override
 	protected void createFormFields() {
 		super.createFormFields();
-		this.protocol  = new TextField(Messages.getString("ConnectionForm.Protocol.Label")); //$NON-NLS-1$
-		this.protocol.setClassName(ProtocolClassName);
-
-		this.host      = new TextField(Messages.getString("ConnectionForm.Host.Label")); //$NON-NLS-1$
-		this.host.setClassName(HostClassName);
-
-		this.port      = new TextField(Messages.getString("ConnectionForm.Port.Label")); //$NON-NLS-1$
-		this.port.setClassName(PortClassName);
-
-		this.path      = new TextField(Messages.getString("ConnectionForm.Path.Label")); //$NON-NLS-1$
-		this.path.setClassName(PathClassName);
-
-		this.arguments = new TextField(Messages.getString("ConnectionForm.Arguments.Label")); //$NON-NLS-1$
-		this.arguments.setClassName(ArgumentsClassName);
 
 		this.enabled = new Checkbox(Messages.getString("ConnectionForm.Enabled.Label")); //$NON-NLS-1$
 		this.enabled.addClassName(EnabledClassName);
 
-		this.fields.add(this.protocol, this.host, this.port, this.path, this.arguments, this.enabled);
+		this.period = new IntegerField(Messages.getString("ConnectionForm.Period.Label")); //$NON-NLS-1$
+		this.period.addClassName(PeriodClassName);
+
+		this.url = new TextField(Messages.getString("ConnectionForm.URL.Label")); //$NON-NLS-1$
+		this.url.setClassName(URLClassName);
+		this.url.addValueChangeListener(event -> {
+			updateResultingURL();
+		});
+
+		this.resultingURL = new Label();
+		this.resultingURL.setClassName(ResultingURLClassName);
+		updateResultingURL();
+
+		this.fields.add(this.enabled, this.url, this.resultingURL);
+	}
+
+	private void updateResultingURL() {
+		try {
+			String urlString;
+			if (this.node != null) {
+				urlString = this.node.getResultingURL(this.url.getValue());
+				this.resultingURL.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.Value"), urlString)); //$NON-NLS-1$
+				this.resultingURL.setVisible(!urlString.equals(this.url.getValue()));
+			} else {
+				this.resultingURL.setText("<undefined>"); //$NON-NLS-1$
+			}
+		} catch (URISyntaxException ex) {
+			this.resultingURL.setText("Illegal URL: " + ex + " - reason: " + ex.getReason()); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 }

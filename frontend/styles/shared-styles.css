@@ -58,31 +58,27 @@
 
 .node-view .node-form .node-form-fields {
 	padding: 2px;
-	margin: 0px;
+	margin-top: 15px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
+	margin-bottom: 0px;
 	align-items: stretch;
 }
 
-.node-form-fields .node-form-field-name,.node-form-field-description,.node-form-field-state_node-form-field-active,.node-form-field-protocol,.node-form-field-host,.node-form-field-port,.node-form-field-path,.node-form-field-arguments {
-	margin: 0px;
-	padding: 0px;
-}
-
-label {
-	margin: 0px;
-	padding-top: 5px;
+vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-horizontal-layout[class^='node-form-field-'] {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
 	padding-bottom: 0px;
 }
-	
+
+label[id^="vaadin-text-field-label-"],label[id^="vaadin-text-area-label-"] {
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+}
+
 .node-form-field-state_node-form-field-active {
 	align-items: baseline;
 }
 
-label[id^="vaadin-text-field-label"] {
-	padding: 2px;
-}
-label[id^="vaadin-text-area-label"] {
-	padding: 2px;
-}
 
 /*
 .node-view .node-view-tree vaadin-grid-cell-content {
