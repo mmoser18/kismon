@@ -70,7 +70,7 @@ vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-
 	padding-bottom: 0px;
 }
 
-label[id^="vaadin-text-field-label-"],label[id^="vaadin-text-area-label-"] {
+label[id^="vaadin-text-field-label-"],label[id^="vaadin-text-area-label-"],label [class^='node-form-field-'] {
 	margin-bottom: 0px;
 	padding-bottom: 0px;
 }

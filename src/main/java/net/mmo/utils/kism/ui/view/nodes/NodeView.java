@@ -255,7 +255,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		return Arrays.asList(rootNodes.toArray(new Node[rootNodes.size()]));
 	}
 
-	private void saveNode(NodeForm.SaveEvent<N> event) {
+	private void saveNode(NodeForm.SaveEvent event) {
 		Node node = event.getNode();
 		log.debug("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
@@ -266,7 +266,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// closeEditor();
 	}
 
-	private void deleteNode(NodeForm.DeleteEvent<N> event) {
+	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
 		log.debug("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
 		deleteNodes(Collections.singletonList(node));

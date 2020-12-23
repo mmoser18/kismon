@@ -58,19 +58,20 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
 
-//		this.binder.forField(this.nameField)
-//			.withValidator(name ->
-//				{ // Explicit validator instance
-//					return nodeService.getRootNodes().stream()
-//						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
-//						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
-//						.findAny().isEmpty();
-//				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
-//			.bind(Node::getName, Node::setName);
+		this.binder = new BeanValidationBinder<>(clazz);
 
 		createFormFields(); // derived classes need to override this
 
-		this.binder = new BeanValidationBinder<>(clazz);
+//		this.binder.forField(this.nameField)
+//		.withValidator(name ->
+//			{ // Explicit validator instance
+//				return nodeService.getRootNodes().stream()
+//					.filter(rootNode -> rootNode != this.node) // not the same rootnode?
+//					.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
+//					.findAny().isEmpty();
+//			}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
+//		.bind(Node::getName, Node::setName);
+
 		this.binder.forField(this.properties).bind(n -> n.getProperties().getProperties(), (n,values) -> n.getProperties().setProperties(values));
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
@@ -127,12 +128,12 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.save.setId("nodeform-delete-button"); //$NON-NLS-1$
-		this.delete.addClickListener(event -> fireEvent(new DeleteEvent<N>(this, this.node)));
+		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
 
 		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.close.setId("nodeform-close-button"); //$NON-NLS-1$
 		this.close.addClickShortcut(Key.ESCAPE);
-		this.close.addClickListener(event -> fireEvent(new CloseEvent<N>(this)));
+		this.close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
 		return new HorizontalLayout(this.save, this.delete, this.close);
 	}
@@ -142,7 +143,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 		try {
 			// TODO: more validation?
 			this.binder.writeBean(this.node);
-			fireEvent(new SaveEvent<N>(this, this.node));
+			fireEvent(new SaveEvent(this, this.node));
 		} catch (ValidationException e) {
 			e.printStackTrace();
 			new Notification(e.getMessage(), 0).open();
@@ -150,13 +151,14 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 	}
 
 	// Events - shared super class
-	public abstract static class NodeFormEvent <N extends Node> extends ComponentEvent<NodeForm<N>>
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	public abstract static class NodeFormEvent extends ComponentEvent<NodeForm>
 	{
 		private static final long serialVersionUID = -7044223229837911727L;
 
-		private N node;
+		private Node node;
 
-		protected NodeFormEvent(NodeForm<N> source, N node) {
+		protected NodeFormEvent(NodeForm source, Node node) {
 			super(source, false);
 			this.node = node;
 		}
@@ -166,27 +168,30 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 		}
 	}
 
-	public static class SaveEvent <N extends Node> extends NodeFormEvent<N>
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	public static class SaveEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -8255534604198398835L;
 
-		SaveEvent(NodeForm<N> source, N node) {
+		SaveEvent(NodeForm source, Node node) {
 			super(source, node);
 		}
 	}
-	public static class DeleteEvent <N extends Node> extends NodeFormEvent<N>
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	public static class DeleteEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -5394186746319400182L;
 
-		DeleteEvent(NodeForm<N> source, N node) {
+		DeleteEvent(NodeForm source, Node node) {
 			super(source, node);
 		}
 	}
-	public static class CloseEvent <N extends Node> extends NodeFormEvent<N>
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	public static class CloseEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -657451450305155687L;
 
-		CloseEvent(NodeForm<N> source) {
+		CloseEvent(NodeForm source) {
 			super(source, null);
 		}
 	}
@@ -194,7 +199,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 	@Override
 	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
 	                                                              ComponentEventListener<T> listener) {
-		return (!getEventBus().hasListener(eventType) // NOT!
+		return (!getEventBus().hasListener(eventType) // note the NOT!
 		        ? getEventBus().addListener(eventType, listener)
 		        : null);
 	}

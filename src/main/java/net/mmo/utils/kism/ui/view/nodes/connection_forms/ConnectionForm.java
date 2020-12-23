@@ -48,6 +48,16 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 		this.url.addValueChangeListener(event -> {
 			updateResultingURL();
 		});
+		this.binder.forField(this.url)
+			.withValidator(urlStr ->
+				{ // Explicit validator instance
+					try {
+						return !this.node.getResultingURL(urlStr).isBlank(); // dummy check - the actual error is thrown!
+					} catch (Exception ex) {
+						return false;
+					}
+				}, Messages.getString("ConnectionForm.Validator.URL.IllegalURL")) //$NON-NLS-1$
+			.bind(Connection::getUrl, Connection::setUrl);
 
 		this.resultingURL = new Label();
 		this.resultingURL.setClassName(ResultingURLClassName);
