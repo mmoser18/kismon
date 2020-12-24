@@ -106,6 +106,13 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		fn.apply(this);
 	}
 
+	public String getPropertiesAsString() {
+		return (this.properties != null ? this.properties.getPropertiesAsString() : null);
+	}
+	public void setPropertiesFromString(String values) {
+		if (this.properties != null) this.properties.setPropertiesFromString(values);
+	}
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName()

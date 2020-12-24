@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.utils;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,10 +20,10 @@ public class PropertyReplacer
 	 * Replace ${properties} in an expression
 	 *
 	 * @param expression expression string
-	 * @param map property map
+	 * @param props properties
 	 * @return resolved expression string
 	 */
-	public static String resolveExpression(String expression, Map<Object, Object> map) {
+	public static String resolveExpression(String expression, NodeProperties props) {
 		StringBuilder result = new StringBuilder(expression.length());
 		int i = 0;
 		Matcher matcher = EXPRESSION_PATTERN.matcher(expression);
@@ -33,9 +32,8 @@ public class PropertyReplacer
 			result.append(expression.substring(i, matcher.start()));
 			String property = matcher.group();
 			property = property.substring(2, property.length() - 1);
-			if (map.containsKey(property)) { // look up property and replace
-				property = map.get(property).toString();
-			} else { // property not found, don't replace
+			property = props.getProperty(property); // look up property and replace
+			if (property == null) { // property not found, don't replace
 				property = matcher.group();
 			}
 			result.append(property);

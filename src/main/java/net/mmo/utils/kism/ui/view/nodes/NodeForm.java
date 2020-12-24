@@ -38,12 +38,12 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
-	TextField name;
-	TextArea description;
+	protected TextField name;
+	protected TextArea description;
 	// state is calculated automatically!
-	ComboBox<Node.State> state;
-	Checkbox active;
-	TextArea properties;
+	protected ComboBox<Node.State> state;
+	protected Checkbox active;
+	protected TextArea properties;
 
 	protected VerticalLayout fields;
 
@@ -60,7 +60,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 
 		this.binder = new BeanValidationBinder<>(clazz);
 
-		createFormFields(); // derived classes need to override this
+		createFormFields();
 
 //		this.binder.forField(this.nameField)
 //		.withValidator(name ->
@@ -72,7 +72,9 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 //			}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
 //		.bind(Node::getName, Node::setName);
 
-		this.binder.forField(this.properties).bind(n -> n.getProperties().getProperties(), (n,values) -> n.getProperties().setProperties(values));
+		this.binder.forField(this.properties)
+			.bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
+
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-op... ||-(
@@ -91,6 +93,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
 	}
 
+	/** derived classes need to override this */
 	protected void createFormFields() {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);

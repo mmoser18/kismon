@@ -19,7 +19,7 @@ public class RootNode extends IntermediateNode
 {
 	private static final long serialVersionUID = -1717387035835870973L;
 
-	@JsonIgnore // no need to write that value into the file itself.
+	@JsonIgnore // no point in writing that value into the file itself. Restored/set after reading
 	private String filePath;
 
 	/** required for deserialization only */

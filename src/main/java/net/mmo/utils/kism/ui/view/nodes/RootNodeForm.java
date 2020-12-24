@@ -5,14 +5,12 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
-import net.mmo.utils.kism.entities.RootNode;
-
-public class RootNodeForm extends NodeForm<RootNode>
+public class RootNodeForm extends IntermediateNodeForm
 {
 	private static final long serialVersionUID = 2620944667353199126L;
 
 	public RootNodeForm() {
-		super(RootNode.class);
+		super();
 	}
 
 }

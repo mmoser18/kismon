@@ -7,6 +7,9 @@ package net.mmo.utils.kism.arch;
 
 import javax.persistence.Entity;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaAccess;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -89,4 +92,23 @@ public class ArchitectureTests
 		rule.check(classes);
 	}
 
+
+	void checkForWrongMessageClass(JavaClasses classes) {
+		DescribedPredicate<JavaAccess<?>> isForeignMessageClassPredicate =
+			new DescribedPredicate<JavaAccess<?>>("target is a foreign Message class") {
+
+			@Override
+			public boolean apply(JavaAccess<?> access) {
+				JavaClass targetClass = access.getTarget().getOwner();
+				if ("Message".equals(targetClass.getSimpleName())) {
+					JavaClass callerClass = access.getOwner().getOwner();
+					return !targetClass.getPackageName().equals(callerClass.getPackageName());
+				}
+				return false;
+			}
+		};
+
+		ArchRule rule = ArchRuleDefinition.noClasses().should().accessTargetWhere(isForeignMessageClassPredicate);
+		rule.check(classes);
+	}
 }
