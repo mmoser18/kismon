@@ -195,7 +195,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.asSingleSelect().addValueChangeListener(event -> {
 			@SuppressWarnings("unchecked")
 			N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
-			log.info("Selected node '{}'.", node); //$NON-NLS-1$
+			log.info("Selection changed: node='{}'.", node); //$NON-NLS-1$
 			if (this.form != null && this.form.isVisible()) {
 				if (node != null) {
 					editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
@@ -208,7 +208,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.addItemClickListener(event -> {
 			Node node = event.getItem();
 			log.info("Clicked node '{}'.", node); //$NON-NLS-1$
-			// any action?
+			// any action? / already done in asSingleSelect
 		});
 
 		this.tree.addItemDoubleClickListener(event -> {

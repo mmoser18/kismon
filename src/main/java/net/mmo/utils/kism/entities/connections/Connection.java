@@ -6,7 +6,6 @@
 package net.mmo.utils.kism.entities.connections;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.Max;
@@ -54,7 +53,7 @@ public class Connection extends LeafNode
 		if (this.parent != null) this.parent.deriveNewState();
 	}
 
-	public String getResultingURL(String str) throws URISyntaxException {
+	public String getResultingURL(String str) throws Exception {
 		URI uri = new URI(PropertyReplacer.resolveExpression(str, getProperties()));
 		return uri.toString();
 	}

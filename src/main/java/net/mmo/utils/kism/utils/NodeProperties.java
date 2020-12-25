@@ -20,9 +20,26 @@ public class NodeProperties extends Properties
 	private final static String PROPERTY_SEPARATORS = "[,\n]"; //$NON-NLS-1$
 	private final static String KEY_VALUE_SEPARATOR = ":"; //$NON-NLS-1$
 
+	public NodeProperties() {
+		// empty
+	}
+
+	public NodeProperties(Properties parentProperties) {
+		setParentProperties(parentProperties);
+	}
+
 	public Properties getParentProperties() {
 		return this.defaults;
 	}
+
+	@Override
+	public String getProperty(String key) {
+		log.trace("getProperty({}):", key); //$NON-NLS-1$
+		String res = super.getProperty(key);
+		log.trace("getProperty({}) --> {}", key, res); //$NON-NLS-1$
+		return res;
+	}
+
 	/* This is the actual purpose of this class: to get access to and be able to set "defaults": */
 	public void setParentProperties(Properties parentProperties) {
 		this.defaults = parentProperties;
@@ -33,10 +50,10 @@ public class NodeProperties extends Properties
 	}
 	public void setPropertiesFromString(String values) {
 		this.clear(); // remove all old values
-		log.info("setProperties({})", values); //$NON-NLS-1$
+		log.debug("setProperties({})", values); //$NON-NLS-1$
 		for (String entry: values.split(PROPERTY_SEPARATORS)) {
 			String[] splits = entry.split(KEY_VALUE_SEPARATOR);
-			log.info("splits: {}:{}", splits[0], splits[1]); //$NON-NLS-1$
+			log.trace("splits: {}:{}", splits[0], splits[1]); //$NON-NLS-1$
 			this.put(splits[0], splits[1]);
 		}
 	}

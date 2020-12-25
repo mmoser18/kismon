@@ -51,7 +51,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	private State state;
 
 	@JsonIgnore
-	protected IntermediateNode parent;
+	transient protected IntermediateNode parent;
 
 	private boolean active = true; // child is to be considered for bubbling up state
 
@@ -106,11 +106,18 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		fn.apply(this);
 	}
 
+	@JsonIgnore
 	public String getPropertiesAsString() {
 		return (this.properties != null ? this.properties.getPropertiesAsString() : null);
 	}
+
+	@JsonIgnore
 	public void setPropertiesFromString(String values) {
-		if (this.properties != null) this.properties.setPropertiesFromString(values);
+		log.trace("setPropertiesFromString({})", values); //$NON-NLS-1$
+		if (this.properties == null) {
+			this.properties = new NodeProperties(this.parent != null ? this.parent.getProperties() : null);
+		}
+		this.properties.setPropertiesFromString(values);
 	}
 
 	@Override
@@ -122,7 +129,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", active:" + isActive() //$NON-NLS-1$
-			+ ", customProperties:" + getProperties() //$NON-NLS-1$
+			+ ", properties:" + getProperties() //$NON-NLS-1$
 			+ "]"; //$NON-NLS-1$
 	}
 }

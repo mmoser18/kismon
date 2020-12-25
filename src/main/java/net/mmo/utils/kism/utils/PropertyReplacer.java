@@ -22,19 +22,22 @@ public class PropertyReplacer
 	 * @param expression expression string
 	 * @param props properties
 	 * @return resolved expression string
+	 * @throws Exception
 	 */
-	public static String resolveExpression(String expression, NodeProperties props) {
+	public static String resolveExpression(String expression, NodeProperties props) throws Exception {
 		StringBuilder result = new StringBuilder(expression.length());
 		int i = 0;
 		Matcher matcher = EXPRESSION_PATTERN.matcher(expression);
 		while (matcher.find()) {
 			// Strip leading "${" and trailing "}" off.
 			result.append(expression.substring(i, matcher.start()));
-			String property = matcher.group();
-			property = property.substring(2, property.length() - 1);
-			property = props.getProperty(property); // look up property and replace
+			String group = matcher.group();
+			String key = group.substring(2, group.length() - 1);
+			String property = props.getProperty(key); // look up property and replace
 			if (property == null) { // property not found, don't replace
-				property = matcher.group();
+				property = group;
+				throw new IllegalArgumentException(String.format(Messages.getString("PropertyReplacer.KeyNotFound"), key)); //$NON-NLS-1$
+				// property = String.format(Messages.getString("PropertyReplacer.KeyNotFound"), key); //$NON-NLS-1$
 			}
 			result.append(property);
 			i = matcher.end();

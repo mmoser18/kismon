@@ -5,8 +5,6 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
-import java.net.URISyntaxException;
-
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -64,9 +62,19 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 		updateResultingURL();
 
 		// we also may have to update the URL if the properties change:
-		this.properties.addValueChangeListener(event -> updateResultingURL());
+		this.properties.addValueChangeListener(event ->
+			{
+				if (this.node != null) this.node.setPropertiesFromString(event.getValue());
+				updateResultingURL();
+			});
 
 		this.fields.add(this.enabled, this.url, this.resultingURL);
+	}
+
+	@Override
+	public void setNode(N node) {
+		super.setNode(node);
+		updateResultingURL();
 	}
 
 	private void updateResultingURL() {
@@ -82,9 +90,9 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 				this.resultingURL.setText(Messages.getString("ConnectionForm.ResultingUrl.Undefined")); //$NON-NLS-1$
 				this.resultingURL.setVisible(true);
 			}
-		} catch (URISyntaxException ex) {
-			log.debug("updateResultingURL: Illegal URL: " + ex + " - reason: " + ex.getReason()); //$NON-NLS-1$ //$NON-NLS-2$);
-			this.resultingURL.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.IllegalSyntax"), ex, ex.getReason())); //$NON-NLS-1$
+		} catch (Exception ex) {
+			log.debug("updateResultingURL: Illegal URL: {} - reason: {}", ex, ex.getCause()); //$NON-NLS-1$
+			this.resultingURL.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.IllegalSyntax"), ex)); //$NON-NLS-1$
 			this.resultingURL.setVisible(true);
 		}
 	}
