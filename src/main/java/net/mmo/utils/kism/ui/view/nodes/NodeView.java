@@ -383,15 +383,15 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void removeList(Collection<Node> nodes) {
 		log.info("removeList {}.", nodes); //$NON-NLS-1$
 		String question = nodes.stream()
-			.map(node -> NodeService.getRootNode(node).getName())
+			.map(node -> NodeService.getCorrespondingRootNode(node).getName())
 			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) [", "]?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
-		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getRootNode(node).getChildren())), //$NON-NLS-1$
+		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())), //$NON-NLS-1$
 		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
 	}
 
 	private void saveNode(Node node) {
-		RootNode rootNode = NodeService.getRootNode(node);
+		RootNode rootNode = NodeService.getCorrespondingRootNode(node);
 		saveRootNode(rootNode);
 	}
 
@@ -450,7 +450,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			nodes.forEach((node) -> {
 				log.info("deleting nodes '{}'", node); //$NON-NLS-1$
 				if (node instanceof RootNode) {
-					this.nodeService.getRootNodes().remove(NodeService.getRootNode(node));
+					this.nodeService.getRootNodes().remove(NodeService.getCorrespondingRootNode(node));
 				} else {
 					Node deletedNode = this.nodeService.removeChild(node.getParent(), node);
 					log.info("deleted node '{}'", deletedNode); //$NON-NLS-1$

@@ -13,14 +13,14 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-public class SOAPConnection extends Connection
+public class SOAPConnection extends HTTPConnection
 {
 	private static final long serialVersionUID = -7524304663532085424L;
 
-	String requestPayload;
 
 	public SOAPConnection(String name, String description) {
 		super(name, description);
+		this.method = HTTP_Method.POST; // SOAP-requests are always POSTs
 	}
 
 }

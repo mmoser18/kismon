@@ -113,7 +113,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	@JsonIgnore
 	public void setPropertiesFromString(String values) {
-		log.trace("setPropertiesFromString({})", values); //$NON-NLS-1$
+		log.trace("setPropertiesFromString(\"{}\")", values); //$NON-NLS-1$
 		if (this.properties == null) {
 			this.properties = new NodeProperties(this.parent != null ? this.parent.getProperties() : null);
 		}

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
+import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,11 @@ public class NodeService
 	private List<RootNode> roots = new ArrayList<>();
 	private JavaJSONHandler jsonHandler = new JavaJSONHandler();
 
+	private Properties commonRootProperties = new NodeProperties();
+	{
+		this.commonRootProperties.putAll(System.getenv()); // per default all Environment variables
+	}
+
 	public NodeService(// IntermediateNodeRepository intermediateNodeRepository,
 	                   // LeafNodeRepository leafNodeRepository
 	                  ) {
@@ -44,21 +51,35 @@ public class NodeService
 		*/
 	}
 
+	private void addNewRootNode(RootNode newRootNode) {
+		newRootNode.getProperties().setParentProperties(this.commonRootProperties);
+		this.roots.add(newRootNode);
+	}
+
+	public void addSharedProperty(Object key, Object value) {
+		this.commonRootProperties.put(key, value);
+	}
+	public void removeSharedProperty(Object key) {
+		this.commonRootProperties.remove(key);
+	}
+
 	/* create a new empty RootNode, if none exists */
 	public void init() {
 		RootNode rootNode = null;
 		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
 			rootNode = readInternal(file);
+			addNewRootNode(rootNode);
 			log.info("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
-			this.roots.add(rootNode);
 		} catch (IOException t) {
 			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 		} catch (Throwable t) {
 			log.error("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 			t.printStackTrace();
 		}
-		if (this.roots.isEmpty()) createDummyRootNode();
+		if (this.roots.isEmpty()) { // make sure we always have at least one root node:
+			createDummyRootNode();
+		}
 	}
 
 	public void createDummyRootNode() {
@@ -67,7 +88,7 @@ public class NodeService
 		                                 Messages.getString("km_root_description")); //$NON-NLS-1$
 		// addSomeSubNodes(rootNode);
 		log.info("Node '{}' created.", rootNode); //$NON-NLS-1$
-		this.roots.add(rootNode);
+		addNewRootNode(rootNode);
 	}
 
 //	@SuppressWarnings({})
@@ -98,7 +119,7 @@ public class NodeService
 		return this.roots;
 	}
 
-	public static RootNode getRootNode(Node startNode) {
+	public static RootNode getCorrespondingRootNode(Node startNode) {
 		Node node = startNode;
 		while (node.getParent() != null) node = node.getParent();
 		return (RootNode)node;

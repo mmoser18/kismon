@@ -22,21 +22,25 @@ import net.mmo.utils.kism.utils.PropertyReplacer;
 @Entity
 @Setter
 @Getter
-public class Connection extends LeafNode
+abstract public class Connection extends LeafNode
 {
 	private static final long serialVersionUID = -2584969925210734417L;
 
-	private boolean enabled = true; // should connection be regularly checked?
+	protected boolean enabled = true; // should connection be regularly checked?
 
 	@Min(0) // 0 means off
 	@Max(3600) // means: 1x/hr
-	private int period = 10; // number of seconds every so often this connection should be checked.
+	protected int period = 10; // number of seconds every so often this connection should be checked.
+
+	@Min(0) // 0 means off
+	@Max(600) // 10 minutes
+	protected int timeout = 60; // number of seconds after which connection setup is considered as failed
 
 	@SuppressWarnings("nls")
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	private String url = "http://localhost:8080";
+	protected String url = "http://localhost:8080";
 
 	/** required for deserialization only */
 	protected Connection() {
