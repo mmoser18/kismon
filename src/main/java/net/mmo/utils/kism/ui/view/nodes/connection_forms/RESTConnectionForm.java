@@ -47,17 +47,18 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 		super.createFormFields();
 
 		this.method = new ComboBox<>(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
-		this.method.setItems(HTTP_Method.values());
 		this.method.setClassName(MethodClassName);
+		this.method.setItems(HTTP_Method.values());
 		this.method.addValueChangeListener(change ->
 			{
 				HTTP_Method methodValue = change.getValue();
 				log.info("method changed to {}", methodValue); //$NON-NLS-1$
-				adjustPayloadVisibility(methodValue);
+				adjustPayloadVisibility(methodValue); // Note: this is called BEFORE the Save button has been pressed!
 			});
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
+		this.requestHeaders.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.requestHeaders).bind(n -> (n.getRequestHeaders() != null
 		                                                     ? n.getRequestHeaders().toString()
 		                                                     : null),
@@ -65,6 +66,7 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 
 		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.requestBody.setClassName(RequestBodyClassName);
+		this.requestBody.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.requestBody).bind(n -> (n.getRequestBody() != null
 		                                                  ? new String(n.getRequestBody(), StandardCharsets.UTF_8)
 		                                                  : null),
@@ -72,6 +74,7 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
+		this.responseHeaders.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.responseHeaders).bind(n -> (n.getResponseHeaders() != null
 		                                                      ? n.getResponseHeaders().toString()
 		                                                      : null),
@@ -79,6 +82,7 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 
 		this.responseBody = new TextArea(Messages.getString("HTTPConnectionForm.ResponseBody.Label")); //$NON-NLS-1$
 		this.responseBody.setClassName(ResponseBodyClassName);
+		this.responseBody.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.responseBody).bind(n -> (n.getResponseBody() != null
 		                                                  ? new String(n.getResponseBody(), StandardCharsets.UTF_8)
 		                                                  : null),
@@ -97,11 +101,36 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	@Override
 	public void setNode(RESTConnection node) {
 		super.setNode(node);
-		adjustPayloadVisibility(node != null ? node.getMethod() : null);
+		updateRequestInfo();
+	}
+
+	@Override
+	protected void updateResultingURL() {
+		super.updateResultingURL();
+		updateRequestInfo();
+	}
+
+	private void updateRequestInfo() {
+		adjustPayloadVisibility(this.node != null ? this.node.getMethod() : null);
+		updateRequestHeaders();
 	}
 
 	/* we want the payload field only be visible when a corresponding method is selected */
 	private void adjustPayloadVisibility(HTTP_Method methodValue) {
 		this.requestBody.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
+	}
+
+	private void updateRequestHeaders() {
+		if (this.node != null) {
+			try {
+				this.node.createRequest();
+				this.node.reportRequest();
+			} catch (Exception ex) {
+				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
+				this.requestHeaders.setValue(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorMsg"), ex)); //$NON-NLS-1$
+			}
+		} else {
+			this.requestHeaders.setValue(null);
+		}
 	}
 }

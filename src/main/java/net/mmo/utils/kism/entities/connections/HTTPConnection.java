@@ -77,6 +77,7 @@ abstract public class HTTPConnection extends Connection
 	protected boolean checkResult = false;
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
+//	transient protected history = new ArrayList();
 	transient protected HttpClient client;
 	transient protected HttpRequest request;
 
@@ -141,7 +142,7 @@ abstract public class HTTPConnection extends Connection
 		default:
 			throw new IllegalArgumentException("Unsupported HTTP method: " + this.method); //$NON-NLS-1$
 		}
-		return builder.build();
+		return (this.request = builder.build());
 	}
 
 	public void sendRequest() {
@@ -150,9 +151,9 @@ abstract public class HTTPConnection extends Connection
 			createClient();
 		}
 		try {
-//			if (this.request == null) {
+			if (this.request == null) {
 				this.request = createRequest();
-//			}
+			}
 			reportRequest();
 			if (this.sync) {
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
@@ -170,16 +171,20 @@ abstract public class HTTPConnection extends Connection
 		}
 	}
 
-	protected void reportRequest() {
-		this.requestHeaders = this.request.headers();
-		log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
-		Optional<BodyPublisher> optional = this.request.bodyPublisher();
-		if (!optional.isEmpty()) {
-			log.info("body (assuming UTF-8): \"{}\"", new String(this.requestBody, StandardCharsets.UTF_8)); //$NON-NLS-1$
+	public void reportRequest() {
+		if (this.request != null) {
+			this.requestHeaders = this.request.headers();
+			log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
+			Optional<BodyPublisher> optional = this.request.bodyPublisher();
+			if (!optional.isEmpty()) {
+				log.info("body (assuming UTF-8): \"{}\"", new String(this.requestBody, StandardCharsets.UTF_8)); //$NON-NLS-1$
+			}
+		} else {
+			this.requestHeaders = null;
 		}
 	}
 
-	protected void reportResponse(HttpResponse<byte[]> response) {
+	public void reportResponse(HttpResponse<byte[]> response) {
 		this.responseStatusCode = response.statusCode();
 		this.responseHeaders = response.headers();
 		this.responseBody = response.body();
@@ -187,7 +192,7 @@ abstract public class HTTPConnection extends Connection
 		if (this.checkResult) {
 			String acceptableCodes = (this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"); //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
-			for (String acceptable: acceptableCodes.split("[,\s]")) { //$NON-NLS-1$
+			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 				if (acceptable.equals(responseStatusCodeStr)) {
 					this.setState(State.OK);
 					return;

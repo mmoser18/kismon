@@ -354,6 +354,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				addClassName("editing"); //$NON-NLS-1$
 			} catch (java.lang.IllegalStateException ex) {
 				log.error("wtf?", ex); //$NON-NLS-1$
+				// throw new RuntimeException("IllegalStateException"); //$NON-NLS-1$
 			}
 //		}
 	}

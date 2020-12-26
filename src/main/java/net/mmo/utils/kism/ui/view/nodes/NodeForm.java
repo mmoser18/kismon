@@ -8,7 +8,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -23,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
 
 @Slf4j
-public abstract class NodeForm <N extends Node> extends FormLayout
+public abstract class NodeForm <N extends Node> extends VerticalLayout
 {
 	private static final long serialVersionUID = -4928837821374748141L;
 
@@ -35,6 +34,8 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 	public static final String StateClassName       = "node-form-field-state"; //$NON-NLS-1$
 	public static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
 	public static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
+
+	public static final String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
 
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -97,9 +98,11 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 	protected void createFormFields() {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
+		this.name.setThemeName(LabelPaddingTheme);
 
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
+		this.description.setThemeName(LabelPaddingTheme);
 
 		this.state = new ComboBox<>(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.state.addClassName(StateClassName);
@@ -114,6 +117,7 @@ public abstract class NodeForm <N extends Node> extends FormLayout
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
+		this.properties.setThemeName(LabelPaddingTheme);
 
 		this.fields = new VerticalLayout(this.name, this.description, stateAndActive, this.properties);
 		this.fields.setClassName(FieldsClassName);

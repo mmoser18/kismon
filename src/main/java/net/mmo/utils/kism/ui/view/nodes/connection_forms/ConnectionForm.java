@@ -42,9 +42,11 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 
 		this.period = new IntegerField(Messages.getString("ConnectionForm.Period.Label")); //$NON-NLS-1$
 		this.period.addClassName(PeriodClassName);
+		this.period.setThemeName(LabelPaddingTheme);
 
 		this.url = new TextField(Messages.getString("ConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
+		this.url.setThemeName(LabelPaddingTheme);
 		this.url.addValueChangeListener(event -> updateResultingURL());
 		this.binder.forField(this.url)
 			.withValidator(urlStr ->
@@ -59,7 +61,7 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 
 		this.resultingURL = new Label();
 		this.resultingURL.setClassName(ResultingURLClassName);
-		updateResultingURL();
+//		updateResultingURL();
 
 		// we also may have to update the URL if the properties change:
 		this.properties.addValueChangeListener(event ->
@@ -77,7 +79,7 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 		updateResultingURL();
 	}
 
-	private void updateResultingURL() {
+	protected void updateResultingURL() {
 		try {
 			String urlString;
 			if (this.node != null) {

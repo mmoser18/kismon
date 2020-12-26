@@ -33,23 +33,19 @@
 	margin-bottom: 0px;
 }
 
-/*
-.node-view-toolbar vaadin-button {
-	align-self: flex-end;
-}
-*/
-
 .node-view .node-view-tree {
-	flex: 2;
+	flex: 1;
 }
 
+/*
 .node-view .node-view-tree vaadin-grid-cell-content {
 	font-size: +2;
 }
+*/
 
 /* Node-Form: */
 .node-view .node-form {
-	flex: 1; /* takes 1/3 (=1+2) of width */
+	flex: 1; /* takes 1/2 (=1+1) of width */
 	align-self: flex-start;
 	align-items: flex-start;
 	flex-direction: column;
@@ -63,6 +59,10 @@
 	align-items: stretch;
 }
 
+vaadin-form-layout {
+	align-items: flex-start;
+}
+
 vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-horizontal-layout[class^='node-form-field-'] {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -70,15 +70,9 @@ vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-
 	padding-bottom: 0px;
 }
 
-label[id^="vaadin-text-field-label-"],label[id^="vaadin-text-area-label-"],label [class^='node-form-field-'] {
-	margin-bottom: 0px;
-	padding-bottom: 0px;
-}
-
 .node-form-field-state_node-form-field-active {
 	align-items: baseline;
 }
-
 
 /*
 .node-view .node-view-tree vaadin-grid-cell-content {

@@ -19,6 +19,10 @@ import net.mmo.utils.kism.ui.view.list.ListView;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
 
 @CssImport("./styles/shared-styles.css")
+@CssImport(value = "./styles/vaadin-form-layout-styles.css", themeFor = "vaadin-form-layout")
+@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
+@CssImport(value = "./styles/vaadin-text-area-styles.css", themeFor = "vaadin-text-area")
+@CssImport(value = "./styles/vaadin-combo-box-styles.css", themeFor = "vaadin-combo-box")
 public class MainLayout extends AppLayout
 {
 	private static final long serialVersionUID = 8922152078442380813L;
