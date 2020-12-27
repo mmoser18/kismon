@@ -1,0 +1,61 @@
+{
+  "className" : "net.mmo.utils.kism.entities.RootNode",
+  "name" : "root",
+  "description" : "default",
+  "state" : "FAILED",
+  "active" : true,
+  "properties" : {
+    "foo" : "outer"
+  },
+  "children" : [ {
+    "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+    "name" : "root.1",
+    "description" : "default.1",
+    "state" : "OK",
+    "active" : true,
+    "properties" : { },
+    "children" : [ {
+      "className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+      "name" : "REST0",
+      "description" : "REST Connection",
+      "state" : "OK",
+      "active" : true,
+      "properties" : {
+        "bar" : "foo",
+        "c" : "y"
+      },
+      "enabled" : true,
+      "period" : 10,
+      "timeout" : 60,
+      "url" : "http://localhost:8080/login",
+      "method" : "GET",
+      "httpVersion" : "HTTP_1_1",
+      "connectTimeout" : 30,
+      "redirectBehavior" : "NORMAL",
+      "proxyHost" : null,
+      "proxyPort" : 0,
+      "client" : null,
+      "sync" : false,
+      "requestBody" : "",
+      "responseBody" : null,
+      "checkResult" : false,
+      "acceptableReturnCodes" : null
+    } ]
+  }, {
+    "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+    "name" : "root.2",
+    "description" : "default.2",
+    "state" : "FAILED",
+    "active" : true,
+    "properties" : { },
+    "children" : [ {
+      "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+      "name" : "foo2",
+      "description" : "bar",
+      "state" : "OK",
+      "active" : true,
+      "properties" : { },
+      "children" : [ ]
+    } ]
+  } ]
+}
