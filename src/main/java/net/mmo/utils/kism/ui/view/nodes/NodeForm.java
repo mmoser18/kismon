@@ -7,7 +7,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,6 +33,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public static final String StateClassName       = "node-form-field-state"; //$NON-NLS-1$
 	public static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
 	public static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
+	public static final String CombinedClassName    = "node-form-field-combined"; //$NON-NLS-1$
 
 	public static final String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
 
@@ -42,7 +42,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected TextField name;
 	protected TextArea description;
 	// state is calculated automatically!
-	protected ComboBox<Node.State> state;
+	protected TextField state;
 	protected Checkbox active;
 	protected TextArea properties;
 
@@ -50,6 +50,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	private Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
 	private Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
+	private Button reset  = new Button(Messages.getString("NodeForm.Button.Reset.Label")); //$NON-NLS-1$
 	private Button close  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
 
 	protected N node;
@@ -73,8 +74,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 //			}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
 //		.bind(Node::getName, Node::setName);
 
-		this.binder.forField(this.properties)
-			.bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
+		this.binder.forField(this.state).bind(n -> n.getState().toString(), null);
+		this.binder.forField(this.properties).bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
 
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
@@ -104,16 +105,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.description.addClassName(DescriptionClassName);
 		this.description.setThemeName(LabelPaddingTheme);
 
-		this.state = new ComboBox<>(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
+		this.state = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.state.addClassName(StateClassName);
-		this.state.setItems(Node.State.values());
 		this.state.setReadOnly(true); // state is calculated automatically!
 
 		this.active  = new Checkbox(Messages.getString("NodeForm.Active.Label")); //$NON-NLS-1$
 		this.active.addClassName(ActiveClassName);
 
 		HorizontalLayout stateAndActive = new HorizontalLayout(this.active, this.state);
-		stateAndActive.addClassName(StateClassName + '_' + ActiveClassName);
+		stateAndActive.addClassName(CombinedClassName);
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
@@ -134,27 +134,37 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.isValid()));
 
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-		this.save.setId("nodeform-delete-button"); //$NON-NLS-1$
+		this.delete.setId("nodeform-delete-button"); //$NON-NLS-1$
 		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
+
+		// Updates the fields again with the previously saved values
+		this.reset.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+		this.reset.setId("nodeform-reset-button"); //$NON-NLS-1$
+		this.reset.addClickListener(event -> this.binder.readBean(this.node));
 
 		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.close.setId("nodeform-close-button"); //$NON-NLS-1$
 		this.close.addClickShortcut(Key.ESCAPE);
 		this.close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
-		return new HorizontalLayout(this.save, this.delete, this.close);
+		return new HorizontalLayout(this.save, this.delete, this.reset, this.close);
 	}
 
 	private void validateAndSave() {
-		log.info("Saving {}", this.node.getName()); //$NON-NLS-1$
+		log.info("validateAndSave {}", this.node.getName()); //$NON-NLS-1$
 		try {
-			// TODO: more validation?
+			validate(); // throws ValidationException if data not valid
 			this.binder.writeBean(this.node);
 			fireEvent(new SaveEvent(this, this.node));
 		} catch (ValidationException e) {
-			e.printStackTrace();
+			log.warn("Validation failed: ", e); //$NON-NLS-1$
 			new Notification(e.getMessage(), 0).open();
 		}
+	}
+
+	@SuppressWarnings("unused")
+	protected void validate() throws ValidationException {
+		// TODO: more validation?
 	}
 
 	// Events - shared super class

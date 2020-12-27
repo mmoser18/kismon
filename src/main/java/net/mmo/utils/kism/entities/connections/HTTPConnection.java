@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.persistence.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -77,19 +78,26 @@ abstract public class HTTPConnection extends Connection
 	protected boolean checkResult = false;
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
+// TODO: the below should be kept as history list:
 //	transient protected history = new ArrayList();
+
+	@JsonIgnore
 	transient protected HttpClient client;
+	@JsonIgnore
 	transient protected HttpRequest request;
 
 	// request:
+	@JsonIgnore // TODO just for now!
 	transient protected HttpHeaders requestHeaders;
 	transient protected byte[] requestBody;
 
 	// response:
+	@JsonIgnore
 	transient protected HttpHeaders responseHeaders;
 	transient protected byte[] responseBody;
 
 	transient protected int responseStatusCode;
+	transient protected long duration;
 
 
 	public HTTPConnection() { // required for deserialization
@@ -142,7 +150,9 @@ abstract public class HTTPConnection extends Connection
 		default:
 			throw new IllegalArgumentException("Unsupported HTTP method: " + this.method); //$NON-NLS-1$
 		}
-		return (this.request = builder.build());
+		this.request = builder.build();
+		reportRequest();
+		return this.request;
 	}
 
 	public void sendRequest() {
@@ -154,13 +164,19 @@ abstract public class HTTPConnection extends Connection
 			if (this.request == null) {
 				this.request = createRequest();
 			}
-			reportRequest();
 			if (this.sync) {
+				long startTime = System.nanoTime();
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
+				this.duration = System.nanoTime() - startTime;
 				reportResponse(response);
 			} else { // async:
+				long startTime = System.nanoTime();
 				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
-				futureResponse.thenAccept(response -> reportResponse(response));
+				futureResponse.thenAccept(response ->
+					{
+						this.duration = System.nanoTime() - startTime;
+						reportResponse(response);
+					});
 			}
 		} catch (Throwable t) {
 			if (this.request != null) {
@@ -198,7 +214,7 @@ abstract public class HTTPConnection extends Connection
 					return;
 				}
 			}
-			this.setState(State.NOT_OK);
+			this.setState(State.FAILED);
 		} else {
 			this.setState(State.OK);
 		}

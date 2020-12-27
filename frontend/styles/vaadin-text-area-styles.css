@@ -6,4 +6,5 @@
 [part="input-field"] {
 	padding-top: 0px;
 	padding-bottom: 0px;
+	max-height: 20em;
 }

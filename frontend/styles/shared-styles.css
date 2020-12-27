@@ -63,14 +63,14 @@ vaadin-form-layout {
 	align-items: flex-start;
 }
 
-vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-horizontal-layout[class^='node-form-field-'] {
+vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-horizontal-layout[class^='node-form-field-'] {
 	margin-top: 0px;
 	margin-bottom: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
 }
 
-.node-form-field-state_node-form-field-active {
+.node-form-field-combined {
 	align-items: baseline;
 }
 

@@ -40,7 +40,7 @@ abstract public class Connection extends LeafNode
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	protected String url = "http://localhost:8080";
+	protected String url = "http://www.example.com:8080";
 
 	/** required for deserialization only */
 	protected Connection() {

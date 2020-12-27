@@ -38,14 +38,14 @@ public class IntermediateNodeTest
 		LeafNode leaf1 = new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(1, root.getChildren().size());
 		Assertions.assertEquals(State.OK, leaf1.getState());
-		LeafNode leaf2 = new LeafNode("leaf2", "leaf-node2", State.NOT_OK); //$NON-NLS-1$ //$NON-NLS-2$
+		LeafNode leaf2 = new LeafNode("leaf2", "leaf-node2", State.FAILED); //$NON-NLS-1$ //$NON-NLS-2$
 		this.nodeService.addChild(root, leaf2);
 		LeafNode leaf3 = new LeafNode("leaf3", "leaf-node3", State.DEGRADED); //$NON-NLS-1$ //$NON-NLS-2$
 		this.nodeService.addChild(root, leaf3);
 		Assertions.assertEquals(3, root.getChildren().size());
-		Assertions.assertEquals(State.NOT_OK, leaf2.getState());
+		Assertions.assertEquals(State.FAILED, leaf2.getState());
 		Assertions.assertEquals(State.DEGRADED, leaf3.getState());
-		Assertions.assertEquals(State.NOT_OK, root.getState()); // NOT_OK since the worst child is NOT_OK
+		Assertions.assertEquals(State.FAILED, root.getState()); // FAILED since the worst child is FAILED
 		log.info("tree: {}", root.toString()); //$NON-NLS-1$
 	}
 
@@ -55,8 +55,8 @@ public class IntermediateNodeTest
 		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		new LeafNode("leaf1", "leaf-node1", State.OK, root); //$NON-NLS-1$ //$NON-NLS-2$
-		new LeafNode("leaf2", "leaf-node2", State.NOT_OK, root).setActive(false); //$NON-NLS-1$ //$NON-NLS-2$
+		new LeafNode("leaf2", "leaf-node2", State.FAILED, root).setActive(false); //$NON-NLS-1$ //$NON-NLS-2$
 		new LeafNode("leaf3", "leaf-node3", State.DEGRADED, root); //$NON-NLS-1$ //$NON-NLS-2$
-		Assertions.assertEquals(State.DEGRADED, root.getState()); // NOT_OK since the worst child (NOT_OK) is ignored
+		Assertions.assertEquals(State.DEGRADED, root.getState()); // FAILED since the worst child (FAILED) is ignored
 	}
 }

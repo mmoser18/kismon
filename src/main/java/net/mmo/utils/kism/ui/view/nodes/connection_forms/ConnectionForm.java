@@ -7,6 +7,7 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,9 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 		this.period.addClassName(PeriodClassName);
 		this.period.setThemeName(LabelPaddingTheme);
 
+		HorizontalLayout enabledAndPeriod = new HorizontalLayout(this.enabled, this.period);
+		enabledAndPeriod.addClassName(CombinedClassName);
+
 		this.url = new TextField(Messages.getString("ConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
 		this.url.setThemeName(LabelPaddingTheme);
@@ -70,7 +74,7 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 				updateResultingURL();
 			});
 
-		this.fields.add(this.enabled, this.url, this.resultingURL);
+		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
 	}
 
 	@Override

@@ -36,7 +36,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	private static final long serialVersionUID = 3875470009216934341L;
 
 	public enum State {
-		NOT_OK,
+		FAILED,
 		DEGRADED,
 		OK
 	}
