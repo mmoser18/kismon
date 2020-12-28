@@ -15,7 +15,7 @@ import net.mmo.utils.kism.entities.connections.Connection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 @Slf4j
-public class ConnectionForm <N extends Connection> extends NodeForm<N>
+public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
@@ -102,4 +102,6 @@ public class ConnectionForm <N extends Connection> extends NodeForm<N>
 			this.resultingURL.setVisible(true);
 		}
 	}
+
+	public abstract void refreshForm(N n);
 }

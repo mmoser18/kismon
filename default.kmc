@@ -32,14 +32,17 @@
       "httpVersion" : "HTTP_1_1",
       "connectTimeout" : 30,
       "redirectBehavior" : "NORMAL",
+      "targetUid" : "user",
+      "targetPwd" : "password",
       "proxyHost" : null,
       "proxyPort" : 0,
-      "client" : null,
       "sync" : false,
+      "checkResult" : false,
+      "acceptableReturnCodes" : null,
       "requestBody" : "",
       "responseBody" : null,
-      "checkResult" : false,
-      "acceptableReturnCodes" : null
+      "responseStatusCode" : 0,
+      "duration" : 0
     } ]
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",

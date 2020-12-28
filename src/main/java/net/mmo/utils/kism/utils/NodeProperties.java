@@ -16,10 +16,10 @@ public class NodeProperties extends Properties
 {
 	private static final long serialVersionUID = -7108847395448335625L;
 
-	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
-	private final static String PROPERTY_SEPARATORS = "[,;\t\n]"; //$NON-NLS-1$
-	private final static String KEY_VALUE_SEPARATOR = "="; //$NON-NLS-1$
 	private final static String KEY_VALUE_SEPARATORS = "[:=]"; //$NON-NLS-1$
+	private final static String KEY_VALUE_SEPARATOR = "="; //$NON-NLS-1$
+	private final static String PROPERTY_SEPARATORS = "[,;\t\n]"; //$NON-NLS-1$
+	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
 
 	public NodeProperties() {
 		// empty

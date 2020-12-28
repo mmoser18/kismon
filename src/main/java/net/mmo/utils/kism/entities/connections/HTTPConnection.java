@@ -21,8 +21,11 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 
@@ -30,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.ui.view.nodes.NodeView;
 
 @Entity
 @Setter
@@ -57,6 +61,10 @@ abstract public class HTTPConnection extends Connection
 			this.withPayload = withPayload;
 		}
 	}
+
+	private final static String KEY_VALUES_SEPARATOR = "="; //$NON-NLS-1$
+	private final static String VALUES_SEPARATOR = ","; //$NON-NLS-1$
+	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
 
 	protected HTTP_Method method = HTTP_Method.POST;
 
@@ -151,7 +159,7 @@ abstract public class HTTPConnection extends Connection
 			throw new IllegalArgumentException("Unsupported HTTP method: " + this.method); //$NON-NLS-1$
 		}
 		this.request = builder.build();
-		reportRequest();
+		updateRequestValues();
 		return this.request;
 	}
 
@@ -168,14 +176,14 @@ abstract public class HTTPConnection extends Connection
 				long startTime = System.nanoTime();
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
 				this.duration = System.nanoTime() - startTime;
-				reportResponse(response);
+				updateResponseValues(response);
 			} else { // async:
 				long startTime = System.nanoTime();
 				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
 				futureResponse.thenAccept(response ->
 					{
 						this.duration = System.nanoTime() - startTime;
-						reportResponse(response);
+						updateResponseValues(response);
 					});
 			}
 		} catch (Throwable t) {
@@ -187,7 +195,7 @@ abstract public class HTTPConnection extends Connection
 		}
 	}
 
-	public void reportRequest() {
+	public void updateRequestValues() {
 		if (this.request != null) {
 			this.requestHeaders = this.request.headers();
 			log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
@@ -200,17 +208,19 @@ abstract public class HTTPConnection extends Connection
 		}
 	}
 
-	public void reportResponse(HttpResponse<byte[]> response) {
+	public void updateResponseValues(HttpResponse<byte[]> response) {
 		this.responseStatusCode = response.statusCode();
 		this.responseHeaders = response.headers();
 		this.responseBody = response.body();
-		log.info("response: status={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", this.responseStatusCode, this.responseHeaders, new String(this.responseBody, StandardCharsets.UTF_8)); //$NON-NLS-1$
+		log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
+		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, new String(this.responseBody, StandardCharsets.UTF_8));
 		if (this.checkResult) {
 			String acceptableCodes = (this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"); //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
 			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 				if (acceptable.equals(responseStatusCodeStr)) {
 					this.setState(State.OK);
+					NodeView.updateView(this);
 					return;
 				}
 			}
@@ -218,5 +228,25 @@ abstract public class HTTPConnection extends Connection
 		} else {
 			this.setState(State.OK);
 		}
+		NodeView.updateView(this);
 	}
+
+	public String getRequestHeadersAsString() {
+		return convertHeaders(this.requestHeaders);
+	}
+	public String getResponseHeadersAsString() {
+		return convertHeaders(this.responseHeaders);
+	}
+	public static String convertHeaders(HttpHeaders headers) {
+		return (headers != null ? convertHeadersMap(headers.map()) : null);
+	}
+	private static String convertHeadersMap(Map<String, List<String>> headers) {
+		return headers.entrySet().stream()
+			.map(entry -> entry.getKey() + KEY_VALUES_SEPARATOR + convertHeaderValues(entry.getValue()))
+			.collect(Collectors.joining(PROPERTY_SEPARATOR));
+	}
+	private static String convertHeaderValues(List<String> values) {
+		return String.join(VALUES_SEPARATOR, values);
+	}
+
 }

@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
-import java.net.http.HttpHeaders;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.button.Button;
@@ -103,8 +102,11 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
-		this.execute.addClickListener(event -> this.node.sendRequest());
-
+		this.execute.addClickListener(event ->
+			{
+				this.node.sendRequest();
+				updateRequestInfo();
+			});
 		this.fields.add(this.method,
 		                this.requestHeaders, this.requestBody,
 		                this.execute,
@@ -121,7 +123,7 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	@Override
 	protected void updateResultingURL() {
 		super.updateResultingURL();
-		updateRequestInfo();
+		updateRequestHeaders();
 	}
 
 	private void updateRequestInfo() {
@@ -138,6 +140,7 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 		if (this.node != null) {
 			try {
 				this.node.createRequest();
+				this.requestHeaders.setValue(convertRequestHeaders(this.node));
 			} catch (Exception ex) {
 				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
 				this.requestHeaders.setValue(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorMsg"), ex)); //$NON-NLS-1$
@@ -146,7 +149,9 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 			this.requestHeaders.setValue(Messages.getString("HTTPConnectionForm.RequestHeaders.Undefined")); //$NON-NLS-1$
 		}
 	}
+
 	public void updateResponseData() {
+		log.debug("updateResponseData"); //$NON-NLS-1$
 		updateResponseStatus();
 		updateDuration();
 		updateResponseHeaders();
@@ -185,13 +190,10 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	}
 
 	private static String convertRequestHeaders(RESTConnection n) {
-		return convertHeaders(n.getRequestHeaders());
+		return n.getRequestHeadersAsString();
 	}
 	private static String convertResponseHeaders(RESTConnection n) {
-		return convertHeaders(n.getResponseHeaders());
-	}
-	private static String convertHeaders(HttpHeaders headers) {
-		return (headers != null ? headers.toString() : null);
+		return n.getResponseHeadersAsString();
 	}
 
 	private static String convertRequestBody(RESTConnection n) {
@@ -209,5 +211,11 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	}
 	private static byte[] convertBody(String value) {
 		return (value != null ? value.getBytes(StandardCharsets.UTF_8) : null);
+	}
+
+	@Override
+	public void refreshForm(RESTConnection n) {
+		log.info("refreshForm({})", n); //$NON-NLS-1$
+		if (this.node == n) updateResponseData();
 	}
 }

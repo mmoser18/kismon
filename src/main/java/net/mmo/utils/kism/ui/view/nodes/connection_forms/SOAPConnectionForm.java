@@ -15,4 +15,8 @@ public class SOAPConnectionForm extends ConnectionForm<SOAPConnection>
 		super(SOAPConnection.class);
 	}
 
+	@Override
+	public void refreshForm(SOAPConnection n) {
+		// TODO Auto-generated method stub
+	}
 }

@@ -1,8 +1,14 @@
 
 package net.mmo.utils.kism.backend.service;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -35,7 +41,7 @@ public class NodeService
 	*/
 
 	private List<RootNode> roots = new ArrayList<>();
-	private JavaJSONHandler jsonHandler = new JavaJSONHandler();
+	private ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
 	private Properties commonRootProperties = new NodeProperties();
 	{
@@ -68,8 +74,7 @@ public class NodeService
 		RootNode rootNode = null;
 		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
-			rootNode = readInternal(file);
-			addNewRootNode(rootNode);
+			rootNode = read(file);
 			log.info("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
 		} catch (IOException t) {
 			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
@@ -126,22 +131,48 @@ public class NodeService
 	}
 
 	public RootNode read(File file) throws IOException {
-		RootNode newRoot = readInternal(file);
-		getRootNodes().add(newRoot);
-		return newRoot;
+		log.info("reading from file {}:", file); //$NON-NLS-1$
+		if (file.isFile() && file.canRead()) {
+			try (FileInputStream fis = new FileInputStream(file);
+			     BufferedInputStream bis = new BufferedInputStream(fis)) {
+				RootNode newRoot = read(bis, file.getAbsolutePath());
+				log.info("rootNode '{}' was read from file '{}'.", newRoot.getName(), file); //$NON-NLS-1$
+				return newRoot;
+			} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
+				throw t;
+			} finally {
+				// to automatically close the above streams
+			}
+		} else {
+			return null;
+		}
 	}
 
-	private RootNode readInternal(File file) throws IOException {
-		RootNode newRoot = this.jsonHandler.read(file);
+	public RootNode read(InputStream inp, String fileName) throws IOException {
+		RootNode newRoot = this.mapper.readValue(inp, RootNode.class);
 		restoreParents(newRoot);
+		newRoot.setFilePath(fileName);
 		newRoot.deriveNewState();
+		addNewRootNode(newRoot);
 		log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
 		return newRoot;
 	}
 
-	public void saveAs(RootNode rootNode, File file) throws IOException {
-		log.info("saving rootNode {} to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
-		this.jsonHandler.save(rootNode, file);
+	public void write(RootNode rootNode, File file) throws IOException {
+		log.info("saving rootNode '{}' to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
+		try (OutputStream fos = new FileOutputStream(file);
+		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+			write(rootNode, bos);
+			log.info("rootNode '{}' was written to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
+		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
+			throw t;
+		} finally {
+			// to automatically close the above streams
+		}
+	}
+
+	public void write(RootNode rootNode, OutputStream out) throws IOException {
+		this.mapper.writeValue(out, rootNode);
 	}
 
 	public Node addChild(IntermediateNode parent, Node child) {
@@ -221,25 +252,4 @@ public class NodeService
 //			return this.nodeRepository.search(stringFilter);
 //		}
 //	}
-
-	public static class JavaJSONHandler
-	{
-		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-
-		public void save(RootNode rootNode, File file) throws IOException {
-			synchronized(rootNode) {
-				log.info("saving rootNode '{}' to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
-				this.mapper.writeValue(file, rootNode);
-				log.info("rootNode '{}' was saved to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
-			}
-		}
-
-		public RootNode read(File file) throws IOException {
-			log.info("JavaJSONHandler: reading from file {}:", file); //$NON-NLS-1$
-			RootNode rootNode = this.mapper.readValue(file, RootNode.class);
-			rootNode.setFilePath(file.getAbsolutePath());
-			log.info("rootNode '{}' was read from file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
-			return rootNode;
-		}
-	}
 }

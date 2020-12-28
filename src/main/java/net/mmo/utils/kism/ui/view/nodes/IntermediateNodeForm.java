@@ -14,5 +14,4 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 	public IntermediateNodeForm() {
 		super(IntermediateNode.class);
 	}
-
 }

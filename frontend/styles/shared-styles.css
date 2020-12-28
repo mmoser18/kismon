@@ -29,6 +29,7 @@
 .node-view-toolbar {
 	flex-wrap: wrap;
 	align-items: flex-end;
+	/* align-items: baseline; */
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
@@ -63,7 +64,7 @@ vaadin-form-layout {
 	align-items: flex-start;
 }
 
-vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-horizontal-layout[class^='node-form-field-'] {
+vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-upload,vaadin-horizontal-layout[class^='node-form-field-'] {
 	margin-top: 0px;
 	margin-bottom: 0px;
 	padding-top: 0px;
@@ -72,6 +73,22 @@ vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-
 
 .node-form-field-combined {
 	align-items: baseline;
+}
+
+vaadin-button {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+vaadin-combo-box {
+	margin-right: 5px;
+}
+
+vaadin-upload {
+	margin-left: 5px;
+	margin-right: 5px;
+	padding-left: 0px;
+	padding-right: 0px;
 }
 
 /*

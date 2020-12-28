@@ -95,6 +95,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
 	}
 
+	public N getNode() {
+		return this.node;
+	}
 	/** derived classes need to override this */
 	protected void createFormFields() {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$

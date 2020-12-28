@@ -25,6 +25,7 @@ import net.mmo.utils.kism.ui.view.nodes.NodeView;
 @CssImport(value = "./styles/vaadin-number-field-styles.css", themeFor = "vaadin-number-field")
 @CssImport(value = "./styles/vaadin-integer-field-styles.css", themeFor = "vaadin-integer-field")
 @CssImport(value = "./styles/vaadin-combo-box-styles.css", themeFor = "vaadin-combo-box")
+@CssImport(value = "./styles/vaadin-upload-styles.css", themeFor = "vaadin-upload")
 public class MainLayout extends AppLayout
 {
 	private static final long serialVersionUID = 8922152078442380813L;

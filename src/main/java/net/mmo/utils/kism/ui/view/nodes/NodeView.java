@@ -1,6 +1,8 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,8 +20,12 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +33,12 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
+import net.mmo.utils.kism.entities.connections.Connection;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.ConnectionForm;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -56,6 +64,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public static final String ViewContentClassName = "node-view-content";  //$NON-NLS-1$
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
 
+	private static NodeView<? extends Node> currentView;
+
 	private NodeService nodeService;
 	private NodeFactory<N> nodeFactory;
 	private FormFactory<N> formFactory;
@@ -67,6 +77,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
+
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
 	                FormFactory<N> formFactory) { // defined as constructor args to force order
@@ -74,7 +85,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		try {
 			this.nodeService = nodeService;
 			if (this.nodeService.getRootNodes().isEmpty()) {
-				this.nodeService.init(); // load from file:
+				this.nodeService.init(); // load from file
+				log.info("Root nodes: {}", this.nodeService.getRootNodes()); //$NON-NLS-1$
 			}
 			this.nodeFactory = nodeFactory;
 			this.formFactory = formFactory;
@@ -94,6 +106,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
+		currentView = this;
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -164,14 +177,28 @@ public class NodeView <N extends Node> extends VerticalLayout
 				saveAllRoots();
 			});
 
-		Button readFileButton = new Button(Messages.getString("NodeView.Button.ReadFile.Label")); //$NON-NLS-1$
-		readFileButton.addClickListener(click ->
-			{
-				log.info("readFileButton clicked"); //$NON-NLS-1$
-				readFile();
-			});
+//		Button readFileButton = new Button(Messages.getString("NodeView.Button.ReadFile.Label")); //$NON-NLS-1$
+//		readFileButton.addClickListener(click ->
+//			{
+//				log.info("readFileButton clicked"); //$NON-NLS-1$
+//				readLocalFile();
+//			});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, readFileButton);
+		MemoryBuffer buffer = new MemoryBuffer(); // alternative: new FileBuffer();
+		Upload uploadFile = new Upload(buffer);
+		// uploadFile.setI18n(new UploadI18N());
+		uploadFile.addSucceededListener(event -> {
+			String fileName = event.getFileName();
+			try (InputStream is = buffer.getInputStream();
+			     BufferedInputStream bis = new BufferedInputStream(is)) {
+				RootNode rootNode = this.nodeService.read(is, fileName);
+				reportResult(rootNode, fileName);
+			} catch (Throwable t) {
+				reportException(fileName, t);
+			}
+		});
+
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, /*readFileButton,*/ uploadFile);
 		toolbar.addClassName(ViewToolbarClassName);
 
 		return toolbar;
@@ -407,7 +434,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			// TODO : provide some file selection box...
 			File file = new File(fileName);
 			if (file.canWrite()) {
-				this.nodeService.saveAs(rootNode, file);
+				this.nodeService.write(rootNode, file);
 				rootNode.setFilePath(fileName);
 			} else {
 				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
@@ -421,28 +448,36 @@ public class NodeView <N extends Node> extends VerticalLayout
 		}
 	}
 
-	@SuppressWarnings("null")
-	private void readFile() {
-		String fileName = null; // TODO : provide some file selection box...
-		if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME;
-		try {
-			File file = new File(fileName + '.' + NodeService.CONFIG_FILE_TYPE);
-			if (file.canRead()) {
-				RootNode rootNode = this.nodeService.read(file);
-				rootNode.setFilePath(fileName);
-				this.tree.setDataProvider(createDataProvider());
-				this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
-				// this.tree.getDataProvider().refreshAll();
-			} else {
-				String msg = String.format("File '%s' does not exist or is not readable.", file); //$NON-NLS-1$
-				log.info(msg);
-				new Notification(msg, 0).open();
-			}
-		} catch (Throwable t) {
-			String msg = String.format("Exception reading from file '%s': %s", fileName, t); //$NON-NLS-1$
-			log.error(msg, t);
+//	@SuppressWarnings("null")
+//	private void readLocalFile() {
+//		String fileName = null; // TODO : provide some file selection box...
+//		if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME;
+//		try {
+//			File file = new File(fileName + '.' + NodeService.CONFIG_FILE_TYPE);
+//			RootNode rootNode = this.nodeService.read(file);
+//			reportResult(rootNode, file.getAbsolutePath());
+//		} catch (Throwable t) {
+//			reportException(fileName, t);
+//		}
+//	}
+
+	private void reportResult(RootNode rootNode, String sourceName) {
+		if (rootNode != null) { // new root was read: update UI
+			this.tree.setDataProvider(createDataProvider());
+			this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
+			// this.tree.getDataProvider().refreshAll();
+		} else { // reading failed:
+			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
+			log.info(msg);
 			new Notification(msg, 0).open();
 		}
+	}
+
+	@SuppressWarnings("static-method")
+	private void reportException(String sourceName, Throwable t) {
+		String msg = String.format(Messages.getString("NodeView.ErrorMsg.ExceptionReading"), sourceName, t); //$NON-NLS-1$
+		log.error(msg, t);
+		new Notification(msg, 0).open();
 	}
 
 	private void deleteNodes(Collection<Node> nodes) {
@@ -482,6 +517,27 @@ public class NodeView <N extends Node> extends VerticalLayout
 		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
 		log.warn(text);
 		new Notification(text, 10000).open();
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <N extends Connection> void updateView(N n) {
+		log.info("updateView {} - currentView: {}", n, currentView); //$NON-NLS-1$
+		if (currentView != null) {
+			try {
+				HierarchicalDataProvider<Node, SerializablePredicate<Node>> dp = currentView.tree.getDataProvider();
+				log.debug("refreshItem: dp={}", dp); //$NON-NLS-1$
+				dp.refreshItem(n);
+				NodeForm<? extends Node> form = currentView.form;
+				log.trace("refreshForm: form={}", form); //$NON-NLS-1$
+				if ((form != null) && (form.getNode() == n)) {
+					ConnectionForm<N> cform = (ConnectionForm<N>)form;
+					log.debug("refreshForm {} - node={}", cform, n); //$NON-NLS-1$
+					cform.refreshForm(n);
+				}
+			} catch (Throwable t) {
+				log.error("Exception refreshing UI", t); //$NON-NLS-1$
+			}
+		}
 	}
 
 }
