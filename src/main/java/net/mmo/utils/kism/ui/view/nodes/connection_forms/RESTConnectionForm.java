@@ -5,17 +5,16 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
-import java.nio.charset.StandardCharsets;
-
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.connections.RESTConnection;
+import net.mmo.utils.kism.ui.view.nodes.NodeView;
+import net.mmo.utils.kism.utils.KeyValues;
 
 @Slf4j
 public class RESTConnectionForm extends ConnectionForm<RESTConnection>
@@ -23,30 +22,25 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	private static final long serialVersionUID = 7200842663851555372L;
 
 	public static final String MethodClassName   = "node-form-field-method"; //$NON-NLS-1$
-	public static final String ExecuteClassName  = "node-form-button-execute"; //$NON-NLS-1$
-
 	public static final String RequestHeadersClassName  = "node-form-field-request-headers"; //$NON-NLS-1$
 	public static final String RequestBodyClassName     = "node-form-field-request-body"; //$NON-NLS-1$
 
 	public static final String ResponseStatusCodeClassName = "node-form-field-response-status"; //$NON-NLS-1$
-	public static final String DurationClassName           = "node-form-field-duration"; //$NON-NLS-1$
-
 	public static final String ResponseHeadersClassName  = "node-form-field-response-headers"; //$NON-NLS-1$
 	public static final String ResponseBodyClassName     = "node-form-field-response-body"; //$NON-NLS-1$
 
+	protected ComboBox<HTTP_Method> method;
 
-	private ComboBox<HTTP_Method> method;
+	protected TextArea headers;
+	protected TextArea payload;
 
-	private TextArea requestHeaders;
-	private TextArea requestBody;
+	protected TextArea requestHeaders;
+	protected TextArea requestBody;
 
-	private IntegerField responseStatusCode;
-	private NumberField duration;
+	protected IntegerField responseStatusCode;
 
-	private TextArea responseHeaders;
-	private TextArea responseBody;
-
-	private Button execute;
+	protected TextArea responseHeaders;
+	protected TextArea responseBody;
 
 	public RESTConnectionForm() {
 		super(RESTConnection.class);
@@ -55,6 +49,12 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	@Override
 	protected void createFormFields() {
 		super.createFormFields();
+
+		this.execute.addClickListener(event ->
+		{
+			this.node.sendRequest();
+			updateRequestInfo();
+		});
 
 		this.method = new ComboBox<>(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
 		this.method.setClassName(MethodClassName);
@@ -66,51 +66,73 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 				adjustPayloadVisibility(methodValue); // Note: this is called BEFORE the Save button has been pressed!
 			});
 
-		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
-		this.requestHeaders.setClassName(RequestHeadersClassName);
-		this.requestHeaders.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.requestHeaders).bind(RESTConnectionForm::convertRequestHeaders, null);
+		HorizontalLayout methodAndExecuteButton = new HorizontalLayout(this.method, this.execute);
+		methodAndExecuteButton.addClassName(CombinedClassName);
 
-		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
-		this.requestBody.setClassName(RequestBodyClassName);
-		this.requestBody.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.requestBody).bind(RESTConnectionForm::convertRequestBody,
-		                                            RESTConnectionForm::setRequestBody);
+		this.headers = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
+		this.headers.setClassName(RequestHeadersClassName);
+		this.headers.setThemeName(LabelPaddingTheme);
+//		this.headers.addValueChangeListener(event ->
+//			{
+//				String value = event.getValue();
+//				log.debug("headers changed: {}", value); //$NON-NLS-1$
+//				try {
+//					KeyValues.getEntriesFromString(this.node.replaceProperties(value));
+//				} catch (Exception ex) {
+//					NodeView.UsageError(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), value, ex)); //$NON-NLS-1$
+//				}
+//			});
+		this.binder.forField(this.headers)
+			.withValidator(str ->
+			{ // Explicit validator instance
+				try {
+					if (this.node != null) KeyValues.getEntriesFromString(this.node.replaceProperties(str));
+					return true; // still here -> the above conversion went succeeded
+				} catch (Exception ex) {
+					log.error("Exception converting '{}' to headers: {}", str, ex); //$NON-NLS-1$
+					NodeView.UsageError(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), str, ex)); //$NON-NLS-1$
+					return false;
+				}
+			}, Messages.getString("ConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
+			.bind(HTTPConnection::requestHeadersAsString, HTTPConnection::setHeaders);
+
+
+		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
+		this.payload.setClassName(RequestBodyClassName);
+		this.payload.setThemeName(LabelPaddingTheme);
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.responseStatusCode).bind(RESTConnectionForm::convertResponseStatusCode, null);
-
-		this.duration = new NumberField(Messages.getString("HTTPConnectionForm.Duration.Label")); //$NON-NLS-1$
-		this.duration.setClassName(DurationClassName);
-		this.duration.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.duration).bind(RESTConnectionForm::convertDuration, null); // nsec's --> msec's (rounded to micro-seconds)
+		this.binder.forField(this.responseStatusCode).bind(RESTConnection::responseStatusCode, null);
 
 		HorizontalLayout responseStatusAndDuration = new HorizontalLayout(this.responseStatusCode, this.duration);
 		responseStatusAndDuration.addClassName(CombinedClassName);
 
+		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
+		this.requestHeaders.setClassName(RequestHeadersClassName);
+		this.requestHeaders.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.requestHeaders).bind(RESTConnection::requestHeadersAsString, null);
+
+		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
+		this.requestBody.setClassName(RequestBodyClassName);
+		this.requestBody.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.requestBody).bind(RESTConnection::requestBodyAsString, null);
+
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
 		this.responseHeaders.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.responseHeaders).bind(RESTConnectionForm::convertResponseHeaders, null);
+		this.binder.forField(this.responseHeaders).bind(RESTConnection::responseHeadersAsString, null);
 
 		this.responseBody = new TextArea(Messages.getString("HTTPConnectionForm.ResponseBody.Label")); //$NON-NLS-1$
 		this.responseBody.setClassName(ResponseBodyClassName);
 		this.responseBody.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.responseBody).bind(RESTConnectionForm::convertResponseBody, null);
+		this.binder.forField(this.responseBody).bind(RESTConnection::responseBodyAsString, null);
 
-		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
-		this.execute.setClassName(ExecuteClassName);
-		this.execute.addClickListener(event ->
-			{
-				this.node.sendRequest();
-				updateRequestInfo();
-			});
-		this.fields.add(this.method,
-		                this.requestHeaders, this.requestBody,
-		                this.execute,
+		this.fields.add(methodAndExecuteButton,
+		                this.headers, this.payload,
 		                responseStatusAndDuration,
+		                this.requestHeaders, this.requestBody,
 		                this.responseHeaders, this.responseBody);
 	}
 
@@ -133,6 +155,7 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 
 	/* we want the payload field only be visible when a corresponding method is selected */
 	private void adjustPayloadVisibility(HTTP_Method methodValue) {
+		this.payload.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 		this.requestBody.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 	}
 
@@ -140,10 +163,11 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 		if (this.node != null) {
 			try {
 				this.node.createRequest();
-				this.requestHeaders.setValue(convertRequestHeaders(this.node));
+				this.requestHeaders.setValue(this.node.requestHeadersAsString());
+				this.requestBody.setValue(this.node.requestBodyAsString());
 			} catch (Exception ex) {
 				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
-				this.requestHeaders.setValue(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorMsg"), ex)); //$NON-NLS-1$
+				this.requestHeaders.setValue(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorCreatingRequest"), ex)); //$NON-NLS-1$
 			}
 		} else {
 			this.requestHeaders.setValue(Messages.getString("HTTPConnectionForm.RequestHeaders.Undefined")); //$NON-NLS-1$
@@ -163,54 +187,16 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 		this.state.setValue(this.node.getState().toString());
 	}
 	private void updateResponseStatus() {
-		this.responseStatusCode.setValue(convertResponseStatusCode(this.node));
+		this.responseStatusCode.setValue(this.node.responseStatusCode());
 	}
 	private void updateDuration() {
-		this.duration.setValue(convertDuration(this.node));
+		this.duration.setValue(ConnectionForm.getDurationInMillis(this.node));
 	}
 	private void updateResponseHeaders() {
-		this.responseHeaders.setValue(convertResponseHeaders(this.node));
+		this.responseHeaders.setValue(this.node.responseHeadersAsString());
 	}
 	private void updateResponseBody() {
-		this.responseBody.setValue(convertResponseBody(this.node));
-	}
-
-	private static Integer convertResponseStatusCode(RESTConnection n) {
-		return convertResponseStatusCode(n.getResponseStatusCode());
-	}
-	private static Integer convertResponseStatusCode(int responseCode) {
-		return (responseCode != 0 ? Integer.valueOf(responseCode) : null);
-	}
-
-	private static Double convertDuration(RESTConnection n) {
-		return convertDuration(n.getDuration());
-	}
-	private static Double convertDuration(long responseDuration) {
-		return (responseDuration != 0 ? (Math.round(responseDuration/1000)*1.0e-3) : 0); // nsec's --> msec's (rounded to micro-seconds)
-	}
-
-	private static String convertRequestHeaders(RESTConnection n) {
-		return n.getRequestHeadersAsString();
-	}
-	private static String convertResponseHeaders(RESTConnection n) {
-		return n.getResponseHeadersAsString();
-	}
-
-	private static String convertRequestBody(RESTConnection n) {
-		return convertBody(n.getRequestBody());
-	}
-	private static String convertResponseBody(RESTConnection n) {
-		return convertBody(n.getResponseBody());
-	}
-	private static String convertBody(byte[] body) {
-		return (body != null ? new String(body, StandardCharsets.UTF_8) : null);
-	}
-
-	private static void setRequestBody(RESTConnection n, String value) {
-		n.setRequestBody(convertBody(value));
-	}
-	private static byte[] convertBody(String value) {
-		return (value != null ? value.getBytes(StandardCharsets.UTF_8) : null);
+		this.responseBody.setValue(this.node.responseBodyAsString());
 	}
 
 	@Override

@@ -17,7 +17,6 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.LeafNode;
-import net.mmo.utils.kism.utils.PropertyReplacer;
 
 @Entity
 @Setter
@@ -30,17 +29,21 @@ abstract public class Connection extends LeafNode
 
 	@Min(0) // 0 means off
 	@Max(3600) // means: 1x/hr
-	protected int period = 10; // number of seconds every so often this connection should be checked.
+	protected int period = 60; // number of seconds every so often this connection should be checked.
 
 	@Min(0) // 0 means off
 	@Max(600) // 10 minutes
-	protected int timeout = 60; // number of seconds after which connection setup is considered as failed
+	protected int timeout = 45; // number of seconds after which connection setup is considered as failed
 
 	@SuppressWarnings("nls")
 	@NotNull
 	@NotEmpty
 	@NotBlank
 	protected String url = "http://www.example.com:8080";
+
+	/** common response fields: */
+	transient protected long duration;
+
 
 	/** required for deserialization only */
 	protected Connection() {
@@ -58,9 +61,15 @@ abstract public class Connection extends LeafNode
 	}
 
 	public String getResultingURL(String str) throws Exception {
-		URI uri = new URI(PropertyReplacer.resolveExpression(str, getProperties()));
+		URI uri = new URI(replaceProperties(str));
 		return uri.toString();
 	}
+
+	// convenience method to convert duration in nano-seconds to milli-sec's
+	public static Double convertNanoSecsToMillis(long responseDuration) {
+		return (responseDuration != 0 ? (Math.round(responseDuration/1000)*1.0e-3) : 0); // nsec's --> msec's (rounded to micro-seconds)
+	}
+
 
 	@Override
 	public String toString() {
@@ -69,6 +78,7 @@ abstract public class Connection extends LeafNode
 		return buf
 			.append(", enabled:").append(this.enabled) //$NON-NLS-1$
 			.append(", period:").append(this.period) //$NON-NLS-1$
+			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
 			.append(", url:").append(this.url) //$NON-NLS-1$
 			.append("]") //$NON-NLS-1$
 			.toString();

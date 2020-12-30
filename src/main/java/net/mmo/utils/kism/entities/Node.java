@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.entities;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.function.Function;
 
@@ -19,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.NodeProperties;
+import net.mmo.utils.kism.utils.PropertyReplacer;
 import org.springframework.util.Assert;
 
 @Entity
@@ -35,6 +38,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 {
 	private static final long serialVersionUID = 3875470009216934341L;
 
+	public final static String PROPERTYNAME_STATE  = "state";  //$NON-NLS-1$
+	public static final String PROPERTYNAME_ACTIVE = "active"; //$NON-NLS-1$
+
 	public enum State {
 		FAILED,
 		DEGRADED,
@@ -48,14 +54,16 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private String description;
 
-	private State state;
-
 	@JsonIgnore
-	transient protected IntermediateNode parent;
+	protected transient IntermediateNode parent;
+
+	private State state;
 
 	private boolean active = true; // child is to be considered for bubbling up state
 
 	private NodeProperties properties = new NodeProperties();
+
+	public transient PropertyChangeListener changeListener;
 
 	// required for deserialization
 	protected Node() {
@@ -83,27 +91,44 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	public void setParent(IntermediateNode parent) {
-		if (this.properties == null) this.properties = new NodeProperties();
-		if (parent != null) {
-			this.properties.setParentProperties(parent.getProperties());
-		} else { // remove (from) parent
-			this.properties.setParentProperties(null);
+		if (this.parent != parent) {
+			if (this.properties == null) this.properties = new NodeProperties();
+			if (parent != null) {
+				this.properties.setParentProperties(parent.getProperties());
+			} else { // remove (from) parent
+				this.properties.setParentProperties(null);
+			}
+			this.parent = parent;
 		}
-		this.parent = parent;
 	}
 
 	public void setState(State state) {
-		this.state = state;
-		if (this.parent != null) this.parent.deriveNewState();
+		if (this.state != state) {
+			State oldState = this.state;
+			this.state = state;
+			informOnPropertyChange(PROPERTYNAME_STATE, oldState, state);
+			if (this.parent != null) this.parent.deriveNewState();
+		}
 	}
 
 	public void setActive(boolean active) {
-		this.active = active;
-		if (this.parent != null) this.parent.deriveNewState();
+		if (this.active != active) {
+			boolean oldActive = active;
+			this.active = active;
+			informOnPropertyChange(PROPERTYNAME_ACTIVE, oldActive, active);
+			if (this.parent != null) this.parent.deriveNewState();
+		}
 	}
 
 	public void applyToSubTree(Function<Node, Void> fn) {
 		fn.apply(this);
+	}
+
+	/** method to inform listener(s) re. property changes that may have happened outside the GUI */
+	protected void informOnPropertyChange(String propertyName, Object oldValue, Object newValue) {
+		if (this.changeListener != null) {
+			this.changeListener.propertyChange(new PropertyChangeEvent(this, propertyName, oldValue, newValue));
+		}
 	}
 
 	@JsonIgnore
@@ -118,6 +143,10 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			this.properties = new NodeProperties(this.parent != null ? this.parent.getProperties() : null);
 		}
 		this.properties.setPropertiesFromString(values);
+	}
+
+	public String replaceProperties(String str) throws Exception {
+		return (str != null ? PropertyReplacer.resolveExpression(str, getProperties()) : null);
 	}
 
 	@Override

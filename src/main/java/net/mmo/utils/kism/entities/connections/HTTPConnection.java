@@ -30,10 +30,11 @@ import java.util.stream.Collectors;
 import javax.persistence.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.ui.view.nodes.NodeView;
+import net.mmo.utils.kism.utils.KeyValues;
 
 @Entity
 @Setter
@@ -62,6 +63,11 @@ abstract public class HTTPConnection extends Connection
 		}
 	}
 
+	public final static String PROPERTYNAME_REQUEST_HEADERS  = "requestHeaders"; //$NON-NLS-1$
+	public final static String PROPERTYNAME_REQUEST_BODY     = "requestBody"; //$NON-NLS-1$
+	public final static String PROPERTYNAME_RESPONSE_HEADERS = "responseHeaders"; //$NON-NLS-1$
+	public final static String PROPERTYNAME_RESPONSE_BODY    = "responseBody"; //$NON-NLS-1$
+
 	private final static String KEY_VALUES_SEPARATOR = "="; //$NON-NLS-1$
 	private final static String VALUES_SEPARATOR = ","; //$NON-NLS-1$
 	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
@@ -69,7 +75,6 @@ abstract public class HTTPConnection extends Connection
 	protected HTTP_Method method = HTTP_Method.POST;
 
 	protected Version httpVersion = Version.HTTP_1_1;
-	protected int connectTimeout = 30;
 
 	protected Redirect redirectBehavior = Redirect.NORMAL;
 
@@ -81,10 +86,13 @@ abstract public class HTTPConnection extends Connection
 //	protected String proxyUid;
 //	protected String proxyPwd;
 
-	protected boolean sync = false;
+	protected boolean syncRequests = false;
 
 	protected boolean checkResult = false;
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
+
+	protected String headers;
+	protected String payload;
 
 // TODO: the below should be kept as history list:
 //	transient protected history = new ArrayList();
@@ -97,15 +105,16 @@ abstract public class HTTPConnection extends Connection
 	// request:
 	@JsonIgnore // TODO just for now!
 	transient protected HttpHeaders requestHeaders;
+	@JsonIgnore
 	transient protected byte[] requestBody;
 
 	// response:
 	@JsonIgnore
 	transient protected HttpHeaders responseHeaders;
+	@JsonIgnore
 	transient protected byte[] responseBody;
-
-	transient protected int responseStatusCode;
-	transient protected long duration;
+	@JsonIgnore
+	transient protected int responseStatusCode = -1;
 
 
 	public HTTPConnection() { // required for deserialization
@@ -115,12 +124,44 @@ abstract public class HTTPConnection extends Connection
 		super(name, description);
 	}
 
+	public void setRequestHeaders(HttpHeaders requestHeaders) {
+		if (!Objects.equal(this.requestHeaders, requestHeaders)) {
+			HttpHeaders oldRequestHeaders = this.requestHeaders;
+			this.requestHeaders = requestHeaders;
+			informOnPropertyChange(PROPERTYNAME_REQUEST_HEADERS, oldRequestHeaders, requestHeaders);
+		}
+	}
+	public void setRequestBody(byte[] requestBody) {
+		if (!Objects.equal(this.requestBody, requestBody)) {
+			byte[] oldRequestBody = this.requestBody;
+			this.requestBody = requestBody;
+			informOnPropertyChange(PROPERTYNAME_REQUEST_BODY, oldRequestBody, requestBody);
+		}
+	}
+
+	public void setResponseHeaders(HttpHeaders responseHeaders) {
+		if (!Objects.equal(this.responseHeaders, responseHeaders)) {
+			HttpHeaders oldResponseHeaders = this.responseHeaders;
+			this.responseHeaders = responseHeaders;
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_HEADERS, oldResponseHeaders, responseHeaders);
+		}
+	}
+	public void setResponseBody(byte[] responseBody) {
+		if (!Objects.equal(this.responseBody, responseBody)) {
+			byte[] oldResponseBody = this.responseBody;
+			this.responseBody = responseBody;
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_BODY, oldResponseBody, responseBody);
+		}
+	}
+
+	// the functional part:
+
 	public void createClient() {
 		HttpClient.Builder builder = HttpClient
 			.newBuilder()
 			.version(this.httpVersion)
 			.followRedirects(this.redirectBehavior)
-			.connectTimeout(Duration.ofSeconds(this.connectTimeout))
+			.connectTimeout(Duration.ofSeconds(this.timeout))
 			;
 		if (this.targetUid != null && this.targetPwd != null) {
 			builder.authenticator(new Authenticator()
@@ -140,17 +181,22 @@ abstract public class HTTPConnection extends Connection
 	public HttpRequest createRequest() throws Exception {
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
 			.uri(URI.create(getResultingURL(this.url)))
-			.timeout(Duration.ofSeconds(this.timeout))
-			.header("Content-Type", "application/json");  //$NON-NLS-1$ //$NON-NLS-2$
+			.timeout(Duration.ofSeconds(this.timeout));
+		if (this.headers != null) {
+			Map<String, Object> map = KeyValues.getEntriesFromString(replaceProperties(this.headers));
+			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
+		}
 		switch (this.method) {
 		case GET:
 			builder.GET();
 			break;
 		case POST:
+			setRequestBody(replaceProperties(this.payload));
 			builder.POST(BodyPublishers.ofByteArray(this.requestBody));
 			break;
 		case PUT:
-			builder.PUT(BodyPublishers.ofByteArray(this.requestBody));
+			setRequestBody(replaceProperties(this.payload));
+			builder.POST(BodyPublishers.ofByteArray(this.requestBody));
 			break;
 		case DELETE:
 			builder.DELETE();
@@ -169,10 +215,8 @@ abstract public class HTTPConnection extends Connection
 			createClient();
 		}
 		try {
-			if (this.request == null) {
-				this.request = createRequest();
-			}
-			if (this.sync) {
+			this.request = createRequest();
+			if (this.syncRequests) {
 				long startTime = System.nanoTime();
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
 				this.duration = System.nanoTime() - startTime;
@@ -181,10 +225,10 @@ abstract public class HTTPConnection extends Connection
 				long startTime = System.nanoTime();
 				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
 				futureResponse.thenAccept(response ->
-					{
-						this.duration = System.nanoTime() - startTime;
-						updateResponseValues(response);
-					});
+				{
+					this.duration = System.nanoTime() - startTime;
+					updateResponseValues(response);
+				});
 			}
 		} catch (Throwable t) {
 			if (this.request != null) {
@@ -201,7 +245,7 @@ abstract public class HTTPConnection extends Connection
 			log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
 			Optional<BodyPublisher> optional = this.request.bodyPublisher();
 			if (!optional.isEmpty()) {
-				log.info("body (assuming UTF-8): \"{}\"", new String(this.requestBody, StandardCharsets.UTF_8)); //$NON-NLS-1$
+				log.info("body (assuming UTF-8): \"{}\"", this.responseBodyAsString()); //$NON-NLS-1$
 			}
 		} else {
 			this.requestHeaders = null;
@@ -213,31 +257,37 @@ abstract public class HTTPConnection extends Connection
 		this.responseHeaders = response.headers();
 		this.responseBody = response.body();
 		log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, new String(this.responseBody, StandardCharsets.UTF_8));
+		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.responseBodyAsString());
+		State res;
 		if (this.checkResult) {
 			String acceptableCodes = (this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"); //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
+			res = State.FAILED;
 			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 				if (acceptable.equals(responseStatusCodeStr)) {
-					this.setState(State.OK);
-					NodeView.updateView(this);
-					return;
+					res = State.OK;
+					break;
 				}
 			}
-			this.setState(State.FAILED);
 		} else {
-			this.setState(State.OK);
+			res = State.OK;
 		}
-		NodeView.updateView(this);
+		this.setState(res);
 	}
 
-	public String getRequestHeadersAsString() {
+	// utility methods:
+
+	public Integer responseStatusCode() {
+		return (this.responseStatusCode != -1 ? Integer.valueOf(this.responseStatusCode) : null);
+	}
+	public String requestHeadersAsString() {
 		return convertHeaders(this.requestHeaders);
 	}
-	public String getResponseHeadersAsString() {
+	public String responseHeadersAsString() {
 		return convertHeaders(this.responseHeaders);
 	}
-	public static String convertHeaders(HttpHeaders headers) {
+
+	private static String convertHeaders(HttpHeaders headers) {
 		return (headers != null ? convertHeadersMap(headers.map()) : null);
 	}
 	private static String convertHeadersMap(Map<String, List<String>> headers) {
@@ -249,4 +299,21 @@ abstract public class HTTPConnection extends Connection
 		return String.join(VALUES_SEPARATOR, values);
 	}
 
+	public String requestBodyAsString() {
+		return convertBody(this.getRequestBody());
+	}
+	public String responseBodyAsString() {
+		return convertBody(this.getResponseBody());
+	}
+
+	private static String convertBody(byte[] body) {
+		return (body != null ? new String(body, StandardCharsets.UTF_8) : ""); //$NON-NLS-1$
+	}
+
+	public byte[] setRequestBody(String value) {
+		return this.requestBody = convertBody(value);
+	}
+	private static byte[] convertBody(String value) {
+		return (value != null ? value.getBytes(StandardCharsets.UTF_8) : null);
+	}
 }

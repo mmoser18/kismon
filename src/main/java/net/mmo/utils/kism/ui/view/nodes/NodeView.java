@@ -15,7 +15,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -504,19 +506,27 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	/* User operation error - this CAN happen but does no harm */
-	@SuppressWarnings("static-method")
-	private void UsageError(String msg) {
-		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), Messages.getString(msg)); //$NON-NLS-1$
+	public static void UsageError(String msg) {
+		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), msg); //$NON-NLS-1$
 		log.info(text);
-		new Notification(text, 5000).open();
+		openDialog(text);
 	}
 
 	/* This should of course never happen... ;-) */
-	@SuppressWarnings({"static-method"})
-	private void ProgrammingError(String msg) {
+	public static void ProgrammingError(String msg) {
 		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
 		log.warn(text);
-		new Notification(text, 10000).open();
+		openDialog(text);
+	}
+
+	private static void openDialog(String msg) {
+		Dialog dialog = new Dialog();
+		VerticalLayout msgLane = new VerticalLayout();
+		for (String str: msg.split("\n")) msgLane.add(new Label(str)); //$NON-NLS-1$
+		Button button = new Button(Messages.getString("NodeView.Notification.Close.Label")); //$NON-NLS-1$
+		button.addClickListener(event -> dialog.close());
+		dialog.add(msgLane, button);
+		dialog.open();
 	}
 
 	@SuppressWarnings("unchecked")

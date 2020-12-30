@@ -6,7 +6,6 @@
 package net.mmo.utils.kism.utils;
 
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,11 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 public class NodeProperties extends Properties
 {
 	private static final long serialVersionUID = -7108847395448335625L;
-
-	private final static String KEY_VALUE_SEPARATORS = "[:=]"; //$NON-NLS-1$
-	private final static String KEY_VALUE_SEPARATOR = "="; //$NON-NLS-1$
-	private final static String PROPERTY_SEPARATORS = "[,;\t\n]"; //$NON-NLS-1$
-	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
 
 	public NodeProperties() {
 		// empty
@@ -47,22 +41,10 @@ public class NodeProperties extends Properties
 	}
 
 	public String getPropertiesAsString() {
-		return this.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR + entry.getValue()).collect(Collectors.joining(PROPERTY_SEPARATOR));
+		return KeyValues.getMapAsString(this);
 	}
 	public void setPropertiesFromString(String values) {
-		this.clear(); // remove all old values
-		log.debug("setProperties(\"{}\")", values); //$NON-NLS-1$
-		for (String entry: values.split(PROPERTY_SEPARATORS)) {
-			if (!entry.isBlank()) {
-				log.trace("setProperties(\"{}\"): entry:\"{}\"", values, entry); //$NON-NLS-1$
-				String[] splits = entry.split(KEY_VALUE_SEPARATORS);
-				if (splits.length >= 2) {
-					log.trace("setProperties(\"{}\"): entry:\"{}\": splits:\"{}\"=\"{}\"", values, entry, splits[0], splits[1]); //$NON-NLS-1$
-					this.put(splits[0], splits[1]);
-				} else {
-					log.debug("setProperties(\"{}\"): entry:\"{}\": splits:{} (length:{})", values, entry, splits, splits.length); //$NON-NLS-1$
-				}
-			}
-		}
+		this.clear();
+		this.putAll(KeyValues.getEntriesFromString(values));
 	}
 }

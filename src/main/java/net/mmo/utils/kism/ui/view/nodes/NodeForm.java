@@ -153,7 +153,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		return new HorizontalLayout(this.save, this.delete, this.reset, this.close);
 	}
 
-	private void validateAndSave() {
+	protected void validateAndSave() {
 		log.info("validateAndSave {}", this.node.getName()); //$NON-NLS-1$
 		try {
 			validate(); // throws ValidationException if data not valid
