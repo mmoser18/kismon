@@ -14,10 +14,4 @@ public class JDBCConnectionForm extends ConnectionForm<JDBCConnection>
 	public JDBCConnectionForm() {
 		super(JDBCConnection.class);
 	}
-
-	@Override
-	public void refreshForm(JDBCConnection n) {
-		// TODO Auto-generated method stub
-
-	}
 }

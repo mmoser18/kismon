@@ -39,7 +39,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	private static final long serialVersionUID = 3875470009216934341L;
 
 	public final static String PROPERTYNAME_STATE  = "state";  //$NON-NLS-1$
-	public static final String PROPERTYNAME_ACTIVE = "active"; //$NON-NLS-1$
 
 	public enum State {
 		FAILED,
@@ -112,12 +111,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	public void setActive(boolean active) {
-		if (this.active != active) {
-			boolean oldActive = active;
-			this.active = active;
-			informOnPropertyChange(PROPERTYNAME_ACTIVE, oldActive, active);
-			if (this.parent != null) this.parent.deriveNewState();
-		}
+		this.active = active;
+		if (this.parent != null) this.parent.deriveNewState();
 	}
 
 	public void applyToSubTree(Function<Node, Void> fn) {

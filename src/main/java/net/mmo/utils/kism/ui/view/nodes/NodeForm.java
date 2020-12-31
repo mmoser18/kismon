@@ -4,6 +4,7 @@ package net.mmo.utils.kism.ui.view.nodes;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -91,8 +92,39 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public void setNode(N node) {
 		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
 		this.node = node;
+		if (node != null) {
+			UI ui = getUI().get();
+			this.node.setChangeListener(event ->
+				{
+					ui.access(() ->
+					{
+						@SuppressWarnings("unchecked")
+						N sourceNode = (N)event.getSource();
+						String propertyName = event.getPropertyName();
+						Object oldValue = event.getOldValue();
+						Object newValue = event.getNewValue();
+						log.info("changeListener called for '{}': {} -> {} for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
+						handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+					});
+				});
+			log.info("changeListener set on node {}", node); //$NON-NLS-1$
+		} else {
+			this.node.setChangeListener(null);
+			log.info("changeListener removed on node {}", node); //$NON-NLS-1$
+		}
 		this.binder.readBean(this.node); // to bind the values from the node to the UI fields.
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
+	}
+
+	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		switch (propertyName) {
+		case Node.PROPERTYNAME_STATE:
+			this.state.setValue(newValue.toString());
+			fireEvent(new UpdateEvent(this, this.node));
+			break;
+		default:
+			NodeView.ProgrammingError(String.format("Unexpected property name %s for %s", propertyName, sourceNode)); //$NON-NLS-1$
+		}
 	}
 
 	public N getNode() {
@@ -213,6 +245,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		CloseEvent(NodeForm source) {
 			super(source, null);
+		}
+	}
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	public static class UpdateEvent extends NodeFormEvent
+	{
+		private static final long serialVersionUID = -5848948485202766204L;
+
+		UpdateEvent(NodeForm source, Node node) {
+			super(source, node);
 		}
 	}
 

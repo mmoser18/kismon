@@ -143,6 +143,29 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 	}
 
 	@Override
+	protected void handleChangeEvent(RESTConnection sourceNode, String propertyName, Object oldValue, Object newValue) {
+		switch (propertyName) {
+		case HTTPConnection.PROPERTYNAME_RESPONSE_STATUS_CODE:
+			this.responseStatusCode.setValue((Integer)newValue);
+			break;
+		case HTTPConnection.PROPERTYNAME_REQUEST_HEADERS:
+			this.requestHeaders.setValue(sourceNode.requestHeadersAsString());
+			break;
+		case HTTPConnection.PROPERTYNAME_REQUEST_BODY:
+			this.requestBody.setValue(sourceNode.requestBodyAsString());
+			break;
+		case HTTPConnection.PROPERTYNAME_RESPONSE_HEADERS:
+			this.responseHeaders.setValue(sourceNode.responseHeadersAsString());
+			break;
+		case HTTPConnection.PROPERTYNAME_RESPONSE_BODY:
+			this.responseBody.setValue(sourceNode.responseBodyAsString());
+			break;
+		default:
+			super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+		}
+	}
+
+	@Override
 	protected void updateResultingURL() {
 		super.updateResultingURL();
 		updateRequestHeaders();
@@ -174,34 +197,34 @@ public class RESTConnectionForm extends ConnectionForm<RESTConnection>
 		}
 	}
 
-	public void updateResponseData() {
-		log.debug("updateResponseData"); //$NON-NLS-1$
-		updateResponseStatus();
-		updateDuration();
-		updateResponseHeaders();
-		updateResponseBody();
-		updateState();
-	}
-
-	private void updateState() {
-		this.state.setValue(this.node.getState().toString());
-	}
-	private void updateResponseStatus() {
-		this.responseStatusCode.setValue(this.node.responseStatusCode());
-	}
-	private void updateDuration() {
-		this.duration.setValue(ConnectionForm.getDurationInMillis(this.node));
-	}
-	private void updateResponseHeaders() {
-		this.responseHeaders.setValue(this.node.responseHeadersAsString());
-	}
-	private void updateResponseBody() {
-		this.responseBody.setValue(this.node.responseBodyAsString());
-	}
-
-	@Override
-	public void refreshForm(RESTConnection n) {
-		log.info("refreshForm({})", n); //$NON-NLS-1$
-		if (this.node == n) updateResponseData();
-	}
+//	public void updateResponseData() {
+//		log.debug("updateResponseData"); //$NON-NLS-1$
+//		updateDuration();
+//		updateResponseStatus();
+//		updateResponseHeaders();
+//		updateResponseBody();
+//		updateState();
+//	}
+//
+//	private void updateState() {
+//		this.state.setValue(this.node.getState().toString());
+//	}
+//	private void updateResponseStatus() {
+//		this.responseStatusCode.setValue(this.node.responseStatusCode());
+//	}
+//	private void updateDuration() {
+//		this.duration.setValue(ConnectionForm.getDurationInMillis(this.node));
+//	}
+//	private void updateResponseHeaders() {
+//		this.responseHeaders.setValue(this.node.responseHeadersAsString());
+//	}
+//	private void updateResponseBody() {
+//		this.responseBody.setValue(this.node.responseBodyAsString());
+//	}
+//
+////	@Override
+//	public void refreshForm(RESTConnection n) {
+//		log.info("refreshForm({})", n); //$NON-NLS-1$
+//		if (this.node == n) updateResponseData();
+//	}
 }

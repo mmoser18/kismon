@@ -126,6 +126,17 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 		updateResultingURL();
 	}
 
+	@Override
+	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		switch (propertyName) {
+		case Connection.PROPERTYNAME_DURATION:
+			this.duration.setValue(Connection.convertNanoSecsToMillis((Long)newValue));
+			break;
+		default:
+			super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+		}
+	}
+
 	protected void updateResultingURL() {
 		try {
 			String urlString;
@@ -149,6 +160,4 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 	public static Double getDurationInMillis(Connection n) {
 		return Connection.convertNanoSecsToMillis(n.getDuration());
 	}
-
-	public abstract void refreshForm(N n);
 }

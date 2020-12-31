@@ -24,10 +24,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +33,10 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
-import net.mmo.utils.kism.entities.connections.Connection;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
-import net.mmo.utils.kism.ui.view.nodes.connection_forms.ConnectionForm;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -65,8 +61,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public static final String ViewToolbarClassName = "node-view-toolbar";  //$NON-NLS-1$
 	public static final String ViewContentClassName = "node-view-content";  //$NON-NLS-1$
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
-
-	private static NodeView<? extends Node> currentView;
 
 	private NodeService nodeService;
 	private NodeFactory<N> nodeFactory;
@@ -108,7 +102,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
-		currentView = this;
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -376,6 +369,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 					this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 					this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
+					this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
 				}
 				this.form.setHeader(header);
 				this.form.setNode(node);
@@ -528,26 +522,4 @@ public class NodeView <N extends Node> extends VerticalLayout
 		dialog.add(msgLane, button);
 		dialog.open();
 	}
-
-	@SuppressWarnings("unchecked")
-	public static <N extends Connection> void updateView(N n) {
-		log.info("updateView {} - currentView: {}", n, currentView); //$NON-NLS-1$
-		if (currentView != null) {
-			try {
-				HierarchicalDataProvider<Node, SerializablePredicate<Node>> dp = currentView.tree.getDataProvider();
-				log.debug("refreshItem: dp={}", dp); //$NON-NLS-1$
-				dp.refreshItem(n);
-				NodeForm<? extends Node> form = currentView.form;
-				log.trace("refreshForm: form={}", form); //$NON-NLS-1$
-				if ((form != null) && (form.getNode() == n)) {
-					ConnectionForm<N> cform = (ConnectionForm<N>)form;
-					log.debug("refreshForm {} - node={}", cform, n); //$NON-NLS-1$
-					cform.refreshForm(n);
-				}
-			} catch (Throwable t) {
-				log.error("Exception refreshing UI", t); //$NON-NLS-1$
-			}
-		}
-	}
-
 }

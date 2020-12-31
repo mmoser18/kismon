@@ -25,6 +25,8 @@ abstract public class Connection extends LeafNode
 {
 	private static final long serialVersionUID = -2584969925210734417L;
 
+	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
+
 	protected boolean enabled = true; // should connection be regularly checked?
 
 	@Min(0) // 0 means off
@@ -52,7 +54,7 @@ abstract public class Connection extends LeafNode
 
 	protected Connection(String name, String description) {
 		super(name, description);
-		setState(State.values()[(int)(Math.random()*3.0)]);
+		// setState(State.values()[(int)(Math.random()*3.0)]);
 	}
 
 	public void setEnabled(boolean enabled) {
@@ -63,6 +65,14 @@ abstract public class Connection extends LeafNode
 	public String getResultingURL(String str) throws Exception {
 		URI uri = new URI(replaceProperties(str));
 		return uri.toString();
+	}
+
+	public void setDuration(long duration) {
+		if (this.duration != duration) {
+			long oldDuration = this.duration;
+			this.duration = duration;
+			informOnPropertyChange(PROPERTYNAME_DURATION, oldDuration, duration);
+		}
 	}
 
 	// convenience method to convert duration in nano-seconds to milli-sec's

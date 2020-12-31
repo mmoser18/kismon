@@ -19,7 +19,7 @@ public class Application extends SpringBootServletInitializer
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		// this should disable the SpringBoot devtools from reloading the thread:
-		// System.setProperty("spring.devtools.restart.enabled", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+		//System.setProperty("spring.devtools.restart.enabled", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			SpringApplication.run(Application.class, args);
 		} catch (Throwable e) {
