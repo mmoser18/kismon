@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.NodeProperties;
-import net.mmo.utils.kism.utils.PropertyReplacer;
+import net.mmo.utils.kism.utils.PropertyResolver;
 import org.springframework.util.Assert;
 
 @Entity
@@ -62,7 +62,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private NodeProperties properties = new NodeProperties();
 
+	@JsonIgnore
 	public transient PropertyChangeListener changeListener;
+
 
 	// required for deserialization
 	protected Node() {
@@ -140,8 +142,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		this.properties.setPropertiesFromString(values);
 	}
 
-	public String replaceProperties(String str) throws Exception {
-		return (str != null ? PropertyReplacer.resolveExpression(str, getProperties()) : null);
+	public String resolveProperties(String str) throws Exception {
+		return (str != null ? PropertyResolver.resolveProperties(str, getProperties()) : null);
 	}
 
 	@Override

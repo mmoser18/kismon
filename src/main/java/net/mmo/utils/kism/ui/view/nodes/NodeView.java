@@ -71,7 +71,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	NodeForm<N> form; // package visible for ITs - is there no other way?
 	LayoutDirection contentDirection = LayoutDirection.direction_row;
 
-	private boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
+	private static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 
 	public NodeView(NodeService nodeService,
@@ -292,7 +292,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		Node node = event.getNode();
 		log.debug("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
 		deleteNodes(Collections.singletonList(node));
-		if (this.alwaysSave) saveNode(node);
+		if (NodeView.alwaysSave) saveNode(node);
 		closeEditor();
 	}
 
@@ -303,7 +303,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.nodeService.addChild(selectedNode, newNode);
 			// this.tree.getDataProvider().refreshAll();
 		});
-		if (this.alwaysSave) saveNode(newNode);
+		if (NodeView.alwaysSave) saveNode(newNode);
 		this.tree.setDataProvider(createDataProvider());
 		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
 		// this.tree.getDataProvider().refreshAll();
@@ -341,7 +341,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
-		if (this.alwaysSave) saveNode(node);
+		if (NodeView.alwaysSave) saveNode(node);
 		this.tree.getDataProvider().refreshItem(node);
 	}
 

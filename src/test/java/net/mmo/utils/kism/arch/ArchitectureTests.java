@@ -67,15 +67,6 @@ public class ArchitectureTests
 		rule.check(classes);
 	}
 
-//	@ArchTest
-//	void preventReferencesToMessagesOutsideCurrentPackage(JavaClasses classes) {
-//		ArchRule rule;
-//		rule = ArchRuleDefinition.noClasses()
-//			.should().accessClassesThat().haveNameMatching("Messages")
-//			;
-//		rule.check(classes);
-//	}
-
 	@ArchTest
 	void checkLayers(JavaClasses classes) {
 		ArchRule rule = Architectures.layeredArchitecture()
@@ -92,21 +83,21 @@ public class ArchitectureTests
 		rule.check(classes);
 	}
 
-
-	void checkForWrongMessageClass(JavaClasses classes) {
+	@ArchTest
+	void checkForReferencesToMessagesClassOutsideOfCurrentPackage(JavaClasses classes) {
 		DescribedPredicate<JavaAccess<?>> isForeignMessageClassPredicate =
-			new DescribedPredicate<JavaAccess<?>>("target is a foreign Message class") {
-
-			@Override
-			public boolean apply(JavaAccess<?> access) {
-				JavaClass targetClass = access.getTarget().getOwner();
-				if ("Message".equals(targetClass.getSimpleName())) {
-					JavaClass callerClass = access.getOwner().getOwner();
-					return !targetClass.getPackageName().equals(callerClass.getPackageName());
-				}
-				return false;
-			}
-		};
+			new DescribedPredicate<JavaAccess<?>>("target is accessing a foreign Messages class")
+				{
+					@Override
+					public boolean apply(JavaAccess<?> access) {
+						JavaClass targetClass = access.getTarget().getOwner();
+						if ("Messages".equals(targetClass.getSimpleName())) {
+							JavaClass callerClass = access.getOwner().getOwner();
+							return !targetClass.getPackageName().equals(callerClass.getPackageName());
+						}
+						return false;
+					}
+				};
 
 		ArchRule rule = ArchRuleDefinition.noClasses().should().accessTargetWhere(isForeignMessageClassPredicate);
 		rule.check(classes);

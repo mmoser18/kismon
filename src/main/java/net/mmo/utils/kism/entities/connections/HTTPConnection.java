@@ -19,12 +19,15 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
@@ -34,7 +37,8 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.utils.KeyValues;
+import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Entity
 @Setter
@@ -68,10 +72,20 @@ abstract public class HTTPConnection extends Connection
 	public final static String PROPERTYNAME_RESPONSE_STATUS_CODE = "responseStatusCode"; //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_HEADERS     = "responseHeaders"; //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_BODY        = "responseBody"; //$NON-NLS-1$
+	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
 
-	private final static String KEY_VALUES_SEPARATOR = "="; //$NON-NLS-1$
-	private final static String VALUES_SEPARATOR = ","; //$NON-NLS-1$
+	private final static String KEY_VALUES_SEPARATOR = ":"; //$NON-NLS-1$
+	private final static String VALUES_SEPARATOR     = ","; //$NON-NLS-1$
+	private final static String VALUES_FRAGMENT_SEPARATOR = ";"; //$NON-NLS-1$
+
 	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
+
+	private final static Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
+	private final static String CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
+	private final static String LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9\\+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
+	private final static String CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
+	private final static int    CHARSET_GROUP  = 2; // the group name containing the character set
+	private final static Pattern CHARSET_PATTERN = Pattern.compile(CHARSET_REGEXP);
 
 	protected HTTP_Method method = HTTP_Method.POST;
 
@@ -86,8 +100,6 @@ abstract public class HTTPConnection extends Connection
 	protected int    proxyPort;
 //	protected String proxyUid;
 //	protected String proxyPwd;
-
-	protected boolean syncRequests = false;
 
 	protected boolean checkResult = false;
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
@@ -108,6 +120,9 @@ abstract public class HTTPConnection extends Connection
 	transient protected HttpHeaders requestHeaders;
 	@JsonIgnore
 	transient protected byte[] requestBody;
+
+
+	protected static boolean syncRequests = Boolean.getBoolean(AppProperties.getProperties().getProperty("HTTPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	// response:
 	@JsonIgnore
@@ -191,7 +206,7 @@ abstract public class HTTPConnection extends Connection
 			.uri(URI.create(getResultingURL(this.url)))
 			.timeout(Duration.ofSeconds(this.timeout));
 		if (this.headers != null) {
-			Map<String, Object> map = KeyValues.getEntriesFromString(replaceProperties(this.headers));
+			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(this.headers));
 			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
 		}
 		switch (this.method) {
@@ -200,10 +215,12 @@ abstract public class HTTPConnection extends Connection
 			builder.GET();
 			break;
 		case POST:
-			builder.POST(BodyPublishers.ofByteArray(setRequestBody(replaceProperties(this.payload))));
+			setRequestBody(resolveProperties(this.payload));
+			builder.POST(BodyPublishers.ofByteArray(getRequestBody()));
 			break;
 		case PUT:
-			builder.POST(BodyPublishers.ofByteArray(setRequestBody(replaceProperties(this.payload))));
+			setRequestBody(resolveProperties(this.payload));
+			builder.POST(BodyPublishers.ofByteArray(getRequestBody()));
 			break;
 		case DELETE:
 			setRequestBody((byte[])null);
@@ -213,7 +230,8 @@ abstract public class HTTPConnection extends Connection
 			throw new IllegalArgumentException("Unsupported HTTP method: " + this.method); //$NON-NLS-1$
 		}
 		this.request = builder.build();
-		updateRequestValues();
+		setRequestHeaders(this.request.headers());
+		logRequestValues();
 		return this.request;
 	}
 
@@ -226,16 +244,16 @@ abstract public class HTTPConnection extends Connection
 			if (this.request == null) {
 				this.request = createRequest();
 			}
-			if (this.syncRequests) {
+			if (HTTPConnection.syncRequests) {
 				long startTime = System.nanoTime();
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
-				updateResponseValues(System.nanoTime() - startTime, response);
+				responseReceived(System.nanoTime() - startTime, response);
 			} else { // async:
 				long startTime = System.nanoTime();
 				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
 				futureResponse.thenAccept(response ->
 				{
-					updateResponseValues(System.nanoTime() - startTime, response);
+					responseReceived(System.nanoTime() - startTime, response);
 				});
 			}
 		} catch (Throwable t) {
@@ -247,27 +265,15 @@ abstract public class HTTPConnection extends Connection
 		}
 	}
 
-	public void updateRequestValues() {
-		if (this.request != null) {
-			setRequestHeaders(this.request.headers());
-			log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
-			Optional<BodyPublisher> optional = this.request.bodyPublisher();
-			if (!optional.isEmpty()) {
-				log.info("body (assuming UTF-8): \"{}\"", this.requestBodyAsString()); //$NON-NLS-1$
-			}
-		} else {
-			setRequestHeaders(null);
-		}
-	}
-
-	public void updateResponseValues(long callDuration, HttpResponse<byte[]> response) {
+	public void responseReceived(long callDuration, HttpResponse<byte[]> response) {
+		log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
 		setDuration(callDuration);
 		setResponseStatusCode(response.statusCode());
 		setResponseHeaders(response.headers());
 		setResponseBody(response.body());
-		log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.responseBodyAsString());
+		logResponseValues();
 		deriveState();
+		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 	}
 
 	private void deriveState() {
@@ -288,22 +294,37 @@ abstract public class HTTPConnection extends Connection
 		setState(res);
 	}
 
+	public void logRequestValues() {
+		log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
+		Optional<BodyPublisher> optional = this.request.bodyPublisher();
+		if (!optional.isEmpty()) {
+			log.info("body: \"{}\"", this.getRequestBodyAsString()); //$NON-NLS-1$
+		}
+	}
+
+	public void logResponseValues() {
+		log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
+		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+	}
+
 	// utility methods:
 
-	public Integer responseStatusCode() {
+	public Integer getResponseStatusCode() {
 		return (this.responseStatusCode != -1 ? Integer.valueOf(this.responseStatusCode) : null);
 	}
-	public String requestHeadersAsString() {
-		return convertHeaders(this.requestHeaders);
+	@JsonIgnore
+	public String getRequestHeadersAsString() {
+		return convertHeadersToString(this.requestHeaders);
 	}
-	public String responseHeadersAsString() {
-		return convertHeaders(this.responseHeaders);
+	@JsonIgnore
+	public String getResponseHeadersAsString() {
+		return convertHeadersToString(this.responseHeaders);
 	}
 
-	private static String convertHeaders(HttpHeaders headers) {
-		return (headers != null ? convertHeadersMap(headers.map()) : null);
+	private static String convertHeadersToString(HttpHeaders headers) {
+		return (headers != null ? convertMapToString(headers.map()) : ""); //$NON-NLS-1$
 	}
-	private static String convertHeadersMap(Map<String, List<String>> headers) {
+	private static String convertMapToString(Map<String, List<String>> headers) {
 		return headers.entrySet().stream()
 			.map(entry -> entry.getKey() + KEY_VALUES_SEPARATOR + convertHeaderValues(entry.getValue()))
 			.collect(Collectors.joining(PROPERTY_SEPARATOR));
@@ -312,21 +333,104 @@ abstract public class HTTPConnection extends Connection
 		return String.join(VALUES_SEPARATOR, values);
 	}
 
-	public String requestBodyAsString() {
-		return convertBody(this.getRequestBody());
+	/** extract character set from request headers - if there is any...
+	 * @throws Exception */
+	protected Charset extractRequestCharset() {
+		HttpHeaders reqHdrs = this.getRequestHeaders();
+		return extractRequestCharset(reqHdrs != null ? reqHdrs.map() : null);
 	}
-	public String responseBodyAsString() {
-		return convertBody(this.getResponseBody());
+	/** extract character set from request headers - if there is any...
+	 * @throws Exception */
+	protected Charset extractRequestCharset(Map<String, List<String>> map) {
+		if (map != null) {
+			List<String> mapValues = map.get(CONTENT_TYPE_HEADER);
+			if (mapValues != null) {
+				String contentType = mapValues.get(0);
+				int pos = contentType.indexOf(VALUES_FRAGMENT_SEPARATOR);
+				if (pos > 1) {
+					String charsetFragment = contentType.substring(pos);
+					log.trace("extractRequestCharset: charsetFragment = '{}'", charsetFragment); //$NON-NLS-1$
+					Matcher m = CHARSET_PATTERN.matcher(charsetFragment);
+					if (m.matches()) {
+						String match = m.group(CHARSET_GROUP);
+						log.trace("extractRequestCharset: match = '{}'", match); //$NON-NLS-1$
+						if (match != null && Charset.isSupported(match = match.toUpperCase())) {
+							Charset cs = Charset.forName(match);
+							log.info("extractRequestCharset: found character set: '{}'", cs); //$NON-NLS-1$
+							return cs;
+						} else {
+							log.warn("extractRequestCharset: charset '{}' not supported", match); //$NON-NLS-1$
+							// throw new Exception("charset '" + match + "' not supported");
+						}
+					} else {
+						log.warn("extractRequestCharset: '{}' not matching regexp '{}'.", contentType, CHARSET_REGEXP); //$NON-NLS-1$
+						// throw new Exception("charset '" + contentType + "' not matching expected format");
+					}
+				} else {
+					log.trace("extractRequestCharset: no charset fragment found in ", contentType); //$NON-NLS-1$
+				}
+			} else {
+				log.trace("extractRequestCharset: '{}' not found in headers.", CONTENT_TYPE_HEADER); //$NON-NLS-1$
+			}
+		}
+		log.info("extractRequestCharset: using default charset: '{}'", DEFAULT_CHARSET); //$NON-NLS-1$
+		return DEFAULT_CHARSET;
 	}
 
-	private static String convertBody(byte[] body) {
-		return (body != null ? new String(body, StandardCharsets.UTF_8) : ""); //$NON-NLS-1$
+	/** extract character set from response headers - if there is any... */
+	protected Charset extractResponseCharset() {
+		return DEFAULT_CHARSET;
 	}
 
-	public byte[] setRequestBody(String value) {
-		return this.requestBody = convertBody(value);
+	@JsonIgnore
+	public String getRequestBodyAsString() {
+		return convertBodyToString(this.getRequestBody(), extractRequestCharset());
 	}
-	private static byte[] convertBody(String value) {
-		return (value != null ? value.getBytes(StandardCharsets.UTF_8) : null);
+	@JsonIgnore
+	public String getResponseBodyAsString() {
+		return convertBodyToString(this.getResponseBody(), extractResponseCharset());
 	}
+	private static String convertBodyToString(byte[] body, Charset charset) {
+		return (body != null ? new String(body, charset) : ""); //$NON-NLS-1$
+	}
+
+	public void setRequestBody(String value) {
+		setRequestBody(convertBodyFromString(value, extractRequestCharset()));
+	}
+	private static byte[] convertBodyFromString(String value, Charset charset) {
+		return (value != null ? value.getBytes(charset) : null);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder(super.toString());
+		buf.setLength(buf.length()-1);
+		return buf
+			.append(", method:").append(this.method) //$NON-NLS-1$
+			.append(", httpVersion:").append(this.httpVersion) //$NON-NLS-1$
+			.append(", redirectBehavior:").append(this.redirectBehavior) //$NON-NLS-1$
+			.append(", targetUid:").append(this.targetUid) //$NON-NLS-1$
+			.append(", targetPwd:").append(this.targetPwd) //$NON-NLS-1$
+//			.append(", proxyHost:").append(this.proxyHost) //$NON-NLS-1$
+//			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
+//			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
+//			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
+
+			.append(", checkResult:").append(this.checkResult) //$NON-NLS-1$
+			.append(", acceptableReturnCodes:").append(this.acceptableReturnCodes) //$NON-NLS-1$
+			.append(", headers:").append(this.headers) //$NON-NLS-1$
+			.append(", payload:").append(this.payload) //$NON-NLS-1$
+			.append(" transient: ") //$NON-NLS-1$
+			.append("client:").append(this.client) //$NON-NLS-1$
+			.append("request:").append(this.request) //$NON-NLS-1$
+			.append("client:").append(this.client) //$NON-NLS-1$
+			.append("requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
+			.append("requestBody:").append(this.requestBody) //$NON-NLS-1$
+			.append("responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
+			.append("responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
+			.append("responseBody:").append(this.responseBody) //$NON-NLS-1$
+			.append("]") //$NON-NLS-1$
+			.toString();
+	}
+
 }

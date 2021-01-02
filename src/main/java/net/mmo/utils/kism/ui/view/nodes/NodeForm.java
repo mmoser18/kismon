@@ -4,7 +4,6 @@ package net.mmo.utils.kism.ui.view.nodes;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -20,6 +19,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Slf4j
 public abstract class NodeForm <N extends Node> extends VerticalLayout
@@ -65,19 +65,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		createFormFields();
 
-//		this.binder.forField(this.nameField)
-//		.withValidator(name ->
-//			{ // Explicit validator instance
-//				return nodeService.getRootNodes().stream()
-//					.filter(rootNode -> rootNode != this.node) // not the same rootnode?
-//					.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
-//					.findAny().isEmpty();
-//			}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
-//		.bind(Node::getName, Node::setName);
-
-		this.binder.forField(this.state).bind(n -> n.getState().toString(), null);
-		this.binder.forField(this.properties).bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
-
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-op... ||-(
@@ -91,31 +78,32 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	public void setNode(N node) {
 		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
+		if (this.node != null) {
+			this.node.setChangeListener(null);
+			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
+		}
 		this.node = node;
 		if (node != null) {
-			UI ui = getUI().get();
 			this.node.setChangeListener(event ->
 				{
-					ui.access(() ->
-					{
-						@SuppressWarnings("unchecked")
-						N sourceNode = (N)event.getSource();
-						String propertyName = event.getPropertyName();
-						Object oldValue = event.getOldValue();
-						Object newValue = event.getNewValue();
-						log.info("changeListener called for '{}': {} -> {} for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
-						handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
-					});
+					getUI().ifPresent(ui -> ui.access(() ->
+						{
+							@SuppressWarnings("unchecked")
+							N sourceNode = (N)event.getSource();
+							String propertyName = event.getPropertyName();
+							Object oldValue = event.getOldValue();
+							Object newValue = event.getNewValue();
+							log.info("changeListener called for '{}': {} -> {} for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
+							handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+						}));
 				});
 			log.info("changeListener set on node {}", node); //$NON-NLS-1$
-		} else {
-			this.node.setChangeListener(null);
-			log.info("changeListener removed on node {}", node); //$NON-NLS-1$
 		}
 		this.binder.readBean(this.node); // to bind the values from the node to the UI fields.
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
 	}
 
+	/** to be extended by subclasses if they handle further property-updates */
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
 		case Node.PROPERTYNAME_STATE:
@@ -135,6 +123,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
 		this.name.setThemeName(LabelPaddingTheme);
+//		this.binder.forField(this.nameField)
+//			.withValidator(name ->
+//				{ // Explicit validator instance
+//					return nodeService.getRootNodes().stream()
+//						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
+//						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
+//						.findAny().isEmpty();
+//				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
+//			.bind(Node::getName, Node::setName);
 
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
@@ -143,6 +140,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.state = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.state.addClassName(StateClassName);
 		this.state.setReadOnly(true); // state is calculated automatically!
+		this.binder.forField(this.state).bind(n -> n.getState().toString(), null);
 
 		this.active  = new Checkbox(Messages.getString("NodeForm.Active.Label")); //$NON-NLS-1$
 		this.active.addClassName(ActiveClassName);
@@ -153,6 +151,18 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
 		this.properties.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.properties)
+			.withValidator(str ->
+				{ // Explicit validator instance:
+					try {
+						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(str));
+						return true; // still here -> the above conversion succeeded
+					} catch (Exception ex) { // Exception -> the above conversion failed
+						log.error("Exception converting '{}' to properties: {}", str, ex); //$NON-NLS-1$
+						return false;
+					}
+				}, Messages.getString("NodeForm.Validator.Properties.IllegalValue")) //$NON-NLS-1$
+			.bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
 
 		this.fields = new VerticalLayout(this.name, this.description, stateAndActive, this.properties);
 		this.fields.setClassName(FieldsClassName);

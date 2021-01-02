@@ -16,7 +16,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.Connection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
-import net.mmo.utils.kism.utils.KeyValues;
 
 @Slf4j
 public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
@@ -71,7 +70,7 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 		this.url = new TextField(Messages.getString("ConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
 		this.url.setThemeName(LabelPaddingTheme);
-		this.url.addValueChangeListener(event -> updateResultingURL());
+		this.url.addValueChangeListener(event -> { if (event.isFromClient()) updateResultingURL(); });
 		this.binder.forField(this.url)
 			.withValidator(urlStr ->
 				{ // Explicit validator instance
@@ -90,7 +89,7 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 		this.duration.setSuffixComponent(new Span(Messages.getString("HTTPConnectionForm.Duration.Suffix"))); //$NON-NLS-1$
 		this.duration.setClassName(DurationClassName);
 		this.duration.setThemeName(LabelPaddingTheme);
-		this.duration.setStep(0.001);
+		this.duration.setStep(0.0001);
 		this.binder.forField(this.duration).bind(ConnectionForm::getDurationInMillis, null); // nsec's --> msec's (rounded to micro-seconds)
 
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
@@ -98,24 +97,14 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 		this.binder.addStatusChangeListener(e -> this.execute.setEnabled(this.binder.isValid()));
 		this.execute.addClickListener(event -> validateAndSave());
 
-		// we also may have to update the URL if the properties change:
+		// we also may have to update the resulting URL if any of the properties change:
 		this.properties.addValueChangeListener(event ->
 			{
-				if (this.node != null) this.node.setPropertiesFromString(event.getValue());
+				if (event.isFromClient()) {
+					if (this.node != null) this.node.setPropertiesFromString(event.getValue());
+				}
 				updateResultingURL();
 			});
-		this.binder.forField(this.properties)
-			.withValidator(str ->
-			{ // Explicit validator instance
-				try {
-					if (this.node != null) KeyValues.getEntriesFromString(this.node.replaceProperties(str));
-					return true; // still here -> the above conversion went succeeded
-				} catch (Exception ex) {
-					log.error("Exception converting '{}' to properties: {}", str, ex); //$NON-NLS-1$
-					return false;
-				}
-			}, Messages.getString("ConnectionForm.Validator.Properties.IllegalValue")) //$NON-NLS-1$
-			.bind(Connection::getPropertiesAsString, Connection::setPropertiesFromString);
 
 		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
 	}

@@ -29,22 +29,22 @@ public class NodeProperties extends Properties
 
 	@Override
 	public String getProperty(String key) {
-		log.trace("getProperty({}):", key); //$NON-NLS-1$
+		// log.trace("getProperty({}):", key); //$NON-NLS-1$
 		String res = super.getProperty(key);
 		log.trace("getProperty({}) --> {}", key, res); //$NON-NLS-1$
 		return res;
 	}
 
-	/* This is the actual purpose of this class: to get access to and be able to set "defaults": */
+	/* This method is the actual purpose of this class: to get access to and be able to set "defaults": */
 	public void setParentProperties(Properties parentProperties) {
 		this.defaults = parentProperties;
 	}
 
 	public String getPropertiesAsString() {
-		return KeyValues.getMapAsString(this);
+		return KeyValuesConverter.convertMapToString(this);
 	}
 	public void setPropertiesFromString(String values) {
 		this.clear();
-		this.putAll(KeyValues.getEntriesFromString(values));
+		this.putAll(KeyValuesConverter.convertStringToMap(values));
 	}
 }

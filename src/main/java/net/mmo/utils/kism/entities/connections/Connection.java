@@ -63,7 +63,7 @@ abstract public class Connection extends LeafNode
 	}
 
 	public String getResultingURL(String str) throws Exception {
-		URI uri = new URI(replaceProperties(str));
+		URI uri = new URI(resolveProperties(str));
 		return uri.toString();
 	}
 
@@ -90,6 +90,7 @@ abstract public class Connection extends LeafNode
 			.append(", period:").append(this.period) //$NON-NLS-1$
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
 			.append(", url:").append(this.url) //$NON-NLS-1$
+			.append(", duration:").append(this.duration) //$NON-NLS-1$
 			.append("]") //$NON-NLS-1$
 			.toString();
 	}
