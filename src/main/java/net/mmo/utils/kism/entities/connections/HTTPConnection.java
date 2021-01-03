@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -37,14 +36,14 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.Messages;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Entity
 @Setter
 @Getter
 @Slf4j
-abstract public class HTTPConnection extends Connection
+abstract public class HTTPConnection extends IPConnection
 {
 	private static final long serialVersionUID = -1288268291213672552L;
 
@@ -72,7 +71,9 @@ abstract public class HTTPConnection extends Connection
 	public final static String PROPERTYNAME_RESPONSE_STATUS_CODE = "responseStatusCode"; //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_HEADERS     = "responseHeaders"; //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_BODY        = "responseBody"; //$NON-NLS-1$
-	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
+
+	private final static byte[] EMPTY_BODY = new byte[0];
+	private final static String VALUE_UNDEFINED = Messages.getString("HTTPConnectionForm.RequestHeaders.Undefined"); //$NON-NLS-1$
 
 	private final static String KEY_VALUES_SEPARATOR = ":"; //$NON-NLS-1$
 	private final static String VALUES_SEPARATOR     = ","; //$NON-NLS-1$
@@ -81,10 +82,10 @@ abstract public class HTTPConnection extends Connection
 	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
 
 	private final static Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
-	private final static String CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
-	private final static String LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9\\+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
-	private final static String CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
-	private final static int    CHARSET_GROUP  = 2; // the group name containing the character set
+	private final static String  CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
+	private final static String  LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9\\+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
+	private final static String  CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
+	private final static int     CHARSET_GROUP_NR  = 2; // the group name containing the character set
 	private final static Pattern CHARSET_PATTERN = Pattern.compile(CHARSET_REGEXP);
 
 	protected HTTP_Method method = HTTP_Method.POST;
@@ -95,11 +96,6 @@ abstract public class HTTPConnection extends Connection
 
 	protected String targetUid = "user"; //$NON-NLS-1$
 	protected String targetPwd = "password"; //$NON-NLS-1$
-
-	protected String proxyHost;
-	protected int    proxyPort;
-//	protected String proxyUid;
-//	protected String proxyPwd;
 
 	protected boolean checkResult = false;
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
@@ -120,9 +116,6 @@ abstract public class HTTPConnection extends Connection
 	transient protected HttpHeaders requestHeaders;
 	@JsonIgnore
 	transient protected byte[] requestBody;
-
-
-	protected static boolean syncRequests = Boolean.getBoolean(AppProperties.getProperties().getProperty("HTTPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	// response:
 	@JsonIgnore
@@ -211,19 +204,23 @@ abstract public class HTTPConnection extends Connection
 		}
 		switch (this.method) {
 		case GET:
-			setRequestBody((byte[])null);
+			setRequestBody(EMPTY_BODY);
 			builder.GET();
 			break;
-		case POST:
+		case POST: {
 			setRequestBody(resolveProperties(this.payload));
-			builder.POST(BodyPublishers.ofByteArray(getRequestBody()));
+			byte[] body = getRequestBody();
+			builder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
-		case PUT:
+		}
+		case PUT: {
 			setRequestBody(resolveProperties(this.payload));
-			builder.POST(BodyPublishers.ofByteArray(getRequestBody()));
+			byte[] body = getRequestBody();
+			builder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
+		}
 		case DELETE:
-			setRequestBody((byte[])null);
+			setRequestBody(EMPTY_BODY);
 			builder.DELETE();
 			break;
 		default:
@@ -235,7 +232,8 @@ abstract public class HTTPConnection extends Connection
 		return this.request;
 	}
 
-	public void sendRequest() {
+	@Override
+	public void sendRequest() throws Exception {
 		log.info("sendRequest:"); //$NON-NLS-1$
 		if (this.client == null) {
 			createClient();
@@ -258,9 +256,9 @@ abstract public class HTTPConnection extends Connection
 			}
 		} catch (Throwable t) {
 			if (this.request != null) {
-				log.error(String.format("error sending request to {}: ", this.request.uri()), t); //$NON-NLS-1$
+				throw new Exception(String.format("Error sending request to {}: ",  this.request.uri()), t); //$NON-NLS-1$
 			} else {
-				log.error("Error creating request: ", t); //$NON-NLS-1$
+				throw new Exception("Error creating request", t); //$NON-NLS-1$
 			}
 		}
 	}
@@ -277,7 +275,7 @@ abstract public class HTTPConnection extends Connection
 	}
 
 	private void deriveState() {
-		State res;
+		State res = State.OK;
 		if (this.checkResult) {
 			String acceptableCodes = (this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"); //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
@@ -288,8 +286,6 @@ abstract public class HTTPConnection extends Connection
 					break;
 				}
 			}
-		} else {
-			res = State.OK;
 		}
 		setState(res);
 	}
@@ -324,6 +320,7 @@ abstract public class HTTPConnection extends Connection
 	private static String convertHeadersToString(HttpHeaders headers) {
 		return (headers != null ? convertMapToString(headers.map()) : ""); //$NON-NLS-1$
 	}
+	// TODO: move to KeyValuesConverter
 	private static String convertMapToString(Map<String, List<String>> headers) {
 		return headers.entrySet().stream()
 			.map(entry -> entry.getKey() + KEY_VALUES_SEPARATOR + convertHeaderValues(entry.getValue()))
@@ -339,42 +336,24 @@ abstract public class HTTPConnection extends Connection
 		HttpHeaders reqHdrs = this.getRequestHeaders();
 		return extractRequestCharset(reqHdrs != null ? reqHdrs.map() : null);
 	}
-	/** extract character set from request headers - if there is any...
-	 * @throws Exception */
+	/** extract character set from Content-Type header - if there is any... */
 	protected Charset extractRequestCharset(Map<String, List<String>> map) {
-		if (map != null) {
-			List<String> mapValues = map.get(CONTENT_TYPE_HEADER);
-			if (mapValues != null) {
-				String contentType = mapValues.get(0);
-				int pos = contentType.indexOf(VALUES_FRAGMENT_SEPARATOR);
-				if (pos > 1) {
-					String charsetFragment = contentType.substring(pos);
-					log.trace("extractRequestCharset: charsetFragment = '{}'", charsetFragment); //$NON-NLS-1$
-					Matcher m = CHARSET_PATTERN.matcher(charsetFragment);
-					if (m.matches()) {
-						String match = m.group(CHARSET_GROUP);
-						log.trace("extractRequestCharset: match = '{}'", match); //$NON-NLS-1$
-						if (match != null && Charset.isSupported(match = match.toUpperCase())) {
-							Charset cs = Charset.forName(match);
-							log.info("extractRequestCharset: found character set: '{}'", cs); //$NON-NLS-1$
-							return cs;
-						} else {
-							log.warn("extractRequestCharset: charset '{}' not supported", match); //$NON-NLS-1$
-							// throw new Exception("charset '" + match + "' not supported");
-						}
-					} else {
-						log.warn("extractRequestCharset: '{}' not matching regexp '{}'.", contentType, CHARSET_REGEXP); //$NON-NLS-1$
-						// throw new Exception("charset '" + contentType + "' not matching expected format");
-					}
-				} else {
-					log.trace("extractRequestCharset: no charset fragment found in ", contentType); //$NON-NLS-1$
-				}
-			} else {
-				log.trace("extractRequestCharset: '{}' not found in headers.", CONTENT_TYPE_HEADER); //$NON-NLS-1$
-			}
-		}
-		log.info("extractRequestCharset: using default charset: '{}'", DEFAULT_CHARSET); //$NON-NLS-1$
-		return DEFAULT_CHARSET;
+		return (Charset)KeyValuesConverter.extractValueFragment(map,
+		                                                        CONTENT_TYPE_HEADER, VALUES_FRAGMENT_SEPARATOR,
+		                                                        CHARSET_PATTERN, CHARSET_GROUP_NR,
+		                                                        (str) -> {
+		                                                        	String charsetName = str.toUpperCase();
+		                                                        	if (Charset.isSupported(charsetName)) {
+		                                                        		Charset cs = Charset.forName(charsetName);
+		                                                        		log.info("extractRequestCharset: found character set: '{}'", cs); //$NON-NLS-1$
+		                                                        		return cs;
+		                                                        	} else {
+		                                                        		log.warn("extractRequestCharset: charset '{}' not supported", charsetName); //$NON-NLS-1$
+		                                                        		// throw new Exception("charset '" + match + "' not supported");
+		                                                        		return null;
+		                                                        	}
+		                                                        },
+		                                                        DEFAULT_CHARSET);
 	}
 
 	/** extract character set from response headers - if there is any... */
@@ -391,7 +370,7 @@ abstract public class HTTPConnection extends Connection
 		return convertBodyToString(this.getResponseBody(), extractResponseCharset());
 	}
 	private static String convertBodyToString(byte[] body, Charset charset) {
-		return (body != null ? new String(body, charset) : ""); //$NON-NLS-1$
+		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);
 	}
 
 	public void setRequestBody(String value) {
@@ -406,6 +385,7 @@ abstract public class HTTPConnection extends Connection
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
+			.append(", url:").append(this.url) //$NON-NLS-1$
 			.append(", method:").append(this.method) //$NON-NLS-1$
 			.append(", httpVersion:").append(this.httpVersion) //$NON-NLS-1$
 			.append(", redirectBehavior:").append(this.redirectBehavior) //$NON-NLS-1$
@@ -429,7 +409,7 @@ abstract public class HTTPConnection extends Connection
 			.append("responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
 			.append("responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
 			.append("responseBody:").append(this.responseBody) //$NON-NLS-1$
-			.append("]") //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
 			.toString();
 	}
 

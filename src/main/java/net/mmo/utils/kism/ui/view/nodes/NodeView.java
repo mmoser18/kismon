@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -357,7 +358,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					newForm = this.formFactory.createForm((Class<N>)node.getClass());
 				} catch (Exception ex) {
 					log.error("Error creating node:", ex); //$NON-NLS-1$
-					ProgrammingError("Error creating node: " + ex.getMessage()); //$NON-NLS-1$
+					ProgrammingError("Error creating node", ex); //$NON-NLS-1$
 					return;
 				}
 				if (newForm != this.form) { // different form assigned:
@@ -472,8 +473,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 	@SuppressWarnings("static-method")
 	private void reportException(String sourceName, Throwable t) {
 		String msg = String.format(Messages.getString("NodeView.ErrorMsg.ExceptionReading"), sourceName, t); //$NON-NLS-1$
-		log.error(msg, t);
-		new Notification(msg, 0).open();
+		log.info(msg, t);
+		openDialog(msg, t);
 	}
 
 	private void deleteNodes(Collection<Node> nodes) {
@@ -503,23 +504,36 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public static void UsageError(String msg) {
 		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), msg); //$NON-NLS-1$
 		log.info(text);
-		openDialog(text);
+		openDialog(text, null);
+	}
+
+	public static void ConfigError(String msg, Throwable t) {
+		String text = String.format(Messages.getString("NodeView.Notification.ConfigError"), msg); //$NON-NLS-1$
+		log.warn(text, t);
+		openDialog(text, t);
 	}
 
 	/* This should of course never happen... ;-) */
-	public static void ProgrammingError(String msg) {
+	public static void ProgrammingError(String msg, Throwable t) {
 		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
-		log.warn(text);
-		openDialog(text);
+		log.error(text, t);
+		openDialog(text, t);
 	}
 
-	private static void openDialog(String msg) {
-		Dialog dialog = new Dialog();
-		VerticalLayout msgLane = new VerticalLayout();
-		for (String str: msg.split("\n")) msgLane.add(new Label(str)); //$NON-NLS-1$
-		Button button = new Button(Messages.getString("NodeView.Notification.Close.Label")); //$NON-NLS-1$
-		button.addClickListener(event -> dialog.close());
-		dialog.add(msgLane, button);
-		dialog.open();
+	private static void openDialog(String msg, Throwable t) {
+		UI ui = UI.getCurrent();
+		ui.access(() ->
+			{
+				Dialog dialog = new Dialog();
+				VerticalLayout msgLane = new VerticalLayout();
+				for (String str: msg.split("\n")) msgLane.add(new Label(str)); //$NON-NLS-1$
+				for (Throwable t2 = t; t2 != null; t2 = t2.getCause()) {
+					msgLane.add(new Label(t2.toString()));
+				}
+				Button button = new Button(Messages.getString("NodeView.Notification.Close.Label")); //$NON-NLS-1$
+				button.addClickListener(event -> dialog.close());
+				dialog.add(msgLane, button);
+				dialog.open();
+			});
 	}
 }

@@ -37,6 +37,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public static final String CombinedClassName    = "node-form-field-combined"; //$NON-NLS-1$
 
 	public static final String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
+	public static final String MonospaceClassName   = "monospace"; //$NON-NLS-1$
 
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -86,16 +87,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		if (node != null) {
 			this.node.setChangeListener(event ->
 				{
-					getUI().ifPresent(ui -> ui.access(() ->
-						{
-							@SuppressWarnings("unchecked")
-							N sourceNode = (N)event.getSource();
-							String propertyName = event.getPropertyName();
-							Object oldValue = event.getOldValue();
-							Object newValue = event.getNewValue();
-							log.info("changeListener called for '{}': {} -> {} for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
-							handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
-						}));
+					@SuppressWarnings("unchecked")
+					N sourceNode = (N)event.getSource();
+					String propertyName = event.getPropertyName();
+					Object oldValue = event.getOldValue();
+					Object newValue = event.getNewValue();
+					log.info("changeListener called for '{}': '{}' -> '{}' for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
+
+					getUI().ifPresentOrElse((ui) -> ui.access(() -> handleChangeEvent(sourceNode, propertyName, oldValue, newValue)),
+					                        () -> log.warn("UI not present for changeListener for node {}", node)); //$NON-NLS-1$
 				});
 			log.info("changeListener set on node {}", node); //$NON-NLS-1$
 		}
@@ -111,7 +111,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			fireEvent(new UpdateEvent(this, this.node));
 			break;
 		default:
-			NodeView.ProgrammingError(String.format("Unexpected property name %s for %s", propertyName, sourceNode)); //$NON-NLS-1$
+			NodeView.ProgrammingError(String.format("Unexpected property name %s for %s", propertyName, sourceNode), null); //$NON-NLS-1$
 		}
 	}
 

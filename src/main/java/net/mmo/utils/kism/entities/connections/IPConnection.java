@@ -17,15 +17,17 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.LeafNode;
+import net.mmo.utils.kism.utils.AppProperties;
 
 @Entity
 @Setter
 @Getter
-abstract public class Connection extends LeafNode
+abstract public class IPConnection extends LeafNode
 {
 	private static final long serialVersionUID = -2584969925210734417L;
 
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
 
 	protected boolean enabled = true; // should connection be regularly checked?
 
@@ -43,16 +45,23 @@ abstract public class Connection extends LeafNode
 	@NotBlank
 	protected String url = "http://www.example.com:8080";
 
+	protected String proxyHost;
+	protected int    proxyPort;
+//	protected String proxyUid;
+//	protected String proxyPwd;
+
 	/** common response fields: */
 	transient protected long duration;
 
+	protected static boolean syncRequests = Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
-	/** required for deserialization only */
-	protected Connection() {
+
+	/**required for deserialization only */
+	protected IPConnection() {
 		// empty
 	}
 
-	protected Connection(String name, String description) {
+	protected IPConnection(String name, String description) {
 		super(name, description);
 		// setState(State.values()[(int)(Math.random()*3.0)]);
 	}
@@ -60,11 +69,6 @@ abstract public class Connection extends LeafNode
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		if (this.parent != null) this.parent.deriveNewState();
-	}
-
-	public String getResultingURL(String str) throws Exception {
-		URI uri = new URI(resolveProperties(str));
-		return uri.toString();
 	}
 
 	public void setDuration(long duration) {
@@ -75,11 +79,17 @@ abstract public class Connection extends LeafNode
 		}
 	}
 
+	public String getResultingURL(String str) throws Exception {
+		URI uri = new URI(resolveProperties(str));
+		return uri.toString();
+	}
+
 	// convenience method to convert duration in nano-seconds to milli-sec's
 	public static Double convertNanoSecsToMillis(long responseDuration) {
 		return (responseDuration != 0 ? (Math.round(responseDuration/1000)*1.0e-3) : 0); // nsec's --> msec's (rounded to micro-seconds)
 	}
 
+	abstract public void sendRequest() throws Exception;
 
 	@Override
 	public String toString() {
@@ -89,9 +99,8 @@ abstract public class Connection extends LeafNode
 			.append(", enabled:").append(this.enabled) //$NON-NLS-1$
 			.append(", period:").append(this.period) //$NON-NLS-1$
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
-			.append(", url:").append(this.url) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
-			.append("]") //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
 			.toString();
 	}
 

@@ -170,13 +170,21 @@
 		</dependency>
 		<!- -->
 
-		<!-- dependencies already included in SpringBoot: ->
+		<!-- dependency already included in SpringBoot: ->
 		<!- jackson-core ->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<!- -->
+		
+		<!-- for JDBC: -->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.3</version>
+		</dependency>
+		
 			
 		<!-- JUnit 5 = JUnit Platform + JUnit Jupiter + JUnit Vintage -->
 
@@ -218,9 +226,8 @@
 		<!-- required when using Vaadin BeanValidators: -->
 		<!-- Hibernate validator - Bean validation API Implementation -->
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>6.0.21.Final</version>
 		</dependency>
 		<!-- the following are obviously referenced by hibernate validator - why are these not in its pom? -->
 		<dependency>

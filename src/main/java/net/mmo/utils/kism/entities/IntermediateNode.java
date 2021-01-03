@@ -87,10 +87,11 @@ public class IntermediateNode extends Node
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer(super.toString());
-			buf.setLength(buf.length()-1);
-			return buf.append(", children:").append(getChildren()) //$NON-NLS-1$
-					.append("]") //$NON-NLS-1$
-					.toString();
+		buf.setLength(buf.length()-1);
+		return buf
+			.append(", children:").append(getChildren()) //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
+			.toString();
 	}
 
 }

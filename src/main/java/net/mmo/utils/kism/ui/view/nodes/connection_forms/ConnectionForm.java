@@ -14,11 +14,13 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.entities.connections.Connection;
+import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
+import net.mmo.utils.kism.ui.view.nodes.NodeView;
+import net.mmo.utils.kism.utils.AppProperties;
 
 @Slf4j
-public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
+public abstract class ConnectionForm <N extends IPConnection> extends NodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
@@ -31,7 +33,6 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 	public static final String ExecuteClassName      = "node-form-button-execute"; //$NON-NLS-1$
 	public static final String DurationClassName     = "node-form-field-duration"; //$NON-NLS-1$
 
-
 	protected Checkbox enabled;
 	protected IntegerField period;
 	protected IntegerField timeout;
@@ -42,6 +43,8 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 	// these are not yet added to the form:
 	protected Button execute;
 	protected NumberField duration;
+
+	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	public ConnectionForm(Class<N> clazz) {
 		super(clazz);
@@ -80,7 +83,7 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 						return false;
 					}
 				}, Messages.getString("ConnectionForm.Validator.URL.IllegalURL")) //$NON-NLS-1$
-			.bind(Connection::getUrl, Connection::setUrl);
+			.bind(IPConnection::getUrl, IPConnection::setUrl);
 
 		this.resultingURL = new Label();
 		this.resultingURL.setClassName(ResultingURLClassName);
@@ -95,7 +98,16 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
 		this.binder.addStatusChangeListener(e -> this.execute.setEnabled(this.binder.isValid()));
-		this.execute.addClickListener(event -> validateAndSave());
+		this.execute.addClickListener(event ->
+			{
+				validateAndSave();
+				try {
+					this.node.sendRequest();
+				} catch (Throwable t) {
+					NodeView.ConfigError("Exception creating/executing request", t); //$NON-NLS-1$
+				}
+			});
+
 
 		// we also may have to update the resulting URL if any of the properties change:
 		this.properties.addValueChangeListener(event ->
@@ -118,8 +130,8 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 	@Override
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
-		case Connection.PROPERTYNAME_DURATION:
-			this.duration.setValue(Connection.convertNanoSecsToMillis((Long)newValue));
+		case IPConnection.PROPERTYNAME_DURATION:
+			this.duration.setValue(IPConnection.convertNanoSecsToMillis((Long)newValue));
 			break;
 		default:
 			super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
@@ -127,26 +139,36 @@ public abstract class ConnectionForm <N extends Connection> extends NodeForm<N>
 	}
 
 	protected void updateResultingURL() {
+		updateResultingURL("updateResultingURL", this.resultingURL, this.url.getValue(), (value) -> this.node.getResultingURL(value)); //$NON-NLS-1$
+	}
+
+	/** Had to define my own interface because Function<T,R> does not support throwing an Exception: */
+	@FunctionalInterface
+	interface StringToStringConverter {
+		String apply(String value) throws Exception;
+	}
+
+	protected void updateResultingURL(String prefix, Label label, String value, StringToStringConverter converter) {
 		try {
 			String urlString;
 			if (this.node != null) {
-				urlString = this.node.getResultingURL(this.url.getValue());
-				log.debug("updateResultingURL: {} -> {}", this.url.getValue(), urlString); //$NON-NLS-1$
-				this.resultingURL.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.Value"), urlString)); //$NON-NLS-1$
-				this.resultingURL.setVisible(!urlString.equals(this.url.getValue()));
+				urlString = converter.apply(value);
+				log.debug("{}: {} -> {}", prefix, value, urlString); //$NON-NLS-1$
+				label.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.Value"), urlString)); //$NON-NLS-1$
+				label.setVisible(!urlString.equals(value));
 			} else {
-				log.debug("updateResultingURL: node==null"); //$NON-NLS-1$
-				this.resultingURL.setText(Messages.getString("ConnectionForm.ResultingUrl.Undefined")); //$NON-NLS-1$
-				this.resultingURL.setVisible(true);
+				log.debug("{}: node==null", prefix); //$NON-NLS-1$
+				label.setText(Messages.getString("ConnectionForm.ResultingUrl.Undefined")); //$NON-NLS-1$
+				label.setVisible(true);
 			}
 		} catch (Exception ex) {
-			log.debug("updateResultingURL: Illegal URL: {} - reason: {}", ex, ex.getCause()); //$NON-NLS-1$
-			this.resultingURL.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.IllegalSyntax"), ex)); //$NON-NLS-1$
-			this.resultingURL.setVisible(true);
+			log.debug("{}: Illegal URL: {} : {} - reason: {}", prefix, value, ex, ex.getCause()); //$NON-NLS-1$
+			label.setText(String.format(Messages.getString("ConnectionForm.ResultingUrl.IllegalSyntax"), ex)); //$NON-NLS-1$
+			label.setVisible(true);
 		}
 	}
 
-	public static Double getDurationInMillis(Connection n) {
-		return Connection.convertNanoSecsToMillis(n.getDuration());
+	public static Double getDurationInMillis(IPConnection n) {
+		return IPConnection.convertNanoSecsToMillis(n.getDuration());
 	}
 }

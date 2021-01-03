@@ -6,7 +6,11 @@
 package net.mmo.utils.kism.utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -50,5 +54,43 @@ public class KeyValuesConverter
 			}
 		}
 		return map;
+	}
+
+	/** utility method to extract fragment-values from HTTP headers */
+	public static Object extractValueFragment(Map<String, List<String>> map,
+	                                          String key,
+	                                          String fragementSeparator,
+	                                          Pattern pattern,
+	                                          int matchingGroup,
+	                                          Function<String, Object> converter,
+	                                          Object defaultValue) {
+		if (map != null) {
+			List<String> mapValues = map.get(key);
+			if (mapValues != null) {
+				for (String mapValue: mapValues) {
+					int pos = mapValue.indexOf(fragementSeparator);
+					if (pos > 1) {
+						String charsetFragment = mapValue.substring(pos);
+						log.trace("extractValueFragment: charsetFragment = '{}'", charsetFragment); //$NON-NLS-1$
+						Matcher m = pattern.matcher(charsetFragment);
+						String fragment = null;
+						if (m.matches() && ((fragment = m.group(matchingGroup)) != null)) {
+							log.trace("extractValueFragment: match = '{}'", fragment); //$NON-NLS-1$
+							Object res = converter.apply(fragment);
+							if (res != null) return res;
+						} else {
+							log.warn("extractValueFragment: '{}' not matching pattern '{}'.", mapValue, pattern); //$NON-NLS-1$
+							// throw new Exception("charset '" + contentType + "' not matching expected format");
+						}
+					} else {
+						log.trace("extractValueFragment: no matching fragment found in ", mapValue); //$NON-NLS-1$
+					}
+				}
+			} else {
+				log.trace("extractValueFragment: '{}' not found in headers.", key); //$NON-NLS-1$
+			}
+		}
+		log.info("extractValueFragment: using default value: '{}'", defaultValue); //$NON-NLS-1$
+		return defaultValue;
 	}
 }

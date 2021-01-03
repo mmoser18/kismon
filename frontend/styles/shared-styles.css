@@ -91,16 +91,6 @@ vaadin-upload {
 	padding-right: 0px;
 }
 
-/*
-.node-view .node-view-tree vaadin-grid-cell-content {
-	color: blue;
-}
-
-.node-form-fields * {
-	align-items: stretch;
-}
-*/
-
 .direction_row {
 	flex-direction: row;
 }

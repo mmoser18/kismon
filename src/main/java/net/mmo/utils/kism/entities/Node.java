@@ -149,13 +149,13 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName()
-			+ "[name:" + getName() //$NON-NLS-1$
+			+ "{name:" + getName() //$NON-NLS-1$
 			+ ", description:" + getDescription() //$NON-NLS-1$
 			+ ", state:" + getState() //$NON-NLS-1$
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", active:" + isActive() //$NON-NLS-1$
 			+ ", properties:" + getProperties() //$NON-NLS-1$
-			+ "]"; //$NON-NLS-1$
+			+ "}"; //$NON-NLS-1$
 	}
 }

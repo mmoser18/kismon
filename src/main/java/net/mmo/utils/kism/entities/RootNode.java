@@ -44,7 +44,7 @@ public class RootNode extends IntermediateNode
 		buf.setLength(buf.length()-1);
 		return buf
 			.append(", filePath:").append(this.filePath) //$NON-NLS-1$
-			.append("]") //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
 			.toString();
 	}
 }

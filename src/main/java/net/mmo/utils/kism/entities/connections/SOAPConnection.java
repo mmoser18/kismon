@@ -17,10 +17,14 @@ public class SOAPConnection extends HTTPConnection
 {
 	private static final long serialVersionUID = -7524304663532085424L;
 
+	@SuppressWarnings("unused")
+	private SOAPConnection() { // required for deserialization
+		super();
+	}
 
 	public SOAPConnection(String name, String description) {
 		super(name, description);
-		this.method = HTTP_Method.POST; // SOAP-requests are always POSTs
+		this.method = HTTP_Method.POST; // SOAP-requests are always POSTs!
 	}
 
 }
