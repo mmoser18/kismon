@@ -10,6 +10,7 @@
 	max-height: 20em;
 }
 
-:host([class~="monospace"]) [part="value"] {
-	font: monospace;
+:host([theme~="monospace"]) [part="value"] {
+	font-size: medium;
+	font-family: monospace;
 }

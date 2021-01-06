@@ -22,24 +22,23 @@
       "active" : true,
       "properties" : {
         "bar" : "foo",
-        "c" : "y"
+        "c" : "y",
+        "xxx" : "yyy"
       },
       "enabled" : true,
       "period" : 60,
       "timeout" : 45,
-      "url" : "http://localhost:8080/login",
-      "proxyHost" : null,
-      "proxyPort" : 0,
+      "url" : "http://localhost:8080/${foo}",
+      "checkResult" : false,
       "duration" : 0,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
       "targetUid" : "user",
       "targetPwd" : "password",
-      "checkResult" : false,
       "acceptableReturnCodes" : null,
-      "headers" : "Content-Type:text/html; charset=UTF-16",
-      "payload" : "foobar"
+      "headers" : "bar:foo\nContent-Type:text/html; charset=UTF-16\nfoo:foo",
+      "payload" : "foobar ${xxx}"
     }, {
       "className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
       "name" : "SOAP_0",
@@ -51,15 +50,13 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
-      "proxyHost" : null,
-      "proxyPort" : 0,
+      "checkResult" : false,
       "duration" : 0,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
       "targetUid" : "user",
       "targetPwd" : "password",
-      "checkResult" : false,
       "acceptableReturnCodes" : "200",
       "headers" : "foo: bar",
       "payload" : "foobar"
@@ -69,21 +66,20 @@
       "description" : "JDBC IPConnection",
       "state" : "OK",
       "active" : true,
-      "properties" : { },
+      "properties" : {
+        "foo" : " *"
+      },
       "enabled" : true,
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
-      "proxyHost" : null,
-      "proxyPort" : 0,
+      "checkResult" : false,
       "duration" : 9182000,
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
-      "query" : "select * from REF_ANREDE",
-      "resultingQuery" : null,
-      "driverName" : "oracle.jdbc.driver.OracleDriver",
-      "checkResult" : false,
-      "dbResponse" : "ANREDE_ID\tTEXT\tREIHENFOLGE\n---------\t----\t-----------\n-1\t-\t0\n1\tFrau\t1\n2\tHerr\t2\n3\tFräulein\t3"
+      "query" : "select ${foo} from REF_ANREDE",
+      "resultingQuery" : "select  * from REF_ANREDE",
+      "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ]
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",

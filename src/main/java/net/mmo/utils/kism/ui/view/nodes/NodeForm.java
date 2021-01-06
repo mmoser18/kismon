@@ -1,6 +1,8 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.util.function.BiConsumer;
+
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -26,18 +28,22 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 {
 	private static final long serialVersionUID = -4928837821374748141L;
 
-	// public to allow access by test classes
-	public static final String ViewClassName = "node-form"; //$NON-NLS-1$
-	public static final String FieldsClassName = "node-form-fields"; //$NON-NLS-1$
-	public static final String NameClassName        = "node-form-field-name"; //$NON-NLS-1$
-	public static final String DescriptionClassName = "node-form-field-description"; //$NON-NLS-1$
-	public static final String StateClassName       = "node-form-field-state"; //$NON-NLS-1$
-	public static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
-	public static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
+	// package visible to allow access by test classes
+	static final String ViewClassName = "node-form"; //$NON-NLS-1$
+	static final String FieldsClassName = "node-form-fields"; //$NON-NLS-1$
+	static final String NameClassName        = "node-form-field-name"; //$NON-NLS-1$
+	static final String DescriptionClassName = "node-form-field-description"; //$NON-NLS-1$
+	static final String StateClassName       = "node-form-field-state"; //$NON-NLS-1$
+	static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
+	static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
+
+	/** class name to mark combined fields */
 	public static final String CombinedClassName    = "node-form-field-combined"; //$NON-NLS-1$
 
+	/** theme use for fields that should have its label closer to the value field than default */
 	public static final String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
-	public static final String MonospaceClassName   = "monospace"; //$NON-NLS-1$
+	/** theme use for fields that should be displayed in monospaced font */
+	public static final String MonospaceTheme   = "monospace"; //$NON-NLS-1$
 
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -163,12 +169,63 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					}
 				}, Messages.getString("NodeForm.Validator.Properties.IllegalValue")) //$NON-NLS-1$
 			.bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
+		// we also may have to update the resulting URL if any of the properties change:
+		this.properties.addValueChangeListener(event ->
+			{
+				if (event.isFromClient()) {
+					if (this.node != null) this.node.setPropertiesFromString(event.getValue());
+				}
+				updateResolvableValues();
+			});
 
 		this.fields = new VerticalLayout(this.name, this.description, stateAndActive, this.properties);
 		this.fields.setClassName(FieldsClassName);
 		// this.fields.setSizeFull();
 		this.fields.setWidthFull();
 		this.fields.setMargin(false);
+	}
+
+	protected void updateResolvableValues() {
+		// to be overriden by subclasses
+	}
+
+	/**
+	 * @param logPrefix
+	 * @param n Node
+	 * @param original value
+	 * @param resolved method/lambda to update node's field with resolved value (can be null)
+	 * @param label the label to update
+	 * @param errorTamplate the string to format with a error msg. (if there was an error)
+	 * @return
+	 */
+	protected String updateResultingField(String logPrefix,
+	                                      N n,
+	                                      String originalValue,
+	                                      BiConsumer<N, String> resolved,
+	                                      TextField label
+	                                     ) {
+		String resolvedValue;
+		try {
+			if (this.node != null) {
+				resolvedValue = n.resolveProperties(originalValue);
+				log.debug("{}: '{}' -> '{}'", logPrefix, originalValue, resolvedValue); //$NON-NLS-1$
+				if (resolved != null) { resolved.accept(n, resolvedValue); }
+			} else {
+				log.debug("{}: node==null", logPrefix); //$NON-NLS-1$
+				resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.NodeUndefined"), logPrefix, originalValue); //$NON-NLS-1$
+			}
+		} catch (Exception ex) {
+			log.debug("{}: Illegal value: '{}' : {} - reason: {}", logPrefix, originalValue, ex, ex.getCause()); //$NON-NLS-1$
+			resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.IllegalSyntax"), logPrefix, originalValue, ex + (ex.getCause() != null ? " - " + ex.getCause() : "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
+		if (!resolvedValue.equals(originalValue)) {
+			log.debug("{}: Setting label: '{}'", logPrefix, resolvedValue); //$NON-NLS-1$
+			label.setValue(resolvedValue);
+			label.setVisible(true);
+		} else {
+			label.setVisible(false);
+		}
+		return resolvedValue;
 	}
 
 	private HorizontalLayout createButtonsLayout() {

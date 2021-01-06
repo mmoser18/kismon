@@ -49,7 +49,7 @@ public class KeyValuesConverter
 					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalKeyName"), splits[0])); //$NON-NLS-1$
 				} else {
 //					log.trace("getEntriesFromString(\"{}\"): entry:\"{}\": splits:\"{}\"=\"{}\"", values, entry, splits[0], splits[1]); //$NON-NLS-1$
-					map.put(splits[0], splits[1]);
+					map.put(splits[0], splits[1].trim());
 				}
 			}
 		}
@@ -65,7 +65,7 @@ public class KeyValuesConverter
 	                                          Function<String, Object> converter,
 	                                          Object defaultValue) {
 		if (map != null) {
-			List<String> mapValues = map.get(key);
+			List<String> mapValues = map.get(key.toUpperCase());
 			if (mapValues != null) {
 				for (String mapValue: mapValues) {
 					int pos = mapValue.indexOf(fragementSeparator);

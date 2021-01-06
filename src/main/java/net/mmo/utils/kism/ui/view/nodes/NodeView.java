@@ -513,6 +513,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 		openDialog(text, t);
 	}
 
+	public static void ExecutionError(String msg, Throwable t) {
+		String text = String.format(Messages.getString("NodeView.Notification.ExecutionError"), msg); //$NON-NLS-1$
+		log.warn(text, t);
+		openDialog(text, t);
+	}
+
 	/* This should of course never happen... ;-) */
 	public static void ProgrammingError(String msg, Throwable t) {
 		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$

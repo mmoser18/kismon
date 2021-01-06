@@ -5,8 +5,6 @@
 
 package net.mmo.utils.kism.entities.connections;
 
-import java.net.URI;
-
 import javax.persistence.Entity;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -14,11 +12,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.LeafNode;
 import net.mmo.utils.kism.utils.AppProperties;
 
+/** Name should have been just "Connection" but that class name was already used by JDBC */
 @Entity
 @Setter
 @Getter
@@ -45,10 +45,15 @@ abstract public class IPConnection extends LeafNode
 	@NotBlank
 	protected String url = "http://www.example.com:8080";
 
-	protected String proxyHost;
-	protected int    proxyPort;
+	@JsonIgnore
+	transient protected String resultingUrl;
+
+//	protected String proxyHost;
+//	protected int    proxyPort;
 //	protected String proxyUid;
 //	protected String proxyPwd;
+
+	protected boolean checkResult = false;
 
 	/** common response fields: */
 	transient protected long duration;
@@ -79,11 +84,6 @@ abstract public class IPConnection extends LeafNode
 		}
 	}
 
-	public String getResultingURL(String str) throws Exception {
-		URI uri = new URI(resolveProperties(str));
-		return uri.toString();
-	}
-
 	// convenience method to convert duration in nano-seconds to milli-sec's
 	public static Double convertNanoSecsToMillis(long responseDuration) {
 		return (responseDuration != 0 ? (Math.round(responseDuration/1000)*1.0e-3) : 0); // nsec's --> msec's (rounded to micro-seconds)
@@ -99,6 +99,13 @@ abstract public class IPConnection extends LeafNode
 			.append(", enabled:").append(this.enabled) //$NON-NLS-1$
 			.append(", period:").append(this.period) //$NON-NLS-1$
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
+			.append(", url:").append(this.url) //$NON-NLS-1$
+			.append(", resultingUrl:").append(this.resultingUrl) //$NON-NLS-1$
+//			.append(", proxyHost:").append(this.proxyHost) //$NON-NLS-1$
+//			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
+//			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
+//			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
+			.append(", checkResult:").append(this.checkResult) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();

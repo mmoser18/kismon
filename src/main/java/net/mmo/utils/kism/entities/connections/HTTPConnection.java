@@ -6,9 +6,7 @@
 package net.mmo.utils.kism.entities.connections;
 
 import java.net.Authenticator;
-import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
-import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
@@ -97,7 +95,6 @@ abstract public class HTTPConnection extends IPConnection
 	protected String targetUid = "user"; //$NON-NLS-1$
 	protected String targetPwd = "password"; //$NON-NLS-1$
 
-	protected boolean checkResult = false;
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
 	protected String headers;
@@ -188,15 +185,15 @@ abstract public class HTTPConnection extends IPConnection
 					}
 				});
 		}
-		if (this.proxyHost != null) {
-			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
-		}
+//		if (this.proxyHost != null) {
+//			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
+//		}
 		this.client = builder.build();
 	}
 
 	public HttpRequest createRequest() throws Exception {
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
-			.uri(URI.create(getResultingURL(this.url)))
+			.uri(URI.create(getResultingUrl()))
 			.timeout(Duration.ofSeconds(this.timeout));
 		if (this.headers != null) {
 			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(this.headers));
@@ -333,8 +330,13 @@ abstract public class HTTPConnection extends IPConnection
 	/** extract character set from request headers - if there is any...
 	 * @throws Exception */
 	protected Charset extractRequestCharset() {
-		HttpHeaders reqHdrs = this.getRequestHeaders();
-		return extractRequestCharset(reqHdrs != null ? reqHdrs.map() : null);
+		HttpHeaders requHdrs = this.getRequestHeaders();
+		return extractRequestCharset(requHdrs != null ? requHdrs.map() : null);
+	}
+	/** extract character set from response headers - if there is any... */
+	protected Charset extractResponseCharset() {
+		HttpHeaders respHdrs = this.getResponseHeaders();
+		return extractRequestCharset(respHdrs != null ? respHdrs.map() : null);
 	}
 	/** extract character set from Content-Type header - if there is any... */
 	protected Charset extractRequestCharset(Map<String, List<String>> map) {
@@ -354,11 +356,6 @@ abstract public class HTTPConnection extends IPConnection
 		                                                        	}
 		                                                        },
 		                                                        DEFAULT_CHARSET);
-	}
-
-	/** extract character set from response headers - if there is any... */
-	protected Charset extractResponseCharset() {
-		return DEFAULT_CHARSET;
 	}
 
 	@JsonIgnore
@@ -400,15 +397,14 @@ abstract public class HTTPConnection extends IPConnection
 			.append(", acceptableReturnCodes:").append(this.acceptableReturnCodes) //$NON-NLS-1$
 			.append(", headers:").append(this.headers) //$NON-NLS-1$
 			.append(", payload:").append(this.payload) //$NON-NLS-1$
-			.append(" transient: ") //$NON-NLS-1$
-			.append("client:").append(this.client) //$NON-NLS-1$
-			.append("request:").append(this.request) //$NON-NLS-1$
-			.append("client:").append(this.client) //$NON-NLS-1$
-			.append("requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
-			.append("requestBody:").append(this.requestBody) //$NON-NLS-1$
-			.append("responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
-			.append("responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
-			.append("responseBody:").append(this.responseBody) //$NON-NLS-1$
+			.append(", client:").append(this.client) //$NON-NLS-1$
+			.append(", request:").append(this.request) //$NON-NLS-1$
+			.append(", client:").append(this.client) //$NON-NLS-1$
+			.append(", requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
+			.append(", requestBody:").append(this.requestBody) //$NON-NLS-1$
+			.append(", responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
+			.append(", responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
+			.append(", responseBody:").append(this.responseBody) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

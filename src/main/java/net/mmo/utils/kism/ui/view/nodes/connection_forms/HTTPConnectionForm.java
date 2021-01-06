@@ -18,17 +18,17 @@ import net.mmo.utils.kism.ui.view.nodes.NodeView;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Slf4j
-public abstract class HTTPConnectionForm<N extends HTTPConnection> extends ConnectionForm<N>
+public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPConnectionForm<N>
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
-	public static final String MethodClassName   = "node-form-field-method"; //$NON-NLS-1$
-	public static final String RequestHeadersClassName  = "node-form-field-request-headers"; //$NON-NLS-1$
-	public static final String RequestBodyClassName     = "node-form-field-request-body"; //$NON-NLS-1$
+	static final String MethodClassName   = "node-form-field-method"; //$NON-NLS-1$
+	static final String RequestHeadersClassName  = "node-form-field-request-headers"; //$NON-NLS-1$
+	static final String RequestBodyClassName     = "node-form-field-request-body"; //$NON-NLS-1$
 
-	public static final String ResponseStatusCodeClassName = "node-form-field-response-status"; //$NON-NLS-1$
-	public static final String ResponseHeadersClassName  = "node-form-field-response-headers"; //$NON-NLS-1$
-	public static final String ResponseBodyClassName     = "node-form-field-response-body"; //$NON-NLS-1$
+	static final String ResponseStatusCodeClassName = "node-form-field-response-status"; //$NON-NLS-1$
+	static final String ResponseHeadersClassName  = "node-form-field-response-headers"; //$NON-NLS-1$
+	static final String ResponseBodyClassName     = "node-form-field-response-body"; //$NON-NLS-1$
 
 	protected ComboBox<HTTP_Method> method;
 
@@ -67,6 +67,14 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends Conne
 		this.headers = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
+		this.headers.addValueChangeListener(event ->
+		{
+			log.info("headers value changed to: '{}'", event.getValue()); //$NON-NLS-1$
+			if (event.isFromClient()) {
+				this.node.setHeaders(event.getValue());
+				updateRequestHeaders();
+			}
+		});
 
 		this.binder.forField(this.headers)
 			.withValidator(str ->
@@ -79,12 +87,20 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends Conne
 					NodeView.UsageError(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), str, ex)); //$NON-NLS-1$
 					return false;
 				}
-			}, Messages.getString("ConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
+			}, Messages.getString("IPConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
 			.bind(HTTPConnection::getRequestHeadersAsString, HTTPConnection::setHeaders);
 
 		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.payload.setClassName(RequestBodyClassName);
 		this.payload.setThemeName(LabelPaddingTheme);
+		this.payload.addValueChangeListener(event ->
+		{
+			log.info("payload value changed to: '{}'", event.getValue()); //$NON-NLS-1$
+			if (event.isFromClient()) {
+				this.node.setPayload(event.getValue());
+				updateRequestHeaders();
+			}
+		});
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
@@ -96,27 +112,26 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends Conne
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
-		this.requestHeaders.setClassName(MonospaceClassName);
-
 		this.requestHeaders.setThemeName(LabelPaddingTheme);
+		this.requestHeaders.addThemeName(MonospaceTheme);
 		this.binder.forField(this.requestHeaders).bind(HTTPConnection::getRequestHeadersAsString, null);
 
 		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.requestBody.setClassName(RequestBodyClassName);
-		this.requestBody.setClassName(MonospaceClassName);
 		this.requestBody.setThemeName(LabelPaddingTheme);
+		this.requestBody.addThemeName(MonospaceTheme);
 		this.binder.forField(this.requestBody).bind(HTTPConnection::getRequestBodyAsString, null);
 
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
-		this.responseHeaders.setClassName(MonospaceClassName);
 		this.responseHeaders.setThemeName(LabelPaddingTheme);
+		this.responseHeaders.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseHeaders).bind(HTTPConnection::getResponseHeadersAsString, null);
 
 		this.responseBody = new TextArea(Messages.getString("HTTPConnectionForm.ResponseBody.Label")); //$NON-NLS-1$
 		this.responseBody.setClassName(ResponseBodyClassName);
-		this.responseBody.setClassName(MonospaceClassName);
 		this.responseBody.setThemeName(LabelPaddingTheme);
+		this.responseBody.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseBody).bind(HTTPConnection::getResponseBodyAsString, null);
 
 		this.fields.add(this.headers, this.payload,
@@ -175,14 +190,14 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends Conne
 		}
 	}
 
-	@Override
-	protected void updateResultingURL() {
-		super.updateResultingURL();
+	private void updateRequestInfo() {
+		adjustPayloadVisibility(this.node != null ? this.node.getMethod() : null);
 		updateRequestHeaders();
 	}
 
-	private void updateRequestInfo() {
-		adjustPayloadVisibility(this.node != null ? this.node.getMethod() : null);
+	@Override
+	protected void updateResolvableValues() {
+		super.updateResolvableValues();
 		updateRequestHeaders();
 	}
 

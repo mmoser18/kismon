@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.AppProperties;
-import net.mmo.utils.kism.utils.Messages;
 
 @Setter
 @Getter
@@ -28,7 +27,11 @@ public class JDBCConnection extends IPConnection
 {
 	private static final long serialVersionUID = -2228821478937714703L;
 
-	public static final String PROPERTYNAME_DB_RESPONSE = "dbResponse"; //$NON-NLS-1$
+	public static final String PROPERTYNAME_RESPONSE_STATUS  = "responseStatus"; //$NON-NLS-1$
+	public static final String PROPERTYNAME_RESPONSE_PAYLOAD = "responsePayload"; //$NON-NLS-1$
+	public static final String RESPONSE_STATUS_OK = "OK"; //$NON-NLS-1$
+	public static final String RESPONSE_STATUS_FAILED = "FAILED"; //$NON-NLS-1$
+
 	public static final String RESULTSET_ROW_SEPARATOR = AppProperties.getProperties().getProperty("JDBC.ResultSet.Row.Separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	public static final String RESULTSET_COL_SEPARATOR = AppProperties.getProperties().getProperty("JDBC.ResultSet.Col.Separator", "\t"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -46,8 +49,10 @@ public class JDBCConnection extends IPConnection
 	@JsonIgnore
 	transient protected Connection connection;
 
-	protected boolean checkResult = false;
-	transient protected String dbResponse;
+	@JsonIgnore
+	transient protected String responseStatus;
+	@JsonIgnore
+	transient protected String responsePayload;
 
 
 	@SuppressWarnings("unused")
@@ -68,11 +73,18 @@ public class JDBCConnection extends IPConnection
 		super.finalize();
 	}
 
-	public void setDbResponse(String dbResponse) {
-		if (!Objects.equal(this.dbResponse, dbResponse)) {
-			String oldDbResponse = this.dbResponse;
-			this.dbResponse = dbResponse;
-			informOnPropertyChange(PROPERTYNAME_DB_RESPONSE, oldDbResponse, dbResponse);
+	public void setResponseStatus(String responseStatus) {
+		if (!Objects.equal(this.responseStatus, responseStatus)) {
+			String oldResponseStatus = this.responseStatus;
+			this.responseStatus = responseStatus;
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_PAYLOAD, oldResponseStatus, responseStatus);
+		}
+	}
+	public void setResponsePayload(String responsePayload) {
+		if (!Objects.equal(this.responsePayload, responsePayload)) {
+			String oldResponsePayload = this.responsePayload;
+			this.responsePayload = responsePayload;
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_PAYLOAD, oldResponsePayload, responsePayload);
 		}
 	}
 
@@ -95,6 +107,7 @@ public class JDBCConnection extends IPConnection
 	public void sendRequest() throws Exception {
 		log.info("sendRequest:"); //$NON-NLS-1$
 		Statement statement = null;
+		String resQuery = getResultingQuery();
 		try {
 			if (this.driver == null) {
 				registerDriver();
@@ -103,9 +116,9 @@ public class JDBCConnection extends IPConnection
 			log.info("createStatement:"); //$NON-NLS-1$
 			statement = getConnection().createStatement();
 //			if (IPConnection.syncRequests) {
-				log.info("statement.execute():", getQuery()); //$NON-NLS-1$
+				log.info("statement.execute():", resQuery); //$NON-NLS-1$
 				long startTime = System.nanoTime();
-				if (statement.execute(getQuery())) {
+				if (statement.execute(resQuery)) {
 					responseReceived(System.nanoTime() - startTime, statement);
 				}
 //			} else { // async:
@@ -117,9 +130,13 @@ public class JDBCConnection extends IPConnection
 //					responseReceived(System.nanoTime() - startTime, response);
 //				});
 //			}
-		} catch (Throwable t) {
+		} catch (SQLException t) {
+			setResponseStatus(extractSqlError(t));
+			setResponsePayload(String.format("Exception executing query '%s': %s", resQuery, t.getMessage())); //$NON-NLS-1$
+			deriveState();
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (this.connection != null) {
-				throw new Exception(String.format("Error sending request to {}: ", this.connection), t); //$NON-NLS-1$
+				throw new Exception(String.format("Error sending request '%s' to %s: ", resQuery, this.connection), t); //$NON-NLS-1$
 			} else {
 				throw new Exception("Error creating request", t); //$NON-NLS-1$
 			}
@@ -134,17 +151,27 @@ public class JDBCConnection extends IPConnection
 		}
 	}
 
+	// expects strings like: "ORA-00942: table or view does not exist"
+	// and tries to extract the "ORA-00942" part:
+	private static String extractSqlError(SQLException t) {
+		String errorMsg = t. getMessage();
+		int pos1 = errorMsg.indexOf(": "); //$NON-NLS-1$
+		if (pos1 > 0) {
+			return errorMsg.substring(0, pos1);
+		}
+		return errorMsg;
+	}
+
 	private void responseReceived(long callDuration, Statement statement) {
 		log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
 		setDuration(callDuration);
-		setDbResponse(convertResultSet(statement));
-
+		convertResultSet(statement);
 		logResponseValues();
 		deriveState();
 		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 	}
 
-	private static String convertResultSet(Statement statement) {
+	private void convertResultSet(Statement statement) {
 		try (ResultSet rs = statement.getResultSet()) {
 			ResultSetMetaData metadata = rs.getMetaData();
 			StringBuilder buf = new StringBuilder();
@@ -174,10 +201,12 @@ public class JDBCConnection extends IPConnection
 					}
 				}
 			}
-			return buf.toString();
+			setResponseStatus(RESPONSE_STATUS_OK);
+			setResponsePayload(buf.toString());
 		} catch (SQLException ex) {
 			log.error("Exception extracting results:", ex); //$NON-NLS-1$
-			return String.format(Messages.getString("JDBCConnectionForm.Error.ConvertingResultSet"), ex); //$NON-NLS-1$
+			setResponseStatus(extractSqlError(ex));
+			setResponsePayload(String.format("Exception converting result set: %s", ex)); //$NON-NLS-1$
 		}
 	}
 
@@ -212,7 +241,8 @@ public class JDBCConnection extends IPConnection
 			.append(", query:").append(this.query) //$NON-NLS-1$
 			.append(", resultingQuery:").append(this.resultingQuery) //$NON-NLS-1$
 			.append(", driverName:").append(this.driverName) //$NON-NLS-1$
-			.append(", dbResponse:").append(this.dbResponse) //$NON-NLS-1$
+			.append(", responseStatus:").append(this.responseStatus) //$NON-NLS-1$
+			.append(", responsePayload:").append(this.responsePayload) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}
