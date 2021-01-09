@@ -13,7 +13,6 @@ import com.vaadin.flow.component.textfield.TextArea;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.entities.connections.RESTConnection;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
@@ -71,23 +70,23 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		{
 			log.info("headers value changed to: '{}'", event.getValue()); //$NON-NLS-1$
 			if (event.isFromClient()) {
-				this.node.setHeaders(event.getValue());
+				// this.node.setHeaders(event.getValue());
 				updateRequestHeaders();
 			}
 		});
 
 		this.binder.forField(this.headers)
 			.withValidator(str ->
-			{ // Explicit validator instance
-				try {
-					if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(str));
-					return true; // still here -> the above conversion went succeeded
-				} catch (Exception ex) {
-					log.error("Exception converting '{}' to headers: {}", str, ex); //$NON-NLS-1$
-					NodeView.UsageError(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), str, ex)); //$NON-NLS-1$
-					return false;
-				}
-			}, Messages.getString("IPConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
+				{ // Explicit validator instance
+					try {
+						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(str));
+						return true; // still here -> the above conversion went succeeded
+					} catch (Exception ex) {
+						log.error("Exception converting '{}' to headers: {}", str, ex); //$NON-NLS-1$
+						NodeView.UsageError(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), str, ex)); //$NON-NLS-1$
+						return false;
+					}
+				}, Messages.getString("IPConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
 			.bind(HTTPConnection::getRequestHeadersAsString, HTTPConnection::setHeaders);
 
 		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
@@ -97,7 +96,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		{
 			log.info("payload value changed to: '{}'", event.getValue()); //$NON-NLS-1$
 			if (event.isFromClient()) {
-				this.node.setPayload(event.getValue());
+				// this.node.setPayload(event.getValue());
 				updateRequestHeaders();
 			}
 		});
@@ -143,52 +142,25 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	}
 
 	@Override
-	public void setNode(N node) {
-		super.setNode(node);
+	public boolean setNode(N node) {
+		boolean res = super.setNode(node);
 		updateRequestInfo();
+		return res;
 	}
 
-	@Override
-	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
-		switch (propertyName) {
-		case HTTPConnection.PROPERTYNAME_RESPONSE_STATUS_CODE:
-			if (individualUpdates) {
-				this.responseStatusCode.setValue((Integer)newValue);
-			}
-			break;
-		case HTTPConnection.PROPERTYNAME_REQUEST_HEADERS:
-			if (individualUpdates) {
-				this.requestHeaders.setValue(sourceNode.getRequestHeadersAsString());
-			}
-			break;
-		case HTTPConnection.PROPERTYNAME_REQUEST_BODY:
-			if (individualUpdates) {
-				this.requestBody.setValue(sourceNode.getRequestBodyAsString());
-			}
-			break;
-		case HTTPConnection.PROPERTYNAME_RESPONSE_HEADERS:
-			if (individualUpdates) {
-				this.responseHeaders.setValue(sourceNode.getResponseHeadersAsString());
-			}
-			break;
-		case HTTPConnection.PROPERTYNAME_RESPONSE_BODY:
-			if (individualUpdates) {
-				this.responseBody.setValue(sourceNode.getResponseBodyAsString());
-			}
-			break;
-		case RESTConnection.PROPERTYNAME_RESPONSE_COMPLETE:
-			if (!individualUpdates) { // do all of the above in one go:
-				this.responseStatusCode.setValue(sourceNode.getResponseStatusCode());
-				this.requestHeaders.setValue(sourceNode.getRequestHeadersAsString());
-				this.requestBody.setValue(sourceNode.getRequestBodyAsString());
-				this.responseHeaders.setValue(sourceNode.getResponseHeadersAsString());
-				this.responseBody.setValue(sourceNode.getResponseBodyAsString());
-			}
-			break;
-		default:
-			super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
-		}
-	}
+//	@Override
+//	protected void validate() throws ValidationException {
+//		super.validate();
+//		if (this.node != null) {
+//			try {
+//				this.node.createRequest();
+//			} catch (Exception ex) {
+//				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
+//				throw new ValidationException(Collections.emptyList(), Collections.emptyList());
+//			}
+//		}
+//	}
+
 
 	private void updateRequestInfo() {
 		adjustPayloadVisibility(this.node != null ? this.node.getMethod() : null);
@@ -211,14 +183,15 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		if (this.node != null) {
 			try {
 				this.node.createRequest();
-				this.requestHeaders.setValue(this.node.getRequestHeadersAsString());
-				this.requestBody.setValue(this.node.getRequestBodyAsString());
 			} catch (Exception ex) {
 				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
-				this.requestHeaders.setValue(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorCreatingRequest"), ex)); //$NON-NLS-1$
+				this.node.setRequestBody(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorCreatingRequest"), ex).getBytes()); //$NON-NLS-1$
 			}
 		} else {
 			this.requestHeaders.setValue(Messages.getString("HTTPConnectionForm.RequestHeaders.Undefined")); //$NON-NLS-1$
+			this.requestBody.setValue(Messages.getString("HTTPConnectionForm.RequestBody.Undefined")); //$NON-NLS-1$
+			this.responseHeaders.setValue(Messages.getString("HTTPConnectionForm.ResponseHeaders.Undefined")); //$NON-NLS-1$
+			this.responseBody.setValue(Messages.getString("HTTPConnectionForm.ResponseBody.Undefined")); //$NON-NLS-1$
 		}
 	}
 }

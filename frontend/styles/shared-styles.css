@@ -132,3 +132,7 @@ vaadin-upload {
 	padding: 10px;
 	text-decoration: underline;
 }
+
+vaadin-license-box {
+	visibility: hidden;
+}

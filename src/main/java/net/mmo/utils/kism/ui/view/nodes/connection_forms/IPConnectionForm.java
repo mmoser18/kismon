@@ -76,7 +76,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.url.setThemeName(LabelPaddingTheme);
 		this.url.addValueChangeListener(event ->
 			{
-				log.info("url value changed to: {}", event.getValue()); //$NON-NLS-1$
+				log.info("url value changed to: '{}'", event.getValue()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					updateResultingUrl(event.getValue());
 				}
@@ -84,14 +84,17 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.binder.forField(this.url)
 			.withValidator(urlStr ->
 				{ // Explicit validator instance
-					log.info("validating: '{}'", urlStr); //$NON-NLS-1$
+					log.trace("validating url: '{}'", urlStr); //$NON-NLS-1$
 					try {
-						String resolvedUrlStr = this.node.resolveProperties(urlStr);
-						URI uri = new URI(resolvedUrlStr);
-						log.info("validation succeeded: '{}' => {}", urlStr, resolvedUrlStr); //$NON-NLS-1$
-						return !uri.toASCIIString().isBlank(); // dummy check - the actual error is thrown!
+						if (this.node != null) {
+							String resolvedUrlStr = this.node.resolveProperties(urlStr);
+							URI uri = new URI(resolvedUrlStr);
+							// no check - the actual error is thrown!
+							log.debug("validation succeeded: '{}' => '{}'", urlStr, uri); //$NON-NLS-1$
+						}
+						return true;
 					} catch (Exception ex) {
-						log.info("validation failed: '{}' => {}", urlStr, ex); //$NON-NLS-1$
+						log.debug("validation failed: '{}' -> {}", urlStr, ex); //$NON-NLS-1$
 						return false;
 					}
 				}, Messages.getString("IPConnectionForm.Validator.URL.IllegalURL")) //$NON-NLS-1$
@@ -100,6 +103,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.resultingURL = new TextField(Messages.getString("IPConnectionForm.ResultingUrl.Value")); //$NON-NLS-1$
 		this.resultingURL.setClassName(ResultingURLClassName);
 		this.resultingURL.setThemeName(LabelPaddingTheme);
+		// this.binder.forField(this.resultingURL).bind(IPConnection::getResultingUrl, null);
 		this.binder.forField(this.resultingURL).bind(IPConnection::getResultingUrl, null);
 
 		this.duration = new NumberField(Messages.getString("HTTPConnectionForm.Duration.Label")); //$NON-NLS-1$
@@ -125,22 +129,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
 	}
 
-	@Override
-	public void setNode(N node) {
-		super.setNode(node);
-	}
-
-	@Override
-	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
-		switch (propertyName) {
-		case IPConnection.PROPERTYNAME_DURATION:
-			this.duration.setValue(IPConnection.convertNanoSecsToMillis((Long)newValue));
-			break;
-		default:
-			super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
-		}
-	}
-
 	protected String updateResultingUrl(String newValue) {
 		return updateResultingField("updateResultingURL", //$NON-NLS-1$
 		                            this.node,
@@ -153,10 +141,23 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	@Override
 	protected void updateResolvableValues() {
 		super.updateResolvableValues();
-		if (this.node != null) updateResultingUrl(this.node.getUrl());
+		updateResultingUrl(this.node != null ? this.node.getUrl() : null);
 	}
 
 	public static Double getDurationInMillis(IPConnection n) {
 		return IPConnection.convertNanoSecsToMillis(n.getDuration());
 	}
+
+	@Override
+	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		switch (propertyName) {
+		case IPConnection.PROPERTYNAME_RESPONSE_COMPLETE:
+			readBean(sourceNode);
+			break;
+		default:
+			break;
+		}
+		super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+	}
+
 }

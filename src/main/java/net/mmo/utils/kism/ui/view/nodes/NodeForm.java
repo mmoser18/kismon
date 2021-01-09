@@ -9,6 +9,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -22,6 +23,7 @@ import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
+import net.mmo.utils.kism.utils.NodeProperties;
 
 @Slf4j
 public abstract class NodeForm <N extends Node> extends VerticalLayout
@@ -72,7 +74,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		createFormFields();
 
-		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form field
+		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form fields
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-op... ||-(
 
@@ -83,9 +85,19 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.header.setText(header);
 	}
 
-	public void setNode(N node) {
+	public boolean setNode(N node) {
 		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
 		if (this.node != null) {
+			if (this.binder.hasChanges()) {
+				log.debug("binder has changes"); //$NON-NLS-1$
+				new ConfirmDialog("There are unsaved changes!", //$NON-NLS-1$
+				                  "Are you sure you want to leave this node?", //$NON-NLS-1$
+				                  "Save node", (confirmEvent) -> { confirmEvent.getSource().close(); validateAndSave(); }, //$NON-NLS-1$
+				                  "Abandon changes", (rejectEvent) -> { rejectEvent.getSource().close(); readBean(this.node); }, //$NON-NLS-1$
+				                  "Stay on node", (cancelEvent)  -> { /*nothing to do*/ } //$NON-NLS-1$
+				                  ).open();
+				return false;
+			}
 			this.node.setChangeListener(null);
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
@@ -104,9 +116,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					                        () -> log.warn("UI not present for changeListener for node {}", node)); //$NON-NLS-1$
 				});
 			log.info("changeListener set on node {}", node); //$NON-NLS-1$
+			updateResolvableValues();
 		}
-		this.binder.readBean(this.node); // to bind the values from the node to the UI fields.
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
+		readBean(this.node); // to bind the values from the node to the UI fields.
+		return true;
 	}
 
 	/** to be extended by subclasses if they handle further property-updates */
@@ -114,16 +128,13 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		switch (propertyName) {
 		case Node.PROPERTYNAME_STATE:
 			this.state.setValue(newValue.toString());
-			fireEvent(new UpdateEvent(this, this.node));
 			break;
 		default:
 			NodeView.ProgrammingError(String.format("Unexpected property name %s for %s", propertyName, sourceNode), null); //$NON-NLS-1$
 		}
+		fireEvent(new UpdateEvent(this, this.node));
 	}
 
-	public N getNode() {
-		return this.node;
-	}
 	/** derived classes need to override this */
 	protected void createFormFields() {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
@@ -168,12 +179,12 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 						return false;
 					}
 				}, Messages.getString("NodeForm.Validator.Properties.IllegalValue")) //$NON-NLS-1$
-			.bind(Node::getPropertiesAsString, Node::setPropertiesFromString);
+			.bind(NodeForm::getPropertiesAsString, NodeForm::setPropertiesFromString);
 		// we also may have to update the resulting URL if any of the properties change:
 		this.properties.addValueChangeListener(event ->
 			{
 				if (event.isFromClient()) {
-					if (this.node != null) this.node.setPropertiesFromString(event.getValue());
+					if (this.node != null) setPropertiesFromString(this.node, event.getValue());
 				}
 				updateResolvableValues();
 			});
@@ -185,6 +196,34 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.fields.setMargin(false);
 	}
 
+	public N getNode() {
+		return this.node;
+	}
+
+	protected void readBean(N n) {
+		log.info("readBean node={}", n); //$NON-NLS-1$
+		this.binder.readBean(n);
+	}
+
+	protected void writeBean(N n) throws ValidationException {
+		log.info("writeBean node={}", n); //$NON-NLS-1$
+		this.binder.writeBean(n);
+	}
+
+	public static String getPropertiesAsString(Node n) {
+		NodeProperties props = n.getProperties();
+		return (props!= null ? props.getPropertiesAsString() : null);
+	}
+
+	public static void setPropertiesFromString(Node n, String values) {
+		log.trace("setPropertiesFromString(\"{}\")", values); //$NON-NLS-1$
+		NodeProperties props = n.getProperties();
+		if (props == null) {
+			props = new NodeProperties(n.getParent() != null ? n.getParent().getProperties() : null);
+		}
+		props.setPropertiesFromString(values);
+	}
+
 	protected void updateResolvableValues() {
 		// to be overriden by subclasses
 	}
@@ -194,7 +233,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 * @param n Node
 	 * @param original value
 	 * @param resolved method/lambda to update node's field with resolved value (can be null)
-	 * @param label the label to update
+	 * @param textField the label to update
 	 * @param errorTamplate the string to format with a error msg. (if there was an error)
 	 * @return
 	 */
@@ -202,14 +241,16 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	                                      N n,
 	                                      String originalValue,
 	                                      BiConsumer<N, String> resolved,
-	                                      TextField label
+	                                      TextField textField
 	                                     ) {
 		String resolvedValue;
 		try {
 			if (this.node != null) {
 				resolvedValue = n.resolveProperties(originalValue);
 				log.debug("{}: '{}' -> '{}'", logPrefix, originalValue, resolvedValue); //$NON-NLS-1$
-				if (resolved != null) { resolved.accept(n, resolvedValue); }
+//				if (resolved != null) {
+					resolved.accept(n, resolvedValue);
+//				}
 			} else {
 				log.debug("{}: node==null", logPrefix); //$NON-NLS-1$
 				resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.NodeUndefined"), logPrefix, originalValue); //$NON-NLS-1$
@@ -219,11 +260,12 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.IllegalSyntax"), logPrefix, originalValue, ex + (ex.getCause() != null ? " - " + ex.getCause() : "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 		if (!resolvedValue.equals(originalValue)) {
-			log.debug("{}: Setting label: '{}'", logPrefix, resolvedValue); //$NON-NLS-1$
-			label.setValue(resolvedValue);
-			label.setVisible(true);
+			log.debug("{}: Setting and displaying textField '{}' -> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
+			textField.setValue(resolvedValue);
+			textField.setVisible(true);
 		} else {
-			label.setVisible(false);
+			log.debug("{}: Hiding textField '{}' <-> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
+			textField.setVisible(false);
 		}
 		return resolvedValue;
 	}
@@ -233,7 +275,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.save.setId("nodeform-save-button"); //$NON-NLS-1$
 		this.save.addClickShortcut(Key.ENTER);
 		this.save.addClickListener(event -> validateAndSave());
-		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.isValid()));
+		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.hasChanges() && this.binder.isValid()));
 
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.delete.setId("nodeform-delete-button"); //$NON-NLS-1$
@@ -242,7 +284,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		// Updates the fields again with the previously saved values
 		this.reset.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 		this.reset.setId("nodeform-reset-button"); //$NON-NLS-1$
-		this.reset.addClickListener(event -> this.binder.readBean(this.node));
+		this.reset.addClickListener(event -> readBean(this.node));
 
 		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.close.setId("nodeform-close-button"); //$NON-NLS-1$
@@ -256,8 +298,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		log.info("validateAndSave {}", this.node.getName()); //$NON-NLS-1$
 		try {
 			validate(); // throws ValidationException if data not valid
-			this.binder.writeBean(this.node);
+			writeBean(this.node);
 			fireEvent(new SaveEvent(this, this.node));
+			readBean(this.node);
 		} catch (ValidationException e) {
 			log.warn("Validation failed: ", e); //$NON-NLS-1$
 			new Notification(e.getMessage(), 0).open();

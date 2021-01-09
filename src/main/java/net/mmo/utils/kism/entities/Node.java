@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
 import org.springframework.util.Assert;
@@ -128,20 +129,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		}
 	}
 
-	@JsonIgnore
-	public String getPropertiesAsString() {
-		return (this.properties != null ? this.properties.getPropertiesAsString() : null);
-	}
-
-	@JsonIgnore
-	public void setPropertiesFromString(String values) {
-		log.trace("setPropertiesFromString(\"{}\")", values); //$NON-NLS-1$
-		if (this.properties == null) {
-			this.properties = new NodeProperties(this.parent != null ? this.parent.getProperties() : null);
-		}
-		this.properties.setPropertiesFromString(values);
-	}
-
 	public String resolveProperties(String str) throws Exception {
 		return (str != null ? PropertyResolver.resolveProperties(str, getProperties()) : null);
 	}
@@ -155,7 +142,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", active:" + isActive() //$NON-NLS-1$
-			+ ", properties:" + getProperties() //$NON-NLS-1$
+			+ ", properties:" + KeyValuesConverter.convertMapToString(getProperties(), ", ") //$NON-NLS-1$ //$NON-NLS-2$
 			+ "}"; //$NON-NLS-1$
 	}
 }

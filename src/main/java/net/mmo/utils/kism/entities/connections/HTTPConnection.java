@@ -268,7 +268,7 @@ abstract public class HTTPConnection extends IPConnection
 		setResponseBody(response.body());
 		logResponseValues();
 		deriveState();
-		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
+		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, null);
 	}
 
 	private void deriveState() {

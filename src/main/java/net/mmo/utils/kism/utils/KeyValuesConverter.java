@@ -32,7 +32,10 @@ public class KeyValuesConverter
 	}
 
 	public static String convertMapToString(Map<? extends Object, Object> map) { // ? extends object to satisfy the Java compiler when assigning a Map<String, Object>
-		return map.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR + entry.getValue()).collect(Collectors.joining(PROPERTY_SEPARATOR));
+		return convertMapToString(map, PROPERTY_SEPARATOR);
+	}
+	public static String convertMapToString(Map<? extends Object, Object> map, String propSeparator) { // ? extends object to satisfy the Java compiler when assigning a Map<String, Object>
+		return map.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR + entry.getValue()).collect(Collectors.joining(propSeparator));
 	}
 	public static Map<String, Object> convertStringToMap(String values) {
 		Map<String, Object> map = new HashMap<>();

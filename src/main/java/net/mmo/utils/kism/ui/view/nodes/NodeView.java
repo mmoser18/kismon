@@ -215,24 +215,28 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 
 		// connect view and model:
-		this.tree.asSingleSelect().addValueChangeListener(event -> {
-			@SuppressWarnings("unchecked")
-			N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
-			log.info("Selection changed: node='{}'.", node); //$NON-NLS-1$
-			if (this.form != null && this.form.isVisible()) {
-				if (node != null) {
-					editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
-				} else {
-					closeEditor();
+		this.tree.asSingleSelect().addValueChangeListener(event ->
+			{
+				if (event.isFromClient()) {
+					@SuppressWarnings("unchecked")
+					N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
+					log.info("Selection changed: node='{}'.", node); //$NON-NLS-1$
+					if (this.form != null && this.form.isVisible()) {
+						if (node != null) {
+							editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+						} else {
+							closeEditor();
+						}
+					}
 				}
-			}
-		});
+			});
 
-		this.tree.addItemClickListener(event -> {
-			Node node = event.getItem();
-			log.info("Clicked node '{}'.", node); //$NON-NLS-1$
-			// any action? / already done in asSingleSelect
-		});
+		this.tree.addItemClickListener(event ->
+			{
+				Node node = event.getItem();
+				log.info("Clicked node '{}'.", node); //$NON-NLS-1$
+				// any action? / already done in asSingleSelect
+			});
 
 		this.tree.addItemDoubleClickListener(event -> {
 			@SuppressWarnings("unchecked")
@@ -300,10 +304,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void addNewNode(Node newNode) {
 		log.info("addNewNode '{}'", newNode); //$NON-NLS-1$
 		IfSuitableNodeSelectedForAddition((selectedNode) -> // in the second step we add node to the selected node
-		{
-			this.nodeService.addChild(selectedNode, newNode);
-			// this.tree.getDataProvider().refreshAll();
-		});
+			{
+				this.nodeService.addChild(selectedNode, newNode);
+				// this.tree.getDataProvider().refreshAll();
+			});
 		if (NodeView.alwaysSave) saveNode(newNode);
 		this.tree.setDataProvider(createDataProvider());
 		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
@@ -349,6 +353,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 	@SuppressWarnings("unchecked")
 	public void editNode(N node, String header) {
 		log.info("editNode {}", node); //$NON-NLS-1$
+		if (this.form != null) {
+			N currentNode = this.form.getNode();
+			if (!this.form.setNode(null)) { // signal that we want to leave that node:
+				this.tree.select(currentNode); // if there are unsaved changes remain on current node
+				return;
+			}
+		}
 //		if (node == null) {
 //			closeEditor();
 //		} else {

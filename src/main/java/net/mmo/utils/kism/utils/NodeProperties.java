@@ -31,7 +31,7 @@ public class NodeProperties extends Properties
 	public String getProperty(String key) {
 		// log.trace("getProperty({}):", key); //$NON-NLS-1$
 		String res = super.getProperty(key);
-		log.trace("getProperty({}) --> {}", key, res); //$NON-NLS-1$
+		log.trace("getProperty('{}') --> '{}'", key, res); //$NON-NLS-1$
 		return res;
 	}
 

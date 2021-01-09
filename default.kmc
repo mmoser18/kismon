@@ -23,6 +23,7 @@
       "properties" : {
         "bar" : "foo",
         "c" : "y",
+        "x" : "*",
         "xxx" : "yyy"
       },
       "enabled" : true,
@@ -38,7 +39,7 @@
       "targetPwd" : "password",
       "acceptableReturnCodes" : null,
       "headers" : "bar:foo\nContent-Type:text/html; charset=UTF-16\nfoo:foo",
-      "payload" : "foobar ${xxx}"
+      "payload" : "foobar ${xxx} abc"
     }, {
       "className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
       "name" : "SOAP_0",
@@ -67,7 +68,8 @@
       "state" : "OK",
       "active" : true,
       "properties" : {
-        "foo" : " *"
+        "bar" : "zzz",
+        "foo" : "*"
       },
       "enabled" : true,
       "period" : 60,
@@ -78,7 +80,7 @@
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
-      "resultingQuery" : "select  * from REF_ANREDE",
+      "resultingQuery" : "select * from REF_ANREDE",
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ]
   }, {

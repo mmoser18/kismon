@@ -9,9 +9,10 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
-import net.mmo.utils.kism.entities.connections.RESTConnection;
 
+@Slf4j
 public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 {
 	private static final long serialVersionUID = 5726368043436831511L;
@@ -59,14 +60,17 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.query.setThemeName(LabelPaddingTheme);
 		this.query.addValueChangeListener(event ->
 			{
-				if (event.isFromClient()) updateResultingQuery(event.getValue());
+				log.info("query value changed to: '{}'", event.getValue()); //$NON-NLS-1$
+				if (event.isFromClient()) {
+					updateResultingQuery(event.getValue());
+				}
 			});
 
 		this.resultingQuery = new TextField(Messages.getString("JDBCConnectionForm.ResultingQuery.Value")); //$NON-NLS-1$
 		this.resultingQuery.setClassName(ResultingQueryClassName);
 		this.resultingQuery.setThemeName(LabelPaddingTheme);
 		this.resultingQuery.setVisible(false);
-		this.binder.forField(this.resultingURL).bind(JDBCConnection::getResultingQuery, null);
+		this.binder.forField(this.resultingQuery).bind(JDBCConnection::getResultingQuery, null);
 
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);
@@ -109,31 +113,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	@Override
 	protected void updateResolvableValues() {
 		super.updateResolvableValues();
-		updateResultingQuery(this.node.getQuery());
-	}
-
-	@Override
-	protected void handleChangeEvent(JDBCConnection sourceNode, String propertyName, Object oldValue, Object newValue) {
-		switch (propertyName) {
-		case JDBCConnection.PROPERTYNAME_RESPONSE_STATUS:
-			if (individualUpdates) {
-				this.responseStatus.setValue((String)newValue);
-			}
-			break;
-		case JDBCConnection.PROPERTYNAME_RESPONSE_PAYLOAD:
-			if (individualUpdates) {
-				this.responsePayload.setValue((String)newValue);
-			}
-			break;
-		case RESTConnection.PROPERTYNAME_RESPONSE_COMPLETE:
-			if (!individualUpdates) { // do all of the above in one go:
-				this.responseStatus.setValue(sourceNode.getResponseStatus());
-				this.responsePayload.setValue(sourceNode.getResponsePayload());
-			}
-			break;
-		default:
-			super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
-		}
+		updateResultingQuery(this.node != null ? this.node.getQuery() : null);
 	}
 
 }
