@@ -9,6 +9,7 @@ import java.net.URI;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -33,6 +34,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	static final String ResultingURLClassName = "node-form-field-resulting-url"; //$NON-NLS-1$
 	static final String ExecuteClassName      = "node-form-button-execute"; //$NON-NLS-1$
 	static final String DurationClassName     = "node-form-field-duration"; //$NON-NLS-1$
+	static final String TimeStampClassName     = "node-form-field-timestamp"; //$NON-NLS-1$
 
 	protected Checkbox enabled;
 	protected IntegerField period;
@@ -43,9 +45,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 
 	// these are not yet added to the form:
 	protected Button execute;
+	protected DateTimePicker timestamp;
 	protected NumberField duration;
 
 	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
+
 
 	public IPConnectionForm(Class<N> clazz) {
 		super(clazz);
@@ -112,6 +116,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.duration.setThemeName(LabelPaddingTheme);
 		this.duration.setStep(0.0001);
 		this.binder.forField(this.duration).bind(IPConnectionForm::getDurationInMillis, null); // nsec's --> msec's (rounded to micro-seconds)
+
+		this.timestamp = new DateTimePicker(Messages.getString("HTTPConnectionForm.TimeStamp.Label")); //$NON-NLS-1$
+		this.timestamp.setClassName(TimeStampClassName);
+		this.timestamp.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.timestamp).bind(IPConnection::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);

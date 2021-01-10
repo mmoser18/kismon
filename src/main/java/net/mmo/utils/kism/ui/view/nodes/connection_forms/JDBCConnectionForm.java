@@ -90,6 +90,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.responsePayload.setThemeName(LabelPaddingTheme);
 		this.responsePayload.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
+		this.responsePayload.getElement().setAttribute("white-space", "nowrap"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		this.fields.add(uidAndPwd,
 		                this.query,

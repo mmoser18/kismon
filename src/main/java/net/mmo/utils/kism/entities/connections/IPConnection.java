@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.entities.connections;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Entity;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -29,7 +31,7 @@ abstract public class IPConnection extends LeafNode
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
 
-	protected boolean enabled = true; // should connection be regularly checked?
+	protected boolean enabled = false; // should connection be regularly checked?
 
 	@Min(0) // 0 means off
 	@Max(3600) // means: 1x/hr
@@ -57,6 +59,7 @@ abstract public class IPConnection extends LeafNode
 
 	/** common response fields: */
 	transient protected long duration;
+	transient protected LocalDateTime timestamp;
 
 	protected static boolean syncRequests = Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 

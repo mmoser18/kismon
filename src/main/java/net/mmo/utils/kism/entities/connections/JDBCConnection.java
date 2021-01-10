@@ -12,6 +12,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -19,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.Messages;
 
 @Setter
 @Getter
@@ -54,10 +58,19 @@ public class JDBCConnection extends IPConnection
 	@JsonIgnore
 	transient protected String responsePayload;
 
+	@JsonIgnore
+	transient protected ExecutorService interactiveExecutor;
+	@JsonIgnore
+	transient protected ExecutorService periodicExecutor;
 
 	@SuppressWarnings("unused")
 	private JDBCConnection() { // required for deserialization
 		super();
+
+		if (!syncRequests) {
+			this.interactiveExecutor = Executors.newSingleThreadExecutor();
+		}
+		this.periodicExecutor = Executors.newSingleThreadScheduledExecutor();
 	}
 
 	public JDBCConnection(String name, String description) {
@@ -95,41 +108,45 @@ public class JDBCConnection extends IPConnection
 		DriverManager.registerDriver(this.driver);
 	}
 
-	private void createConnection() throws Exception {
+	private Connection createConnection() throws Exception {
 		log.info("createConnection:"); //$NON-NLS-1$
-		if (this.connection == null || !this.connection.isValid(10)) {
+		if (this.driver == null) {
+			registerDriver();
+		}
+		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
 			this.connection = DriverManager.getConnection(this.url, this.uid, this.pwd);
 		}
+		return this.connection;
 	}
 
 	@SuppressWarnings("resource")
 	@Override
 	public void sendRequest() throws Exception {
 		log.info("sendRequest:"); //$NON-NLS-1$
-		Statement statement = null;
-		String resQuery = getResultingQuery();
-		try {
-			if (this.driver == null) {
-				registerDriver();
-			}
-			createConnection();
-			log.info("createStatement:"); //$NON-NLS-1$
-			statement = getConnection().createStatement();
-//			if (IPConnection.syncRequests) {
-				log.info("statement.execute():", resQuery); //$NON-NLS-1$
-				long startTime = System.nanoTime();
-				if (statement.execute(resQuery)) {
-					responseReceived(System.nanoTime() - startTime, statement);
+		if (IPConnection.syncRequests) {
+			sendRequestInternal();
+		} else {
+			this.interactiveExecutor.execute(() -> {
+				try {
+					sendRequestInternal();
+				} catch (Exception ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
 				}
-//			} else { // async:
-//				long startTime = System.nanoTime();
-//				CompletableFuture<HttpResponse<byte[]>> futureResponse = statement.execute(this.query);
-//								this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
-//				futureResponse.thenAccept(response ->
-//				{
-//					responseReceived(System.nanoTime() - startTime, response);
-//				});
-//			}
+			});
+		}
+	}
+	public void sendRequestInternal() throws Exception {
+		String resQuery = getResultingQuery();
+		log.info("createStatement:"); //$NON-NLS-1$
+		try (Connection conn = createConnection();
+			 Statement statement = conn.createStatement()) {
+			long startTime = System.nanoTime();
+			this.timestamp = LocalDateTime.now();
+			log.info("statement.execute():", resQuery); //$NON-NLS-1$
+			boolean isRS = statement.execute(resQuery);
+			long callDuration = System.nanoTime() - startTime;
+			responseReceived(callDuration, statement, isRS);
 		} catch (SQLException t) {
 			setResponseStatus(extractSqlError(t));
 			setResponsePayload(String.format("Exception executing query '%s': %s", resQuery, t.getMessage())); //$NON-NLS-1$
@@ -140,34 +157,27 @@ public class JDBCConnection extends IPConnection
 			} else {
 				throw new Exception("Error creating request", t); //$NON-NLS-1$
 			}
-		} finally {
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException ex) {
-					log.error("Error closing statement: ", ex); //$NON-NLS-1$
-				}
-			}
 		}
 	}
 
-	// expects strings like: "ORA-00942: table or view does not exist"
-	// and tries to extract the "ORA-00942" part:
-	private static String extractSqlError(SQLException t) {
-		String errorMsg = t. getMessage();
-		int pos1 = errorMsg.indexOf(": "); //$NON-NLS-1$
-		if (pos1 > 0) {
-			return errorMsg.substring(0, pos1);
-		}
-		return errorMsg;
-	}
-
-	private void responseReceived(long callDuration, Statement statement) {
+	private void responseReceived(long callDuration, Statement statement, boolean isRS) throws SQLException {
 		log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
 		setDuration(callDuration);
-		convertResultSet(statement);
-		logResponseValues();
-		deriveState();
+		if (isRS) { // result is a ResultSet
+			convertResultSet(statement);
+//			log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
+//	         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+			deriveState();
+		} else { // result is not a ResultSet but an update count or there are no results
+			int updates = statement.getUpdateCount();
+			log.info("Result: #updates:{}", updates); //$NON-NLS-1$
+			State res = updates >= 0 ? State.OK : State.FAILED;
+			setResponseStatus(res.name());
+			setResponsePayload(res == State.OK
+							   ? String.format(Messages.getString("JDBCConnection.Result.Updates"), updates) //$NON-NLS-1$
+							   : String.format(Messages.getString("JDBCConnection.Result.NoResult"))); //$NON-NLS-1$
+			this.setState(res);
+		}
 		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 	}
 
@@ -210,9 +220,15 @@ public class JDBCConnection extends IPConnection
 		}
 	}
 
-	public void logResponseValues() {
-//		log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-//		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+	// expects strings like: "ORA-00942: table or view does not exist"
+	// and tries to extract the "ORA-00942" part:
+	private static String extractSqlError(SQLException t) {
+		String errorMsg = t. getMessage();
+		int pos1 = errorMsg.indexOf(": "); //$NON-NLS-1$
+		if (pos1 > 0) {
+			return errorMsg.substring(0, pos1);
+		}
+		return errorMsg;
 	}
 
 	private void deriveState() {

@@ -20,6 +20,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -239,16 +240,18 @@ abstract public class HTTPConnection extends IPConnection
 			if (this.request == null) {
 				this.request = createRequest();
 			}
+			long startTime = System.nanoTime();
+			this.timestamp = LocalDateTime.now();
 			if (HTTPConnection.syncRequests) {
-				long startTime = System.nanoTime();
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
-				responseReceived(System.nanoTime() - startTime, response);
+				long callDuration = System.nanoTime() - startTime;
+				responseReceived(callDuration, response);
 			} else { // async:
-				long startTime = System.nanoTime();
 				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
 				futureResponse.thenAccept(response ->
 				{
-					responseReceived(System.nanoTime() - startTime, response);
+					long callDuration = System.nanoTime() - startTime;
+					responseReceived(callDuration, response);
 				});
 			}
 		} catch (Throwable t) {

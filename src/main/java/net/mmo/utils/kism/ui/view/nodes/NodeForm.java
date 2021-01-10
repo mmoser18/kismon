@@ -130,7 +130,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			this.state.setValue(newValue.toString());
 			break;
 		default:
-			NodeView.ProgrammingError(String.format("Unexpected property name %s for %s", propertyName, sourceNode), null); //$NON-NLS-1$
+			// ignore
+			// NodeView.ProgrammingError(String.format("Unexpected property name '%s' for %s", propertyName, sourceNode), new Exception("dummy to obtain stacktrace")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		fireEvent(new UpdateEvent(this, this.node));
 	}
