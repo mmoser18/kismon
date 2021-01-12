@@ -6,6 +6,8 @@
 package net.mmo.utils.kism.entities.connections;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.Max;
@@ -17,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.LeafNode;
 import net.mmo.utils.kism.utils.AppProperties;
 
@@ -24,6 +27,7 @@ import net.mmo.utils.kism.utils.AppProperties;
 @Entity
 @Setter
 @Getter
+@Slf4j
 abstract public class IPConnection extends LeafNode
 {
 	private static final long serialVersionUID = -2584969925210734417L;
@@ -63,15 +67,28 @@ abstract public class IPConnection extends LeafNode
 
 	protected static boolean syncRequests = Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
+	@JsonIgnore
+	transient protected ExecutorService interactiveExecutor;
+	@JsonIgnore
+	transient protected ExecutorService periodicExecutor;
+
 
 	/**required for deserialization only */
 	protected IPConnection() {
-		// empty
+		initExecutors();
 	}
 
 	protected IPConnection(String name, String description) {
 		super(name, description);
-		// setState(State.values()[(int)(Math.random()*3.0)]);
+		// setState(State.values()[(int)(Math.random()*3.0)]); // during developing
+		initExecutors();
+	}
+
+	private void initExecutors() {
+		if (!syncRequests) {
+			this.interactiveExecutor = Executors.newSingleThreadExecutor();
+		}
+		this.periodicExecutor = Executors.newSingleThreadScheduledExecutor();
 	}
 
 	public void setEnabled(boolean enabled) {
@@ -92,7 +109,23 @@ abstract public class IPConnection extends LeafNode
 		return (responseDuration != 0 ? (Math.round(responseDuration/1000)*1.0e-3) : 0); // nsec's --> msec's (rounded to micro-seconds)
 	}
 
-	abstract public void sendRequest() throws Exception;
+	public void sendRequest() throws Exception {
+		if (IPConnection.syncRequests) {
+			log.info("sendRequest-sync:"); //$NON-NLS-1$
+			sendRequestInternal();
+		} else {
+			log.info("sendRequest-async:"); //$NON-NLS-1$
+			this.interactiveExecutor.execute(() -> {
+				try {
+					sendRequestInternal();
+				} catch (Exception ex) {
+					log.error("Exception executing sendRequest", ex); //$NON-NLS-1$
+				}
+			});
+		}
+	}
+
+	abstract public void sendRequestInternal() throws Exception;
 
 	@Override
 	public String toString() {
@@ -109,6 +142,7 @@ abstract public class IPConnection extends LeafNode
 //			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
 			.append(", checkResult:").append(this.checkResult) //$NON-NLS-1$
+			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();

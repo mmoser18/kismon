@@ -2,6 +2,7 @@
 package net.mmo.utils.kism.entities;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -55,4 +56,5 @@ public class Contact extends AbstractEntity implements Cloneable, Serializable
 	@NotEmpty
 	private String email = ""; //$NON-NLS-1$
 
+	private LocalDateTime timestamp = LocalDateTime.now();
 }

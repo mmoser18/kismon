@@ -39,6 +39,7 @@ import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
 import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.ExceptionUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -69,6 +70,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	Div content;
+
 	NodeForm<N> form; // package visible for ITs - is there no other way?
 	LayoutDirection contentDirection = LayoutDirection.direction_row;
 
@@ -99,14 +101,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.content.setSizeFull();
 			CommonConstants.setClassName(this.content, this.contentDirection);
 
-			add(getToolbar(), this.content);
+			add(createToolbar(), this.content);
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
-	private HorizontalLayout getToolbar() {
+	private HorizontalLayout createToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 //		this.filterText.setClassName(FilterFieldClassName);
 //		this.filterText.setPlaceholder(Messages.getString("ListView.TextField.FilterText.Label")); //$NON-NLS-1$
@@ -196,7 +198,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, /*readFileButton,*/ uploadFile);
 		toolbar.addClassName(ViewToolbarClassName);
-
 		return toolbar;
 	}
 
@@ -374,9 +375,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 				}
 				if (newForm != this.form) { // different form assigned:
 					log.info("editNode: new form {}", newForm); //$NON-NLS-1$
-					if (this.form != null) this.content.remove(this.form); // remove old form
 					this.form = newForm;
-					this.content.add(this.form); // add new form
+					this.content.removeAll(); // remove old form
+					this.content.add(this.tree, this.form); // add new form
 					// add listeners (if not already present):
 					this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 					this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
@@ -389,7 +390,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 				addClassName("editing"); //$NON-NLS-1$
 			} catch (java.lang.IllegalStateException ex) {
 				log.error("wtf?", ex); //$NON-NLS-1$
-				// throw new RuntimeException("IllegalStateException"); //$NON-NLS-1$
+				this.content.removeAll(); // remove old form
+				this.form = null;
 			}
 //		}
 	}
@@ -543,9 +545,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 			{
 				Dialog dialog = new Dialog();
 				VerticalLayout msgLane = new VerticalLayout();
-				for (String str: msg.split("\n")) msgLane.add(new Label(str)); //$NON-NLS-1$
-				for (Throwable t2 = t; t2 != null; t2 = t2.getCause()) {
-					msgLane.add(new Label(t2.toString()));
+				for (String str: msg.split("\n")) { //$NON-NLS-1$
+					msgLane.add(new Label(str));
+				}
+				for (String str: ExceptionUtils.exceptionCauseSummary(t).split("\n")) { //$NON-NLS-1$
+					msgLane.add(new Label(str));
 				}
 				Button button = new Button(Messages.getString("NodeView.Notification.Close.Label")); //$NON-NLS-1$
 				button.addClickListener(event -> dialog.close());

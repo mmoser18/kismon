@@ -13,4 +13,7 @@
 :host([theme~="monospace"]) [part="value"] {
 	font-size: medium;
 	font-family: monospace;
+	white-space: pre;
+	overflow-x: auto;
+	padding-bottom: 1em;
 }

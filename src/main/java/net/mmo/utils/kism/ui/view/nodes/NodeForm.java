@@ -22,6 +22,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.NodeProperties;
 
@@ -187,7 +188,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				if (event.isFromClient()) {
 					if (this.node != null) setPropertiesFromString(this.node, event.getValue());
 				}
-				updateResolvableValues();
+				try {
+					updateResolvableValues();
+				} catch (Exception ex) {
+					log.error("Error updating properties", ex); //$NON-NLS-1$
+				}
 			});
 
 		this.fields = new VerticalLayout(this.name, this.description, stateAndActive, this.properties);
@@ -224,7 +229,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		}
 		props.setPropertiesFromString(values);
 	}
-
 	protected void updateResolvableValues() {
 		// to be overriden by subclasses
 	}
@@ -237,6 +241,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 * @param textField the label to update
 	 * @param errorTamplate the string to format with a error msg. (if there was an error)
 	 * @return
+	 * @throws Exception
 	 */
 	protected String updateResultingField(String logPrefix,
 	                                      N n,
@@ -257,8 +262,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.NodeUndefined"), logPrefix, originalValue); //$NON-NLS-1$
 			}
 		} catch (Exception ex) {
-			log.debug("{}: Illegal value: '{}' : {} - reason: {}", logPrefix, originalValue, ex, ex.getCause()); //$NON-NLS-1$
-			resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.IllegalSyntax"), logPrefix, originalValue, ex + (ex.getCause() != null ? " - " + ex.getCause() : "")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			String summary = ExceptionUtils.exceptionCauseSummary(ex);
+			log.debug("{}: Illegal value: '{}' : {}", logPrefix, originalValue, summary); //$NON-NLS-1$
+			resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.IllegalSyntax"), logPrefix, originalValue, summary); //$NON-NLS-1$
 		}
 		if (!resolvedValue.equals(originalValue)) {
 			log.debug("{}: Setting and displaying textField '{}' -> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$

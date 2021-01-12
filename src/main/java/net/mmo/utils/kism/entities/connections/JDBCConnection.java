@@ -13,8 +13,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -22,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.Messages;
 
 @Setter
@@ -58,19 +57,9 @@ public class JDBCConnection extends IPConnection
 	@JsonIgnore
 	transient protected String responsePayload;
 
-	@JsonIgnore
-	transient protected ExecutorService interactiveExecutor;
-	@JsonIgnore
-	transient protected ExecutorService periodicExecutor;
-
 	@SuppressWarnings("unused")
 	private JDBCConnection() { // required for deserialization
 		super();
-
-		if (!syncRequests) {
-			this.interactiveExecutor = Executors.newSingleThreadExecutor();
-		}
-		this.periodicExecutor = Executors.newSingleThreadScheduledExecutor();
 	}
 
 	public JDBCConnection(String name, String description) {
@@ -108,7 +97,7 @@ public class JDBCConnection extends IPConnection
 		DriverManager.registerDriver(this.driver);
 	}
 
-	private Connection createConnection() throws Exception {
+	private void createConnection() throws Exception {
 		log.info("createConnection:"); //$NON-NLS-1$
 		if (this.driver == null) {
 			registerDriver();
@@ -116,46 +105,38 @@ public class JDBCConnection extends IPConnection
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
 			this.connection = DriverManager.getConnection(this.url, this.uid, this.pwd);
 		}
-		return this.connection;
 	}
 
-	@SuppressWarnings("resource")
 	@Override
-	public void sendRequest() throws Exception {
-		log.info("sendRequest:"); //$NON-NLS-1$
-		if (IPConnection.syncRequests) {
-			sendRequestInternal();
-		} else {
-			this.interactiveExecutor.execute(() -> {
-				try {
-					sendRequestInternal();
-				} catch (Exception ex) {
-					// TODO Auto-generated catch block
-					ex.printStackTrace();
-				}
-			});
-		}
-	}
 	public void sendRequestInternal() throws Exception {
-		String resQuery = getResultingQuery();
 		log.info("createStatement:"); //$NON-NLS-1$
-		try (Connection conn = createConnection();
-			 Statement statement = conn.createStatement()) {
-			long startTime = System.nanoTime();
-			this.timestamp = LocalDateTime.now();
+		Statement statement = null;
+		String resQuery = getQuery();
+		try {
+			resQuery = getResultingQuery();
+			createConnection();
+			statement = this.connection.createStatement();
 			log.info("statement.execute():", resQuery); //$NON-NLS-1$
+			this.timestamp = LocalDateTime.now();
+			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);
 			long callDuration = System.nanoTime() - startTime;
 			responseReceived(callDuration, statement, isRS);
-		} catch (SQLException t) {
-			setResponseStatus(extractSqlError(t));
-			setResponsePayload(String.format("Exception executing query '%s': %s", resQuery, t.getMessage())); //$NON-NLS-1$
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
+		} catch (SQLException ex) {
+			setResponseStatus(extractSqlError(ex));
+			setResponsePayload(String.format("Exception executing query '%s': %s", //$NON-NLS-1$
+			                                 resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
 			deriveState();
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (this.connection != null) {
-				throw new Exception(String.format("Error sending request '%s' to %s: ", resQuery, this.connection), t); //$NON-NLS-1$
+				throw new Exception(String.format("Error sending request '%s' to %s: ", resQuery, this.connection), ex); //$NON-NLS-1$
 			} else {
-				throw new Exception("Error creating request", t); //$NON-NLS-1$
+				throw new Exception(String.format("Error creating request '%s'", resQuery), ex); //$NON-NLS-1$
+			}
+		} finally {
+			if (statement != null) {
+				statement.close();
 			}
 		}
 	}
@@ -178,7 +159,6 @@ public class JDBCConnection extends IPConnection
 							   : String.format(Messages.getString("JDBCConnection.Result.NoResult"))); //$NON-NLS-1$
 			this.setState(res);
 		}
-		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 	}
 
 	private void convertResultSet(Statement statement) {

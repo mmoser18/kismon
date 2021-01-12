@@ -6,6 +6,7 @@
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import java.net.URI;
+import java.util.Locale;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -82,7 +83,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			{
 				log.info("url value changed to: '{}'", event.getValue()); //$NON-NLS-1$
 				if (event.isFromClient()) {
-					updateResultingUrl(event.getValue());
+					try {
+						updateResultingUrl(event.getValue());
+					} catch (Exception ex) {
+						log.error("Error updating URL", ex); //$NON-NLS-1$
+					}
 				}
 			});
 		this.binder.forField(this.url)
@@ -120,14 +125,33 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.timestamp = new DateTimePicker(Messages.getString("HTTPConnectionForm.TimeStamp.Label")); //$NON-NLS-1$
 		this.timestamp.setClassName(TimeStampClassName);
 		this.timestamp.setThemeName(LabelPaddingTheme);
+		String languageTag = Messages.getString("HTTPConnectionForm.TimeStamp.Locale"); //$NON-NLS-1$
+		Locale locale = null;
+		try {
+			locale = Locale.forLanguageTag(languageTag);
+			log.debug("Locale for '{}': '{}'", languageTag, locale); //$NON-NLS-1$
+		} catch (Exception ex) {
+			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
+
+		}
+		this.timestamp.setLocale(locale != null ? locale : Locale.getDefault());
 		this.binder.forField(this.timestamp).bind(IPConnection::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
-		this.binder.addStatusChangeListener(e -> this.execute.setEnabled(this.binder.isValid()));
+		this.binder.addStatusChangeListener(e ->
+			{
+				log.info("binder statusChange: {} / {}", e, e.getSource().getStatusLabel()); //$NON-NLS-1$
+				this.execute.setText(Messages.getString(this.binder.hasChanges()
+				                                        ? "HTTPConnectionForm.SaveAndExecute.Label" //$NON-NLS-1$
+				                                        : "HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
+				this.execute.setEnabled(this.binder.isValid());
+			});
+
 		this.execute.addClickListener(event ->
 			{
-				validateAndSave();
+				log.info("execute clicked"); //$NON-NLS-1$
+				if (this.binder.hasChanges()) validateAndSave();
 				try {
 					this.node.sendRequest();
 				} catch (Throwable t) {

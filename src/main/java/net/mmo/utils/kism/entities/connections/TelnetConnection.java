@@ -27,7 +27,7 @@ public class TelnetConnection extends IPConnection
 	}
 
 	@Override
-	public void sendRequest() throws Exception {
+	public void sendRequestInternal() throws Exception {
 		throw new NotYetImplementedException("SSH not yet implemented"); //$NON-NLS-1$
 	}
 }

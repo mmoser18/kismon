@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
@@ -28,6 +29,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	static final String ResponseStatusCodeClassName = "node-form-field-response-status"; //$NON-NLS-1$
 	static final String ResponseHeadersClassName  = "node-form-field-response-headers"; //$NON-NLS-1$
 	static final String ResponseBodyClassName     = "node-form-field-response-body"; //$NON-NLS-1$
+	static final String AcceptableResturnCodesClassName = "node-form-field-acceptable-return-code"; //$NON-NLS-1$
 
 	protected ComboBox<HTTP_Method> method;
 
@@ -41,6 +43,9 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 
 	protected TextArea responseHeaders;
 	protected TextArea responseBody;
+
+	protected TextField acceptableReturnCodes;
+
 
 	public HTTPConnectionForm(Class<N> clazz) {
 		super(clazz);
@@ -106,8 +111,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.responseStatusCode).bind(HTTPConnection::getResponseStatusCode, null);
 
-		HorizontalLayout responseStatusAndDuration = new HorizontalLayout(this.responseStatusCode, this.duration);
-		responseStatusAndDuration.addClassName(CombinedClassName);
+		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatusCode, this.duration/*, this.timestamp*/);
+		responseResults.addClassName(CombinedClassName);
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
@@ -133,12 +138,18 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseBody.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseBody).bind(HTTPConnection::getResponseBodyAsString, null);
 
+		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
+		this.acceptableReturnCodes.setClassName(AcceptableResturnCodesClassName);
+		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
+		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
+
 		this.fields.add(this.headers, this.payload,
 		                methodAndExecuteButton,
 		                new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
-		                responseStatusAndDuration,
+		                responseResults,
 		                this.requestHeaders, this.requestBody,
-		                this.responseHeaders, this.responseBody);
+		                this.responseHeaders, this.responseBody,
+		                this.acceptableReturnCodes);
 	}
 
 	@Override

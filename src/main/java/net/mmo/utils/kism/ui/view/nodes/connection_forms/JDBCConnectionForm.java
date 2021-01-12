@@ -62,7 +62,11 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 			{
 				log.info("query value changed to: '{}'", event.getValue()); //$NON-NLS-1$
 				if (event.isFromClient()) {
-					updateResultingQuery(event.getValue());
+					try {
+						updateResultingQuery(event.getValue());
+					} catch (Exception ex) {
+						log.error("Exception updating query", ex); //$NON-NLS-1$
+					}
 				}
 			});
 
@@ -82,15 +86,14 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.responseStatus.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseStatus).bind(JDBCConnection::getResponseStatus, null);
 
-		HorizontalLayout responseStatusAndDuration = new HorizontalLayout(this.responseStatus, this.duration);
-		responseStatusAndDuration.addClassName(CombinedClassName);
+		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration/*, this.timestamp*/);
+		responseResults.addClassName(CombinedClassName);
 
 		this.responsePayload = new TextArea(Messages.getString("JDBCConnectionForm.ResponsePayload.Label")); //$NON-NLS-1$
 		this.responsePayload.setClassName(DbResponseClassName);
 		this.responsePayload.setThemeName(LabelPaddingTheme);
 		this.responsePayload.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
-		this.responsePayload.getElement().setAttribute("white-space", "nowrap"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		this.fields.add(uidAndPwd,
 		                this.query,
@@ -98,7 +101,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		                this.execute,
 		                this.driverName,
 		                new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
-		                responseStatusAndDuration,
+		                responseResults,
 		                this.responsePayload);
 	}
 

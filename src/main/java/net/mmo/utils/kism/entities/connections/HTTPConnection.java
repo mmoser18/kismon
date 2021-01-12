@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -96,8 +95,6 @@ abstract public class HTTPConnection extends IPConnection
 	protected String targetUid = "user"; //$NON-NLS-1$
 	protected String targetPwd = "password"; //$NON-NLS-1$
 
-	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
-
 	protected String headers;
 	protected String payload;
 
@@ -122,6 +119,8 @@ abstract public class HTTPConnection extends IPConnection
 	transient protected HttpHeaders responseHeaders;
 	@JsonIgnore
 	transient protected byte[] responseBody;
+
+	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
 
 	public HTTPConnection() { // required for deserialization
@@ -192,7 +191,7 @@ abstract public class HTTPConnection extends IPConnection
 		this.client = builder.build();
 	}
 
-	public HttpRequest createRequest() throws Exception {
+	public void createRequest() throws Exception {
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
 			.uri(URI.create(getResultingUrl()))
 			.timeout(Duration.ofSeconds(this.timeout));
@@ -227,33 +226,32 @@ abstract public class HTTPConnection extends IPConnection
 		this.request = builder.build();
 		setRequestHeaders(this.request.headers());
 		logRequestValues();
-		return this.request;
 	}
 
 	@Override
-	public void sendRequest() throws Exception {
+	public void sendRequestInternal() throws Exception {
 		log.info("sendRequest:"); //$NON-NLS-1$
-		if (this.client == null) {
-			createClient();
-		}
 		try {
+			if (this.client == null) {
+				createClient();
+			}
 			if (this.request == null) {
-				this.request = createRequest();
+				createRequest();
 			}
 			long startTime = System.nanoTime();
 			this.timestamp = LocalDateTime.now();
-			if (HTTPConnection.syncRequests) {
+//			if (HTTPConnection.syncRequests) {
 				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
 				long callDuration = System.nanoTime() - startTime;
 				responseReceived(callDuration, response);
-			} else { // async:
-				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
-				futureResponse.thenAccept(response ->
-				{
-					long callDuration = System.nanoTime() - startTime;
-					responseReceived(callDuration, response);
-				});
-			}
+//			} else { // async:
+//				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
+//				futureResponse.thenAccept(response ->
+//				{
+//					long callDuration = System.nanoTime() - startTime;
+//					responseReceived(callDuration, response);
+//				});
+//			}
 		} catch (Throwable t) {
 			if (this.request != null) {
 				throw new Exception(String.format("Error sending request to {}: ",  this.request.uri()), t); //$NON-NLS-1$
@@ -275,17 +273,21 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	private void deriveState() {
-		State res = State.OK;
+		final State res;
 		if (this.checkResult) {
-			String acceptableCodes = (this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"); //$NON-NLS-1$
+			String acceptableCodes = this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"; //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
-			res = State.FAILED;
+		  search: {
 			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 				if (acceptable.equals(responseStatusCodeStr)) {
 					res = State.OK;
-					break;
+					break search;
 				}
 			}
+			res = State.FAILED;
+		  } // :search
+		} else {
+			res = State.OK;
 		}
 		setState(res);
 	}
@@ -402,7 +404,6 @@ abstract public class HTTPConnection extends IPConnection
 			.append(", payload:").append(this.payload) //$NON-NLS-1$
 			.append(", client:").append(this.client) //$NON-NLS-1$
 			.append(", request:").append(this.request) //$NON-NLS-1$
-			.append(", client:").append(this.client) //$NON-NLS-1$
 			.append(", requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
 			.append(", requestBody:").append(this.requestBody) //$NON-NLS-1$
 			.append(", responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$

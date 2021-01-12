@@ -2,6 +2,7 @@
 package net.mmo.utils.kism.ui.view.list;
 
 import java.util.List;
+import java.util.Locale;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -9,6 +10,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -44,6 +46,8 @@ public class ContactForm extends FormLayout
 	ComboBox<Contact.Status> status = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Status.Label")); //$NON-NLS-1$
 	ComboBox<Company> company = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Company.Label")); //$NON-NLS-1$
 
+	DateTimePicker timestamp;
+
 	VerticalLayout fields;
 
 	Button save   = new Button(Messages.getString("ContactForm.Button.Save.Label")); //$NON-NLS-1$
@@ -53,6 +57,7 @@ public class ContactForm extends FormLayout
 	private Contact contact;
 	Binder<Contact> binder = new BeanValidationBinder<>(Contact.class); // a Binder that is aware of bean validation annotations
 
+	@SuppressWarnings("null")
 	public ContactForm(List<Company> companies) {
 		log.debug("Creating ContactForm:"); //$NON-NLS-1$
 		addClassName(ViewClassName);
@@ -68,7 +73,20 @@ public class ContactForm extends FormLayout
 		this.status.setItems(Contact.Status.values());
 		this.status.addClassName(StatusClassName);
 
-		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status);
+		this.timestamp = new DateTimePicker(Messages.getString("ContactForm.TimeStamp.Label")); //$NON-NLS-1$
+		Locale locale = null;
+//		String languageTag = Messages.getString("HTTPConnectionForm.TimeStamp.Locale"); //$NON-NLS-1$
+//		try {
+//			locale = Locale.forLanguageTag(languageTag);
+//			log.debug("Locale for '{}': '{}'", languageTag, locale); //$NON-NLS-1$
+//		} catch (Exception ex) {
+//			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
+//
+//		}
+		this.timestamp.setLocale(locale != null ? locale : Locale.getDefault());
+		this.binder.forField(this.timestamp).bind(Contact::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
+
+		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status, this.timestamp);
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();
 
@@ -90,7 +108,7 @@ public class ContactForm extends FormLayout
 		this.save.setId("contactform-save-button"); //$NON-NLS-1$
 		this.save.addClickShortcut(Key.ENTER);
 		this.save.addClickListener(event -> validateAndSave());
-		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.isValid()));
+		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.isValid() && this.binder.hasChanges()));
 
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.save.setId("contactform-delete-button"); //$NON-NLS-1$
@@ -110,7 +128,7 @@ public class ContactForm extends FormLayout
 			this.binder.writeBean(this.contact);
 			fireEvent(new SaveEvent(this, this.contact));
 		} catch (ValidationException e) {
-			e.printStackTrace();
+			log.error("Validation error: ", e); //$NON-NLS-1$
 		}
 	}
 

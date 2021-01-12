@@ -83,7 +83,7 @@ public class ListView extends VerticalLayout
 		log.info("saveContact"); //$NON-NLS-1$
 		this.contactService.save(event.getContact());
 		updateList();
-		closeEditor();
+//		closeEditor();
 	}
 
 	private void deleteContact(ContactForm.DeleteEvent event) {
