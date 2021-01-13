@@ -44,10 +44,12 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected TextField url;
 	protected TextField resultingURL;
 
-	// these are not yet added to the form:
+	// these are not yet added to the form to allow subclasses to include them at appropriate places:
 	protected Button execute;
 	protected DateTimePicker timestamp;
 	protected NumberField duration;
+
+	protected Checkbox checkResult;
 
 	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -106,7 +108,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 						log.debug("validation failed: '{}' -> {}", urlStr, ex); //$NON-NLS-1$
 						return false;
 					}
-				}, Messages.getString("IPConnectionForm.Validator.URL.IllegalURL")) //$NON-NLS-1$
+				}, Messages.getString("IPConnectionForm.URL.ValidatorErrorMsg")) //$NON-NLS-1$
 			.bind(IPConnection::getUrl, IPConnection::setUrl);
 
 		this.resultingURL = new TextField(Messages.getString("IPConnectionForm.ResultingUrl.Value")); //$NON-NLS-1$
@@ -158,6 +160,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 					NodeView.ExecutionError("creating/executing request:", t); //$NON-NLS-1$
 				}
 			});
+
+		this.checkResult = new Checkbox(Messages.getString("IPConnectionForm.CheckResult.Label")); //$NON-NLS-1$
+		this.checkResult.addClassName(EnabledClassName);
 
 		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
 	}

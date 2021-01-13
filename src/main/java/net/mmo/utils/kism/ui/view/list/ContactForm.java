@@ -9,6 +9,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -24,6 +25,7 @@ import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Company;
 import net.mmo.utils.kism.entities.Contact;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.Messages;
 
 @Slf4j
 public class ContactForm extends FormLayout
@@ -46,7 +48,11 @@ public class ContactForm extends FormLayout
 	ComboBox<Contact.Status> status = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Status.Label")); //$NON-NLS-1$
 	ComboBox<Company> company = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Company.Label")); //$NON-NLS-1$
 
+	// experimental stuff / bug reproducers
 	DateTimePicker timestamp;
+
+	Checkbox doChecks = new Checkbox("Check"); //$NON-NLS-1$
+	TextField someText = new TextField("Text"); //$NON-NLS-1$
 
 	VerticalLayout fields;
 
@@ -84,9 +90,29 @@ public class ContactForm extends FormLayout
 //
 //		}
 		this.timestamp.setLocale(locale != null ? locale : Locale.getDefault());
+
+
 		this.binder.forField(this.timestamp).bind(Contact::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
-		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status, this.timestamp);
+		Binder.Binding<Contact, Boolean> doChecksBinding = // memorize the binding below so we can re-trigger it
+			this.binder.forField(this.doChecks)
+				.withValidator(c -> (c == this.someText.getValue().isEmpty()),
+				               "If checked then text must contain a value") //$NON-NLS-1$
+				.bind(Contact::getDoChecks, Contact::setDoChecks);
+
+		Binder.Binding<Contact, String> someTextBinding = // memorize the binding below so we can re-trigger it
+			this.binder.forField(this.someText)
+				.withValidator(t -> this.doChecks.isEnabled() ? t.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : t.isEmpty(), //$NON-NLS-1$
+				               "Text must contain a list of three-digit numbers") //$NON-NLS-1$
+				.bind(Contact::getSomeText, Contact::setSomeText);
+
+		this.doChecks.addValueChangeListener(event -> someTextBinding.validate());
+		this.someText.addValueChangeListener(event -> doChecksBinding.validate());
+
+		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status
+		                                 , this.timestamp
+		                                 , this.doChecks, this.someText
+		                                 );
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();
 

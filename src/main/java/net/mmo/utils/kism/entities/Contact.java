@@ -57,4 +57,9 @@ public class Contact extends AbstractEntity implements Cloneable, Serializable
 	private String email = ""; //$NON-NLS-1$
 
 	private LocalDateTime timestamp = LocalDateTime.now();
+
+	private Boolean doChecks;
+
+	private String someText;
+
 }

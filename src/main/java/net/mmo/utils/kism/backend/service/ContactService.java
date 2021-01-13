@@ -70,28 +70,29 @@ public class ContactService
 			Random r = new Random(0);
 			List<Company> companies = this.companyRepository.findAll();
 			this.contactRepository.saveAll(Stream.of("Gabrielle Patel", "Brian Robinson", "Eduardo Haugen", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                                            	"Koen Johansen", "Alejandro Macdonald", "Angel Karlsson", "Yahir Gustavsson", "Haiden Svensson", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                            	"Emily Stewart", "Corinne Davis", "Ryann Davis", "Yurem Jackson", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                                            	"Kelly Gustavsson", //$NON-NLS-1$
-                                            	"Eileen Walker", "Katelyn Martin", "Israel Carlsson", "Quinn Hansson", "Makena Smith", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                            	"Danielle Watson", "Leland Harris", "Gunner Karlsen", "Jamar Olsson", "Lara Martin", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                            	"Ann Andersson", "Remington Andersson", "Rene Carlsson", "Elvis Olsen", "Solomon Olsen", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                                            	"Jaydan Jackson", "Bernard Nilsen") //$NON-NLS-1$ //$NON-NLS-2$
-			                          .map(name ->
-			                          {
-			                        	  String[] split = name.split(" "); //$NON-NLS-1$
-			                        	  Contact contact = new Contact();
-			                        	  contact.setFirstName(split[0]);
-			                        	  contact.setLastName(split[1]);
-			                        	  contact.setCompany(companies.get(r.nextInt(companies.size())));
-			                        	  contact.setStatus(Contact.Status.values()[r.nextInt(Contact.Status.values().length)]);
-			                        	  String email = (contact.getFirstName() + "." + contact.getLastName() //$NON-NLS-1$
-			                        	               + "@" + contact.getCompany().getName().replaceAll("[\\s-]", "") + ".com") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			                        				   .toLowerCase();
-			                        	  contact.setEmail(email);
-			                        	  return contact;
-			                          })
-			                          .collect(Collectors.toList()));
+			                                         "Koen Johansen", "Alejandro Macdonald", "Angel Karlsson", "Yahir Gustavsson", "Haiden Svensson", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			                                         "Emily Stewart", "Corinne Davis", "Ryann Davis", "Yurem Jackson", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			                                         "Kelly Gustavsson", //$NON-NLS-1$
+			                                         "Eileen Walker", "Katelyn Martin", "Israel Carlsson", "Quinn Hansson", "Makena Smith", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			                                         "Danielle Watson", "Leland Harris", "Gunner Karlsen", "Jamar Olsson", "Lara Martin", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			                                         "Ann Andersson", "Remington Andersson", "Rene Carlsson", "Elvis Olsen", "Solomon Olsen", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			                                         "Jaydan Jackson", "Bernard Nilsen") //$NON-NLS-1$ //$NON-NLS-2$
+			                               .map(name ->
+			                               {
+			                            	   String[] split = name.split(" "); //$NON-NLS-1$
+			                            	   Contact contact = new Contact();
+			                            	   contact.setFirstName(split[0]);
+			                            	   contact.setLastName(split[1]);
+			                            	   contact.setCompany(companies.get(r.nextInt(companies.size())));
+			                            	   contact.setStatus(Contact.Status.values()[r.nextInt(Contact.Status.values().length)]);
+			                            	   String email = (contact.getFirstName() + "." + contact.getLastName() //$NON-NLS-1$
+			                            	                  + "@" + contact.getCompany().getName().replaceAll("[\\s-]", "") + ".com").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			                            	   contact.setEmail(email);
+//			                            	   contact.setCheck(r.nextBoolean());
+//			                            	   contact.setText(Integer.toString(r.nextInt()));
+			                            	   return contact;
+			                               })
+			                               .collect(Collectors.toList()));
 		}
 	}
 }

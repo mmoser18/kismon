@@ -277,18 +277,22 @@ abstract public class HTTPConnection extends IPConnection
 		if (this.checkResult) {
 			String acceptableCodes = this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"; //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
+			log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", this.responseStatusCode, responseStatusCodeStr); //$NON-NLS-1$
 		  search: {
 			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 				if (acceptable.equals(responseStatusCodeStr)) {
+					log.debug("responseStatusCode:{} -> matched: {}", this.responseStatusCode, acceptable); //$NON-NLS-1$
 					res = State.OK;
 					break search;
 				}
 			}
+			log.debug("responseStatusCode:{} -> no match found.", this.responseStatusCode); //$NON-NLS-1$
 			res = State.FAILED;
 		  } // :search
 		} else {
 			res = State.OK;
 		}
+		log.info("deriveState: {}", res); //$NON-NLS-1$
 		setState(res);
 	}
 

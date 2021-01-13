@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
@@ -111,8 +112,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.responseStatusCode).bind(HTTPConnection::getResponseStatusCode, null);
 
-		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatusCode, this.duration/*, this.timestamp*/);
-		responseResults.addClassName(CombinedClassName);
+		HorizontalLayout responseDetailsFields = new HorizontalLayout(this.responseStatusCode, this.duration/*, this.timestamp*/);
+		responseDetailsFields.addClassName(CombinedClassName);
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
@@ -143,13 +144,31 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
 		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
 
+		Binder.Binding<N, Boolean> checkResultBinding = // memorize the binding below so we can re-trigger it
+			this.binder.forField(this.checkResult)
+				.withValidator(check -> (check == this.acceptableReturnCodes.getValue().isEmpty()),
+				               Messages.getString("HTTPConnectionForm.CheckResult.ValidationErrorMsg")) //$NON-NLS-1$
+				.bind(HTTPConnection::getCheckResult, HTTPConnection::setCheckResult);
+
+		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
+			this.binder.forField(this.acceptableReturnCodes)
+				.withValidator(text -> this.checkResult.isEnabled() ? text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : text.isEmpty(), //$NON-NLS-1$
+				               Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.ValidationErrorMsg")) //$NON-NLS-1$
+				.bind(HTTPConnection::getAcceptableReturnCodes, HTTPConnection::setAcceptableReturnCodes);
+
+		this.checkResult.addValueChangeListener(event -> acceptableReturnCodesBinding.validate());
+		this.acceptableReturnCodes.addValueChangeListener(event -> checkResultBinding.validate());
+
+		HorizontalLayout checkResultFields = new HorizontalLayout(this.checkResult, this.acceptableReturnCodes);
+		checkResultFields.addClassName(CombinedClassName);
+
 		this.fields.add(this.headers, this.payload,
 		                methodAndExecuteButton,
 		                new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
-		                responseResults,
+		                responseDetailsFields,
 		                this.requestHeaders, this.requestBody,
 		                this.responseHeaders, this.responseBody,
-		                this.acceptableReturnCodes);
+		                checkResultFields);
 	}
 
 	@Override
@@ -171,6 +190,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 //			}
 //		}
 //	}
+
 
 
 	private void updateRequestInfo() {

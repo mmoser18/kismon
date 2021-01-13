@@ -59,7 +59,7 @@ abstract public class IPConnection extends LeafNode
 //	protected String proxyUid;
 //	protected String proxyPwd;
 
-	protected boolean checkResult = false;
+	protected Boolean checkResult = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
 
 	/** common response fields: */
 	transient protected long duration;
