@@ -116,7 +116,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 //		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 //		this.filterText.addValueChangeListener(e -> updateList());
 
-		ComboBox<NodeType> nodeTypeSelector = new ComboBox<>(Messages.getString("NodeForm.ComboBox.NodeTypes.Label")); //$NON-NLS-1$
+		ComboBox<NodeType> nodeTypeSelector = new ComboBox<>(Messages.getString("NodeView.ComboBox.NodeTypes.Label")); //$NON-NLS-1$
 		nodeTypeSelector.setItems(NodeType.values());
 		nodeTypeSelector.setValue(NodeType.IntermediateNode);
 		nodeTypeSelector.addValueChangeListener(change ->

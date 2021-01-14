@@ -58,8 +58,7 @@ public class Contact extends AbstractEntity implements Cloneable, Serializable
 
 	private LocalDateTime timestamp = LocalDateTime.now();
 
-	private Boolean doChecks;
-
-	private String someText;
+	private Boolean checkResult = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
+	private String acceptableReturnCodes;
 
 }

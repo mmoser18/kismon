@@ -51,8 +51,8 @@ public class ContactForm extends FormLayout
 	// experimental stuff / bug reproducers
 	DateTimePicker timestamp;
 
-	Checkbox doChecks = new Checkbox("Check"); //$NON-NLS-1$
-	TextField someText = new TextField("Text"); //$NON-NLS-1$
+	Checkbox checkResult = new Checkbox("Check"); //$NON-NLS-1$
+	TextField acceptableReturnCodes = new TextField("Text"); //$NON-NLS-1$
 
 	VerticalLayout fields;
 
@@ -94,24 +94,33 @@ public class ContactForm extends FormLayout
 
 		this.binder.forField(this.timestamp).bind(Contact::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
-		Binder.Binding<Contact, Boolean> doChecksBinding = // memorize the binding below so we can re-trigger it
-			this.binder.forField(this.doChecks)
-				.withValidator(c -> (c == this.someText.getValue().isEmpty()),
-				               "If checked then text must contain a value") //$NON-NLS-1$
-				.bind(Contact::getDoChecks, Contact::setDoChecks);
+		// we cross-link the validators of the checkResult-checkbox and the acceptableReturnCodes-input field:
+		Binder.Binding<Contact, Boolean> checkResultBinding = // memorize the binding below so we can re-trigger it
+			this.binder.forField(this.checkResult)
+				.withValidator(check -> {
+									boolean valid = (check != this.acceptableReturnCodes.getValue().isEmpty());
+									log.trace("checkResult-validator: {}", valid); //$NON-NLS-1$
+									return valid;
+								},
+				               Messages.getString("HTTPConnectionForm.CheckResult.ValidationErrorMsg")) //$NON-NLS-1$
+				.bind(Contact::getCheckResult, Contact::setCheckResult);
 
-		Binder.Binding<Contact, String> someTextBinding = // memorize the binding below so we can re-trigger it
-			this.binder.forField(this.someText)
-				.withValidator(t -> this.doChecks.isEnabled() ? t.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : t.isEmpty(), //$NON-NLS-1$
-				               "Text must contain a list of three-digit numbers") //$NON-NLS-1$
-				.bind(Contact::getSomeText, Contact::setSomeText);
+		Binder.Binding<Contact, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
+			this.binder.forField(this.acceptableReturnCodes)
+				.withValidator(text -> {
+									boolean valid = this.checkResult.getValue() ? text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : text.isEmpty(); //$NON-NLS-1$
+									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
+									return valid;
+								},
+				               (context) -> Messages.getString(this.checkResult.getValue() ? "Value must be a (comma-separated list of) 3-digit integer(s)" : "Field should be empty")) //$NON-NLS-1$ //$NON-NLS-2$
+				.bind(Contact::getAcceptableReturnCodes, Contact::setAcceptableReturnCodes);
 
-		this.doChecks.addValueChangeListener(event -> someTextBinding.validate());
-		this.someText.addValueChangeListener(event -> doChecksBinding.validate());
+		this.checkResult.addValueChangeListener(event -> acceptableReturnCodesBinding.validate());
+		this.acceptableReturnCodes.addValueChangeListener(event -> checkResultBinding.validate());
 
 		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status
 		                                 , this.timestamp
-		                                 , this.doChecks, this.someText
+		                                 , this.checkResult, this.acceptableReturnCodes
 		                                 );
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();

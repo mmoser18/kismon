@@ -30,7 +30,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	static final String ResponseStatusCodeClassName = "node-form-field-response-status"; //$NON-NLS-1$
 	static final String ResponseHeadersClassName  = "node-form-field-response-headers"; //$NON-NLS-1$
 	static final String ResponseBodyClassName     = "node-form-field-response-body"; //$NON-NLS-1$
-	static final String AcceptableResturnCodesClassName = "node-form-field-acceptable-return-code"; //$NON-NLS-1$
+	static final String AcceptableReturnCodesClassName = "node-form-field-acceptable-return-codes"; //$NON-NLS-1$
 
 	protected ComboBox<HTTP_Method> method;
 
@@ -112,7 +112,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.responseStatusCode).bind(HTTPConnection::getResponseStatusCode, null);
 
-		HorizontalLayout responseDetailsFields = new HorizontalLayout(this.responseStatusCode, this.duration/*, this.timestamp*/);
+		HorizontalLayout responseDetailsFields = new HorizontalLayout(this.responseStatusCode, this.duration, this.timestamp);
 		responseDetailsFields.addClassName(CombinedClassName);
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
@@ -140,24 +140,22 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.binder.forField(this.responseBody).bind(HTTPConnection::getResponseBodyAsString, null);
 
 		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
-		this.acceptableReturnCodes.setClassName(AcceptableResturnCodesClassName);
+		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
 		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
 
-		Binder.Binding<N, Boolean> checkResultBinding = // memorize the binding below so we can re-trigger it
-			this.binder.forField(this.checkResult)
-				.withValidator(check -> (check == this.acceptableReturnCodes.getValue().isEmpty()),
-				               Messages.getString("HTTPConnectionForm.CheckResult.ValidationErrorMsg")) //$NON-NLS-1$
-				.bind(HTTPConnection::getCheckResult, HTTPConnection::setCheckResult);
-
+		// we cross-link the validators of the checkResult-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
 			this.binder.forField(this.acceptableReturnCodes)
-				.withValidator(text -> this.checkResult.isEnabled() ? text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : text.isEmpty(), //$NON-NLS-1$
+				.withValidator(text -> {
+									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.checkResult.getValue() && text.isEmpty()); //$NON-NLS-1$
+									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
+									return valid;
+								},
 				               Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.ValidationErrorMsg")) //$NON-NLS-1$
 				.bind(HTTPConnection::getAcceptableReturnCodes, HTTPConnection::setAcceptableReturnCodes);
 
 		this.checkResult.addValueChangeListener(event -> acceptableReturnCodesBinding.validate());
-		this.acceptableReturnCodes.addValueChangeListener(event -> checkResultBinding.validate());
 
 		HorizontalLayout checkResultFields = new HorizontalLayout(this.checkResult, this.acceptableReturnCodes);
 		checkResultFields.addClassName(CombinedClassName);

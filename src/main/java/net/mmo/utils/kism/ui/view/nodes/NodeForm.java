@@ -48,6 +48,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	/** theme use for fields that should be displayed in monospaced font */
 	public static final String MonospaceTheme   = "monospace"; //$NON-NLS-1$
 
+	public static final String EMPTY_STRING = ""; //$NON-NLS-1$
+	public static final String UNDEFINED_STRING = Messages.getString("NodeForm.FieldValue.Undefined"); //$NON-NLS-1$
+
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
 	protected TextField name;

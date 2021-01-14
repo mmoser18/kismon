@@ -6,16 +6,20 @@
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
@@ -46,10 +50,12 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 
 	// these are not yet added to the form to allow subclasses to include them at appropriate places:
 	protected Button execute;
-	protected DateTimePicker timestamp;
+	protected TextField timestamp;
 	protected NumberField duration;
 
 	protected Checkbox checkResult;
+
+	protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("Connection.TimeStampFormat", "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -124,7 +130,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.duration.setStep(0.0001);
 		this.binder.forField(this.duration).bind(IPConnectionForm::getDurationInMillis, null); // nsec's --> msec's (rounded to micro-seconds)
 
-		this.timestamp = new DateTimePicker(Messages.getString("HTTPConnectionForm.TimeStamp.Label")); //$NON-NLS-1$
+		this.timestamp = new TextField(Messages.getString("HTTPConnectionForm.TimeStamp.Label")); //$NON-NLS-1$
 		this.timestamp.setClassName(TimeStampClassName);
 		this.timestamp.setThemeName(LabelPaddingTheme);
 		String languageTag = Messages.getString("HTTPConnectionForm.TimeStamp.Locale"); //$NON-NLS-1$
@@ -136,8 +142,25 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
 
 		}
-		this.timestamp.setLocale(locale != null ? locale : Locale.getDefault());
-		this.binder.forField(this.timestamp).bind(IPConnection::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
+
+		this.binder.forField(this.timestamp)
+			.withConverter(new Converter<String, LocalDateTime>()
+				{
+					private static final long serialVersionUID = 1659880075920218020L;
+					@Override
+					public Result<LocalDateTime> convertToModel(String value, ValueContext context) {
+						try {
+							return Result.ok(value == UNDEFINED_STRING ? null : LocalDateTime.parse(value, IPConnectionForm.this.dateTimeFormatter)); // == is OK because it's a constant!
+						} catch (Exception ex) {
+							return Result.error("Illegal timestamp: '" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+						}
+					}
+					@Override
+					public String convertToPresentation(LocalDateTime value, ValueContext context) {
+						return value != null ? value.format(IPConnectionForm.this.dateTimeFormatter) : UNDEFINED_STRING;
+					}
+				})
+			.bind(IPConnection::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
