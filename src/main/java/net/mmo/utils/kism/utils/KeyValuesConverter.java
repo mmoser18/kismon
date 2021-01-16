@@ -5,9 +5,9 @@
 
 package net.mmo.utils.kism.utils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,21 +24,23 @@ public class KeyValuesConverter
 	private final static String PROPERTY_SEPARATORS = "[,\t\n]"; //$NON-NLS-1$
 	private final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-]*"; //$NON-NLS-1$
 	// generating:
-	private final static String KEY_VALUE_SEPARATOR = ":"; //$NON-NLS-1$
-	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
+	public final static char KEY_VALUE_SEPARATOR = ':';
+	public final static char PROPERTY_SEPARATOR = '\n';
+	public final static String KEY_VALUE_SEPARATOR_STRING = Character.toString(KEY_VALUE_SEPARATOR);
+	public final static String PROPERTY_SEPARATOR_STRING = Character.toString(PROPERTY_SEPARATOR);
 
 	private KeyValuesConverter() {
 		// utility class only - must never be created as instance!
 	}
 
 	public static String convertMapToString(Map<? extends Object, Object> map) { // ? extends object to satisfy the Java compiler when assigning a Map<String, Object>
-		return convertMapToString(map, PROPERTY_SEPARATOR);
+		return convertMapToString(map, PROPERTY_SEPARATOR_STRING);
 	}
 	public static String convertMapToString(Map<? extends Object, Object> map, String propSeparator) { // ? extends object to satisfy the Java compiler when assigning a Map<String, Object>
-		return map.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR + entry.getValue()).collect(Collectors.joining(propSeparator));
+		return map.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR_STRING + entry.getValue()).collect(Collectors.joining(propSeparator));
 	}
-	public static Map<String, Object> convertStringToMap(String values) {
-		Map<String, Object> map = new HashMap<>();
+	public static TreeMap<String, Object> convertStringToMap(String values) {
+		TreeMap<String, Object> map = new TreeMap<>();
 		log.trace("convertStringToMap(\"{}\")", values); //$NON-NLS-1$
 		for (String entry: values.split(PROPERTY_SEPARATORS)) {
 			if (!entry.isBlank()) {

@@ -2,16 +2,13 @@
 package net.mmo.utils.kism.ui.view.list;
 
 import java.util.List;
-import java.util.Locale;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,7 +22,6 @@ import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Company;
 import net.mmo.utils.kism.entities.Contact;
-import net.mmo.utils.kism.ui.view.nodes.connection_forms.Messages;
 
 @Slf4j
 public class ContactForm extends FormLayout
@@ -48,11 +44,11 @@ public class ContactForm extends FormLayout
 	ComboBox<Contact.Status> status = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Status.Label")); //$NON-NLS-1$
 	ComboBox<Company> company = new ComboBox<>(Messages.getString("ContactForm.ComboBox.Company.Label")); //$NON-NLS-1$
 
-	// experimental stuff / bug reproducers
-	DateTimePicker timestamp;
-
-	Checkbox checkResult = new Checkbox("Check"); //$NON-NLS-1$
-	TextField acceptableReturnCodes = new TextField("Text"); //$NON-NLS-1$
+//	// experimental stuff / bug reproducers
+//	DateTimePicker timestamp;
+//
+//	Checkbox checkResult = new Checkbox("Check"); //$NON-NLS-1$
+//	TextField acceptableReturnCodes = new TextField("Text"); //$NON-NLS-1$
 
 	VerticalLayout fields;
 
@@ -63,7 +59,6 @@ public class ContactForm extends FormLayout
 	private Contact contact;
 	Binder<Contact> binder = new BeanValidationBinder<>(Contact.class); // a Binder that is aware of bean validation annotations
 
-	@SuppressWarnings("null")
 	public ContactForm(List<Company> companies) {
 		log.debug("Creating ContactForm:"); //$NON-NLS-1$
 		addClassName(ViewClassName);
@@ -79,48 +74,48 @@ public class ContactForm extends FormLayout
 		this.status.setItems(Contact.Status.values());
 		this.status.addClassName(StatusClassName);
 
-		this.timestamp = new DateTimePicker(Messages.getString("ContactForm.TimeStamp.Label")); //$NON-NLS-1$
-		Locale locale = null;
-//		String languageTag = Messages.getString("HTTPConnectionForm.TimeStamp.Locale"); //$NON-NLS-1$
-//		try {
-//			locale = Locale.forLanguageTag(languageTag);
-//			log.debug("Locale for '{}': '{}'", languageTag, locale); //$NON-NLS-1$
-//		} catch (Exception ex) {
-//			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
+//		this.timestamp = new DateTimePicker(Messages.getString("ContactForm.TimeStamp.Label")); //$NON-NLS-1$
+//		Locale locale = null;
+////		String languageTag = Messages.getString("HTTPConnectionForm.TimeStamp.Locale"); //$NON-NLS-1$
+////		try {
+////			locale = Locale.forLanguageTag(languageTag);
+////			log.debug("Locale for '{}': '{}'", languageTag, locale); //$NON-NLS-1$
+////		} catch (Exception ex) {
+////			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
+////
+////		}
+//		this.timestamp.setLocale(locale != null ? locale : Locale.getDefault());
 //
-//		}
-		this.timestamp.setLocale(locale != null ? locale : Locale.getDefault());
-
-
-		this.binder.forField(this.timestamp).bind(Contact::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
-
-		// we cross-link the validators of the checkResult-checkbox and the acceptableReturnCodes-input field:
-		Binder.Binding<Contact, Boolean> checkResultBinding = // memorize the binding below so we can re-trigger it
-			this.binder.forField(this.checkResult)
-				.withValidator(check -> {
-									boolean valid = (check != this.acceptableReturnCodes.getValue().isEmpty());
-									log.trace("checkResult-validator: {}", valid); //$NON-NLS-1$
-									return valid;
-								},
-				               Messages.getString("HTTPConnectionForm.CheckResult.ValidationErrorMsg")) //$NON-NLS-1$
-				.bind(Contact::getCheckResult, Contact::setCheckResult);
-
-		Binder.Binding<Contact, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
-			this.binder.forField(this.acceptableReturnCodes)
-				.withValidator(text -> {
-									boolean valid = this.checkResult.getValue() ? text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : text.isEmpty(); //$NON-NLS-1$
-									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
-									return valid;
-								},
-				               (context) -> Messages.getString(this.checkResult.getValue() ? "Value must be a (comma-separated list of) 3-digit integer(s)" : "Field should be empty")) //$NON-NLS-1$ //$NON-NLS-2$
-				.bind(Contact::getAcceptableReturnCodes, Contact::setAcceptableReturnCodes);
-
-		this.checkResult.addValueChangeListener(event -> acceptableReturnCodesBinding.validate());
-		this.acceptableReturnCodes.addValueChangeListener(event -> checkResultBinding.validate());
+//
+//		this.binder.forField(this.timestamp).bind(Contact::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
+//
+//		// we cross-link the validators of the checkResult-checkbox and the acceptableReturnCodes-input field:
+//		Binder.Binding<Contact, Boolean> checkResultBinding = // memorize the binding below so we can re-trigger it
+//			this.binder.forField(this.checkResult)
+//				.withValidator(check -> {
+//									boolean valid = (check != this.acceptableReturnCodes.getValue().isEmpty());
+//									log.trace("checkResult-validator: {}", valid); //$NON-NLS-1$
+//									return valid;
+//								},
+//				               Messages.getString("HTTPConnectionForm.CheckResult.ValidationErrorMsg")) //$NON-NLS-1$
+//				.bind(Contact::getCheckResult, Contact::setCheckResult);
+//
+//		Binder.Binding<Contact, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
+//			this.binder.forField(this.acceptableReturnCodes)
+//				.withValidator(text -> {
+//									boolean valid = this.checkResult.getValue() ? text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") : text.isEmpty(); //$NON-NLS-1$
+//									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
+//									return valid;
+//								},
+//				               (context) -> Messages.getString(this.checkResult.getValue() ? "Value must be a (comma-separated list of) 3-digit integer(s)" : "Field should be empty")) //$NON-NLS-1$ //$NON-NLS-2$
+//				.bind(Contact::getAcceptableReturnCodes, Contact::setAcceptableReturnCodes);
+//
+//		this.checkResult.addValueChangeListener(event -> acceptableReturnCodesBinding.validate());
+//		this.acceptableReturnCodes.addValueChangeListener(event -> checkResultBinding.validate());
 
 		this.fields = new VerticalLayout(this.firstName, this.lastName, this.email, this.company, this.status
-		                                 , this.timestamp
-		                                 , this.checkResult, this.acceptableReturnCodes
+//		                                 , this.timestamp
+//		                                 , this.checkResult, this.acceptableReturnCodes
 		                                 );
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();

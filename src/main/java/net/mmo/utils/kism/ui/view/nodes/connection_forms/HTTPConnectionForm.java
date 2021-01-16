@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
+
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -23,14 +25,14 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
-	static final String MethodClassName   = "node-form-field-method"; //$NON-NLS-1$
-	static final String RequestHeadersClassName  = "node-form-field-request-headers"; //$NON-NLS-1$
-	static final String RequestBodyClassName     = "node-form-field-request-body"; //$NON-NLS-1$
+	static final String MethodClassName             = NodeFormField + "method"; //$NON-NLS-1$
+	static final String RequestHeadersClassName     = NodeFormField + "request-headers"; //$NON-NLS-1$
+	static final String RequestBodyClassName        = NodeFormField + "request-body"; //$NON-NLS-1$
 
-	static final String ResponseStatusCodeClassName = "node-form-field-response-status"; //$NON-NLS-1$
-	static final String ResponseHeadersClassName  = "node-form-field-response-headers"; //$NON-NLS-1$
-	static final String ResponseBodyClassName     = "node-form-field-response-body"; //$NON-NLS-1$
-	static final String AcceptableReturnCodesClassName = "node-form-field-acceptable-return-codes"; //$NON-NLS-1$
+	static final String ResponseStatusCodeClassName = NodeFormField + "response-status"; //$NON-NLS-1$
+	static final String ResponseHeadersClassName    = NodeFormField + "response-headers"; //$NON-NLS-1$
+	static final String ResponseBodyClassName       = NodeFormField + "response-body"; //$NON-NLS-1$
+	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
 
 	protected ComboBox<HTTP_Method> method;
 
@@ -160,13 +162,14 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		HorizontalLayout checkResultFields = new HorizontalLayout(this.checkResult, this.acceptableReturnCodes);
 		checkResultFields.addClassName(CombinedClassName);
 
-		this.fields.add(this.headers, this.payload,
-		                methodAndExecuteButton,
-		                new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
-		                responseDetailsFields,
-		                this.requestHeaders, this.requestBody,
-		                this.responseHeaders, this.responseBody,
-		                checkResultFields);
+		this.fields.add(this.headers, this.payload
+		                ,methodAndExecuteButton
+		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
+		                ,responseDetailsFields
+		                ,this.requestHeaders, this.requestBody
+		                ,this.responseHeaders, this.responseBody
+//		                ,this.resultChecker
+		                );
 	}
 
 	@Override

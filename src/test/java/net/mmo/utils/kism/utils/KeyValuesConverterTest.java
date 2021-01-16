@@ -15,6 +15,7 @@ public class KeyValuesConverterTest
 {
 	final static String SIMPLE_CASE  = "foo:bar,bar:foo,baz:else";
 	final static String COMPLEX_CASE = "foo-bar:xyz,bar_foo:zyx+abc\tbaz:some;thing\nxyz:else${abc}";
+	final static String COMPLEX_CASE_SORTED = "bar_foo:zyx+abc\tbaz:some;thing\nfoo-bar:xyz,xyz:else${abc}";
 
 	@Test
 	void SimpleStringToMapTest() {
@@ -36,6 +37,8 @@ public class KeyValuesConverterTest
 	void ComplexBidrectionalTest() {
 		Map<String, Object> map = KeyValuesConverter.convertStringToMap(COMPLEX_CASE);
 		String reconverted = KeyValuesConverter.convertMapToString(map);
-		Assertions.assertEquals(COMPLEX_CASE, reconverted);
+		Assertions.assertEquals(COMPLEX_CASE_SORTED
+		                        .replace('\t',KeyValuesConverter.PROPERTY_SEPARATOR)
+		                        .replace(',',KeyValuesConverter.PROPERTY_SEPARATOR), reconverted);
 	}
 }

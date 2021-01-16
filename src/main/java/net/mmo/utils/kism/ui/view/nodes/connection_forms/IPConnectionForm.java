@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
+
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,8 +24,10 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.IPConnection;
+import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
+import net.mmo.utils.kism.ui.view.nodes.ResultCheckerForm;
 import net.mmo.utils.kism.utils.AppProperties;
 
 @Slf4j
@@ -31,15 +35,17 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
-	static final String EnabledClassName = "node-form-field-enabled"; //$NON-NLS-1$
-	static final String PeriodClassName  = "node-form-field-period"; //$NON-NLS-1$
-	static final String TimeoutClassName = "node-form-field-timeout"; //$NON-NLS-1$
+	static final String EnabledClassName = NodeFormField + "enabled"; //$NON-NLS-1$
+	static final String PeriodClassName  = NodeFormField + "period"; //$NON-NLS-1$
+	static final String TimeoutClassName = NodeFormField + "timeout"; //$NON-NLS-1$
 
-	static final String URLClassName          = "node-form-field-url"; //$NON-NLS-1$
-	static final String ResultingURLClassName = "node-form-field-resulting-url"; //$NON-NLS-1$
-	static final String ExecuteClassName      = "node-form-button-execute"; //$NON-NLS-1$
-	static final String DurationClassName     = "node-form-field-duration"; //$NON-NLS-1$
-	static final String TimeStampClassName     = "node-form-field-timestamp"; //$NON-NLS-1$
+	static final String URLClassName           = NodeFormField + "url"; //$NON-NLS-1$
+	static final String ResultingURLClassName  = NodeFormField + "resulting-url"; //$NON-NLS-1$
+	static final String ExecuteClassName       = NodeFormField + "execute"; //$NON-NLS-1$
+	static final String DurationClassName      = NodeFormField + "duration"; //$NON-NLS-1$
+	static final String TimeStampClassName     = NodeFormField + "timestamp"; //$NON-NLS-1$
+
+	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
 
 	protected Checkbox enabled;
 	protected IntegerField period;
@@ -53,9 +59,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected TextField timestamp;
 	protected NumberField duration;
 
-	protected Checkbox checkResult;
-
 	protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("Connection.TimeStampFormat", "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$ //$NON-NLS-2$
+
+	protected Checkbox checkResult;
+	protected ResultCheckerForm resultChecker;
+
 
 	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -150,20 +158,21 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 					@Override
 					public Result<LocalDateTime> convertToModel(String value, ValueContext context) {
 						try {
-							return Result.ok(value == UNDEFINED_STRING ? null : LocalDateTime.parse(value, IPConnectionForm.this.dateTimeFormatter)); // == is OK because it's a constant!
+							return Result.ok(value == UIConstants.UNDEFINED_STRING ? null : LocalDateTime.parse(value, IPConnectionForm.this.dateTimeFormatter)); // == is OK because it's a constant!
 						} catch (Exception ex) {
 							return Result.error("Illegal timestamp: '" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					}
 					@Override
 					public String convertToPresentation(LocalDateTime value, ValueContext context) {
-						return value != null ? value.format(IPConnectionForm.this.dateTimeFormatter) : UNDEFINED_STRING;
+						return value != null ? value.format(IPConnectionForm.this.dateTimeFormatter) : UIConstants.UNDEFINED_STRING;
 					}
 				})
 			.bind(IPConnection::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
+		this.execute.setThemeName(LabelPaddingTheme);
 		this.binder.addStatusChangeListener(e ->
 			{
 				log.info("binder statusChange: {} / {}", e, e.getSource().getStatusLabel()); //$NON-NLS-1$
@@ -185,9 +194,28 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			});
 
 		this.checkResult = new Checkbox(Messages.getString("IPConnectionForm.CheckResult.Label")); //$NON-NLS-1$
-		this.checkResult.addClassName(EnabledClassName);
+		this.checkResult.setClassName(EnabledClassName);
+		this.checkResult.addValueChangeListener(event -> this.resultChecker.setVisible(event.getValue()));
+
+		this.resultChecker = new ResultCheckerForm();
+		this.resultChecker.setClassName(ResultCheckerClassName);
+
+		// this.binder.withProperty("resultChecker", IPConnection::getResultChecker); //$NON-NLS-1$
 
 		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
+	}
+
+	@Override
+	public boolean setNode(N node) {
+		boolean res = super.setNode(node);
+		if (node != null) {
+			this.resultChecker.setResultChecker(node.getResultChecker());
+			this.resultChecker.setVisible(node.getCheckResult());
+		} else {
+			this.resultChecker.setResultChecker(null);
+			this.resultChecker.setVisible(false);
+		}
+		return res;
 	}
 
 	protected String updateResultingUrl(String newValue) {

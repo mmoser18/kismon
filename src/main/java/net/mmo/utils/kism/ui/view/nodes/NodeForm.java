@@ -1,6 +1,8 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
+import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
+
 import java.util.function.BiConsumer;
 
 import com.vaadin.flow.component.ComponentEvent;
@@ -34,11 +36,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	// package visible to allow access by test classes
 	static final String ViewClassName = "node-form"; //$NON-NLS-1$
 	static final String FieldsClassName = "node-form-fields"; //$NON-NLS-1$
-	static final String NameClassName        = "node-form-field-name"; //$NON-NLS-1$
-	static final String DescriptionClassName = "node-form-field-description"; //$NON-NLS-1$
-	static final String StateClassName       = "node-form-field-state"; //$NON-NLS-1$
-	static final String ActiveClassName      = "node-form-field-active"; //$NON-NLS-1$
-	static final String PropertiesClassName  = "node-form-field-properties"; //$NON-NLS-1$
+	static final String NameClassName        = NodeFormField + "name"; //$NON-NLS-1$
+	static final String DescriptionClassName = NodeFormField + "description"; //$NON-NLS-1$
+	static final String StateClassName       = NodeFormField + "state"; //$NON-NLS-1$
+	static final String ActiveClassName      = NodeFormField + "active"; //$NON-NLS-1$
+	static final String PropertiesClassName  = NodeFormField + "properties"; //$NON-NLS-1$
 
 	/** class name to mark combined fields */
 	public static final String CombinedClassName    = "node-form-field-combined"; //$NON-NLS-1$
@@ -47,9 +49,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public static final String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
 	/** theme use for fields that should be displayed in monospaced font */
 	public static final String MonospaceTheme   = "monospace"; //$NON-NLS-1$
-
-	public static final String EMPTY_STRING = ""; //$NON-NLS-1$
-	public static final String UNDEFINED_STRING = Messages.getString("NodeForm.FieldValue.Undefined"); //$NON-NLS-1$
 
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 

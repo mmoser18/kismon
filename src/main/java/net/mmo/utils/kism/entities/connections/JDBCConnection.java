@@ -19,9 +19,9 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.ResultChecker;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
-import net.mmo.utils.kism.utils.Messages;
 
 @Setter
 @Getter
@@ -37,25 +37,36 @@ public class JDBCConnection extends IPConnection
 
 	public static final String RESULTSET_ROW_SEPARATOR = AppProperties.getProperties().getProperty("JDBC.ResultSet.Row.Separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	public static final String RESULTSET_COL_SEPARATOR = AppProperties.getProperties().getProperty("JDBC.ResultSet.Col.Separator", "\t"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final String RESULTSET_NR_RESULTS = AppProperties.getProperties().getProperty("JDBC.ResultSet.NrRresults", "#results: {}"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static final String RESULTSET_NO_RESULTS = AppProperties.getProperties().getProperty("JDBC.ResultSet.NoResults", "no results"); //$NON-NLS-1$ //$NON-NLS-2$
 
 	protected String uid;
 	protected String pwd;
 
 	protected String query;
 
-	protected String resultingQuery;
+	protected ResultChecker checker;
 
-	protected String driverName = "oracle.jdbc.driver.OracleDriver"; //$NON-NLS-1$
+	protected String driverName =
+		AppProperties.getProperties().getProperty("JDBC.DriverName", //$NON-NLS-1$
+		                                          "oracle.jdbc.driver.OracleDriver"); //$NON-NLS-1$
+
+	// transient stuff:
 
 	@JsonIgnore
 	transient protected Driver driver;
 	@JsonIgnore
 	transient protected Connection connection;
 
+	// result stuff - later to be collected into some "history"-object:
+
+	@JsonIgnore
+	protected String resultingQuery;
 	@JsonIgnore
 	transient protected String responseStatus;
 	@JsonIgnore
 	transient protected String responsePayload;
+
 
 	@SuppressWarnings("unused")
 	private JDBCConnection() { // required for deserialization
@@ -147,7 +158,7 @@ public class JDBCConnection extends IPConnection
 		if (isRS) { // result is a ResultSet
 			convertResultSet(statement);
 //			log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-//	         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+//	                 this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
 			deriveState();
 		} else { // result is not a ResultSet but an update count or there are no results
 			int updates = statement.getUpdateCount();
@@ -155,8 +166,8 @@ public class JDBCConnection extends IPConnection
 			State res = updates >= 0 ? State.OK : State.FAILED;
 			setResponseStatus(res.name());
 			setResponsePayload(res == State.OK
-							   ? String.format(Messages.getString("JDBCConnection.Result.Updates"), updates) //$NON-NLS-1$
-							   : String.format(Messages.getString("JDBCConnection.Result.NoResult"))); //$NON-NLS-1$
+							   ? String.format(RESULTSET_NR_RESULTS, updates)
+							   : String.format(RESULTSET_NO_RESULTS));
 			this.setState(res);
 		}
 	}

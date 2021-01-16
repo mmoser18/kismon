@@ -34,7 +34,6 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.ui.view.nodes.connection_forms.Messages;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Entity
@@ -71,7 +70,7 @@ abstract public class HTTPConnection extends IPConnection
 	public final static String PROPERTYNAME_RESPONSE_BODY        = "responseBody"; //$NON-NLS-1$
 
 	private final static byte[] EMPTY_BODY = new byte[0];
-	private final static String VALUE_UNDEFINED = Messages.getString("HTTPConnectionForm.RequestHeaders.Undefined"); //$NON-NLS-1$
+	private final static String VALUE_UNDEFINED = ""; //$NON-NLS-1$
 
 	private final static String KEY_VALUES_SEPARATOR = ":"; //$NON-NLS-1$
 	private final static String VALUES_SEPARATOR     = ","; //$NON-NLS-1$
@@ -97,16 +96,19 @@ abstract public class HTTPConnection extends IPConnection
 
 	protected String headers;
 	protected String payload;
+	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
-// TODO: the below should be kept as history list:
-//	transient protected history = new ArrayList();
+	// transient stuff:
 
 	@JsonIgnore
 	transient protected HttpClient client;
 	@JsonIgnore
 	transient protected HttpRequest request;
 
-	// request:
+	// result stuff:
+	// TODO: the below should be kept into some kind of "history"-list:
+	//	transient protected history = new ArrayList();
+
 	@JsonIgnore // TODO just for now!
 	transient protected HttpHeaders requestHeaders;
 	@JsonIgnore
@@ -119,8 +121,6 @@ abstract public class HTTPConnection extends IPConnection
 	transient protected HttpHeaders responseHeaders;
 	@JsonIgnore
 	transient protected byte[] responseBody;
-
-	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
 
 	public HTTPConnection() { // required for deserialization
@@ -383,7 +383,7 @@ abstract public class HTTPConnection extends IPConnection
 		setRequestBody(convertBodyFromString(value, extractRequestCharset()));
 	}
 	private static byte[] convertBodyFromString(String value, Charset charset) {
-		return (value != null ? value.getBytes(charset) : null);
+		return (value != null ? value.getBytes(charset) : EMPTY_BODY);
 	}
 
 	@Override

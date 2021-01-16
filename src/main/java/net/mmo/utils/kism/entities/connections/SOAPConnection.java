@@ -24,7 +24,12 @@ public class SOAPConnection extends HTTPConnection
 
 	public SOAPConnection(String name, String description) {
 		super(name, description);
-		this.method = HTTP_Method.POST; // SOAP-requests are always POSTs!
+		setMethod(HTTP_Method.POST); // SOAP-requests are *always* POSTs!
 	}
 
+	@Override
+	public void setMethod(HTTP_Method method) {
+		if (method != HTTP_Method.POST) throw new IllegalArgumentException("SOAP-requests can only be POSTs!"); //$NON-NLS-1$
+		this.method = method;
+	}
 }

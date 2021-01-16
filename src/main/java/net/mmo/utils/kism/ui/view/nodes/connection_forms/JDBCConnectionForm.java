@@ -5,24 +5,28 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
+
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
+import net.mmo.utils.kism.ui.view.nodes.ResultCheckerForm;
 
 @Slf4j
 public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 {
 	private static final long serialVersionUID = 5726368043436831511L;
 
-	static final String UidClassName   = "node-form-field-uid"; //$NON-NLS-1$
-	static final String PwdClassName   = "node-form-field-pwd"; //$NON-NLS-1$
-	static final String QueryClassName = "node-form-field-query"; //$NON-NLS-1$
-	static final String ResultingQueryClassName = "node-form-field-resulting-query"; //$NON-NLS-1$
-	static final String DriverNameClassName = "node-form-field-drivername"; //$NON-NLS-1$
-	static final String DbResponseClassName = "node-form-field-db-response"; //$NON-NLS-1$
+	static final String UidClassName   = NodeFormField + "uid"; //$NON-NLS-1$
+	static final String PwdClassName   = NodeFormField + "pwd"; //$NON-NLS-1$
+	static final String QueryClassName = NodeFormField + "query"; //$NON-NLS-1$
+	static final String ResultingQueryClassName = NodeFormField + "resulting-query"; //$NON-NLS-1$
+	static final String DriverNameClassName = NodeFormField + "drivername"; //$NON-NLS-1$
+	static final String DbResponseClassName = NodeFormField + "db-response"; //$NON-NLS-1$
 
 	protected TextField uid;
 	protected TextField pwd;
@@ -34,7 +38,6 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 
 	protected TextField responseStatus;
 	protected TextArea  responsePayload;
-
 
 	public JDBCConnectionForm() {
 		super(JDBCConnection.class);
@@ -86,7 +89,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.responseStatus.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseStatus).bind(JDBCConnection::getResponseStatus, null);
 
-		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration/*, this.timestamp*/);
+		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration, this.timestamp);
 		responseResults.addClassName(CombinedClassName);
 
 		this.responsePayload = new TextArea(Messages.getString("JDBCConnectionForm.ResponsePayload.Label")); //$NON-NLS-1$
@@ -95,14 +98,22 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.responsePayload.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
 
-		this.fields.add(uidAndPwd,
-		                this.query,
-		                this.resultingQuery,
-		                this.execute,
-		                this.driverName,
-		                new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
-		                responseResults,
-		                this.responsePayload);
+		this.resultChecker = new ResultCheckerForm();
+		this.resultChecker.setClassName(CombinedClassName);
+
+		VerticalLayout checkResults = new VerticalLayout(this.checkResult, this.resultChecker);
+		checkResults.setClassName(CombinedClassName);
+
+		this.fields.add(uidAndPwd
+		                ,this.query
+		                ,this.resultingQuery
+		                ,this.execute
+		                ,this.driverName
+		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
+		                ,responseResults
+		                ,this.responsePayload
+		                ,checkResults
+		                );
 	}
 
 	protected void updateResultingQuery(String newValue) {

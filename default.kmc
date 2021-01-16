@@ -31,23 +31,8 @@
       "timeout" : 45,
       "url" : "http://localhost:8080/${foo}",
       "checkResult" : true,
+      "resultChecker" : null,
       "duration" : 13124900,
-      "timestamp" : {
-        "nano" : 987520400,
-        "year" : 2021,
-        "monthValue" : 1,
-        "dayOfMonth" : 14,
-        "hour" : 23,
-        "minute" : 3,
-        "second" : 6,
-        "month" : "JANUARY",
-        "dayOfWeek" : "THURSDAY",
-        "dayOfYear" : 14,
-        "chronology" : {
-          "id" : "ISO",
-          "calendarType" : "iso8601"
-        }
-      },
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -68,8 +53,8 @@
       "timeout" : 45,
       "url" : "http://localhost:8080",
       "checkResult" : false,
+      "resultChecker" : null,
       "duration" : 0,
-      "timestamp" : null,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -93,12 +78,12 @@
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
       "checkResult" : false,
+      "resultChecker" : null,
       "duration" : 9182000,
-      "timestamp" : null,
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
-      "resultingQuery" : "select * from REF_ANREDE",
+      "checker" : null,
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ]
   }, {

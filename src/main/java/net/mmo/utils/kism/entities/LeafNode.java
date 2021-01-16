@@ -35,4 +35,5 @@ public class LeafNode extends Node
 	public LeafNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
 	}
+
 }

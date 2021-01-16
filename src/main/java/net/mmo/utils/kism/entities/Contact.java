@@ -2,7 +2,6 @@
 package net.mmo.utils.kism.entities;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -56,9 +55,9 @@ public class Contact extends AbstractEntity implements Cloneable, Serializable
 	@NotEmpty
 	private String email = ""; //$NON-NLS-1$
 
-	private LocalDateTime timestamp = LocalDateTime.now();
-
-	private Boolean checkResult = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
-	private String acceptableReturnCodes;
+//	private LocalDateTime timestamp = LocalDateTime.now();
+//
+//	private Boolean checkResult = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
+//	private String acceptableReturnCodes;
 
 }

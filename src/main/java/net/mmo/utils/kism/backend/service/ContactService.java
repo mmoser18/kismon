@@ -88,8 +88,6 @@ public class ContactService
 			                            	   String email = (contact.getFirstName() + "." + contact.getLastName() //$NON-NLS-1$
 			                            	                  + "@" + contact.getCompany().getName().replaceAll("[\\s-]", "") + ".com").toLowerCase(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			                            	   contact.setEmail(email);
-//			                            	   contact.setCheck(r.nextBoolean());
-//			                            	   contact.setText(Integer.toString(r.nextInt()));
 			                            	   return contact;
 			                               })
 			                               .collect(Collectors.toList()));

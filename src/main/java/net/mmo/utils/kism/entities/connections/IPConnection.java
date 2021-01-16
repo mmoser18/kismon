@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -21,6 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.LeafNode;
+import net.mmo.utils.kism.entities.ResultChecker;
 import net.mmo.utils.kism.utils.AppProperties;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
@@ -51,9 +54,6 @@ abstract public class IPConnection extends LeafNode
 	@NotBlank
 	protected String url = "http://www.example.com:8080";
 
-	@JsonIgnore
-	transient protected String resultingUrl;
-
 //	protected String proxyHost;
 //	protected int    proxyPort;
 //	protected String proxyUid;
@@ -61,16 +61,36 @@ abstract public class IPConnection extends LeafNode
 
 	protected Boolean checkResult = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
 
-	/** common response fields: */
-	transient protected long duration;
-	transient protected LocalDateTime timestamp;
+	@OneToOne
+	@JoinColumn(name = "result_checker_id")
+	protected ResultChecker resultChecker;
 
-	protected static boolean syncRequests = Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
+	protected static boolean syncRequests =
+		Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
+
+	// transient stuff:
+
+	@JsonIgnore
+	transient protected String resultingUrl;
 
 	@JsonIgnore
 	transient protected ExecutorService interactiveExecutor;
 	@JsonIgnore
 	transient protected ExecutorService periodicExecutor;
+
+	// result stuff:
+	// TODO: the below should be kept into some kind of "history"-list:
+	//	transient protected history = new ArrayList();
+
+	/** common response fields: */
+
+	//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
+//	@JsonSerialize(using = LocalDateTimeSerializer.class)
+//	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+	@JsonIgnore
+	transient protected LocalDateTime timestamp;
+
+	transient protected long duration;
 
 
 	/**required for deserialization only */
@@ -144,6 +164,7 @@ abstract public class IPConnection extends LeafNode
 			.append(", checkResult:").append(this.checkResult) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
+//			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

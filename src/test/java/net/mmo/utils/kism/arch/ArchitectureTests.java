@@ -73,9 +73,13 @@ public class ArchitectureTests
 			.layer("Main").definedBy("net.mmo.utils.kism")
 			.layer("Backend").definedBy("..backend..")
 			.layer("UI").definedBy("..ui..")
+			.layer("UINodes").definedBy("..ui.view.nodes")
+			.layer("UINodesConnections").definedBy("..ui.view.nodes.connection_forms..")
 			.layer("Security").definedBy("..security")
 			.whereLayer("Main").mayNotBeAccessedByAnyLayer()
 			.whereLayer("UI").mayNotBeAccessedByAnyLayer()
+			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections")
+			// .whereLayer("UINodesConnections").mayNotBeAccessedByAnyLayer() // violated by FormFactory but that's OK
 			.whereLayer("Security").mayNotBeAccessedByAnyLayer()
 			.whereLayer("Backend").mayOnlyBeAccessedByLayers("UI")
 			;

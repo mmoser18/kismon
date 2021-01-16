@@ -1,0 +1,72 @@
+/**
+ * @author Michael Moser (michael.moser@freesurf.ch)
+ * @since 15.01.2021
+ */
+
+package net.mmo.utils.kism.entities;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+import javax.persistence.Entity;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Setter
+@Getter
+public class ResultChecker extends AbstractEntity implements Cloneable, Serializable
+{
+	private static final long serialVersionUID = -2258681869832385199L;
+
+	public enum Condition {
+		Equals,
+		EqualsIgnoreCase,
+		StartsWith,
+		StartsWithIgnoreCase,
+		EndsWith,
+		EndsWithIgnoreCase,
+		Contains,
+		ContainsIgnoreCase,
+		Matches,
+		;
+	}
+
+	protected Condition condition;
+	protected String operand;
+
+	public boolean checkResult(String value) {
+		switch (this.condition) {
+		case Equals:
+			return Objects.equals(value, this.operand);
+		case EqualsIgnoreCase:
+			return value != null && value.equalsIgnoreCase(this.operand);
+		case StartsWith:
+			return value != null && value.startsWith(this.operand);
+		case StartsWithIgnoreCase:
+			return value != null && this.operand != null && value.toUpperCase().startsWith(this.operand.toUpperCase());
+		case EndsWith:
+			return value != null && value.endsWith(this.operand);
+		case EndsWithIgnoreCase:
+			return value != null && this.operand != null && value.toUpperCase().endsWith(this.operand.toUpperCase());
+		case Contains:
+			return value != null && value.contains(this.operand);
+		case ContainsIgnoreCase:
+			return value != null && this.operand != null && value.toUpperCase().contains(this.operand.toUpperCase());
+		case Matches:
+			return value != null && value.matches(this.operand); // we might want to cache the regexp some day...
+		default:
+			throw new RuntimeException("Unexpected Condition: " + this.condition); //$NON-NLS-1$
+		}
+	}
+
+	@Override
+	public String toString() {
+		return new StringBuffer(this.getClass().getSimpleName())
+			.append("{condition:").append(this.condition) //$NON-NLS-1$
+			.append(", operand:'").append(this.operand) //$NON-NLS-1$
+			.append("'}") //$NON-NLS-1$
+			.toString();
+	}
+}

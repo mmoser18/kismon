@@ -1,3 +1,11 @@
+/*
+
+<tag>
+.<class>
+#<id>
+
+*/
+
 /* List-View: */
 .list-view .list-view-content {
 	display: flex;
@@ -53,12 +61,24 @@
 	padding: 1px;
 }
 
+/* main level of node-form fields: */
 .node-view .node-form .node-form-fields {
 	padding: 2px;
 	margin-top: 15px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
 	margin-bottom: 0px;
 	align-items: stretch;
+	width: 100%;
 }
+
+/* stretch ResultCheckerForm inside node-form fields to full width: */
+.node-view .node-form .node-form-fields vaadin-vertical-layout {
+	padding: 2px;
+	margin-top: 15px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
+	margin-bottom: 0px;
+	align-items: stretch;
+	width: 100%;
+}
+
 
 vaadin-form-layout {
 	align-items: flex-start;
@@ -69,6 +89,14 @@ vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-
 	margin-bottom: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
+}
+
+vaadin-vertical-layout.label-padding {
+	margin-top: 10px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	align-items: stretch;
 }
 
 .node-form-field-combined {
