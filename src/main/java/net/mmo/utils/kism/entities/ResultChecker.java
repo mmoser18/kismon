@@ -36,26 +36,27 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	protected Condition condition;
 	protected String operand;
 
-	public boolean checkResult(String value) {
+	public boolean checkResult(Node contextNode, String value) throws Exception {
+		String resolvedOperand = (this.operand != null ? contextNode.resolveProperties(this.operand) : null);
 		switch (this.condition) {
 		case Equals:
-			return Objects.equals(value, this.operand);
+			return Objects.equals(value, resolvedOperand);
 		case EqualsIgnoreCase:
-			return value != null && value.equalsIgnoreCase(this.operand);
+			return value != null && value.equalsIgnoreCase(resolvedOperand);
 		case StartsWith:
-			return value != null && value.startsWith(this.operand);
+			return value != null && value.startsWith(resolvedOperand);
 		case StartsWithIgnoreCase:
-			return value != null && this.operand != null && value.toUpperCase().startsWith(this.operand.toUpperCase());
+			return value != null && resolvedOperand != null && value.toUpperCase().startsWith(resolvedOperand.toUpperCase());
 		case EndsWith:
-			return value != null && value.endsWith(this.operand);
+			return value != null && value.endsWith(resolvedOperand);
 		case EndsWithIgnoreCase:
-			return value != null && this.operand != null && value.toUpperCase().endsWith(this.operand.toUpperCase());
+			return value != null && resolvedOperand != null && value.toUpperCase().endsWith(resolvedOperand.toUpperCase());
 		case Contains:
-			return value != null && value.contains(this.operand);
+			return value != null && value.contains(resolvedOperand);
 		case ContainsIgnoreCase:
-			return value != null && this.operand != null && value.toUpperCase().contains(this.operand.toUpperCase());
+			return value != null && resolvedOperand != null && value.toUpperCase().contains(resolvedOperand.toUpperCase());
 		case Matches:
-			return value != null && value.matches(this.operand); // we might want to cache the regexp some day...
+			return value != null && value.matches(resolvedOperand); // we might want to cache the regexp some day...
 		default:
 			throw new RuntimeException("Unexpected Condition: " + this.condition); //$NON-NLS-1$
 		}

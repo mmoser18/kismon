@@ -10,6 +10,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.data.binder.Binder;
 import net.mmo.utils.kism.entities.ResultChecker;
 import net.mmo.utils.kism.entities.ResultChecker.Condition;
 import net.mmo.utils.kism.ui.UIConstants;
@@ -26,14 +27,19 @@ public class ResultCheckerForm extends VerticalLayout
 	protected TextArea operand;
 
 	ResultChecker resultChecker;
-//	protected Binder<ResultChecker> binder; // a Binder that is aware of bean validation annotations
+	Binder<ResultChecker> binder; // a Binder that is aware of bean validation annotations
 
 	public ResultCheckerForm() {
+		this.binder = new Binder<ResultChecker>(ResultChecker.class);
 		createFields();
 	}
 
 	public void setResultChecker(ResultChecker resultChecker) {
 		this.resultChecker = resultChecker;
+	}
+
+	public Binder<ResultChecker> getBinder() {
+		return this.binder;
 	}
 
 	private void createFields() {
@@ -46,7 +52,7 @@ public class ResultCheckerForm extends VerticalLayout
 		this.operand.addClassName(OperandClassName);
 		this.operand.setThemeName(UIConstants.LabelPaddingTheme);
 
-//		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form fields
+		this.getBinder().bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form fields
 
 		add(this.condition, this.operand);
 	}

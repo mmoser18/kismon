@@ -164,7 +164,7 @@ abstract public class IPConnection extends LeafNode
 			.append(", checkResult:").append(this.checkResult) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
-//			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
+			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

@@ -30,7 +30,7 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080/${foo}",
-      "checkResult" : true,
+      "checkResult" : false,
       "resultChecker" : null,
       "duration" : 13124900,
       "method" : "POST",
@@ -78,12 +78,14 @@
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
       "checkResult" : false,
-      "resultChecker" : null,
+      "resultChecker" : {
+        "condition" : null,
+        "operand" : ""
+      },
       "duration" : 9182000,
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
-      "checker" : null,
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ]
   }, {

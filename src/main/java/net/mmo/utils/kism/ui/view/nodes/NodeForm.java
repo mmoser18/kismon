@@ -105,6 +105,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = node;
+		this.binder.setBean(node);
 		if (node != null) {
 			this.node.setChangeListener(event ->
 				{
@@ -208,6 +209,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		return this.node;
 	}
 
+	// the following were introduced to be able to "extend" the binder with "sub-binders"
+
 	protected void readBean(N n) {
 		log.info("readBean node={}", n); //$NON-NLS-1$
 		this.binder.readBean(n);
@@ -216,6 +219,16 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected void writeBean(N n) throws ValidationException {
 		log.info("writeBean node={}", n); //$NON-NLS-1$
 		this.binder.writeBean(n);
+	}
+
+	protected boolean binderHasChanges() {
+		return this.binder.hasChanges();
+	}
+
+	// We need to prevent bean validation when there is currently no bean set or else we get
+	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
+	protected boolean binderIsValid() {
+		return this.binder.getBean() != null ? this.binder.isValid() : true;
 	}
 
 	public static String getPropertiesAsString(Node n) {
@@ -284,7 +297,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.save.setId("nodeform-save-button"); //$NON-NLS-1$
 		this.save.addClickShortcut(Key.ENTER);
 		this.save.addClickListener(event -> validateAndSave());
-		this.binder.addStatusChangeListener(e -> this.save.setEnabled(this.binder.hasChanges() && this.binder.isValid()));
+		this.binder.addStatusChangeListener(e -> this.save.setEnabled(binderHasChanges() && binderIsValid()));
 
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.delete.setId("nodeform-delete-button"); //$NON-NLS-1$

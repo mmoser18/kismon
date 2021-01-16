@@ -19,7 +19,6 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.entities.ResultChecker;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 
@@ -44,8 +43,6 @@ public class JDBCConnection extends IPConnection
 	protected String pwd;
 
 	protected String query;
-
-	protected ResultChecker checker;
 
 	protected String driverName =
 		AppProperties.getProperties().getProperty("JDBC.DriverName", //$NON-NLS-1$
@@ -132,13 +129,15 @@ public class JDBCConnection extends IPConnection
 			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);
 			long callDuration = System.nanoTime() - startTime;
-			responseReceived(callDuration, statement, isRS);
+			setDuration(callDuration);
+			log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
+			responseReceived(statement, isRS);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
-		} catch (SQLException ex) {
-			setResponseStatus(extractSqlError(ex));
+		} catch (Exception ex) {
+			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
 			setResponsePayload(String.format("Exception executing query '%s': %s", //$NON-NLS-1$
 			                                 resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
-			deriveState();
+			this.setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (this.connection != null) {
 				throw new Exception(String.format("Error sending request '%s' to %s: ", resQuery, this.connection), ex); //$NON-NLS-1$
@@ -152,13 +151,11 @@ public class JDBCConnection extends IPConnection
 		}
 	}
 
-	private void responseReceived(long callDuration, Statement statement, boolean isRS) throws SQLException {
-		log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
-		setDuration(callDuration);
+	private void responseReceived(Statement statement, boolean isRS) throws Exception {
 		if (isRS) { // result is a ResultSet
 			convertResultSet(statement);
-//			log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-//	                 this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+			log.info("response: status={} / payload=\"{}\"", //$NON-NLS-1$
+			         getResponseStatus(), getResponsePayload());
 			deriveState();
 		} else { // result is not a ResultSet but an update count or there are no results
 			int updates = statement.getUpdateCount();
@@ -222,20 +219,15 @@ public class JDBCConnection extends IPConnection
 		return errorMsg;
 	}
 
-	private void deriveState() {
-		State res = State.OK;
+	private void deriveState() throws Exception {
 		if (this.checkResult) {
-//			String acceptableCodes = (this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"); //$NON-NLS-1$
-//			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
-//			res = State.FAILED;
-//			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
-//				if (acceptable.equals(responseStatusCodeStr)) {
-//					res = State.OK;
-//					break;
-//				}
-//			}
+			if (this.resultChecker != null) {
+				setState(this.resultChecker.checkResult(this,getResponsePayload()) ? State.OK : State.FAILED);
+			} else {
+				throw new IllegalArgumentException("resultChecker == null for checkResult"); //$NON-NLS-1$
+			}
 		}
-		setState(res);
+		setState(State.OK); // if there is no check defined we consider any successful query-response as OK
 	}
 
 	@Override
