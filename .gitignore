@@ -18,8 +18,7 @@ webpack.generated.js
 /logs/
 /garage/
 /debug.log
-/src - Copy/
-/src - old/
+/src - */
 /tsconfig.json
 /types.d.ts
 /pnpmfile.js
