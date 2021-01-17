@@ -47,7 +47,7 @@ public class ContactForm extends FormLayout
 //	// experimental stuff / bug reproducers
 //	DateTimePicker timestamp;
 //
-//	Checkbox checkResult = new Checkbox("Check"); //$NON-NLS-1$
+//	Checkbox validateResponse = new Checkbox("Check"); //$NON-NLS-1$
 //	TextField acceptableReturnCodes = new TextField("Text"); //$NON-NLS-1$
 
 	VerticalLayout fields;
@@ -89,12 +89,12 @@ public class ContactForm extends FormLayout
 //
 //		this.binder.forField(this.timestamp).bind(Contact::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 //
-//		// we cross-link the validators of the checkResult-checkbox and the acceptableReturnCodes-input field:
+//		// we cross-link the validators of the validateResponse-checkbox and the acceptableReturnCodes-input field:
 //		Binder.Binding<Contact, Boolean> checkResultBinding = // memorize the binding below so we can re-trigger it
 //			this.binder.forField(this.checkResult)
 //				.withValidator(check -> {
 //									boolean valid = (check != this.acceptableReturnCodes.getValue().isEmpty());
-//									log.trace("checkResult-validator: {}", valid); //$NON-NLS-1$
+//									log.trace("validateResponse-validator: {}", valid); //$NON-NLS-1$
 //									return valid;
 //								},
 //				               Messages.getString("HTTPConnectionForm.CheckResult.ValidationErrorMsg")) //$NON-NLS-1$

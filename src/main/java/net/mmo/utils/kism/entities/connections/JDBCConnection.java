@@ -137,7 +137,7 @@ public class JDBCConnection extends IPConnection
 			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
 			setResponsePayload(String.format("Exception executing query '%s': %s", //$NON-NLS-1$
 			                                 resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
-			this.setState(State.FAILED);
+			setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (this.connection != null) {
 				throw new Exception(String.format("Error sending request '%s' to %s: ", resQuery, this.connection), ex); //$NON-NLS-1$
@@ -165,7 +165,7 @@ public class JDBCConnection extends IPConnection
 			setResponsePayload(res == State.OK
 							   ? String.format(RESULTSET_NR_RESULTS, updates)
 							   : String.format(RESULTSET_NO_RESULTS));
-			this.setState(res);
+			setState(res);
 		}
 	}
 
@@ -220,11 +220,12 @@ public class JDBCConnection extends IPConnection
 	}
 
 	private void deriveState() throws Exception {
-		if (this.checkResult) {
+		if (this.validateResponse) {
 			if (this.resultChecker != null) {
 				setState(this.resultChecker.checkResult(this,getResponsePayload()) ? State.OK : State.FAILED);
+				return;
 			} else {
-				throw new IllegalArgumentException("resultChecker == null for checkResult"); //$NON-NLS-1$
+				throw new IllegalArgumentException("resultChecker == null for validateResponse == true"); //$NON-NLS-1$
 			}
 		}
 		setState(State.OK); // if there is no check defined we consider any successful query-response as OK

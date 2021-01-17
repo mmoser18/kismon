@@ -9,12 +9,10 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
-import net.mmo.utils.kism.ui.view.nodes.ResultCheckerForm;
 
 @Slf4j
 public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
@@ -63,7 +61,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.query.setThemeName(LabelPaddingTheme);
 		this.query.addValueChangeListener(event ->
 			{
-				log.info("query value changed to: '{}'", event.getValue()); //$NON-NLS-1$
+				log.info("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
 						updateResultingQuery(event.getValue());
@@ -98,12 +96,6 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.responsePayload.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
 
-		this.resultChecker = new ResultCheckerForm();
-		this.resultChecker.setClassName(CombinedClassName);
-
-		VerticalLayout checkResults = new VerticalLayout(this.checkResult, this.resultChecker);
-		checkResults.setClassName(CombinedClassName);
-
 		this.fields.add(uidAndPwd
 		                ,this.query
 		                ,this.resultingQuery
@@ -112,7 +104,8 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
 		                ,responseResults
 		                ,this.responsePayload
-		                ,checkResults
+		                ,this.resultValidation
+//		                ,this.resultChecker
 		                );
 	}
 

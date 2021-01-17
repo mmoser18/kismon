@@ -28,19 +28,19 @@ public class NodeFactory <N extends Node>
 		}
 	}
 
-	private static int nodeCtr = 0;
+	private int nodeCtr = 0;
 
 	@SuppressWarnings("unchecked")
 	public N createNode(NodeType type) {
 		switch (type) {
 		case IntermediateNode:
-			return (N)new IntermediateNode("Node_" + nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new IntermediateNode("Node_" + this.nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
 		case RESTConnection:
-			return (N)new RESTConnection("REST_" + nodeCtr, "REST IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new RESTConnection("REST_" + this.nodeCtr, "REST IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
 		case SOAPConnection:
-			return (N)new SOAPConnection("SOAP_" + nodeCtr, "SOAP IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new SOAPConnection("SOAP_" + this.nodeCtr, "SOAP IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
 		case JDBCConnection:
-			return (N)new JDBCConnection("JDBC_" + nodeCtr, "JDBC IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new JDBCConnection("JDBC_" + this.nodeCtr, "JDBC IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
 		default: throw new IllegalArgumentException("Unexpected node type " + type + " in NodeFactory.createNode()"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}

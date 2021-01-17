@@ -2,7 +2,7 @@
   "className" : "net.mmo.utils.kism.entities.RootNode",
   "name" : "root",
   "description" : "default",
-  "state" : "FAILED",
+  "state" : "OK",
   "active" : true,
   "properties" : {
     "foo" : "outer"
@@ -30,7 +30,7 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080/${foo}",
-      "checkResult" : false,
+      "validateResponse" : true,
       "resultChecker" : null,
       "duration" : 13124900,
       "method" : "POST",
@@ -52,7 +52,7 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
-      "checkResult" : false,
+      "validateResponse" : false,
       "resultChecker" : null,
       "duration" : 0,
       "method" : "POST",
@@ -77,10 +77,10 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
-      "checkResult" : false,
+      "validateResponse" : true,
       "resultChecker" : {
-        "condition" : null,
-        "operand" : ""
+        "condition" : "Contains",
+        "operand" : "foo"
       },
       "duration" : 9182000,
       "uid" : "C##QUEST",
@@ -92,7 +92,7 @@
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.2",
     "description" : "default.2",
-    "state" : "FAILED",
+    "state" : "OK",
     "active" : true,
     "properties" : { },
     "children" : [ {

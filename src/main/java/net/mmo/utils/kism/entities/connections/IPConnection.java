@@ -31,7 +31,7 @@ import net.mmo.utils.kism.utils.AppProperties;
 @Setter
 @Getter
 @Slf4j
-abstract public class IPConnection extends LeafNode
+public class IPConnection extends LeafNode
 {
 	private static final long serialVersionUID = -2584969925210734417L;
 
@@ -59,7 +59,7 @@ abstract public class IPConnection extends LeafNode
 //	protected String proxyUid;
 //	protected String proxyPwd;
 
-	protected Boolean checkResult = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
+	protected boolean validateResponse = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
 
 	@OneToOne
 	@JoinColumn(name = "result_checker_id")
@@ -145,7 +145,10 @@ abstract public class IPConnection extends LeafNode
 		}
 	}
 
-	abstract public void sendRequestInternal() throws Exception;
+	@SuppressWarnings("unused")
+	public void sendRequestInternal() throws Exception {
+		// empty
+	}
 
 	@Override
 	public String toString() {
@@ -161,7 +164,7 @@ abstract public class IPConnection extends LeafNode
 //			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
 //			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
-			.append(", checkResult:").append(this.checkResult) //$NON-NLS-1$
+			.append(", validateResponse:").append(this.validateResponse) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
 			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$

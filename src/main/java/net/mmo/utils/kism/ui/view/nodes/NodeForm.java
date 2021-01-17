@@ -188,6 +188,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		// we also may have to update the resulting URL if any of the properties change:
 		this.properties.addValueChangeListener(event ->
 			{
+				log.debug("properties value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					if (this.node != null) setPropertiesFromString(this.node, event.getValue());
 				}
@@ -222,13 +223,17 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	protected boolean binderHasChanges() {
-		return this.binder.hasChanges();
+		boolean res = this.binder.hasChanges();
+		log.debug("binderHasChanges(): {}", res); //$NON-NLS-1$
+		return res;
 	}
 
 	// We need to prevent bean validation when there is currently no bean set or else we get
 	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
 	protected boolean binderIsValid() {
-		return this.binder.getBean() != null ? this.binder.isValid() : true;
+		boolean res = (this.binder.getBean() != null ? this.binder.isValid() : false);
+		log.debug("binderIsValid(): {}", res); //$NON-NLS-1$
+		return res;
 	}
 
 	public static String getPropertiesAsString(Node n) {
@@ -297,8 +302,12 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.save.setId("nodeform-save-button"); //$NON-NLS-1$
 		this.save.addClickShortcut(Key.ENTER);
 		this.save.addClickListener(event -> validateAndSave());
-		this.binder.addStatusChangeListener(e -> this.save.setEnabled(binderHasChanges() && binderIsValid()));
-
+		this.binder.addStatusChangeListener(event ->
+			{
+				boolean enabled = binderHasChanges() && binderIsValid();
+				log.debug("binder status change -> [save] enabled:{}", enabled); //$NON-NLS-1$
+				this.save.setEnabled(enabled);
+			});
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.delete.setId("nodeform-delete-button"); //$NON-NLS-1$
 		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));

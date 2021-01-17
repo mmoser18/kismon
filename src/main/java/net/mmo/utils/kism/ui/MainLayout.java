@@ -14,18 +14,20 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.view.dashboard.DashboardView;
 import net.mmo.utils.kism.ui.view.list.ListView;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
 
 @CssImport("./styles/shared-styles.css")
-@CssImport(value = "./styles/vaadin-form-layout-styles.css", themeFor = "vaadin-form-layout")
-@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
-@CssImport(value = "./styles/vaadin-text-area-styles.css", themeFor = "vaadin-text-area")
-@CssImport(value = "./styles/vaadin-number-field-styles.css", themeFor = "vaadin-number-field")
-@CssImport(value = "./styles/vaadin-integer-field-styles.css", themeFor = "vaadin-integer-field")
 @CssImport(value = "./styles/vaadin-combo-box-styles.css", themeFor = "vaadin-combo-box")
+@CssImport(value = "./styles/vaadin-form-layout-styles.css", themeFor = "vaadin-form-layout")
+@CssImport(value = "./styles/vaadin-integer-field-styles.css", themeFor = "vaadin-integer-field")
+@CssImport(value = "./styles/vaadin-number-field-styles.css", themeFor = "vaadin-number-field")
+@CssImport(value = "./styles/vaadin-text-area-styles.css", themeFor = "vaadin-text-area")
+@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./styles/vaadin-upload-styles.css", themeFor = "vaadin-upload")
+@Slf4j
 public class MainLayout extends AppLayout
 {
 	private static final long serialVersionUID = 8922152078442380813L;
@@ -36,12 +38,14 @@ public class MainLayout extends AppLayout
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
 
 	public MainLayout() {
+		log.debug("MainLayout - c'tor"); //$NON-NLS-1$
 		createHeader();
 		createDrawer();
 		setDrawerOpened(false);
 	}
 
 	private void createHeader() {
+		log.debug("createHeader"); //$NON-NLS-1$
 		H1 appTitle = new H1(CommonConstants.ApplicationFullName);
 		appTitle.addClassName(TitleClassName);
 		// add a logout link to the page:
@@ -57,6 +61,7 @@ public class MainLayout extends AppLayout
 	}
 
 	private void createDrawer() {
+		log.debug("createDrawer"); //$NON-NLS-1$
 		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.ListView.Label"), ListView.class); //$NON-NLS-1$
 		listLink.setHighlightCondition(HighlightConditions.sameLocation());
 		RouterLink treeLink = new RouterLink(Messages.getString("MainLayout.Tab.NodeView.Label"), NodeView.class); //$NON-NLS-1$
