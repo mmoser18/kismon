@@ -274,7 +274,7 @@ abstract public class HTTPConnection extends IPConnection
 
 	private void deriveState() {
 		final State res;
-		if (this.validateResponse) {
+		if (this.checkResults) {
 			String acceptableCodes = this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"; //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
 			log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", this.responseStatusCode, responseStatusCodeStr); //$NON-NLS-1$
@@ -391,7 +391,6 @@ abstract public class HTTPConnection extends IPConnection
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-			.append(", url:").append(this.url) //$NON-NLS-1$
 			.append(", method:").append(this.method) //$NON-NLS-1$
 			.append(", httpVersion:").append(this.httpVersion) //$NON-NLS-1$
 			.append(", redirectBehavior:").append(this.redirectBehavior) //$NON-NLS-1$

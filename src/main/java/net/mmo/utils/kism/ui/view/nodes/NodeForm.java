@@ -92,7 +92,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
 		if (this.node != null) {
 			if (this.binder.hasChanges()) {
-				log.debug("binder has changes"); //$NON-NLS-1$
+				log.debug("binder has changes!"); //$NON-NLS-1$
 				new ConfirmDialog("There are unsaved changes!", //$NON-NLS-1$
 				                  "Are you sure you want to leave this node?", //$NON-NLS-1$
 				                  "Save node", (confirmEvent) -> { confirmEvent.getSource().close(); validateAndSave(); }, //$NON-NLS-1$
@@ -105,7 +105,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = node;
-		this.binder.setBean(node);
+		log.debug("NodeForm.setNode({}) - new node accepted!", node); //$NON-NLS-1$
+		// this.binder.setBean(node);
 		if (node != null) {
 			this.node.setChangeListener(event ->
 				{
@@ -231,8 +232,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	// We need to prevent bean validation when there is currently no bean set or else we get
 	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
 	protected boolean binderIsValid() {
-		boolean res = (this.binder.getBean() != null ? this.binder.isValid() : false);
-		log.debug("binderIsValid(): {}", res); //$NON-NLS-1$
+		boolean res = (this.binder.getBean() != null ? this.binder.isValid() : true);
+		log.debug("binderIsValid(): {} (bean:{})", res, this.binder.getBean()); //$NON-NLS-1$
 		return res;
 	}
 

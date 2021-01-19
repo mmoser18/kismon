@@ -104,8 +104,10 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
 		                ,responseResults
 		                ,this.responsePayload
-		                ,this.resultValidation
-//		                ,this.resultChecker
+		                ,this.checkResults
+		                // ,this.resultChecker
+		            	,this.condition
+		            	,this.operand
 		                );
 	}
 

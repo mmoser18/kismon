@@ -14,16 +14,19 @@ import java.util.Locale;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Result;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.ResultChecker;
+import net.mmo.utils.kism.entities.ResultChecker.Condition;
 import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
@@ -46,6 +49,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	static final String TimeStampClassName     = NodeFormField + "timestamp"; //$NON-NLS-1$
 
 	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
+	static final String ConditionClassName = NodeFormField + "condition"; //$NON-NLS-1$
+	static final String OperandClassName = NodeFormField + "operand"; //$NON-NLS-1$
 
 	protected Checkbox enabled;
 	protected IntegerField period;
@@ -61,8 +66,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 
 	protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("Connection.TimeStampFormat", "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$ //$NON-NLS-2$
 
-	protected Checkbox resultValidation;
-//	protected ResultCheckerForm resultChecker;
+	protected Checkbox checkResults;
+	// protected ResultCheckerForm resultChecker;
+
+	protected ComboBox<ResultChecker.Condition> condition;
+	protected TextArea operand;
 
 	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -115,6 +123,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 							URI uri = new URI(resolvedUrlStr);
 							// no check - the actual error is thrown!
 							log.debug("validation succeeded: '{}' => '{}'", urlStr, uri); //$NON-NLS-1$
+						} else {
+							log.debug("node == null: validation succeeded"); //$NON-NLS-1$
 						}
 						return true;
 					} catch (Exception ex) {
@@ -194,11 +204,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 				}
 			});
 
-		this.resultValidation = new Checkbox(Messages.getString("IPConnectionForm.CheckResult.Label")); //$NON-NLS-1$
-		this.resultValidation.setClassName(EnabledClassName);
-		this.resultValidation.addValueChangeListener(event ->
+		this.checkResults = new Checkbox(Messages.getString("IPConnectionForm.CheckResult.Label")); //$NON-NLS-1$
+		this.checkResults.setClassName(EnabledClassName);
+		this.checkResults.addValueChangeListener(event ->
 			{
-				log.debug("validateResponse value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					adaptResultChecker(event.getValue(), this.node);
 				}
@@ -206,6 +216,17 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 
 //		this.resultChecker = new ResultCheckerForm();
 //		this.resultChecker.setClassName(ResultCheckerClassName);
+		this.condition = new ComboBox<Condition>(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
+		this.condition.setItems(Condition.values());
+		this.condition.setItemLabelGenerator(cond -> Messages.getString("ResultChecker.Condition.Value." + cond.name())); //$NON-NLS-1$
+		this.condition.addClassName(ConditionClassName);
+
+		this.operand = new TextArea(Messages.getString("ResultChecker.Operand.Label")); //$NON-NLS-1$
+		this.operand.addClassName(OperandClassName);
+		this.operand.setThemeName(UIConstants.LabelPaddingTheme);
+
+		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
+		this.binder.forField(this.operand).bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
 
 		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
 	}
@@ -214,15 +235,15 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	public boolean setNode(N node) {
 		log.info("setNode node={}", node); //$NON-NLS-1$
 		boolean res = super.setNode(node);
-		adaptResultChecker((node != null ? node.isValidateResponse() : false), node);
+		adaptResultChecker((node != null ? node.isCheckResults() : false), node);
 		return res;
 	}
 
-	// when the main-form's bean is read we also need to read the ResultChecker's data (if set):
-	@Override
-	protected void readBean(N n) {
-		log.info("readBean node={}", n); //$NON-NLS-1$
-		super.readBean(n);
+//	// when the main-form's bean is read we also need to read the ResultChecker's data (if set):
+//	@Override
+//	protected void readBean(N n) {
+//		log.info("readBean node={}", n); //$NON-NLS-1$
+//		super.readBean(n);
 //		if (n != null) {
 //			ResultChecker rc = n.getResultChecker();
 //			if (rc != null) {
@@ -230,12 +251,12 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 //				rcBinder.readBean(rc);
 //			}
 //		}
-	}
-
-	// when the main-form's bean is to be written we also first need to write the ResultChecker's data (if set):
-	@Override
-	protected void writeBean(N n) throws ValidationException {
-		log.info("writeBean node={}", n); //$NON-NLS-1$
+//	}
+//
+//	// when the main-form's bean is to be written we also first need to write the ResultChecker's data (if set):
+//	@Override
+//	protected void writeBean(N n) throws ValidationException {
+//		log.info("writeBean node={}", n); //$NON-NLS-1$
 //		if (n != null) {
 //			ResultChecker rc = n.getResultChecker();
 //			if (rc != null) {
@@ -243,11 +264,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 //				rcBinder.writeBean(rc);
 //			}
 //		}
-		super.writeBean(n);
-	}
-
-	@Override
-	protected boolean binderHasChanges() {
+//		super.writeBean(n);
+//	}
+//
+//	@Override
+//	protected boolean binderHasChanges() {
 //		if (this.node != null) {
 //			ResultChecker rc = this.node.getResultChecker();
 //			if (rc != null) {
@@ -258,13 +279,13 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 //				}
 //			}
 //		}
-		return super.binderHasChanges();
-	}
-
-	// We need to prevent bean validation when there is currently no bean set or else we get
-	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
-	@Override
-	protected boolean binderIsValid() {
+//		return super.binderHasChanges();
+//	}
+//
+//	// We need to prevent bean validation when there is currently no bean set or else we get
+//	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
+//	@Override
+//	protected boolean binderIsValid() {
 //		if (this.node != null) {
 //			ResultChecker rc = this.node.getResultChecker();
 //			if (rc != null) {
@@ -275,25 +296,54 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 //				}
 //			}
 //		}
-		return super.binderIsValid();
+//		return super.binderIsValid();
+//	}
+
+	static <N extends IPConnection> ResultChecker.Condition getCondition(N n) {
+		return (n != null && n.getResultChecker() != null
+				? n.getResultChecker().getCondition()
+				: null);
 	}
 
-	private void adaptResultChecker(boolean checkResults, N n) {
-//		if (n != null) {
-//			if (n.getResultChecker() == null) {
-//				log.info("creating new ResultChecker:"); //$NON-NLS-1$
-//				n.setResultChecker(new ResultChecker());
-////				// if validateResponse is enabled we need to add the validity of the resultChecker's binder to this one:
-////				this.binder.withValidator(nn -> (checkResults ? this.resultChecker.getBinder().isValid() : true),
-////				                          "ResultCheck not valid"); //$NON-NLS-1$
-//			}
+	static <N extends IPConnection> void setCondition(N n, ResultChecker.Condition condition) {
+		if (n != null && n.getResultChecker() != null) {
+			n.getResultChecker().setCondition(condition);
+		}
+	}
+
+	static <N extends IPConnection> String getOperand(N n) {
+		return (n != null && n.getResultChecker() != null
+				? n.getResultChecker().getOperand()
+				: null);
+	}
+
+	static <N extends IPConnection> void setOperand(N n, String operand) {
+		if (n != null && n.getResultChecker() != null) {
+			n.getResultChecker().setOperand(operand);
+		}
+	}
+
+
+	private void adaptResultChecker(boolean check, N n) {
+		if (n != null) {
+			if (n.getResultChecker() == null) {
+				log.info("creating new ResultChecker:"); //$NON-NLS-1$
+				n.setResultChecker(new ResultChecker());
+//				// if checkResults is enabled we need to add the validity of the resultChecker's binder to this one:
+//				this.binder.withValidator(nn -> (checkResults ? this.resultChecker.getBinder().isValid() : true),
+//				                          "ResultCheck not valid"); //$NON-NLS-1$
+			}
 //			this.resultChecker.setResultChecker(n.getResultChecker());
-//			this.resultChecker.setVisible(checkResults);
-//		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
-//			log.info("removing ResultChecker from view:"); //$NON-NLS-1$
+//			this.resultChecker.setVisible(check);
+			this.condition.setVisible(check);
+			this.operand.setVisible(check);
+		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
+			log.info("removing ResultChecker from view:"); //$NON-NLS-1$
 //			this.resultChecker.setResultChecker(null);
 //			this.resultChecker.setVisible(false);
-//		}
+			this.condition.setVisible(false);
+			this.operand.setVisible(false);
+		}
 	}
 
 	protected String updateResultingUrl(String newValue) {

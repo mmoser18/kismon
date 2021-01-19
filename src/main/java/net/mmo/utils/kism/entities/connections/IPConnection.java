@@ -48,30 +48,27 @@ public class IPConnection extends LeafNode
 	@Max(600) // 10 minutes
 	protected int timeout = 45; // number of seconds after which connection setup is considered as failed
 
+//	protected String proxyHost;
+//	protected int    proxyPort;
+//	protected String proxyUid;
+//	protected String proxyPwd;
+
 	@SuppressWarnings("nls")
 	@NotNull
 	@NotEmpty
 	@NotBlank
 	protected String url = "http://www.example.com:8080";
 
-//	protected String proxyHost;
-//	protected int    proxyPort;
-//	protected String proxyUid;
-//	protected String proxyPwd;
+	@JsonIgnore
+	transient protected String resultingUrl;
 
-	protected boolean validateResponse = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
+	protected boolean checkResults = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
 
 	@OneToOne
 	@JoinColumn(name = "result_checker_id")
 	protected ResultChecker resultChecker;
 
-	protected static boolean syncRequests =
-		Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
-
 	// transient stuff:
-
-	@JsonIgnore
-	transient protected String resultingUrl;
 
 	@JsonIgnore
 	transient protected ExecutorService interactiveExecutor;
@@ -91,6 +88,9 @@ public class IPConnection extends LeafNode
 	transient protected LocalDateTime timestamp;
 
 	transient protected long duration;
+
+	protected static boolean syncRequests =
+					Boolean.getBoolean(AppProperties.getProperties().getProperty("IPConnection.SyncRequests", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 
 	/**required for deserialization only */
@@ -158,16 +158,16 @@ public class IPConnection extends LeafNode
 			.append(", enabled:").append(this.enabled) //$NON-NLS-1$
 			.append(", period:").append(this.period) //$NON-NLS-1$
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
-			.append(", url:").append(this.url) //$NON-NLS-1$
-			.append(", resultingUrl:").append(this.resultingUrl) //$NON-NLS-1$
 //			.append(", proxyHost:").append(this.proxyHost) //$NON-NLS-1$
 //			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
 //			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
-			.append(", validateResponse:").append(this.validateResponse) //$NON-NLS-1$
+			.append(", url:").append(this.url) //$NON-NLS-1$
+			.append(", resultingUrl:").append(this.resultingUrl) //$NON-NLS-1$
+			.append(", checkResults:").append(this.checkResults) //$NON-NLS-1$
+			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
-			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

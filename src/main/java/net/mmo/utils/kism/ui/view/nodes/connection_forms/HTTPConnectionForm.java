@@ -147,27 +147,27 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
 		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
 
-		// we cross-link the validators of the validateResponse-checkbox and the acceptableReturnCodes-input field:
+		// we cross-link the validators of the checkResults-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
 			this.binder.forField(this.acceptableReturnCodes)
 				.withValidator(text -> {
-									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.resultValidation.getValue() && text.isEmpty()); //$NON-NLS-1$
+									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.checkResults.getValue() && text.isEmpty()); //$NON-NLS-1$
 									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
 									return valid;
 								},
 				               Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.ValidationErrorMsg")) //$NON-NLS-1$
 				.bind(HTTPConnection::getAcceptableReturnCodes, HTTPConnection::setAcceptableReturnCodes);
 
-		this.resultValidation.addValueChangeListener(event ->
+		this.checkResults.addValueChangeListener(event ->
 		{
-			log.info("validateResponse value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			log.info("checkResults value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				adaptAcceptableReturnCodes(event.getValue());
 				acceptableReturnCodesBinding.validate();
 			}
 		});
 
-		HorizontalLayout checkResultFields = new HorizontalLayout(this.resultValidation, this.acceptableReturnCodes);
+		HorizontalLayout checkResultFields = new HorizontalLayout(this.checkResults, this.acceptableReturnCodes);
 		checkResultFields.addClassName(CombinedClassName);
 
 		this.fields.add(methodAndExecuteButton
@@ -177,14 +177,16 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		                ,this.requestHeaders, this.requestBody
 		                ,this.responseHeaders, this.responseBody
 		                ,checkResultFields
-//		                ,this.resultChecker
+		                // ,this.resultChecker
+		            	,this.condition
+		            	,this.operand
 		                );
 	}
 
 	@Override
 	public boolean setNode(N n) {
 		boolean res = super.setNode(n);
-		adaptAcceptableReturnCodes(n != null ? n.isValidateResponse() : false);
+		adaptAcceptableReturnCodes(n != null ? n.isCheckResults() : false);
 		updateRequestInfo();
 		return res;
 	}

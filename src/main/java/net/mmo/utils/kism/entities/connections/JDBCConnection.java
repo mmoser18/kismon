@@ -220,12 +220,12 @@ public class JDBCConnection extends IPConnection
 	}
 
 	private void deriveState() throws Exception {
-		if (this.validateResponse) {
+		if (this.checkResults) {
 			if (this.resultChecker != null) {
 				setState(this.resultChecker.checkResult(this,getResponsePayload()) ? State.OK : State.FAILED);
 				return;
 			} else {
-				throw new IllegalArgumentException("resultChecker == null for validateResponse == true"); //$NON-NLS-1$
+				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}
 		}
 		setState(State.OK); // if there is no check defined we consider any successful query-response as OK

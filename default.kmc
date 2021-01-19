@@ -30,8 +30,11 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080/${foo}",
-      "validateResponse" : true,
-      "resultChecker" : null,
+      "checkResults" : false,
+      "resultChecker" : {
+        "condition" : "EndsWithIgnoreCase",
+        "operand" : "bar"
+      },
       "duration" : 13124900,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
@@ -52,7 +55,7 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
-      "validateResponse" : false,
+      "checkResults" : false,
       "resultChecker" : null,
       "duration" : 0,
       "method" : "POST",
@@ -77,9 +80,9 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
-      "validateResponse" : true,
+      "checkResults" : true,
       "resultChecker" : {
-        "condition" : "Contains",
+        "condition" : "ContainsIgnoreCase",
         "operand" : "foo"
       },
       "duration" : 9182000,
