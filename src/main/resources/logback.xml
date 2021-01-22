@@ -51,12 +51,12 @@
 		<appender-ref ref="Console" />
 	</logger>
 
-	<logger name="net.mmo.utils.kism" level="trace" additivity="false">
+	<logger name="net.mmo.utils.kism" level="info" additivity="false">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
 
-	<root level="WARN">
+	<root level="warn">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</root>

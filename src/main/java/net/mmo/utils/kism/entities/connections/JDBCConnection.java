@@ -21,6 +21,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
+import net.mmo.utils.kism.utils.NodeProperties;
 
 @Setter
 @Getter
@@ -58,7 +59,7 @@ public class JDBCConnection extends IPConnection
 	// result stuff - later to be collected into some "history"-object:
 
 	@JsonIgnore
-	protected String resultingQuery;
+	transient protected String resultingQuery;
 	@JsonIgnore
 	transient protected String responseStatus;
 	@JsonIgnore
@@ -83,6 +84,35 @@ public class JDBCConnection extends IPConnection
 		super.finalize();
 	}
 
+	@Override
+	public void setProperties(NodeProperties properties) {
+		super.setProperties(properties);
+		updateResultingQuery();
+	}
+
+	protected void setQuery(String query) {
+		this.query = query;
+		updateResultingQuery();
+	}
+
+	private void updateResultingQuery() {
+		try {
+			this.resultingQuery = resolveProperties(this.query);
+		} catch (Exception ex) {
+			log.error("Error resolving '{}': {}", this.query, ex.getMessage()); //$NON-NLS-1$
+			this.resultingQuery = null;
+		}
+	}
+
+	@JsonIgnore
+	public String getResultingQueryResolved() throws Exception {
+		if (this.resultingQuery == null || this.resultingQuery.isBlank()) {
+			this.resultingQuery = resolveProperties(this.query);
+			if (this.resultingQuery == null || this.resultingQuery.isBlank()) throw new IllegalArgumentException("Can't create request - query must not be null or blank"); //$NON-NLS-1$
+		}
+		return this.resultingQuery;
+	}
+
 	public void setResponseStatus(String responseStatus) {
 		if (!Objects.equal(this.responseStatus, responseStatus)) {
 			String oldResponseStatus = this.responseStatus;
@@ -100,49 +130,48 @@ public class JDBCConnection extends IPConnection
 
 	@SuppressWarnings("deprecation")
 	private void registerDriver() throws Exception {
-		log.info("registerDriver:"); //$NON-NLS-1$
+		log.debug("registerDriver:"); //$NON-NLS-1$
 		this.driver = (Driver)Class.forName(this.driverName).newInstance();
 		DriverManager.registerDriver(this.driver);
 	}
 
 	private void createConnection() throws Exception {
-		log.info("createConnection:"); //$NON-NLS-1$
+		log.debug("createConnection:"); //$NON-NLS-1$
 		if (this.driver == null) {
 			registerDriver();
 		}
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
-			this.connection = DriverManager.getConnection(this.url, this.uid, this.pwd);
+			this.connection = DriverManager.getConnection(getResultingUrlResolved(), getUid(), getPwd());
 		}
 	}
 
 	@Override
-	public void sendRequestInternal() throws Exception {
-		log.info("createStatement:"); //$NON-NLS-1$
+	public void sendRequest() throws Exception {
+		log.info("sendRequest {}:", getName()); //$NON-NLS-1$
 		Statement statement = null;
-		String resQuery = getQuery();
+		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
+		String resQuery = getResultingQueryResolved();
 		try {
-			resQuery = getResultingQuery();
 			createConnection();
 			statement = this.connection.createStatement();
-			log.info("statement.execute():", resQuery); //$NON-NLS-1$
-			this.timestamp = LocalDateTime.now();
+			log.debug("statement.execute():", resQuery); //$NON-NLS-1$
 			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
-			log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
+			log.info("responseReceived for '{}' after {} µsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(statement, isRS);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		} catch (Exception ex) {
 			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
-			setResponsePayload(String.format("Exception executing query '%s': %s", //$NON-NLS-1$
-			                                 resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
+			setResponsePayload(String.format("Exception executing '{}' (query '%s'): %s", //$NON-NLS-1$
+			                                 getName(), resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
 			setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (this.connection != null) {
-				throw new Exception(String.format("Error sending request '%s' to %s: ", resQuery, this.connection), ex); //$NON-NLS-1$
+				throw new Exception(String.format("sending query '%s' to %s: ", resQuery, getResultingUrl()), ex); //$NON-NLS-1$
 			} else {
-				throw new Exception(String.format("Error creating request '%s'", resQuery), ex); //$NON-NLS-1$
+				throw new Exception(String.format("creating query to '%s'", getResultingUrl()), ex); //$NON-NLS-1$
 			}
 		} finally {
 			if (statement != null) {
@@ -154,12 +183,12 @@ public class JDBCConnection extends IPConnection
 	private void responseReceived(Statement statement, boolean isRS) throws Exception {
 		if (isRS) { // result is a ResultSet
 			convertResultSet(statement);
-			log.info("response: status={} / payload=\"{}\"", //$NON-NLS-1$
+			log.debug("response: status={} / payload=\"{}\"", //$NON-NLS-1$
 			         getResponseStatus(), getResponsePayload());
 			deriveState();
 		} else { // result is not a ResultSet but an update count or there are no results
 			int updates = statement.getUpdateCount();
-			log.info("Result: #updates:{}", updates); //$NON-NLS-1$
+			log.debug("Result: #updates:{}", updates); //$NON-NLS-1$
 			State res = updates >= 0 ? State.OK : State.FAILED;
 			setResponseStatus(res.name());
 			setResponsePayload(res == State.OK

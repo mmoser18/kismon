@@ -55,11 +55,15 @@ public class NodeService
 		this.intermediateNodeRepository = intermediateNodeRepository;
 		this.leafNodeRepository = leafNodeRepository;
 		*/
+		if (getRootNodes().isEmpty()) {
+			init(); // load from file
+		}
+
 	}
 
 	private void addNewRootNode(RootNode newRootNode) {
 		newRootNode.getProperties().setParentProperties(this.commonRootProperties);
-		this.roots.add(newRootNode);
+		getRootNodes().add(newRootNode);
 	}
 
 	public void addSharedProperty(Object key, Object value) {
@@ -82,9 +86,10 @@ public class NodeService
 			log.error("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 			t.printStackTrace();
 		}
-		if (this.roots.isEmpty()) { // make sure we always have at least one root node:
+		if (getRootNodes().isEmpty()) { // make sure we always have at least one root node:
 			createDummyRootNode();
 		}
+		log.info("Root nodes: {}", getRootNodes()); //$NON-NLS-1$
 	}
 
 	public void createDummyRootNode() {
@@ -116,7 +121,7 @@ public class NodeService
 
 	/** enables re-initialization of root nodes for Unit-Tests - not normally used */
 	public void reset() {
-		this.roots.clear();
+		getRootNodes().clear();
 		createDummyRootNode();
 	}
 

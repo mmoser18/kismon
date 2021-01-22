@@ -157,7 +157,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			log.debug("Locale for '{}': '{}'", languageTag, locale); //$NON-NLS-1$
 		} catch (Exception ex) {
 			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
-
 		}
 
 		this.binder.forField(this.timestamp)
@@ -198,9 +197,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 				log.info("execute clicked"); //$NON-NLS-1$
 				if (binderHasChanges()) validateAndSave();
 				try {
-					this.node.sendRequest();
+					this.node.executeRequest();
 				} catch (Throwable t) {
-					NodeView.ExecutionError("creating/executing request:", t); //$NON-NLS-1$
+					NodeView.ExecutionError("creating/executing httpRequest:", t); //$NON-NLS-1$
 				}
 			});
 

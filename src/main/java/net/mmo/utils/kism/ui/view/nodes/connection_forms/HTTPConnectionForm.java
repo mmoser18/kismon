@@ -26,8 +26,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	private static final long serialVersionUID = 7200842663851555372L;
 
 	static final String MethodClassName             = NodeFormField + "method"; //$NON-NLS-1$
-	static final String RequestHeadersClassName     = NodeFormField + "request-headers"; //$NON-NLS-1$
-	static final String RequestBodyClassName        = NodeFormField + "request-body"; //$NON-NLS-1$
+	static final String RequestHeadersClassName     = NodeFormField + "httpRequest-headers"; //$NON-NLS-1$
+	static final String RequestBodyClassName        = NodeFormField + "httpRequest-body"; //$NON-NLS-1$
 
 	static final String ResponseStatusCodeClassName = NodeFormField + "response-status"; //$NON-NLS-1$
 	static final String ResponseHeadersClassName    = NodeFormField + "response-headers"; //$NON-NLS-1$
@@ -202,13 +202,11 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 //			try {
 //				this.node.createRequest();
 //			} catch (Exception ex) {
-//				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
+//				log.error("Exception preparing/reporting httpRequest: ", ex); //$NON-NLS-1$
 //				throw new ValidationException(Collections.emptyList(), Collections.emptyList());
 //			}
 //		}
 //	}
-
-
 
 	private void updateRequestInfo() {
 		adjustPayloadVisibility(this.node != null ? this.node.getMethod() : null);
@@ -227,12 +225,19 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.requestBody.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 	}
 
+	@Override
+	protected boolean binderHasChanges() {
+		boolean hasChanges = super.binderHasChanges();
+		if (hasChanges && this.node != null) this.node.setHttpRequest(null); // trigger a re-generation of the request if e.g. the URL has changed
+		return hasChanges;
+	}
+
 	private void updateRequestHeaders() {
 		if (this.node != null) {
 			try {
 				this.node.createRequest();
 			} catch (Exception ex) {
-				log.error("Exception preparing/reporting request: ", ex); //$NON-NLS-1$
+				log.error("Exception preparing/reporting httpRequest: ", ex); //$NON-NLS-1$
 				this.node.setRequestBody(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorCreatingRequest"), ex).getBytes()); //$NON-NLS-1$
 			}
 		} else {

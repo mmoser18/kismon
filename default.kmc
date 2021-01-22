@@ -83,7 +83,7 @@
       "checkResults" : true,
       "resultChecker" : {
         "condition" : "ContainsIgnoreCase",
-        "operand" : "foo"
+        "operand" : "Frau"
       },
       "duration" : 9182000,
       "uid" : "C##QUEST",

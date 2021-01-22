@@ -8,7 +8,7 @@ package net.mmo.utils.kism.entities;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
@@ -118,8 +118,16 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.parent != null) this.parent.deriveNewState();
 	}
 
-	public void applyToSubTree(Function<Node, Void> fn) {
-		fn.apply(this);
+	// walk up the tree:
+	public void bubbleUp(Consumer<Node> action) {
+		for (Node n = this; n != null; n = n.getParent()) {
+			action.accept(n);
+		}
+	}
+
+	// spread down the branch:
+	public void trickleDown(Consumer<Node> action) {
+		action.accept(this);
 	}
 
 	/** method to inform listener(s) re. property changes that may have happened outside the GUI */

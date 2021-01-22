@@ -28,7 +28,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable()  // Disables cross-site request forgery (CSRF) protection, as Vaadin already has CSRF protection
+		http.csrf().disable()  // Disables cross-site httpRequest forgery (CSRF) protection, as Vaadin already has CSRF protection
 			.requestCache()
 			.requestCache(new CustomRequestCache()) // Uses CustomRequestCache to track unauthorized requests so that users are redirected appropriately after login.
 			.and().authorizeRequests() // Turns on authorization

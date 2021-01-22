@@ -7,6 +7,7 @@
 package net.mmo.utils.kism.entities;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import javax.persistence.Entity;
 
@@ -76,13 +77,14 @@ public class IntermediateNode extends Node
 		}
 	}
 
-//	@Override
-//	public void applyToSubTree(Function<Node, Void> fn) {
-//		super.applyToSubTree(fn);
-//		for (Node child: getChildren()) {
-//			fn.apply(child);
-//		}
-//	}
+	// spread down the branch:
+	@Override
+	public void trickleDown(Consumer<Node> action) {
+		super.trickleDown(action);
+		for (Node child: getChildren()) {
+			action.accept(child);
+		}
+	}
 
 	@Override
 	public String toString() {

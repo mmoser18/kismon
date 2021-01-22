@@ -25,8 +25,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -83,10 +85,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
-			if (this.nodeService.getRootNodes().isEmpty()) {
-				this.nodeService.init(); // load from file
-				log.info("Root nodes: {}", this.nodeService.getRootNodes()); //$NON-NLS-1$
-			}
 			this.nodeFactory = nodeFactory;
 			this.formFactory = formFactory;
 
@@ -347,8 +345,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
-		if (NodeView.alwaysSave) saveNode(node);
-		this.tree.getDataProvider().refreshItem(node);
+		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
+		node.bubbleUp(n ->
+			{
+				if (NodeView.alwaysSave) saveNode(n);
+				dataProvider.refreshItem(n);
+			});
 	}
 
 	@SuppressWarnings("unchecked")

@@ -275,9 +275,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			if (this.node != null) {
 				resolvedValue = n.resolveProperties(originalValue);
 				log.debug("{}: '{}' -> '{}'", logPrefix, originalValue, resolvedValue); //$NON-NLS-1$
-//				if (resolved != null) {
+				if (resolved != null) {
 					resolved.accept(n, resolvedValue);
-//				}
+				}
 			} else {
 				log.debug("{}: node==null", logPrefix); //$NON-NLS-1$
 				resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.NodeUndefined"), logPrefix, originalValue); //$NON-NLS-1$

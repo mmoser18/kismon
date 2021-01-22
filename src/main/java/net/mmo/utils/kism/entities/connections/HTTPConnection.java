@@ -34,6 +34,7 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Entity
@@ -48,9 +49,9 @@ abstract public class HTTPConnection extends IPConnection
 	public enum HTTP_Method {
 		GET    (false),	// GET method requests a representation of the specified resource. Requests using GET should only retrieve data.
 		POST   (true),	// POST method is used to submit an entity to the specified resource, often causing a change in state or side effects on the server.
-		PUT    (true),	// PUT method replaces all current representations of the target resource with the request payload.
+		PUT    (true),	// PUT method replaces all current representations of the target resource with the httpRequest payload.
 		DELETE (false),	// DELETE method deletes the specified resource.
-		HEAD   (false),	// HEAD method asks for a response identical to that of a GET request, but without the response body.
+		HEAD   (false),	// HEAD method asks for a response identical to that of a GET httpRequest, but without the response body.
 		CONNECT(false), // CONNECT method establishes a tunnel to the server identified by the target resource.
 		OPTIONS(false), // OPTIONS method is used to describe the communication options for the target resource.
 		TRACE  (false),	// TRACE method performs a message loop-back test along the path to the target resource.
@@ -101,9 +102,9 @@ abstract public class HTTPConnection extends IPConnection
 	// transient stuff:
 
 	@JsonIgnore
-	transient protected HttpClient client;
+	transient protected HttpClient httpClient;
 	@JsonIgnore
-	transient protected HttpRequest request;
+	transient protected HttpRequest httpRequest;
 
 	// result stuff:
 	// TODO: the below should be kept into some kind of "history"-list:
@@ -188,13 +189,18 @@ abstract public class HTTPConnection extends IPConnection
 //		if (this.proxyHost != null) {
 //			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
 //		}
-		this.client = builder.build();
+		this.httpClient = builder.build();
 	}
 
 	public void createRequest() throws Exception {
+		String requestUrl = getResultingUrl();
+		if (requestUrl == null) {
+			requestUrl = resolveProperties(getUrl());
+			if (requestUrl == null) throw new IllegalArgumentException("Can't create request - URL must not be null"); //$NON-NLS-1$
+		}
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
-			.uri(URI.create(getResultingUrl()))
-			.timeout(Duration.ofSeconds(this.timeout));
+			.uri(URI.create(requestUrl))
+			.timeout(Duration.ofSeconds(getTimeout()));
 		if (this.headers != null) {
 			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(this.headers));
 			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
@@ -223,47 +229,44 @@ abstract public class HTTPConnection extends IPConnection
 		default:
 			throw new IllegalArgumentException("Unsupported HTTP method: " + this.method); //$NON-NLS-1$
 		}
-		this.request = builder.build();
-		setRequestHeaders(this.request.headers());
+		this.httpRequest = builder.build();
+		setRequestHeaders(this.httpRequest.headers());
 		logRequestValues();
 	}
 
 	@Override
-	public void sendRequestInternal() throws Exception {
-		log.info("sendRequest:"); //$NON-NLS-1$
+	public void sendRequest() throws Exception {
+		log.info("executingRequest '{}':", getName()); //$NON-NLS-1$
 		try {
-			if (this.client == null) {
+			setTimestamp(LocalDateTime.now());
+			if (this.httpClient == null) {
 				createClient();
 			}
-			if (this.request == null) {
+			if (this.httpRequest == null) {
 				createRequest();
 			}
 			long startTime = System.nanoTime();
-			this.timestamp = LocalDateTime.now();
-//			if (HTTPConnection.syncRequests) {
-				HttpResponse<byte[]> response = this.client.send(this.request, BodyHandlers.ofByteArray());
-				long callDuration = System.nanoTime() - startTime;
-				responseReceived(callDuration, response);
-//			} else { // async:
-//				CompletableFuture<HttpResponse<byte[]>> futureResponse = this.client.sendAsync(this.request, BodyHandlers.ofByteArray());
-//				futureResponse.thenAccept(response ->
-//				{
-//					long callDuration = System.nanoTime() - startTime;
-//					responseReceived(callDuration, response);
-//				});
-//			}
-		} catch (Throwable t) {
-			if (this.request != null) {
-				throw new Exception(String.format("Error sending request to {}: ",  this.request.uri()), t); //$NON-NLS-1$
+			HttpResponse<byte[]> response = this.httpClient.send(this.httpRequest, BodyHandlers.ofByteArray());
+			long callDuration = System.nanoTime() - startTime;
+			setDuration(callDuration);
+			log.info("responseReceived for '{}' after {} µsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+			responseReceived(response);
+		} catch (Exception ex) {
+			setDuration(-1);
+			setResponseStatusCode(-1);
+			setResponseHeaders(null);
+			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
+			setState(State.FAILED);
+			if (this.httpRequest != null) {
+				throw new Exception(String.format("Error for '%s' sending request to %s: ", //$NON-NLS-1$
+				                                  getName(), this.httpRequest.uri()), ex);
 			} else {
-				throw new Exception("Error creating request", t); //$NON-NLS-1$
+				throw new Exception(String.format("Error for '%s' creating request", getName()), ex); //$NON-NLS-1$
 			}
 		}
 	}
 
-	public void responseReceived(long callDuration, HttpResponse<byte[]> response) {
-		log.info("responseReceived after {} nanosecs.", callDuration); //$NON-NLS-1$
-		setDuration(callDuration);
+	public void responseReceived(HttpResponse<byte[]> response) {
 		setResponseStatusCode(response.statusCode());
 		setResponseHeaders(response.headers());
 		setResponseBody(response.body());
@@ -297,16 +300,16 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public void logRequestValues() {
-		log.info("{}-request to '{}':\nheaders: {}", this.request.method(), this.request.uri(), this.requestHeaders); //$NON-NLS-1$
-		Optional<BodyPublisher> optional = this.request.bodyPublisher();
+		log.debug("{}-httpRequest to '{}':\nheaders: {}", this.httpRequest.method(), this.httpRequest.uri(), this.requestHeaders); //$NON-NLS-1$
+		Optional<BodyPublisher> optional = this.httpRequest.bodyPublisher();
 		if (!optional.isEmpty()) {
-			log.info("body: \"{}\"", this.getRequestBodyAsString()); //$NON-NLS-1$
+			log.debug("body: \"{}\"", this.getRequestBodyAsString()); //$NON-NLS-1$
 		}
 	}
 
 	public void logResponseValues() {
-		log.info("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-		         this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+		log.debug("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
+		          this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
 	}
 
 	// utility methods:
@@ -336,7 +339,7 @@ abstract public class HTTPConnection extends IPConnection
 		return String.join(VALUES_SEPARATOR, values);
 	}
 
-	/** extract character set from request headers - if there is any...
+	/** extract character set from httpRequest headers - if there is any...
 	 * @throws Exception */
 	protected Charset extractRequestCharset() {
 		HttpHeaders requHdrs = this.getRequestHeaders();
@@ -404,8 +407,8 @@ abstract public class HTTPConnection extends IPConnection
 			.append(", acceptableReturnCodes:").append(this.acceptableReturnCodes) //$NON-NLS-1$
 			.append(", headers:").append(this.headers) //$NON-NLS-1$
 			.append(", payload:").append(this.payload) //$NON-NLS-1$
-			.append(", client:").append(this.client) //$NON-NLS-1$
-			.append(", request:").append(this.request) //$NON-NLS-1$
+			.append(", httpClient:").append(this.httpClient) //$NON-NLS-1$
+			.append(", httpRequest:").append(this.httpRequest) //$NON-NLS-1$
 			.append(", requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
 			.append(", requestBody:").append(this.requestBody) //$NON-NLS-1$
 			.append(", responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
