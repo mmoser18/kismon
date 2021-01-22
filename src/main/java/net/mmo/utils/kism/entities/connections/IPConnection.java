@@ -148,21 +148,11 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	private void updateResultingUrl() {
-		try {
-			this.resultingUrl = resolveProperties(this.url);
-		} catch (Exception ex) {
-			log.error("Error resolving '{}': {}", this.url, ex.getMessage()); //$NON-NLS-1$
-			this.resultingUrl = null;
-		}
+		updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
 	}
 
-	@JsonIgnore
-	public String getResultingUrlResolved() throws Exception {
-		if (this.resultingUrl == null || this.resultingUrl.isBlank()) {
-			this.resultingUrl = resolveProperties(this.url);
-			if (this.resultingUrl == null || this.resultingUrl.isBlank()) throw new IllegalArgumentException("Can't create request - url must not be null or blank"); //$NON-NLS-1$
-		}
-		return this.resultingUrl;
+	public String resultingUrlResolved() throws Exception {
+		return resultingFieldResolved(getUrl(), () -> getResultingUrl(), (str) -> setResultingUrl(str));
 	}
 
 	public void setEnabled(boolean enabled) {

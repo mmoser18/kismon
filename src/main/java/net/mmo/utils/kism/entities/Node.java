@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
@@ -116,6 +117,25 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	public void setActive(boolean active) {
 		this.active = active;
 		if (this.parent != null) this.parent.deriveNewState();
+	}
+
+	protected void updateResultingValue(String originalValue, Consumer<String> setter) {
+		try {
+			setter.accept(resolveProperties(originalValue));
+		} catch (Exception ex) {
+			String msg = String.format("Error resolving '%s': %s", originalValue, ex.getMessage()); //$NON-NLS-1$
+			log.error(msg);
+			setter.accept(msg);
+		}
+	}
+
+	public String resultingFieldResolved(String originalValue, Supplier<String> getter, Consumer<String> setter) throws Exception {
+		String value = getter.get();
+		if (value == null || value.isBlank()) {
+			setter.accept(value = resolveProperties(originalValue));
+			if (value == null || value.isBlank()) throw new IllegalArgumentException("Error resolving '" + originalValue + "' - must not yield null or blank value"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		return value;
 	}
 
 	// walk up the tree:

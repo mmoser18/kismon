@@ -96,21 +96,11 @@ public class JDBCConnection extends IPConnection
 	}
 
 	private void updateResultingQuery() {
-		try {
-			this.resultingQuery = resolveProperties(this.query);
-		} catch (Exception ex) {
-			log.error("Error resolving '{}': {}", this.query, ex.getMessage()); //$NON-NLS-1$
-			this.resultingQuery = null;
-		}
+		updateResultingValue(getQuery(), (str) -> setResultingQuery(str));
 	}
 
-	@JsonIgnore
-	public String getResultingQueryResolved() throws Exception {
-		if (this.resultingQuery == null || this.resultingQuery.isBlank()) {
-			this.resultingQuery = resolveProperties(this.query);
-			if (this.resultingQuery == null || this.resultingQuery.isBlank()) throw new IllegalArgumentException("Can't create request - query must not be null or blank"); //$NON-NLS-1$
-		}
-		return this.resultingQuery;
+	public String resultingQueryResolved() throws Exception {
+		return resultingFieldResolved(getQuery(), () -> getResultingQuery(), (str) -> setResultingQuery(str));
 	}
 
 	public void setResponseStatus(String responseStatus) {
@@ -141,7 +131,7 @@ public class JDBCConnection extends IPConnection
 			registerDriver();
 		}
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
-			this.connection = DriverManager.getConnection(getResultingUrlResolved(), getUid(), getPwd());
+			this.connection = DriverManager.getConnection(resultingUrlResolved(), getUid(), getPwd());
 		}
 	}
 
@@ -150,7 +140,7 @@ public class JDBCConnection extends IPConnection
 		log.info("sendRequest {}:", getName()); //$NON-NLS-1$
 		Statement statement = null;
 		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
-		String resQuery = getResultingQueryResolved();
+		String resQuery = resultingQueryResolved();
 		try {
 			createConnection();
 			statement = this.connection.createStatement();
