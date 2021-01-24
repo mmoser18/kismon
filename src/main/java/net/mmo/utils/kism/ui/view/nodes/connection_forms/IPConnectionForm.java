@@ -209,7 +209,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			{
 				log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
-					adaptResultChecker(event.getValue(), this.node);
+					adaptResultCheckerVisibility(event.getValue(), this.node);
 				}
 			});
 
@@ -234,7 +234,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	public boolean setNode(N node) {
 		log.info("setNode node={}", node); //$NON-NLS-1$
 		boolean res = super.setNode(node);
-		adaptResultChecker((node != null ? node.isCheckResults() : false), node);
+		adaptResultCheckerVisibility((node != null ? node.isCheckResults() : false), node);
 		return res;
 	}
 
@@ -323,7 +323,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	}
 
 
-	private void adaptResultChecker(boolean check, N n) {
+	private void adaptResultCheckerVisibility(boolean check, N n) {
 		if (n != null) {
 			if (n.getResultChecker() == null) {
 				log.info("creating new ResultChecker:"); //$NON-NLS-1$
@@ -345,6 +345,12 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		}
 	}
 
+	@Override
+	protected void updateResolvableValues() {
+		super.updateResolvableValues();
+		updateResultingUrl(this.node != null ? this.node.getUrl() : null);
+	}
+
 	protected String updateResultingUrl(String newValue) {
 		return updateResultingField("updateResultingURL", //$NON-NLS-1$
 		                            this.node,
@@ -352,12 +358,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		                            IPConnection::setResultingUrl,
 		                            this.resultingURL
 		                            );
-	}
-
-	@Override
-	protected void updateResolvableValues() {
-		super.updateResolvableValues();
-		updateResultingUrl(this.node != null ? this.node.getUrl() : null);
 	}
 
 	public static Double getDurationInMillis(IPConnection n) {
@@ -368,7 +368,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
 		case IPConnection.PROPERTYNAME_RESPONSE_COMPLETE:
-			readBean(sourceNode);
+			if (!this.binderHasChanges()) readBean(sourceNode); // we only update the form if the user hasn't changed anything, i.e. is editing the form right now!
 			break;
 		default:
 			break;

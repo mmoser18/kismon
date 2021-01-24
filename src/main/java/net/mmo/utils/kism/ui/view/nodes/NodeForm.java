@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
-import net.mmo.utils.kism.utils.NodeProperties;
 
 @Slf4j
 public abstract class NodeForm <N extends Node> extends VerticalLayout
@@ -185,13 +184,13 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 						return false;
 					}
 				}, Messages.getString("NodeForm.Validator.Properties.IllegalValue")) //$NON-NLS-1$
-			.bind(NodeForm::getPropertiesAsString, NodeForm::setPropertiesFromString);
+			.bind(Node::getPropertiesAsString, Node::propertiesFromString);
 		// we also may have to update the resulting URL if any of the properties change:
 		this.properties.addValueChangeListener(event ->
 			{
 				log.debug("properties value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
-					if (this.node != null) setPropertiesFromString(this.node, event.getValue());
+					if (this.node != null) this.node.propertiesFromString(event.getValue());
 				}
 				try {
 					updateResolvableValues();
@@ -237,19 +236,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		return res;
 	}
 
-	public static String getPropertiesAsString(Node n) {
-		NodeProperties props = n.getProperties();
-		return (props!= null ? props.getPropertiesAsString() : null);
-	}
-
-	public static void setPropertiesFromString(Node n, String values) {
-		log.trace("setPropertiesFromString(\"{}\")", values); //$NON-NLS-1$
-		NodeProperties props = n.getProperties();
-		if (props == null) {
-			props = new NodeProperties(n.getParent() != null ? n.getParent().getProperties() : null);
-		}
-		props.setPropertiesFromString(values);
-	}
 	protected void updateResolvableValues() {
 		// to be overriden by subclasses
 	}

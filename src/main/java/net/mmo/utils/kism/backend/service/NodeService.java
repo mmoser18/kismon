@@ -83,8 +83,7 @@ public class NodeService
 		} catch (IOException t) {
 			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 		} catch (Throwable t) {
-			log.error("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
-			t.printStackTrace();
+			log.error("Exception processing file '" + file + ":", t); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		if (getRootNodes().isEmpty()) { // make sure we always have at least one root node:
 			createDummyRootNode();
@@ -154,10 +153,13 @@ public class NodeService
 	}
 
 	public RootNode read(InputStream inp, String fileName) throws IOException {
+		Node.init = true; // prevents certain functions in the beans
 		RootNode newRoot = this.mapper.readValue(inp, RootNode.class);
+		Node.init = false;
 		restoreParents(newRoot);
 		newRoot.setFilePath(fileName);
 		newRoot.deriveNewState();
+		newRoot.trickleDown((node) -> node.updateResolvableValues());
 		addNewRootNode(newRoot);
 		log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
 		return newRoot;

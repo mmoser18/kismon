@@ -100,7 +100,6 @@ abstract public class HTTPConnection extends IPConnection
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
 	// transient stuff:
-
 	@JsonIgnore
 	transient protected HttpClient httpClient;
 	@JsonIgnore
@@ -131,6 +130,100 @@ abstract public class HTTPConnection extends IPConnection
 		super(name, description);
 	}
 
+	@Override
+	public void updateResolvableValues() {
+		super.updateResolvableValues();
+		updateRequestHeaders();
+		updateRequestBody();
+	}
+
+//	@Override
+//	public void setProxyHost(String proxyHost) {
+//		super.setProxyHost(proxyHost);
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyHost changes
+//	}
+//	@Override
+//	public void setProxyPort(int proxyPort) {
+//		super.setProxyHost(proxyPort);
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyPort changes
+//	}
+//	@Override
+//	public void setProxyUid(String proxyUid) {
+//		super.setProxyHost(proxyUid);
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyUid changes
+//	}
+//	@Override
+//	public void setProxyPwd(String proxyPwd) {
+//		super.setProxyPwd(proxyPwd);
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyPwd changes
+//	}
+
+	@Override
+	public void setResultingUrl(String resultingUrl) {
+		super.setResultingUrl(resultingUrl);
+		setHttpRequest(null); // trigger a recreation of the request if the proxyPwd changes
+	}
+	@Override
+	public void setTimeout(int timeout) {
+		super.setTimeout(timeout);
+		setHttpClient(null); // trigger a recreation of the connection if the proxyPwd changes
+	}
+
+	public void setMethod(HTTP_Method method) {
+		this.method = method;
+		setHttpRequest(null); // trigger a recreation of the request if the method changes
+//?		setRequestHeaders(null);
+//?		setRequestBody((byte[])null);
+	}
+
+	public void setHttpVersion(Version httpVersion) {
+		this.httpVersion = httpVersion;
+		setHttpClient(null); // trigger a recreation of the connection if the http version ever changes
+	}
+
+	public void setTargetUid(String targetUid) {
+		this.targetUid = targetUid;
+		setHttpClient(null); // trigger a recreation of the connection if the uid changes
+	}
+	public void setTargetPwd(String targetPwd) {
+		this.targetPwd = targetPwd;
+		setHttpClient(null); // trigger a recreation of the connection if the pwd changes
+	}
+
+	public void setHeaders(String headers) {
+		this.headers = headers;
+		updateRequestHeaders();
+	}
+
+	public void setPayload(String payload) {
+		this.payload = payload;
+		updateRequestBody();
+	}
+
+	public void setAcceptableReturnCodes(String acceptableReturnCodes) {
+		this.acceptableReturnCodes= acceptableReturnCodes;
+	}
+
+	private synchronized void setHttpClient(HttpClient httpClient) {
+		this.httpClient = httpClient;
+	}
+	private synchronized void setHttpRequest(HttpRequest httpRequest) {
+		this.httpRequest = httpRequest;
+	}
+
+	protected void updateRequestHeaders() {
+		try {
+			if (!init) createRequest(); // this sets the requestHeaders as side-effect
+		} catch (Exception ex) {
+			log.error("Error resolving '{}':", ex); //$NON-NLS-1$
+			this.requestHeaders = null;
+		}
+	}
+
+	protected void updateRequestBody() {
+		if (!init) updateResultingValue(getPayload(), (str) -> setRequestBody(str));
+	}
+
 	public void setRequestHeaders(HttpHeaders requestHeaders) {
 		if (!Objects.equal(this.requestHeaders, requestHeaders)) {
 			HttpHeaders oldRequestHeaders = this.requestHeaders;
@@ -138,6 +231,7 @@ abstract public class HTTPConnection extends IPConnection
 			informOnPropertyChange(PROPERTYNAME_REQUEST_HEADERS, oldRequestHeaders, requestHeaders);
 		}
 	}
+
 	public void setRequestBody(byte[] requestBody) {
 		if (!Objects.equal(this.requestBody, requestBody)) {
 			byte[] oldRequestBody = this.requestBody;
@@ -145,6 +239,16 @@ abstract public class HTTPConnection extends IPConnection
 			informOnPropertyChange(PROPERTYNAME_REQUEST_BODY, oldRequestBody, requestBody);
 		}
 	}
+
+	@JsonIgnore
+	public void setRequestBody(String value) {
+		setRequestBody(convertBodyFromString(value, extractRequestCharset()));
+	}
+	private static byte[] convertBodyFromString(String value, Charset charset) {
+		return (value != null ? value.getBytes(charset) : EMPTY_BODY);
+	}
+
+	// received data:
 
 	public void setResponseStatusCode(int responseStatusCode ) {
 		if (!Objects.equal(this.responseStatusCode, responseStatusCode)) {
@@ -173,51 +277,47 @@ abstract public class HTTPConnection extends IPConnection
 	public void createClient() {
 		HttpClient.Builder builder = HttpClient
 			.newBuilder()
-			.version(this.httpVersion)
-			.followRedirects(this.redirectBehavior)
-			.connectTimeout(Duration.ofSeconds(this.timeout))
+			.version(getHttpVersion())
+			.followRedirects(getRedirectBehavior())
+			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
-		if (this.targetUid != null && this.targetPwd != null) {
+		if (getTargetUid() != null && getTargetPwd() != null) {
 			builder.authenticator(new Authenticator()
 				{
 					@Override
 					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(HTTPConnection.this.targetUid, HTTPConnection.this.targetPwd.toCharArray());
+						return new PasswordAuthentication(getTargetUid(), getTargetPwd().toCharArray());
 					}
 				});
 		}
+		// TODO implement proxied access
 //		if (this.proxyHost != null) {
 //			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
 //		}
-		this.httpClient = builder.build();
+		setHttpClient(builder.build());
 	}
 
 	public void createRequest() throws Exception {
-		String requestUrl = getResultingUrl();
-		if (requestUrl == null) {
-			requestUrl = resolveProperties(getUrl());
-			if (requestUrl == null) throw new IllegalArgumentException("Can't create request - URL must not be null"); //$NON-NLS-1$
-		}
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
-			.uri(URI.create(requestUrl))
+			.uri(URI.create(resultingUrlResolved()))
 			.timeout(Duration.ofSeconds(getTimeout()));
-		if (this.headers != null) {
-			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(this.headers));
+		if (getHeaders() != null) {
+			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(getHeaders()));
 			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
 		}
-		switch (this.method) {
+		switch (getMethod()) {
 		case GET:
 			setRequestBody(EMPTY_BODY);
 			builder.GET();
 			break;
 		case POST: {
-			setRequestBody(resolveProperties(this.payload));
+			setRequestBody(resolveProperties(getPayload()));
 			byte[] body = getRequestBody();
 			builder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
 		}
 		case PUT: {
-			setRequestBody(resolveProperties(this.payload));
+			setRequestBody(resolveProperties(getPayload()));
 			byte[] body = getRequestBody();
 			builder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
@@ -227,39 +327,48 @@ abstract public class HTTPConnection extends IPConnection
 			builder.DELETE();
 			break;
 		default:
-			throw new IllegalArgumentException("Unsupported HTTP method: " + this.method); //$NON-NLS-1$
+			throw new IllegalArgumentException("Unsupported HTTP method: " + getMethod()); //$NON-NLS-1$
 		}
-		this.httpRequest = builder.build();
-		setRequestHeaders(this.httpRequest.headers());
+		setHttpRequest(builder.build());
+		setRequestHeaders(getHttpRequest().headers());
 		logRequestValues();
 	}
 
 	@Override
 	public void sendRequest() throws Exception {
-		log.info("executingRequest '{}':", getName()); //$NON-NLS-1$
+		log.info("sendRequest '{}':", getName()); //$NON-NLS-1$
+		HttpClient client = null;
+		HttpRequest request = null;
 		try {
 			setTimestamp(LocalDateTime.now());
-			if (this.httpClient == null) {
-				createClient();
+			synchronized(this) {
+				if (getHttpClient() == null) {
+					createClient();
+				}
+				client = getHttpClient();
 			}
-			if (this.httpRequest == null) {
-				createRequest();
+			synchronized(this) {
+				if (getHttpRequest() == null) {
+					createRequest();
+				}
+				request = getHttpRequest();
 			}
 			long startTime = System.nanoTime();
-			HttpResponse<byte[]> response = this.httpClient.send(this.httpRequest, BodyHandlers.ofByteArray());
+			HttpResponse<byte[]> response = client.send(request, BodyHandlers.ofByteArray());
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
 			log.info("responseReceived for '{}' after {} µsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(response);
 		} catch (Exception ex) {
+			log.info("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
 			setDuration(-1);
 			setResponseStatusCode(-1);
 			setResponseHeaders(null);
 			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
 			setState(State.FAILED);
-			if (this.httpRequest != null) {
+			if (request != null) {
 				throw new Exception(String.format("Error for '%s' sending request to %s: ", //$NON-NLS-1$
-				                                  getName(), this.httpRequest.uri()), ex);
+				                                  getName(), request.uri()), ex);
 			} else {
 				throw new Exception(String.format("Error for '%s' creating request", getName()), ex); //$NON-NLS-1$
 			}
@@ -272,24 +381,24 @@ abstract public class HTTPConnection extends IPConnection
 		setResponseBody(response.body());
 		logResponseValues();
 		deriveState();
-		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, null);
+		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, response);
 	}
 
 	private void deriveState() {
 		final State res;
-		if (this.checkResults) {
-			String acceptableCodes = this.acceptableReturnCodes != null ? this.acceptableReturnCodes : "200"; //$NON-NLS-1$
-			String responseStatusCodeStr = Integer.toString(this.responseStatusCode);
-			log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", this.responseStatusCode, responseStatusCodeStr); //$NON-NLS-1$
+		if (isCheckResults()) {
+			String acceptableCodes = getAcceptableReturnCodes() != null ? getAcceptableReturnCodes() : "200"; //$NON-NLS-1$
+			String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
+			log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
 		  search: {
 			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 				if (acceptable.equals(responseStatusCodeStr)) {
-					log.debug("responseStatusCode:{} -> matched: {}", this.responseStatusCode, acceptable); //$NON-NLS-1$
+					log.debug("responseStatusCode:{} -> matched: {}", getResponseStatusCode(), acceptable); //$NON-NLS-1$
 					res = State.OK;
 					break search;
 				}
 			}
-			log.debug("responseStatusCode:{} -> no match found.", this.responseStatusCode); //$NON-NLS-1$
+			log.debug("responseStatusCode:{} -> no match found.", getResponseStatusCode()); //$NON-NLS-1$
 			res = State.FAILED;
 		  } // :search
 		} else {
@@ -300,29 +409,30 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public void logRequestValues() {
-		log.debug("{}-httpRequest to '{}':\nheaders: {}", this.httpRequest.method(), this.httpRequest.uri(), this.requestHeaders); //$NON-NLS-1$
-		Optional<BodyPublisher> optional = this.httpRequest.bodyPublisher();
+		log.debug("{}-httpRequest to '{}':\nheaders: {}", getHttpRequest().method(), getHttpRequest().uri(), getRequestHeaders()); //$NON-NLS-1$
+		Optional<BodyPublisher> optional = getHttpRequest().bodyPublisher();
 		if (!optional.isEmpty()) {
-			log.debug("body: \"{}\"", this.getRequestBodyAsString()); //$NON-NLS-1$
+			log.debug("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
 		}
 	}
 
 	public void logResponseValues() {
-		log.debug("response: status={} / payload-length={}\nheaders:{}\nbody (assuming UTF-8): \"{}\"", //$NON-NLS-1$
-		          this.responseStatusCode, this.responseBody.length, this.responseHeaders, this.getResponseBodyAsString());
+		log.debug("response: status={} / payload-length={}\nheaders:{}\nbody: \"{}\"", //$NON-NLS-1$
+		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), responseBodyAsString());
 	}
 
 	// utility methods:
 
+	@JsonIgnore
 	public Integer getResponseStatusCode() {
 		return (this.responseStatusCode != -1 ? Integer.valueOf(this.responseStatusCode) : null);
 	}
-	@JsonIgnore
-	public String getRequestHeadersAsString() {
+
+	public String requestHeadersAsString() {
 		return convertHeadersToString(this.requestHeaders);
 	}
 	@JsonIgnore
-	public String getResponseHeadersAsString() {
+	public String responseHeadersAsString() {
 		return convertHeadersToString(this.responseHeaders);
 	}
 
@@ -370,23 +480,14 @@ abstract public class HTTPConnection extends IPConnection
 		                                                        DEFAULT_CHARSET);
 	}
 
-	@JsonIgnore
-	public String getRequestBodyAsString() {
+	public String requestBodyAsString() {
 		return convertBodyToString(this.getRequestBody(), extractRequestCharset());
 	}
-	@JsonIgnore
-	public String getResponseBodyAsString() {
+	public String responseBodyAsString() {
 		return convertBodyToString(this.getResponseBody(), extractResponseCharset());
 	}
 	private static String convertBodyToString(byte[] body, Charset charset) {
 		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);
-	}
-
-	public void setRequestBody(String value) {
-		setRequestBody(convertBodyFromString(value, extractRequestCharset()));
-	}
-	private static byte[] convertBodyFromString(String value, Charset charset) {
-		return (value != null ? value.getBytes(charset) : EMPTY_BODY);
 	}
 
 	@Override

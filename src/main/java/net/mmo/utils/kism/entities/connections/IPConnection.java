@@ -30,7 +30,6 @@ import net.mmo.utils.kism.entities.LeafNode;
 import net.mmo.utils.kism.entities.ResultChecker;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
-import net.mmo.utils.kism.utils.NodeProperties;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
 @Entity
@@ -78,7 +77,7 @@ abstract public class IPConnection extends LeafNode
 	// transient stuff:
 
 	@JsonIgnore
-	transient protected Runnable request; // runs the request
+	transient protected Runnable runnable; // runs the runnable
 	@JsonIgnore
 	transient protected ScheduledExecutorService periodicExecutor; // for periodic/automatic execution
 	@JsonIgnore
@@ -117,16 +116,16 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	private void initExecutors() {
-		this.request = new Runnable() {
+		this.runnable = new Runnable() {
 			@Override
 			public void run() {
 				try {
 					sendRequest();
 				} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
 					if (shortLogEntries) {
-						log.info("Error executing request '{}':{}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+						log.info("Error executing runnable '{}':{}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 					} else {
-						log.error("Error executing request '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+						log.error("Error executing runnable '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				}
 			}
@@ -137,8 +136,8 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	@Override
-	public void setProperties(NodeProperties properties) {
-		super.setProperties(properties);
+	public void updateResolvableValues() {
+		super.updateResolvableValues();
 		updateResultingUrl();
 	}
 
@@ -148,7 +147,7 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	private void updateResultingUrl() {
-		updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
+		if (!init) updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
 	}
 
 	public String resultingUrlResolved() throws Exception {
@@ -170,16 +169,23 @@ abstract public class IPConnection extends LeafNode
 		}
 	}
 
+	public void setTimeout(int timeout) {
+		if (this.timeout != timeout) { // we are changing the timeout
+			this.timeout = timeout;
+			adjustExecutor(this.enabled); // restart (if applicable)
+		}
+	}
+
 	private void adjustExecutor(boolean start) {
 		if (this.periodicExecutor != null && !this.periodicExecutor.isShutdown()) {
 			if (this.future != null) this.future.cancel(false);
 			log.info("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
 			this.periodicExecutor.shutdown();
 		}
-		if (start) { // we (re)start - possibly with a different period:
-			log.info("starting periodicExecutor for '{}' (period: {} secs):", getName(), getPeriod()); //$NON-NLS-1$
+		if (start) { // we (re)start - possibly with a different period and/or timeout:
+			log.info("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
 			this.periodicExecutor = Executors.newScheduledThreadPool(1);
-			this.future = this.periodicExecutor.scheduleAtFixedRate(this.request, getPeriod(), getPeriod(), TimeUnit.SECONDS);
+			this.future = this.periodicExecutor.scheduleAtFixedRate(this.runnable, getPeriod(), getPeriod(), TimeUnit.SECONDS);
 		}
 	}
 
@@ -190,7 +196,6 @@ abstract public class IPConnection extends LeafNode
 			informOnPropertyChange(PROPERTYNAME_DURATION, oldDuration, duration);
 		}
 	}
-
 	public void setTimestamp(LocalDateTime timestamp) {
 		if (!Objects.equal(this.timestamp, timestamp)) {
 			LocalDateTime oldTimestamp = this.timestamp;

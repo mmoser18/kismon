@@ -21,7 +21,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
-import net.mmo.utils.kism.utils.NodeProperties;
 
 @Setter
 @Getter
@@ -85,9 +84,18 @@ public class JDBCConnection extends IPConnection
 	}
 
 	@Override
-	public void setProperties(NodeProperties properties) {
-		super.setProperties(properties);
+	public void updateResolvableValues() {
+		super.updateResolvableValues();
 		updateResultingQuery();
+	}
+
+	public void setUid(String uid) {
+		this.uid = uid;
+		resetConnection(); // trigger a recreation of the connection if the uid changes
+	}
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
+		resetConnection(); // trigger a recreation of the connection if the pwd changes
 	}
 
 	protected void setQuery(String query) {
@@ -96,7 +104,7 @@ public class JDBCConnection extends IPConnection
 	}
 
 	private void updateResultingQuery() {
-		updateResultingValue(getQuery(), (str) -> setResultingQuery(str));
+		if (!init) updateResultingValue(getQuery(), (str) -> setResultingQuery(str));
 	}
 
 	public String resultingQueryResolved() throws Exception {
@@ -118,16 +126,15 @@ public class JDBCConnection extends IPConnection
 		}
 	}
 
-	@SuppressWarnings("deprecation")
-	private void registerDriver() throws Exception {
-		log.debug("registerDriver:"); //$NON-NLS-1$
-		this.driver = (Driver)Class.forName(this.driverName).newInstance();
-		DriverManager.registerDriver(this.driver);
+	private void resetConnection() {
+		synchronized(this) {
+			setConnection(null);
+		}
 	}
 
 	private void createConnection() throws Exception {
 		log.debug("createConnection:"); //$NON-NLS-1$
-		if (this.driver == null) {
+		if (getDriver() == null) {
 			registerDriver();
 		}
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
@@ -135,15 +142,27 @@ public class JDBCConnection extends IPConnection
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	private void registerDriver() throws Exception {
+		log.debug("registerDriver:"); //$NON-NLS-1$
+		setDriver((Driver)Class.forName(this.driverName).newInstance());
+		DriverManager.registerDriver(this.driver);
+	}
+
+	@SuppressWarnings("resource")
 	@Override
 	public void sendRequest() throws Exception {
 		log.info("sendRequest {}:", getName()); //$NON-NLS-1$
 		Statement statement = null;
 		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
 		String resQuery = resultingQueryResolved();
+		Connection reqConnection = null;
 		try {
-			createConnection();
-			statement = this.connection.createStatement();
+			synchronized(this) {
+				if (getConnection() == null) createConnection();
+				reqConnection = getConnection();
+			}
+			statement = reqConnection.createStatement();
 			log.debug("statement.execute():", resQuery); //$NON-NLS-1$
 			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);
@@ -158,7 +177,7 @@ public class JDBCConnection extends IPConnection
 			                                 getName(), resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
 			setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
-			if (this.connection != null) {
+			if (reqConnection != null) {
 				throw new Exception(String.format("sending query '%s' to %s: ", resQuery, getResultingUrl()), ex); //$NON-NLS-1$
 			} else {
 				throw new Exception(String.format("creating query to '%s'", getResultingUrl()), ex); //$NON-NLS-1$

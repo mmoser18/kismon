@@ -67,6 +67,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	@JsonIgnore
 	public transient PropertyChangeListener changeListener;
 
+	@JsonIgnore
+	public static boolean init = true; // signals that we are still initializing the application
 
 	// required for deserialization
 	protected Node() {
@@ -91,6 +93,33 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			parent.getChildren().add(this);
 			parent.deriveNewState();
 		}
+	}
+
+	public void setProperties(NodeProperties properties) {
+		this.properties = properties;
+		updateResolvableValues();
+	}
+
+	public void propertiesFromString(String values) {
+		log.trace("setProperties(\"{}\")", values); //$NON-NLS-1$
+		NodeProperties props = this.properties;
+		if (props == null) {
+			props = new NodeProperties(getParent() != null ? getParent().getProperties() : null);
+		}
+		props.setPropertiesFromString(values);
+		setProperties(props);
+	}
+
+	@JsonIgnore
+	public String getPropertiesAsString() {
+		return (this.properties != null ? this.properties.getPropertiesAsString() : null);
+	}
+
+	/**
+	 *  to be overrriden by subclasses if they contribute resolvable a field(s)
+	 */
+	public void updateResolvableValues() {
+		// empty
 	}
 
 	public void setParent(IntermediateNode parent) {
@@ -170,7 +199,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			// to avoid recursion we only emit the parent's name:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", active:" + isActive() //$NON-NLS-1$
-			+ ", properties:" + KeyValuesConverter.convertMapToString(getProperties(), ", ") //$NON-NLS-1$ //$NON-NLS-2$
+			+ ", properties: {" + KeyValuesConverter.convertMapToString(getProperties(), ", ") + "}" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			+ "}"; //$NON-NLS-1$
 	}
 }

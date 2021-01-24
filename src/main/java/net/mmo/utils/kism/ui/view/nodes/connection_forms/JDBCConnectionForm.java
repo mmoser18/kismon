@@ -111,6 +111,12 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		                );
 	}
 
+	@Override
+	protected void updateResolvableValues() {
+		super.updateResolvableValues();
+		updateResultingQuery(this.node != null ? this.node.getQuery() : null);
+	}
+
 	protected void updateResultingQuery(String newValue) {
 		updateResultingField("updateResultingQuery", //$NON-NLS-1$
 		                     this.node,
@@ -119,11 +125,4 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		                     this.resultingQuery
 		                    );
 	}
-
-	@Override
-	protected void updateResolvableValues() {
-		super.updateResolvableValues();
-		updateResultingQuery(this.node != null ? this.node.getQuery() : null);
-	}
-
 }

@@ -27,21 +27,21 @@
         "xxx" : "yyy"
       },
       "enabled" : true,
-      "period" : 60,
-      "timeout" : 45,
+      "period" : 30,
+      "timeout" : 15,
       "url" : "http://localhost:8080/${foo}",
       "checkResults" : false,
       "resultChecker" : {
         "condition" : "EndsWithIgnoreCase",
         "operand" : "bar"
       },
-      "duration" : 13124900,
+      "duration" : 15328700,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
       "targetUid" : "user",
       "targetPwd" : "password",
-      "headers" : "bar:foo\nContent-Type:text/html; charset=UTF-16\nfoo:foo",
+      "headers" : "bar:foo\nContent-Type:text/html; charset=UTF-16\nfoo:bar",
       "payload" : "foobar ${xxx} abc",
       "acceptableReturnCodes" : "200"
     }, {
@@ -57,7 +57,7 @@
       "url" : "http://localhost:8080",
       "checkResults" : false,
       "resultChecker" : null,
-      "duration" : 0,
+      "duration" : 14717200,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -85,7 +85,7 @@
         "condition" : "ContainsIgnoreCase",
         "operand" : "Frau"
       },
-      "duration" : 9182000,
+      "duration" : 908600,
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",

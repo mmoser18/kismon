@@ -2,7 +2,7 @@
   "className" : "net.mmo.utils.kism.entities.RootNode",
   "name" : "root",
   "description" : "default",
-  "state" : "FAILED",
+  "state" : "OK",
   "active" : true,
   "properties" : {
     "foo" : "outer"
@@ -22,24 +22,28 @@
       "active" : true,
       "properties" : {
         "bar" : "foo",
-        "c" : "y"
+        "c" : "y",
+        "x" : "*",
+        "xxx" : "yyy"
       },
       "enabled" : true,
-      "period" : 60,
-      "timeout" : 45,
-      "url" : "http://localhost:8080/login",
-      "proxyHost" : null,
-      "proxyPort" : 0,
-      "duration" : 0,
+      "period" : 30,
+      "timeout" : 15,
+      "url" : "http://localhost:8080/${foo}",
+      "checkResults" : false,
+      "resultChecker" : {
+        "condition" : "EndsWithIgnoreCase",
+        "operand" : "bar"
+      },
+      "duration" : 15328700,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
       "targetUid" : "user",
       "targetPwd" : "password",
-      "checkResult" : false,
-      "acceptableReturnCodes" : null,
-      "headers" : "Content-Type:text/html; charset=UTF-16",
-      "payload" : "foobar"
+      "headers" : "bar:foo\nContent-Type:text/html; charset=UTF-16\nfoo:bar",
+      "payload" : "foobar ${xxx} abc",
+      "acceptableReturnCodes" : "200"
     }, {
       "className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
       "name" : "SOAP_0",
@@ -51,44 +55,47 @@
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
-      "proxyHost" : null,
-      "proxyPort" : 0,
-      "duration" : 0,
+      "checkResults" : false,
+      "resultChecker" : null,
+      "duration" : 14717200,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
       "targetUid" : "user",
       "targetPwd" : "password",
-      "checkResult" : false,
-      "acceptableReturnCodes" : "200",
       "headers" : "foo: bar",
-      "payload" : "foobar"
+      "payload" : "foobar",
+      "acceptableReturnCodes" : "200"
     }, {
       "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
       "name" : "JDBC_0",
       "description" : "JDBC IPConnection",
       "state" : "OK",
       "active" : true,
-      "properties" : { },
+      "properties" : {
+        "bar" : "zzz",
+        "foo" : "*"
+      },
       "enabled" : true,
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
-      "proxyHost" : null,
-      "proxyPort" : 0,
-      "duration" : 0,
+      "checkResults" : true,
+      "resultChecker" : {
+        "condition" : "ContainsIgnoreCase",
+        "operand" : "Frau"
+      },
+      "duration" : 908600,
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
-      "query" : "select * from dual",
-      "resultingQuery" : null,
-      "driverName" : "oracle.jdbc.driver.OracleDriver",
-      "dbResponse" : ""
+      "query" : "select ${foo} from REF_ANREDE",
+      "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ]
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.2",
     "description" : "default.2",
-    "state" : "FAILED",
+    "state" : "OK",
     "active" : true,
     "properties" : { },
     "children" : [ {

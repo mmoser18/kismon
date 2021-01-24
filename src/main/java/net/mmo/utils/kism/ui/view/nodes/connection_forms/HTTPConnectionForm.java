@@ -65,7 +65,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 			{
 				if (event.isFromClient()) {
 					log.info("method changed from {} to {}", event.getOldValue(), event.getValue()); //$NON-NLS-1$
-					adjustPayloadVisibility(event.getValue()); // Note: this is called BEFORE the Save button has been pressed!
+					adaptPayloadVisibility(event.getValue()); // Note: this is called BEFORE the Save button has been pressed!
 				}
 			});
 
@@ -96,7 +96,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 						return false;
 					}
 				}, Messages.getString("IPConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
-			.bind(HTTPConnection::getRequestHeadersAsString, HTTPConnection::setHeaders);
+			.bind(HTTPConnection::requestHeadersAsString, HTTPConnection::setHeaders);
 
 		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.payload.setClassName(RequestBodyClassName);
@@ -122,25 +122,25 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.requestHeaders.setClassName(RequestHeadersClassName);
 		this.requestHeaders.setThemeName(LabelPaddingTheme);
 		this.requestHeaders.addThemeName(MonospaceTheme);
-		this.binder.forField(this.requestHeaders).bind(HTTPConnection::getRequestHeadersAsString, null);
+		this.binder.forField(this.requestHeaders).bind(HTTPConnection::requestHeadersAsString, null);
 
 		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.requestBody.setClassName(RequestBodyClassName);
 		this.requestBody.setThemeName(LabelPaddingTheme);
 		this.requestBody.addThemeName(MonospaceTheme);
-		this.binder.forField(this.requestBody).bind(HTTPConnection::getRequestBodyAsString, null);
+		this.binder.forField(this.requestBody).bind(HTTPConnection::requestBodyAsString, null);
 
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
 		this.responseHeaders.setThemeName(LabelPaddingTheme);
 		this.responseHeaders.addThemeName(MonospaceTheme);
-		this.binder.forField(this.responseHeaders).bind(HTTPConnection::getResponseHeadersAsString, null);
+		this.binder.forField(this.responseHeaders).bind(HTTPConnection::responseHeadersAsString, null);
 
 		this.responseBody = new TextArea(Messages.getString("HTTPConnectionForm.ResponseBody.Label")); //$NON-NLS-1$
 		this.responseBody.setClassName(ResponseBodyClassName);
 		this.responseBody.setThemeName(LabelPaddingTheme);
 		this.responseBody.addThemeName(MonospaceTheme);
-		this.binder.forField(this.responseBody).bind(HTTPConnection::getResponseBodyAsString, null);
+		this.binder.forField(this.responseBody).bind(HTTPConnection::responseBodyAsString, null);
 
 		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
@@ -162,7 +162,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		{
 			log.info("checkResults value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
-				adaptAcceptableReturnCodes(event.getValue());
+				adaptAcceptableReturnCodesVisibility(event.getValue());
 				acceptableReturnCodesBinding.validate();
 			}
 		});
@@ -186,12 +186,12 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	@Override
 	public boolean setNode(N n) {
 		boolean res = super.setNode(n);
-		adaptAcceptableReturnCodes(n != null ? n.isCheckResults() : false);
+		adaptAcceptableReturnCodesVisibility(n != null ? n.isCheckResults() : false);
 		updateRequestInfo();
 		return res;
 	}
 
-	private void adaptAcceptableReturnCodes(boolean check) {
+	private void adaptAcceptableReturnCodesVisibility(boolean check) {
 		this.acceptableReturnCodes.setVisible(check);
 	}
 
@@ -209,7 +209,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 //	}
 
 	private void updateRequestInfo() {
-		adjustPayloadVisibility(this.node != null ? this.node.getMethod() : null);
+		adaptPayloadVisibility(this.node != null ? this.node.getMethod() : null);
 		updateRequestHeaders();
 	}
 
@@ -220,17 +220,18 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	}
 
 	/* we want the payload field only be visible when a corresponding method is selected */
-	private void adjustPayloadVisibility(HTTP_Method methodValue) {
+	private void adaptPayloadVisibility(HTTP_Method methodValue) {
 		this.payload.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 		this.requestBody.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 	}
 
-	@Override
-	protected boolean binderHasChanges() {
-		boolean hasChanges = super.binderHasChanges();
-		if (hasChanges && this.node != null) this.node.setHttpRequest(null); // trigger a re-generation of the request if e.g. the URL has changed
-		return hasChanges;
-	}
+// shouldn't be necessary any more...
+//	@Override
+//	protected boolean binderHasChanges() {
+//		boolean hasChanges = super.binderHasChanges();
+//		if (hasChanges && this.node != null) this.node.setHttpRequest(null); // trigger a re-generation of the request if e.g. the URL has changed
+//		return hasChanges;
+//	}
 
 	private void updateRequestHeaders() {
 		if (this.node != null) {
