@@ -145,7 +145,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
 		this.name.setThemeName(LabelPaddingTheme);
-//		this.binder.forField(this.nameField)
+//		this.binder.forField(this.name)
 //			.withValidator(name ->
 //				{ // Explicit validator instance
 //					return nodeService.getRootNodes().stream()
@@ -241,24 +241,26 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	/**
+	 * Checks whether a value is "resolvable" (i.e. whether contained properties can be resolved) and
+	 * optionally assigns the result to an entity field and/or a form-field
 	 * @param logPrefix
 	 * @param n Node
 	 * @param original value
 	 * @param resolved method/lambda to update node's field with resolved value (can be null)
-	 * @param textField the label to update
-	 * @param errorTamplate the string to format with a error msg. (if there was an error)
-	 * @return
+	 * @param textField the form-field to update (can be null)
+	 * @return the resolved value or an error message
 	 * @throws Exception
 	 */
-	protected String updateResultingField(String logPrefix,
-	                                      N n,
-	                                      String originalValue,
-	                                      BiConsumer<N, String> resolved,
-	                                      TextField textField
-	                                     ) {
-		String resolvedValue;
+	protected static <N extends Node> String updateResultingField(String logPrefix,
+	                                                              N n,
+	                                                              String originalValue,
+	                                                              BiConsumer<N, String> resolved,
+	                                                              TextField textField
+	                                                             ) {
+		String resolvedValue = null;
+		String errorMsg = null;
 		try {
-			if (this.node != null) {
+			if (n != null) {
 				resolvedValue = n.resolveProperties(originalValue);
 				log.debug("{}: '{}' -> '{}'", logPrefix, originalValue, resolvedValue); //$NON-NLS-1$
 				if (resolved != null) {
@@ -271,17 +273,20 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		} catch (Exception ex) {
 			String summary = ExceptionUtils.exceptionCauseSummary(ex);
 			log.debug("{}: Illegal value: '{}' : {}", logPrefix, originalValue, summary); //$NON-NLS-1$
-			resolvedValue = String.format(Messages.getString("NodeForm.ResultingField.IllegalSyntax"), logPrefix, originalValue, summary); //$NON-NLS-1$
+			errorMsg = String.format(Messages.getString("NodeForm.ResultingField.IllegalSyntax"), logPrefix, originalValue, summary); //$NON-NLS-1$
+			resolvedValue = errorMsg;
 		}
-		if (!resolvedValue.equals(originalValue)) {
-			log.debug("{}: Setting and displaying textField '{}' -> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
-			textField.setValue(resolvedValue);
-			textField.setVisible(true);
-		} else {
-			log.debug("{}: Hiding textField '{}' <-> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
-			textField.setVisible(false);
+		if (textField != null) {
+			if (!resolvedValue.equals(originalValue)) {
+				log.debug("{}: Setting and displaying textField '{}' -> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
+				textField.setValue(resolvedValue);
+				textField.setVisible(true);
+			} else {
+				log.debug("{}: Hiding textField '{}' <-> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
+				textField.setVisible(false);
+			}
 		}
-		return resolvedValue;
+		return errorMsg;
 	}
 
 	private HorizontalLayout createButtonsLayout() {

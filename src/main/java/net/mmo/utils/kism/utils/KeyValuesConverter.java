@@ -23,16 +23,25 @@ public class KeyValuesConverter
 	private final static String KEY_VALUE_SEPARATORS = ":"; //$NON-NLS-1$
 	private final static String PROPERTY_SEPARATORS = "[,\t\n]"; //$NON-NLS-1$
 	private final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-]*"; //$NON-NLS-1$
+	private final static String OPTIONAL_WHITE_SPACE = "\\s*"; //$NON-NLS-1$
 	// generating:
 	public final static char KEY_VALUE_SEPARATOR = ':';
+	public final static char VALUES_SEPARATOR     = ',';
 	public final static char PROPERTY_SEPARATOR = '\n';
-	public final static String KEY_VALUE_SEPARATOR_STRING = Character.toString(KEY_VALUE_SEPARATOR);
-	public final static String PROPERTY_SEPARATOR_STRING = Character.toString(PROPERTY_SEPARATOR);
+
+	public final static String KEY_VALUE_SEPARATOR_STRING = KEY_VALUE_SEPARATOR + " "; //$NON-NLS-1$
+	public final static String VALUES_SEPARATOR_STRING    = VALUES_SEPARATOR + " "; //$NON-NLS-1$
+	public final static String PROPERTY_SEPARATOR_STRING  = Character.toString(PROPERTY_SEPARATOR);
 
 	private KeyValuesConverter() {
 		// utility class only - must never be created as instance!
 	}
 
+	/**
+	 * Should actually be Map<String, String> but that isn't possible since Properties are defined as <Object, Object>
+	 * @param map
+	 * @return string representation
+	 */
 	public static String convertMapToString(Map<? extends Object, Object> map) { // ? extends object to satisfy the Java compiler when assigning a Map<String, Object>
 		return convertMapToString(map, PROPERTY_SEPARATOR_STRING);
 	}
@@ -45,7 +54,7 @@ public class KeyValuesConverter
 		for (String entry: values.split(PROPERTY_SEPARATORS)) {
 			if (!entry.isBlank()) {
 //				log.trace("convertStringToMap(\"{}\"): entry:\"{}\"", values, entry); //$NON-NLS-1$
-				String[] splits = entry.split(KEY_VALUE_SEPARATORS);
+				String[] splits = entry.split(OPTIONAL_WHITE_SPACE + KEY_VALUE_SEPARATORS + OPTIONAL_WHITE_SPACE);
 				if (splits.length != 2) {
 					log.error("convertStringToMap(\"{}\"): entry:\"{}\": splits:{} (length:{})", values, entry, splits, splits.length); //$NON-NLS-1$
 					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalSyntax"), entry)); //$NON-NLS-1$
@@ -97,5 +106,14 @@ public class KeyValuesConverter
 		}
 		log.debug("extractValueFragment: using default value: '{}'", defaultValue); //$NON-NLS-1$
 		return defaultValue;
+	}
+
+	public static String convertHeaderMapToString(Map<String, List<String>> headers) {
+		return headers.entrySet().stream()
+			.map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR_STRING + convertHeaderValues(entry.getValue()))
+			.collect(Collectors.joining(PROPERTY_SEPARATOR_STRING));
+	}
+	public static String convertHeaderValues(List<String> values) {
+		return String.join(VALUES_SEPARATOR_STRING, values);
 	}
 }

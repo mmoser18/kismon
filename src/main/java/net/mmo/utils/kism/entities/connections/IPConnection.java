@@ -97,10 +97,11 @@ abstract public class IPConnection extends LeafNode
 	@JsonIgnore
 	transient protected LocalDateTime timestamp;
 
+	@JsonIgnore
 	transient protected long duration;
 
 	protected static boolean asyncRequests =
-					Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.asyncRequests", "`true")); //$NON-NLS-1$ //$NON-NLS-2$
+					Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.asyncRequests", "true")); //$NON-NLS-1$ //$NON-NLS-2$
 	protected static boolean shortLogEntries =
 					Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.ShortLogEntries", "true")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -111,27 +112,27 @@ abstract public class IPConnection extends LeafNode
 
 	protected IPConnection(String name, String description) {
 		super(name, description);
-		// setState(State.values()[(int)(Math.random()*3.0)]); // during developing
 		initExecutors();
 	}
 
 	private void initExecutors() {
-		this.runnable = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					sendRequest();
-				} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
-					if (shortLogEntries) {
-						log.info("Error executing runnable '{}':{}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
-					} else {
-						log.error("Error executing runnable '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+		setRunnable(new Runnable()
+			{
+				@Override
+				public void run() {
+					try {
+						sendRequest();
+					} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
+						if (shortLogEntries) {
+							log.info("Error executing runnable '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+						} else {
+							log.error("Error executing runnable '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+						}
 					}
 				}
-			}
-		};
+			});
 		if (asyncRequests) {
-			this.interactiveExecutor = Executors.newSingleThreadExecutor();
+			setInteractiveExecutor(Executors.newSingleThreadExecutor());
 		}
 	}
 
@@ -147,7 +148,7 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	private void updateResultingUrl() {
-		if (!init) updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
+		updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
 	}
 
 	public String resultingUrlResolved() throws Exception {
@@ -158,34 +159,34 @@ abstract public class IPConnection extends LeafNode
 		if (this.enabled != enabled) {
 			this.enabled = enabled;
 			if (this.parent != null) this.parent.deriveNewState();
-			adjustExecutor(enabled);
+			adjustExecutor();
 		}
 	}
 
 	public void setPeriod(int period) {
 		if (this.period != period) { // we are changing the period
 			this.period = period;
-			adjustExecutor(this.enabled); // restart (if applicable)
+			adjustExecutor(); // restart (if applicable)
 		}
 	}
 
 	public void setTimeout(int timeout) {
 		if (this.timeout != timeout) { // we are changing the timeout
 			this.timeout = timeout;
-			adjustExecutor(this.enabled); // restart (if applicable)
+			adjustExecutor(); // restart (if applicable)
 		}
 	}
 
-	private void adjustExecutor(boolean start) {
-		if (this.periodicExecutor != null && !this.periodicExecutor.isShutdown()) {
-			if (this.future != null) this.future.cancel(false);
+	private void adjustExecutor() {
+		if (getPeriodicExecutor() != null && !getPeriodicExecutor().isShutdown()) {
+			if (getFuture() != null) getFuture().cancel(false);
 			log.info("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
-			this.periodicExecutor.shutdown();
+			getPeriodicExecutor().shutdown();
 		}
-		if (start) { // we (re)start - possibly with a different period and/or timeout:
+		if (isEnabled()) { // we (re)start - possibly with a different period and/or timeout:
 			log.info("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
-			this.periodicExecutor = Executors.newScheduledThreadPool(1);
-			this.future = this.periodicExecutor.scheduleAtFixedRate(this.runnable, getPeriod(), getPeriod(), TimeUnit.SECONDS);
+			setPeriodicExecutor(Executors.newScheduledThreadPool(1));
+			setFuture(this.periodicExecutor.scheduleAtFixedRate(getRunnable(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
 		}
 	}
 

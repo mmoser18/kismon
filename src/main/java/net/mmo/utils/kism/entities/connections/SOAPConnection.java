@@ -5,7 +5,12 @@
 
 package net.mmo.utils.kism.entities.connections;
 
+import java.net.http.HttpRequest.Builder;
+
 import javax.persistence.Entity;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +21,11 @@ import lombok.Setter;
 public class SOAPConnection extends HTTPConnection
 {
 	private static final long serialVersionUID = -7524304663532085424L;
+
+	@NotNull
+	@NotEmpty
+	@NotBlank
+	protected String soapOperation;
 
 	@SuppressWarnings("unused")
 	private SOAPConnection() { // required for deserialization
@@ -32,4 +42,16 @@ public class SOAPConnection extends HTTPConnection
 		if (method != HTTP_Method.POST) throw new IllegalArgumentException("SOAP-requests can only be POSTs!"); //$NON-NLS-1$
 		this.method = method;
 	}
+
+	public void setSoapOperation(String soapOperation) {
+		this.soapOperation = soapOperation;
+		updateRequestHeaders();
+	}
+
+	@Override
+	protected void aditionalRequestPreparations(Builder builder) throws Exception {
+		builder.setHeader("SOAPAction", '"' + resolveProperties(getSoapOperation()) + '"'); //$NON-NLS-1$
+	}
+
+
 }

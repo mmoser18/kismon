@@ -153,13 +153,13 @@ public class NodeService
 	}
 
 	public RootNode read(InputStream inp, String fileName) throws IOException {
-		Node.init = true; // prevents certain functions in the beans
+		Node.initializing = true; // since our "beans" also contain logic we need to prevent certain functions while the are being deserialized
 		RootNode newRoot = this.mapper.readValue(inp, RootNode.class);
-		Node.init = false;
 		restoreParents(newRoot);
+		Node.initializing = false;
 		newRoot.setFilePath(fileName);
 		newRoot.deriveNewState();
-		newRoot.trickleDown((node) -> node.updateResolvableValues());
+		newRoot.updateAllResolvableValues(); // this triggers a trickle-down updating all resolvable properties in the entire tree
 		addNewRootNode(newRoot);
 		log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
 		return newRoot;

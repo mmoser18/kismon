@@ -46,7 +46,7 @@ public class ListView extends VerticalLayout
 	Grid<Contact> grid = new Grid<>(Contact.class); // package visible for UTs - is there no other way?
 	ContactForm form; // package visible for ITs - is there no other way?
 	Div content;
-	LayoutDirection contentDirection = LayoutDirection.direction_row;
+	LayoutDirection contentDirection = LayoutDirection.DirectionRow;
 
 	// This gets autowired but still puzzled which annotation causes this...
 	public ListView(ContactService contactService,
@@ -104,7 +104,8 @@ public class ListView extends VerticalLayout
 		Button addContactButton = new Button(Messages.getString("ListView.Button.Add_Contact.Label")); //$NON-NLS-1$
 		addContactButton.addClickListener(click -> addContact());
 
-		Button directionButton = new Button(String.format(Messages.getString("ListView.Button.Direction.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
+		Button directionButton = new Button(String.format(Messages.getString("ListView.Button.Direction.Label"), //$NON-NLS-1$
+		                                                  LayoutDirection.invert(this.contentDirection).toString()));
 		directionButton.addClickListener(click ->
 			{
 				// We re-label the button with the current direction...

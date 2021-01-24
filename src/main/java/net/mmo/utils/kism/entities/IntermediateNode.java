@@ -47,8 +47,8 @@ public class IntermediateNode extends Node
 		}
 		synchronized(this) {
 			child.setParent(this);
-			this.getChildren().add(child);
-			this.deriveNewState();
+			getChildren().add(child);
+			deriveNewState();
 		}
 		return child;
 	}
@@ -56,8 +56,8 @@ public class IntermediateNode extends Node
 	public Node removeChild(Node child) {
 		synchronized(this) {
 			child.setParent(null);
-			this.getChildren().remove(child);
-			this.deriveNewState();
+			getChildren().remove(child);
+			deriveNewState();
 		}
 		return child;
 	}

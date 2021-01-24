@@ -18,20 +18,19 @@ public class CommonConstants
 	public static final String LogoutURLSuffix = "logout"; //$NON-NLS-1$
 
 	public enum LayoutDirection {
-		direction_row(Messages.getString("CommonConstants.LayoutDirection.Row")), //$NON-NLS-1$
-		direction_col(Messages.getString("CommonConstants.LayoutDirection.Col")); //$NON-NLS-1$
+		DirectionRow(Messages.getString("CommonConstants.LayoutDirection.Row")), //$NON-NLS-1$
+		DirectionCol(Messages.getString("CommonConstants.LayoutDirection.Col")); //$NON-NLS-1$
 
 		String name;
 
 		LayoutDirection(String name) {
-			log.info("LayoutDirection c'tor: name: {}", name); //$NON-NLS-1$
 			this.name = name;
 		}
 
 		public static LayoutDirection invert(LayoutDirection dir) {
-			return (dir == LayoutDirection.direction_row
-			       ? LayoutDirection.direction_col
-			       : LayoutDirection.direction_row);
+			return (dir == LayoutDirection.DirectionRow
+			       ? LayoutDirection.DirectionCol
+			       : LayoutDirection.DirectionRow);
 		}
 
 		@Override

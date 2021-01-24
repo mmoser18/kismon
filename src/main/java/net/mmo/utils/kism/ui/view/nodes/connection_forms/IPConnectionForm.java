@@ -351,13 +351,13 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		updateResultingUrl(this.node != null ? this.node.getUrl() : null);
 	}
 
-	protected String updateResultingUrl(String newValue) {
-		return updateResultingField("updateResultingURL", //$NON-NLS-1$
-		                            this.node,
-		                            newValue,
-		                            IPConnection::setResultingUrl,
-		                            this.resultingURL
-		                            );
+	protected void updateResultingUrl(String newValue) {
+		updateResultingField("updateResultingURL", //$NON-NLS-1$
+		                     this.node,
+		                     newValue,
+		                     IPConnection::setResultingUrl,
+		                     this.resultingURL
+		                    );
 	}
 
 	public static Double getDurationInMillis(IPConnection n) {

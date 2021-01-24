@@ -75,12 +75,13 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.headers = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
+		this.headers.addThemeName(MonospaceTheme);
 		this.headers.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
 				log.info("headers value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				// this.node.setHeaders(event.getValue());
-				updateRequestHeaders();
+				updateRequestData();
 			}
 		});
 
@@ -96,17 +97,18 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 						return false;
 					}
 				}, Messages.getString("IPConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
-			.bind(HTTPConnection::requestHeadersAsString, HTTPConnection::setHeaders);
+			.bind(HTTPConnection::getHeaders, HTTPConnection::setHeaders);
 
 		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.payload.setClassName(RequestBodyClassName);
 		this.payload.setThemeName(LabelPaddingTheme);
+		this.payload.addThemeName(MonospaceTheme);
 		this.payload.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
 				log.info("payload value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				// this.node.setPayload(event.getValue());
-				updateRequestHeaders();
+				updateRequestData();
 			}
 		});
 
@@ -170,8 +172,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		HorizontalLayout checkResultFields = new HorizontalLayout(this.checkResults, this.acceptableReturnCodes);
 		checkResultFields.addClassName(CombinedClassName);
 
-		this.fields.add(methodAndExecuteButton
-		                ,this.headers, this.payload
+		this.fields.add(this.headers, this.payload
+		                ,methodAndExecuteButton
 		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
 		                ,responseDetailsFields
 		                ,this.requestHeaders, this.requestBody
@@ -210,13 +212,13 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 
 	private void updateRequestInfo() {
 		adaptPayloadVisibility(this.node != null ? this.node.getMethod() : null);
-		updateRequestHeaders();
+		updateRequestData();
 	}
 
 	@Override
 	protected void updateResolvableValues() {
 		super.updateResolvableValues();
-		updateRequestHeaders();
+		updateRequestData();
 	}
 
 	/* we want the payload field only be visible when a corresponding method is selected */
@@ -233,7 +235,11 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 //		return hasChanges;
 //	}
 
-	private void updateRequestHeaders() {
+	@SuppressWarnings("unused")
+	private void updateRequestData(String value) {
+		updateRequestData();
+	}
+	private void updateRequestData() {
 		if (this.node != null) {
 			try {
 				this.node.createRequest();

@@ -74,7 +74,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	Div content;
 
 	NodeForm<N> form; // package visible for ITs - is there no other way?
-	LayoutDirection contentDirection = LayoutDirection.direction_row;
+	LayoutDirection contentDirection = LayoutDirection.DirectionRow;
 
 	private static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 

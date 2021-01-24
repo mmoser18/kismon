@@ -15,6 +15,7 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 
@@ -73,11 +73,7 @@ abstract public class HTTPConnection extends IPConnection
 	private final static byte[] EMPTY_BODY = new byte[0];
 	private final static String VALUE_UNDEFINED = ""; //$NON-NLS-1$
 
-	private final static String KEY_VALUES_SEPARATOR = ":"; //$NON-NLS-1$
-	private final static String VALUES_SEPARATOR     = ","; //$NON-NLS-1$
 	private final static String VALUES_FRAGMENT_SEPARATOR = ";"; //$NON-NLS-1$
-
-	private final static String PROPERTY_SEPARATOR = "\n"; //$NON-NLS-1$
 
 	private final static Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
 	private final static String  CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
@@ -213,7 +209,7 @@ abstract public class HTTPConnection extends IPConnection
 
 	protected void updateRequestHeaders() {
 		try {
-			if (!init) createRequest(); // this sets the requestHeaders as side-effect
+			if (!initializing) createRequest(); // this sets the requestHeaders as side-effect
 		} catch (Exception ex) {
 			log.error("Error resolving '{}':", ex); //$NON-NLS-1$
 			this.requestHeaders = null;
@@ -221,7 +217,7 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	protected void updateRequestBody() {
-		if (!init) updateResultingValue(getPayload(), (str) -> setRequestBody(str));
+		if (!initializing) updateResultingValue(getPayload(), (str) -> setRequestBody(str));
 	}
 
 	public void setRequestHeaders(HttpHeaders requestHeaders) {
@@ -329,16 +325,30 @@ abstract public class HTTPConnection extends IPConnection
 		default:
 			throw new IllegalArgumentException("Unsupported HTTP method: " + getMethod()); //$NON-NLS-1$
 		}
+		aditionalRequestPreparations(builder);
+
 		setHttpRequest(builder.build());
 		setRequestHeaders(getHttpRequest().headers());
 		logRequestValues();
 	}
 
+	/**
+	 * Hook allowing to add e.g. additional request headers or add additional request parameters, etc.
+	 * @param builder
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unused")
+	protected void aditionalRequestPreparations(Builder builder) throws Exception {
+		// empty
+	}
+
+	@SuppressWarnings("null") // the program flow guarantees that request is != null if response is <> null!
 	@Override
 	public void sendRequest() throws Exception {
 		log.info("sendRequest '{}':", getName()); //$NON-NLS-1$
 		HttpClient client = null;
 		HttpRequest request = null;
+		HttpResponse<byte[]> response = null;
 		try {
 			setTimestamp(LocalDateTime.now());
 			synchronized(this) {
@@ -354,7 +364,7 @@ abstract public class HTTPConnection extends IPConnection
 				request = getHttpRequest();
 			}
 			long startTime = System.nanoTime();
-			HttpResponse<byte[]> response = client.send(request, BodyHandlers.ofByteArray());
+			response = client.send(request, BodyHandlers.ofByteArray());
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
 			log.info("responseReceived for '{}' after {} µsecs.", getName(), callDuration/1000); //$NON-NLS-1$
@@ -366,7 +376,10 @@ abstract public class HTTPConnection extends IPConnection
 			setResponseHeaders(null);
 			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
 			setState(State.FAILED);
-			if (request != null) {
+			if (response != null) {
+				throw new Exception(String.format("Error for '%s' processing response from %s: ", //$NON-NLS-1$
+				                                  getName(), request.uri()), ex);
+			} else if (request != null) {
 				throw new Exception(String.format("Error for '%s' sending request to %s: ", //$NON-NLS-1$
 				                                  getName(), request.uri()), ex);
 			} else {
@@ -375,7 +388,7 @@ abstract public class HTTPConnection extends IPConnection
 		}
 	}
 
-	public void responseReceived(HttpResponse<byte[]> response) {
+	public void responseReceived(HttpResponse<byte[]> response) throws Exception {
 		setResponseStatusCode(response.statusCode());
 		setResponseHeaders(response.headers());
 		setResponseBody(response.body());
@@ -384,25 +397,29 @@ abstract public class HTTPConnection extends IPConnection
 		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, response);
 	}
 
-	private void deriveState() {
-		final State res;
+	private void deriveState() throws Exception {
+		State res = State.OK;
 		if (isCheckResults()) {
 			String acceptableCodes = getAcceptableReturnCodes() != null ? getAcceptableReturnCodes() : "200"; //$NON-NLS-1$
 			String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
 			log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
-		  search: {
-			for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
-				if (acceptable.equals(responseStatusCodeStr)) {
-					log.debug("responseStatusCode:{} -> matched: {}", getResponseStatusCode(), acceptable); //$NON-NLS-1$
-					res = State.OK;
-					break search;
+			search: {
+				for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
+					if (acceptable.equals(responseStatusCodeStr)) {
+						log.debug("responseStatusCode:{} -> matched: {}", getResponseStatusCode(), acceptable); //$NON-NLS-1$
+						break search;
+					}
 				}
+				log.debug("responseStatusCode:{} -> no match found.", getResponseStatusCode()); //$NON-NLS-1$
+				res = State.FAILED;
+			} // :search
+			if (getResultChecker() != null) {
+				if (!getResultChecker().checkResult(this, responseBodyAsString())) {
+					res = State.FAILED;
+				}
+			} else {
+				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}
-			log.debug("responseStatusCode:{} -> no match found.", getResponseStatusCode()); //$NON-NLS-1$
-			res = State.FAILED;
-		  } // :search
-		} else {
-			res = State.OK;
 		}
 		log.info("deriveState: {}", res); //$NON-NLS-1$
 		setState(res);
@@ -429,35 +446,26 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public String requestHeadersAsString() {
-		return convertHeadersToString(this.requestHeaders);
+		return convertHeadersToString(getRequestHeaders());
 	}
 	@JsonIgnore
 	public String responseHeadersAsString() {
-		return convertHeadersToString(this.responseHeaders);
+		return convertHeadersToString(getResponseHeaders());
 	}
 
 	private static String convertHeadersToString(HttpHeaders headers) {
-		return (headers != null ? convertMapToString(headers.map()) : ""); //$NON-NLS-1$
-	}
-	// TODO: move to KeyValuesConverter
-	private static String convertMapToString(Map<String, List<String>> headers) {
-		return headers.entrySet().stream()
-			.map(entry -> entry.getKey() + KEY_VALUES_SEPARATOR + convertHeaderValues(entry.getValue()))
-			.collect(Collectors.joining(PROPERTY_SEPARATOR));
-	}
-	private static String convertHeaderValues(List<String> values) {
-		return String.join(VALUES_SEPARATOR, values);
+		return (headers != null ? KeyValuesConverter.convertHeaderMapToString(headers.map()) : ""); //$NON-NLS-1$
 	}
 
 	/** extract character set from httpRequest headers - if there is any...
 	 * @throws Exception */
 	protected Charset extractRequestCharset() {
-		HttpHeaders requHdrs = this.getRequestHeaders();
+		HttpHeaders requHdrs = getRequestHeaders();
 		return extractRequestCharset(requHdrs != null ? requHdrs.map() : null);
 	}
 	/** extract character set from response headers - if there is any... */
 	protected Charset extractResponseCharset() {
-		HttpHeaders respHdrs = this.getResponseHeaders();
+		HttpHeaders respHdrs = getResponseHeaders();
 		return extractRequestCharset(respHdrs != null ? respHdrs.map() : null);
 	}
 	/** extract character set from Content-Type header - if there is any... */
@@ -481,10 +489,10 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public String requestBodyAsString() {
-		return convertBodyToString(this.getRequestBody(), extractRequestCharset());
+		return convertBodyToString(getRequestBody(), extractRequestCharset());
 	}
 	public String responseBodyAsString() {
-		return convertBodyToString(this.getResponseBody(), extractResponseCharset());
+		return convertBodyToString(getResponseBody(), extractResponseCharset());
 	}
 	private static String convertBodyToString(byte[] body, Charset charset) {
 		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);

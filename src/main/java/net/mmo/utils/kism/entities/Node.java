@@ -68,7 +68,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	public transient PropertyChangeListener changeListener;
 
 	@JsonIgnore
-	public static boolean init = true; // signals that we are still initializing the application
+	public static boolean initializing = true; // signals that we are still initializing the application
 
 	// required for deserialization
 	protected Node() {
@@ -97,7 +97,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public void setProperties(NodeProperties properties) {
 		this.properties = properties;
-		updateResolvableValues();
+		if (!initializing) {
+			updateAllResolvableValues();
+		}
 	}
 
 	public void propertiesFromString(String values) {
@@ -120,6 +122,10 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	 */
 	public void updateResolvableValues() {
 		// empty
+	}
+
+	public void updateAllResolvableValues() {
+		trickleDown((node) -> node.updateResolvableValues());
 	}
 
 	public void setParent(IntermediateNode parent) {
@@ -149,12 +155,14 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	protected void updateResultingValue(String originalValue, Consumer<String> setter) {
-		try {
-			setter.accept(resolveProperties(originalValue));
-		} catch (Exception ex) {
-			String msg = String.format("Error resolving '%s': %s", originalValue, ex.getMessage()); //$NON-NLS-1$
-			log.error(msg);
-			setter.accept(msg);
+		if (!initializing) {
+			try {
+				setter.accept(resolveProperties(originalValue));
+			} catch (Exception ex) {
+				String msg = String.format("Error resolving '%s': %s", originalValue, ex.getMessage()); //$NON-NLS-1$
+				log.error(msg);
+				setter.accept(msg);
+			}
 		}
 	}
 

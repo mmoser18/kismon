@@ -104,7 +104,7 @@ public class JDBCConnection extends IPConnection
 	}
 
 	private void updateResultingQuery() {
-		if (!init) updateResultingValue(getQuery(), (str) -> setResultingQuery(str));
+		updateResultingValue(getQuery(), (str) -> setResultingQuery(str));
 	}
 
 	public String resultingQueryResolved() throws Exception {
@@ -173,7 +173,7 @@ public class JDBCConnection extends IPConnection
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		} catch (Exception ex) {
 			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
-			setResponsePayload(String.format("Exception executing '{}' (query '%s'): %s", //$NON-NLS-1$
+			setResponsePayload(String.format("Exception executing '%s' (query '%s'): %s", //$NON-NLS-1$
 			                                 getName(), resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
 			setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
@@ -258,9 +258,9 @@ public class JDBCConnection extends IPConnection
 	}
 
 	private void deriveState() throws Exception {
-		if (this.checkResults) {
-			if (this.resultChecker != null) {
-				setState(this.resultChecker.checkResult(this,getResponsePayload()) ? State.OK : State.FAILED);
+		if (isCheckResults()) {
+			if (getResultChecker() != null) {
+				setState(getResultChecker().checkResult(this,getResponsePayload()) ? State.OK : State.FAILED);
 				return;
 			} else {
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
