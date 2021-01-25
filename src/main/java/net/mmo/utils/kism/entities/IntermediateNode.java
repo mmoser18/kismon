@@ -24,7 +24,16 @@ public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
+	enum ChildOperation {
+		ALL_MUST_BE_OK,  /** ALL children must be OK for an OK, else FAILED */
+		AT_LEAST_ONE_OK, /** ALL must be OK for an OK, any OK is DEGRADED, none OK is failed */
+		ANY_NON_FAILED,  /** At eleast one child must be OK for an OK, else FAILED */
+		EXACTLY_ONE_OK   /** Exactly one must be OK, the others must be NOT OK */
+	}
+
 	private ArrayList<Node>	children = new ArrayList<>();
+
+	private ChildOperation operation = ChildOperation.ALL_MUST_BE_OK;
 
 	// required for deserialization only
 	protected IntermediateNode() {
@@ -64,16 +73,63 @@ public class IntermediateNode extends Node
 
 	// default implementation: find minimal child-state:
 	public void deriveNewState() {
-		State minimalState = State.OK;
-		synchronized(this) {
-			for (Node child: getChildren()) {
-				if (child.isActive()) { // child is to be considered
-					if (child.getState().ordinal() < minimalState.ordinal()) minimalState = child.getState();
+		State derivedState;
+		switch (getOperation()) {
+		case ALL_MUST_BE_OK:
+			derivedState = State.OK;
+			synchronized(this) {
+				for (Node child: getChildren()) {
+					if (child.isEnabled()) { // child is to be considered
+						if (child.getState() != null && child.getState().ordinal() < derivedState.ordinal()) derivedState = child.getState();
+					}
 				}
 			}
+			break;
+		case AT_LEAST_ONE_OK:
+			derivedState = State.FAILED;
+			synchronized(this) {
+				for (Node child: getChildren()) {
+					if (child.isEnabled()) { // child is to be considered
+						if (child.getState() != null && child.getState() == State.OK) {
+							derivedState = State.OK;
+							break; // for
+						}
+					}
+				}
+			}
+			break;
+		case ANY_NON_FAILED: // At least one child must be OK/DEGRADED for an OK/DEGRADED
+			derivedState = State.FAILED;
+			synchronized(this) {
+				for (Node child: getChildren()) {
+					if (child.isEnabled()) { // child is to be considered
+						if (child.getState() != null && child.getState().ordinal() > derivedState.ordinal()) derivedState = child.getState();
+					}
+				}
+			}
+			break;
+		case EXACTLY_ONE_OK:
+			derivedState = State.FAILED;
+			synchronized(this) {
+				for (Node child: getChildren()) {
+					if (child.isEnabled()) { // child is to be considered
+						if (child.getState() != null && child.getState() == State.OK) {
+							if (derivedState == State.FAILED) { // first OK
+								derivedState = State.OK;
+							} else { // already had an OK
+								derivedState = State.FAILED;
+								break;
+							}
+						}
+					}
+				}
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("Unsupported Child-Operation: " + getOperation()); //$NON-NLS-1$
 		}
-		if (getState() != minimalState) {
-			setState(minimalState); // this triggers deriveNewState() on parent, so no need to call that explicitly
+		if (getState() != derivedState) {
+			setState(derivedState); // this triggers deriveNewState() on parent, so no need to call that explicitly
 		}
 	}
 
@@ -82,7 +138,7 @@ public class IntermediateNode extends Node
 	public void trickleDown(Consumer<Node> action) {
 		super.trickleDown(action);
 		for (Node child: getChildren()) {
-			action.accept(child);
+			child.trickleDown(action);
 		}
 	}
 
