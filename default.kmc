@@ -2,8 +2,7 @@
   "className" : "net.mmo.utils.kism.entities.RootNode",
   "name" : "root",
   "description" : "default",
-  "state" : "FAILED",
-  "active" : true,
+  "enabled" : true,
   "properties" : {
     "foo" : "outer"
   },
@@ -11,22 +10,20 @@
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.1",
     "description" : "default.1",
-    "state" : "FAILED",
-    "active" : true,
+    "enabled" : true,
     "properties" : { },
     "children" : [ {
       "className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
       "name" : "REST_0",
       "description" : "REST Connection",
-      "state" : "OK",
-      "active" : true,
+      "enabled" : true,
       "properties" : {
         "bar" : "foo",
         "c" : "y",
         "x" : "*",
         "xxx" : "yyy"
       },
-      "enabled" : true,
+      "active" : true,
       "period" : 30,
       "timeout" : 15,
       "url" : "http://localhost:8080/${foo}",
@@ -35,6 +32,7 @@
         "condition" : "EndsWithIgnoreCase",
         "operand" : ""
       },
+      "shortRequestLogEntries" : false,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -47,20 +45,20 @@
       "className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
       "name" : "SOAP_0",
       "description" : "SOAP Connection",
-      "state" : "FAILED",
-      "active" : true,
+      "enabled" : true,
       "properties" : {
         "x" : "Operation"
       },
-      "enabled" : true,
+      "active" : true,
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
       "checkResults" : true,
       "resultChecker" : {
-        "condition" : null,
-        "operand" : ""
+        "condition" : "Contains",
+        "operand" : "SOAPEnvelope"
       },
+      "shortRequestLogEntries" : false,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -74,21 +72,21 @@
       "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
       "name" : "JDBC_0",
       "description" : "JDBC Connection",
-      "state" : "FAILED",
-      "active" : true,
+      "enabled" : true,
       "properties" : {
         "bar" : "zzz",
         "foo" : "*"
       },
-      "enabled" : true,
+      "active" : true,
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
       "checkResults" : true,
       "resultChecker" : {
         "condition" : "ContainsIgnoreCase",
-        "operand" : "FrauX"
+        "operand" : "Frau"
       },
+      "shortRequestLogEntries" : false,
       "uid" : "C##QUEST",
       "pwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
@@ -98,15 +96,13 @@
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.2",
     "description" : "default.2",
-    "state" : "OK",
-    "active" : true,
+    "enabled" : true,
     "properties" : { },
     "children" : [ {
       "className" : "net.mmo.utils.kism.entities.IntermediateNode",
       "name" : "foo2",
       "description" : "bar",
-      "state" : "OK",
-      "active" : true,
+      "enabled" : true,
       "properties" : { },
       "children" : [ ]
     } ]

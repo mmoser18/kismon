@@ -38,7 +38,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
-	static final String EnabledClassName = NodeFormField + "enabled"; //$NON-NLS-1$
+	static final String ActiveClassName = NodeFormField + "active"; //$NON-NLS-1$
 	static final String PeriodClassName  = NodeFormField + "period"; //$NON-NLS-1$
 	static final String TimeoutClassName = NodeFormField + "timeout"; //$NON-NLS-1$
 
@@ -52,7 +52,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	static final String ConditionClassName = NodeFormField + "condition"; //$NON-NLS-1$
 	static final String OperandClassName = NodeFormField + "operand"; //$NON-NLS-1$
 
-	protected Checkbox enabled;
+	protected Checkbox active;
 	protected IntegerField period;
 	protected IntegerField timeout;
 
@@ -64,15 +64,15 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected TextField timestamp;
 	protected NumberField duration;
 
-	protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("Connection.TimeStampFormat", "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$ //$NON-NLS-2$
+	protected DateTimeFormatter dateTimeFormatter =
+		DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("LocalDateTimeStamp.Format", //$NON-NLS-1$
+		                                                                      "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$
 
 	protected Checkbox checkResults;
 	// protected ResultCheckerForm resultChecker;
 
 	protected ComboBox<ResultChecker.Condition> condition;
 	protected TextArea operand;
-
-	protected static boolean individualUpdates = Boolean.getBoolean(AppProperties.getProperties().getProperty("Connection.IndividualUpdates", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 
 	public IPConnectionForm(Class<N> clazz) {
@@ -83,8 +83,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected void createFormFields() {
 		super.createFormFields();
 
-		this.enabled = new Checkbox(Messages.getString("IPConnectionForm.Enabled.Label")); //$NON-NLS-1$
-		this.enabled.addClassName(EnabledClassName);
+		this.active = new Checkbox(Messages.getString("IPConnectionForm.Active.Label")); //$NON-NLS-1$
+		this.active.addClassName(ActiveClassName);
 
 		this.period = new IntegerField(Messages.getString("IPConnectionForm.Period.Label")); //$NON-NLS-1$
 		this.period.setSuffixComponent(new Span(Messages.getString("IPConnectionForm.Period.Suffix"))); //$NON-NLS-1$
@@ -96,8 +96,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.timeout.addClassName(TimeoutClassName);
 		this.timeout.setThemeName(LabelPaddingTheme);
 
-		HorizontalLayout enabledAndPeriod = new HorizontalLayout(this.enabled, this.period, this.timeout);
-		enabledAndPeriod.addClassName(CombinedClassName);
+		HorizontalLayout activeAndPeriod = new HorizontalLayout(this.active, this.period, this.timeout);
+		activeAndPeriod.addClassName(CombinedClassName);
 
 		this.url = new TextField(Messages.getString("IPConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
@@ -119,9 +119,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 					log.trace("validating url: '{}'", urlStr); //$NON-NLS-1$
 					try {
 						if (this.node != null) {
-							String resolvedUrlStr = this.node.resolveProperties(urlStr);
-							URI uri = new URI(resolvedUrlStr);
-							// no check - the actual error is thrown!
+							// we check whether we can resolve the url and convert it to a valid URL:
+							URI uri = new URI(this.node.resolveProperties(urlStr));
+							// no check necessary - any error is thrown!
 							log.debug("validation succeeded: '{}' => '{}'", urlStr, uri); //$NON-NLS-1$
 						} else {
 							log.debug("node == null: validation succeeded"); //$NON-NLS-1$
@@ -137,7 +137,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.resultingURL = new TextField(Messages.getString("IPConnectionForm.ResultingUrl.Value")); //$NON-NLS-1$
 		this.resultingURL.setClassName(ResultingURLClassName);
 		this.resultingURL.setThemeName(LabelPaddingTheme);
-		// this.binder.forField(this.resultingURL).bind(IPConnection::getResultingUrl, null);
 		this.binder.forField(this.resultingURL).bind(IPConnection::getResultingUrl, null);
 
 		this.duration = new NumberField(Messages.getString("HTTPConnectionForm.Duration.Label")); //$NON-NLS-1$
@@ -150,7 +149,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.timestamp = new TextField(Messages.getString("HTTPConnectionForm.TimeStamp.Label")); //$NON-NLS-1$
 		this.timestamp.setClassName(TimeStampClassName);
 		this.timestamp.setThemeName(LabelPaddingTheme);
-		String languageTag = Messages.getString("HTTPConnectionForm.TimeStamp.Locale"); //$NON-NLS-1$
+		String languageTag = Messages.getString("TimeStamp.Locale"); //$NON-NLS-1$
 		Locale locale = null;
 		try {
 			locale = Locale.forLanguageTag(languageTag);
@@ -188,7 +187,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 				                                        ? "HTTPConnectionForm.SaveAndExecute.Label" //$NON-NLS-1$
 				                                        : "HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 				boolean isValid = binderIsValid();
-				log.debug("binder status change -> [execute] enabled:{}", isValid); //$NON-NLS-1$
+				log.debug("binder status change -> [execute] active:{}", isValid); //$NON-NLS-1$
 				this.execute.setEnabled(isValid);
 			});
 
@@ -204,7 +203,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			});
 
 		this.checkResults = new Checkbox(Messages.getString("IPConnectionForm.CheckResult.Label")); //$NON-NLS-1$
-		this.checkResults.setClassName(EnabledClassName);
+		this.checkResults.setClassName(ActiveClassName);
 		this.checkResults.addValueChangeListener(event ->
 			{
 				log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -227,7 +226,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
 		this.binder.forField(this.operand).bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
 
-		this.fields.add(enabledAndPeriod, this.url, this.resultingURL);
+		this.fields.add(activeAndPeriod, this.url, this.resultingURL);
 	}
 
 	@Override
@@ -328,7 +327,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			if (n.getResultChecker() == null) {
 				log.info("creating new ResultChecker:"); //$NON-NLS-1$
 				n.setResultChecker(new ResultChecker());
-//				// if checkResults is enabled we need to add the validity of the resultChecker's binder to this one:
+//				// if checkResults is active we need to add the validity of the resultChecker's binder to this one:
 //				this.binder.withValidator(nn -> (checkResults ? this.resultChecker.getBinder().isValid() : true),
 //				                          "ResultCheck not valid"); //$NON-NLS-1$
 			}
@@ -361,7 +360,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	}
 
 	public static Double getDurationInMillis(IPConnection n) {
-		return IPConnection.convertNanoSecsToMillis(n.getDuration());
+		return IPConnection.convertDurationToMillis(n.getDuration());
 	}
 
 	@Override

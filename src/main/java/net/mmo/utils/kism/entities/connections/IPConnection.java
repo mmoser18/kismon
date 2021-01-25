@@ -44,7 +44,14 @@ abstract public class IPConnection extends LeafNode
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
 
-	protected boolean enabled = false; // should connection be regularly checked?
+	protected static boolean AsyncRequestsDefault =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.AsyncRequests", //$NON-NLS-1$
+		                                                               "false")); //$NON-NLS-1$
+	protected static boolean ShortRequestLogEntriesDefault =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.ShortRequestLogEntries", //$NON-NLS-1$
+		                                                               "false")); //$NON-NLS-1$
+
+	protected boolean active = false; // should connection be regularly checked?
 
 	@Min(0) // 0 means off
 	@Max(3600) // means: 1x/hr
@@ -74,6 +81,8 @@ abstract public class IPConnection extends LeafNode
 	@JoinColumn(name = "result_checker_id")
 	protected ResultChecker resultChecker;
 
+	protected boolean shortRequestLogEntries = ShortRequestLogEntriesDefault;
+
 	// transient stuff:
 
 	@JsonIgnore
@@ -100,11 +109,6 @@ abstract public class IPConnection extends LeafNode
 	@JsonIgnore
 	transient protected long duration;
 
-	protected static boolean asyncRequests =
-					Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.asyncRequests", "true")); //$NON-NLS-1$ //$NON-NLS-2$
-	protected static boolean shortLogEntries =
-					Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.ShortLogEntries", "true")); //$NON-NLS-1$ //$NON-NLS-2$
-
 	/**required for deserialization only */
 	protected IPConnection() {
 		initExecutors();
@@ -123,15 +127,15 @@ abstract public class IPConnection extends LeafNode
 					try {
 						sendRequest();
 					} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
-						if (shortLogEntries) {
-							log.info("Error executing runnable '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+						if (IPConnection.this.shortRequestLogEntries) {
+							log.info("Error executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 						} else {
-							log.error("Error executing runnable '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+							log.error("Error executing '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					}
 				}
 			});
-		if (asyncRequests) {
+		if (AsyncRequestsDefault) {
 			setInteractiveExecutor(Executors.newSingleThreadExecutor());
 		}
 	}
@@ -155,9 +159,10 @@ abstract public class IPConnection extends LeafNode
 		return resultingFieldResolved(getUrl(), () -> getResultingUrl(), (str) -> setResultingUrl(str));
 	}
 
-	public void setEnabled(boolean enabled) {
-		if (this.enabled != enabled) {
-			this.enabled = enabled;
+	@Override
+	public void setActive(boolean active) {
+		if (this.active != active) {
+			this.active = active;
 			if (this.parent != null) this.parent.deriveNewState();
 			adjustExecutor();
 		}
@@ -178,15 +183,28 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	private void adjustExecutor() {
-		if (getPeriodicExecutor() != null && !getPeriodicExecutor().isShutdown()) {
-			if (getFuture() != null) getFuture().cancel(false);
+		if (getPeriodicExecutor() != null) {
 			log.info("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
-			getPeriodicExecutor().shutdown();
+			if (!getPeriodicExecutor().isTerminated()) {
+				getPeriodicExecutor().shutdown();
+				try {
+					getPeriodicExecutor().awaitTermination(3, TimeUnit.SECONDS);
+				} catch (InterruptedException ex) {
+					log.error("Error shutting down '" + getName() + '"' , ex); //$NON-NLS-1$
+				}
+			}
+			if (getFuture() != null) {
+				getFuture().cancel(false);
+			}
+			setPeriodicExecutor(null);
+			setFuture(null);
 		}
-		if (isEnabled()) { // we (re)start - possibly with a different period and/or timeout:
+		if (getFuture() != null) throw new IllegalStateException("Future must be null!"); //$NON-NLS-1$
+		if (getPeriodicExecutor() != null) throw new IllegalStateException("Executor must be null!"); //$NON-NLS-1$
+		if (isActive()) { // we (re)start - possibly with a different period and/or timeout:
 			log.info("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
 			setPeriodicExecutor(Executors.newScheduledThreadPool(1));
-			setFuture(this.periodicExecutor.scheduleAtFixedRate(getRunnable(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
+			setFuture(getPeriodicExecutor().scheduleAtFixedRate(getRunnable(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
 		}
 	}
 
@@ -206,12 +224,12 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	// convenience method to convert duration in nano-seconds to milli-sec's
-	public static Double convertNanoSecsToMillis(long responseDuration) {
-		return (responseDuration != 0 ? (Math.round(responseDuration/1000.0)*1.0e-3) : 0); // nsec's --> usec's (rounded to micro-seconds)
+	public static Double convertDurationToMillis(long responseDuration) {
+		return (responseDuration != 0 ? (Math.round(responseDuration/1000.0)*1.0e-3) : 0); // nsec's --> msec's (rounded to micro-seconds)
 	}
 
 	public void executeRequest() throws Exception {
-		if (IPConnection.asyncRequests) {
+		if (IPConnection.AsyncRequestsDefault) {
 			log.info("sendRequest-async:"); //$NON-NLS-1$
 			this.interactiveExecutor.execute(() -> {
 				try {
@@ -233,7 +251,7 @@ abstract public class IPConnection extends LeafNode
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-			.append(", enabled:").append(this.enabled) //$NON-NLS-1$
+			.append(", active:").append(this.active) //$NON-NLS-1$
 			.append(", period:").append(this.period) //$NON-NLS-1$
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
 //			.append(", proxyHost:").append(this.proxyHost) //$NON-NLS-1$

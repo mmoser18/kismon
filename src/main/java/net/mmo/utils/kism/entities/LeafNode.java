@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class LeafNode extends Node
+abstract public class LeafNode extends Node
 {
 	private static final long serialVersionUID = 265720619758262963L;
 

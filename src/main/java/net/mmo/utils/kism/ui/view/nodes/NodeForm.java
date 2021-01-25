@@ -38,7 +38,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	static final String NameClassName        = NodeFormField + "name"; //$NON-NLS-1$
 	static final String DescriptionClassName = NodeFormField + "description"; //$NON-NLS-1$
 	static final String StateClassName       = NodeFormField + "state"; //$NON-NLS-1$
-	static final String ActiveClassName      = NodeFormField + "active"; //$NON-NLS-1$
+	static final String EnabledClassName      = NodeFormField + "enabled"; //$NON-NLS-1$
 	static final String PropertiesClassName  = NodeFormField + "properties"; //$NON-NLS-1$
 
 	/** class name to mark combined fields */
@@ -53,9 +53,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected TextField name;
 	protected TextArea description;
-	// state is calculated automatically!
-	protected TextField state;
-	protected Checkbox active;
+	protected TextField state;	// state is calculated automatically - never entered!
+	protected Checkbox enabled;
 	protected TextArea properties;
 
 	protected VerticalLayout fields;
@@ -164,11 +163,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.state.setReadOnly(true); // state is calculated automatically!
 		this.binder.forField(this.state).bind(n -> n.getState().toString(), null);
 
-		this.active  = new Checkbox(Messages.getString("NodeForm.Active.Label")); //$NON-NLS-1$
-		this.active.addClassName(ActiveClassName);
+		this.enabled  = new Checkbox(Messages.getString("NodeForm.Enabled.Label")); //$NON-NLS-1$
+		this.enabled.addClassName(EnabledClassName);
 
-		HorizontalLayout stateAndActive = new HorizontalLayout(this.active, this.state);
-		stateAndActive.addClassName(CombinedClassName);
+		HorizontalLayout stateAndEnabled = new HorizontalLayout(this.enabled, this.state);
+		stateAndEnabled.addClassName(CombinedClassName);
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
@@ -199,7 +198,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				}
 			});
 
-		this.fields = new VerticalLayout(this.name, this.description, stateAndActive, this.properties);
+		this.fields = new VerticalLayout(this.name, this.description, stateAndEnabled, this.properties);
 		this.fields.setClassName(FieldsClassName);
 		// this.fields.setSizeFull();
 		this.fields.setWidthFull();
@@ -296,6 +295,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.save.addClickListener(event -> validateAndSave());
 		this.binder.addStatusChangeListener(event ->
 			{
+				@SuppressWarnings("hiding")
 				boolean enabled = binderHasChanges() && binderIsValid();
 				log.debug("binder status change -> [save] enabled:{}", enabled); //$NON-NLS-1$
 				this.save.setEnabled(enabled);
