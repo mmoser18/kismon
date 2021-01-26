@@ -150,7 +150,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		}
 	}
 
-	public void setActive(boolean enabled) {
+	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		if (this.parent != null) this.parent.deriveNewState();
 	}

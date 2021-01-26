@@ -5,13 +5,33 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
+import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
+
+import com.vaadin.flow.component.select.Select;
 import net.mmo.utils.kism.entities.IntermediateNode;
 
 public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 {
 	private static final long serialVersionUID = -6878512672974473759L;
 
+	static final String OperationClassName = NodeFormField + "operation"; //$NON-NLS-1$
+
+
 	public IntermediateNodeForm() {
 		super(IntermediateNode.class);
+	}
+
+	protected Select<IntermediateNode.ChildrenCondition> condition;
+
+	@Override
+	protected void createFormFields() {
+		super.createFormFields();
+
+		this.condition = new Select<>(IntermediateNode.ChildrenCondition.values());
+		this.condition.addClassName(OperationClassName);
+		this.condition.setLabel(Messages.getString("IntermediateNode.ChildCondition.Label")); //$NON-NLS-1$
+		this.condition.setItemLabelGenerator((cond) -> Messages.getString("IntermediateNode.ChildCondition." + cond.name())); //$NON-NLS-1$
+
+		this.fields.add(this.condition);
 	}
 }

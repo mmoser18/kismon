@@ -7,9 +7,9 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -34,7 +34,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	static final String ResponseBodyClassName       = NodeFormField + "response-body"; //$NON-NLS-1$
 	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
 
-	protected ComboBox<HTTP_Method> method;
+	protected Select<HTTP_Method> method;
 
 	protected TextArea headers;
 	protected TextArea payload;
@@ -58,9 +58,10 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	protected void createFormFields() {
 		super.createFormFields();
 
-		this.method = new ComboBox<>(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
+		this.method = new Select<>(HTTP_Method.values());
+		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
 		this.method.setClassName(MethodClassName);
-		this.method.setItems(HTTP_Method.values());
+		// this.method.setItemLabelGenerator(meth -> Messages.getString("HTTPConnectionForm.Method." + meth.name())); //$NON-NLS-1$
 		this.method.addValueChangeListener(event ->
 			{
 				if (event.isFromClient()) {

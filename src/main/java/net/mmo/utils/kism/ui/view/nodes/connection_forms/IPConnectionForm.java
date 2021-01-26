@@ -14,9 +14,9 @@ import java.util.Locale;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -71,7 +71,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected Checkbox checkResults;
 	// protected ResultCheckerForm resultChecker;
 
-	protected ComboBox<ResultChecker.Condition> condition;
+	protected Select<ResultChecker.Condition> condition;
 	protected TextArea operand;
 
 
@@ -214,8 +214,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 
 //		this.resultChecker = new ResultCheckerForm();
 //		this.resultChecker.setClassName(ResultCheckerClassName);
-		this.condition = new ComboBox<Condition>(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
-		this.condition.setItems(Condition.values());
+		this.condition = new Select<Condition>(Condition.values());
+		this.condition.setLabel(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
 		this.condition.setItemLabelGenerator(cond -> Messages.getString("ResultChecker.Condition.Value." + cond.name())); //$NON-NLS-1$
 		this.condition.addClassName(ConditionClassName);
 

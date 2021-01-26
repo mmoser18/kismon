@@ -14,26 +14,27 @@ import javax.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true, exclude = {"children"})
-// @Slf4j
+@Slf4j
 public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
-	enum ChildOperation {
+	public enum ChildrenCondition {
 		ALL_MUST_BE_OK,  /** ALL children must be OK for an OK, else FAILED */
 		AT_LEAST_ONE_OK, /** ALL must be OK for an OK, any OK is DEGRADED, none OK is failed */
-		ANY_NON_FAILED,  /** At eleast one child must be OK for an OK, else FAILED */
+		ANY_NON_FAILED,  /** At least one child must be OK for an OK, else FAILED */
 		EXACTLY_ONE_OK   /** Exactly one must be OK, the others must be NOT OK */
 	}
 
 	private ArrayList<Node>	children = new ArrayList<>();
 
-	private ChildOperation operation = ChildOperation.ALL_MUST_BE_OK;
+	private ChildrenCondition condition = ChildrenCondition.ALL_MUST_BE_OK;
 
 	// required for deserialization only
 	protected IntermediateNode() {
@@ -45,6 +46,13 @@ public class IntermediateNode extends Node
 	}
 	public IntermediateNode(String name, String description, State state, IntermediateNode parent) {
 		super(name, description, state, parent);
+	}
+
+	public void setCondition(ChildrenCondition condition) {
+		if (this.condition != condition) {
+			this.condition = condition;
+			deriveNewState();
+		}
 	}
 
 	public Node addChild(Node child) {
@@ -73,8 +81,9 @@ public class IntermediateNode extends Node
 
 	// default implementation: find minimal child-state:
 	public void deriveNewState() {
+		log.trace("derivedState: {}", getCondition()); //$NON-NLS-1$
 		State derivedState;
-		switch (getOperation()) {
+		switch (getCondition()) {
 		case ALL_MUST_BE_OK:
 			derivedState = State.OK;
 			synchronized(this) {
@@ -126,9 +135,10 @@ public class IntermediateNode extends Node
 			}
 			break;
 		default:
-			throw new IllegalArgumentException("Unsupported Child-Operation: " + getOperation()); //$NON-NLS-1$
+			throw new IllegalArgumentException("Unsupported Child-Operation: " + getCondition()); //$NON-NLS-1$
 		}
 		if (getState() != derivedState) {
+			log.debug("{}: {} --> new state: {}", getName(), getCondition(), derivedState); //$NON-NLS-1$
 			setState(derivedState); // this triggers deriveNewState() on parent, so no need to call that explicitly
 		}
 	}

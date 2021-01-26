@@ -124,6 +124,12 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- vaadin contribution for file download links and buttons: https://vaadin.com/directory/component/file-download-wrapper -->
+		<dependency>
+			<groupId>org.vaadin.olli</groupId>
+			<artifactId>file-download-wrapper</artifactId>
+			<version>3.0.1</version>
+		</dependency>
 		<!-- non-declared dependency of the above -->
 		<dependency>
 			<groupId>javax.websocket</groupId>

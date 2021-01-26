@@ -38,7 +38,9 @@ public class KeyValuesConverterTest
 		Map<String, Object> map = KeyValuesConverter.convertStringToMap(COMPLEX_CASE);
 		String reconverted = KeyValuesConverter.convertMapToString(map);
 		Assertions.assertEquals(COMPLEX_CASE_SORTED
-		                        .replace('\t',KeyValuesConverter.PROPERTY_SEPARATOR)
-		                        .replace(',',KeyValuesConverter.PROPERTY_SEPARATOR), reconverted);
+		                        .replace('\t', KeyValuesConverter.PROPERTY_SEPARATOR)
+		                        .replace(',', KeyValuesConverter.PROPERTY_SEPARATOR)
+		                        .replaceAll("\\:",": "),
+		                        reconverted);
 	}
 }

@@ -147,8 +147,10 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	public void setUrl(String url) {
-		this.url = url;
-		updateResultingUrl();
+		if (!Objects.equal(this.url, url)) {
+			this.url = url;
+			updateResultingUrl();
+		}
 	}
 
 	private void updateResultingUrl() {
@@ -159,11 +161,9 @@ abstract public class IPConnection extends LeafNode
 		return resultingFieldResolved(getUrl(), () -> getResultingUrl(), (str) -> setResultingUrl(str));
 	}
 
-	@Override
 	public void setActive(boolean active) {
 		if (this.active != active) {
 			this.active = active;
-			if (this.parent != null) this.parent.deriveNewState();
 			adjustExecutor();
 		}
 	}

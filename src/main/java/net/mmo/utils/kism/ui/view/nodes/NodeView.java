@@ -1,6 +1,7 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
@@ -44,6 +46,7 @@ import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.vaadin.olli.FileDownloadWrapper;
 
 /**
  * Defines the application's main view, routed to via the base URL
@@ -173,12 +176,19 @@ public class NodeView <N extends Node> extends VerticalLayout
 				saveAllRoots();
 			});
 
-//		Button readFileButton = new Button(Messages.getString("NodeView.Button.ReadFile.Label")); //$NON-NLS-1$
-//		readFileButton.addClickListener(click ->
-//			{
-//				log.info("readFileButton clicked"); //$NON-NLS-1$
-//				readLocalFile();
-//			});
+		Button downloadFileButton = new Button(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
+		FileDownloadWrapper buttonWrapper =
+			new FileDownloadWrapper(new StreamResource("content", //$NON-NLS-1$
+			                                           () -> {
+//			                                              Set<Node> nodes = this.tree.getSelectedItems();
+//			                                              if (nodes.isEmpty()) {
+//			                                              	return null;
+//			                                              }
+//			                                              Node node = nodes.iterator().next();
+//			                                              return new ByteArrayInputStream(node.getName().getBytes());
+				                                          return new ByteArrayInputStream("some bytes".getBytes()); //$NON-NLS-1$
+			                                           }));
+		buttonWrapper.wrapComponent(downloadFileButton);
 
 		MemoryBuffer buffer = new MemoryBuffer(); // alternative: new FileBuffer();
 		Upload uploadFile = new Upload(buffer);
@@ -194,13 +204,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 			}
 		});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, /*readFileButton,*/ uploadFile);
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, downloadFileButton, uploadFile);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
 	}
 
 	private void configureTree() {
-
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
 		// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!  ||-(
 		this.tree = new TreeGrid<>(createDataProvider());

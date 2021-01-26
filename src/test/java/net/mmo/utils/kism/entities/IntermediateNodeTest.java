@@ -56,7 +56,7 @@ public class IntermediateNodeTest
 		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		new LeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
-		new LeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setActive(false); //$NON-NLS-1$ //$NON-NLS-2$
+		new LeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setEnabled(false); //$NON-NLS-1$ //$NON-NLS-2$
 		new LeafNode("leaf3", "leaf-node3", State.DEGRADED, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(State.DEGRADED, root.getState()); // FAILED since the worst child (FAILED) is ignored
 	}
