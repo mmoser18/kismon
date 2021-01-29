@@ -3,6 +3,8 @@ package net.mmo.utils.kism.ui.view.nodes;
 
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.function.BiConsumer;
 
 import com.vaadin.flow.component.ComponentEvent;
@@ -28,7 +30,7 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Slf4j
-public abstract class NodeForm <N extends Node> extends VerticalLayout
+public abstract class NodeForm <N extends Node> extends VerticalLayout implements PropertyChangeListener
 {
 	private static final long serialVersionUID = -4928837821374748141L;
 
@@ -86,8 +88,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.header.setText(header);
 	}
 
-	public boolean setNode(N node) {
-		log.debug("NodeForm.setNode({})", node); //$NON-NLS-1$
+	public boolean setNode(N newNode) {
+		log.debug("NodeForm.setNode({})", newNode); //$NON-NLS-1$
 		if (this.node != null) {
 			if (this.binder.hasChanges()) {
 				log.debug("binder has changes!"); //$NON-NLS-1$
@@ -99,31 +101,32 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				                  ).open();
 				return false;
 			}
-			this.node.setChangeListener(null);
+			this.node.removeChangeListener(this);
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
-		this.node = node;
-		log.debug("NodeForm.setNode({}) - new node accepted!", node); //$NON-NLS-1$
+		this.node = newNode;
+		log.debug("NodeForm.setNode({}) - new node accepted!", newNode); //$NON-NLS-1$
 		// this.binder.setBean(node);
-		if (node != null) {
-			this.node.setChangeListener(event ->
-				{
-					@SuppressWarnings("unchecked")
-					N sourceNode = (N)event.getSource();
-					String propertyName = event.getPropertyName();
-					Object oldValue = event.getOldValue();
-					Object newValue = event.getNewValue();
-					log.info("changeListener called for '{}': '{}' -> '{}' for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
-
-					getUI().ifPresentOrElse((ui) -> ui.access(() -> handleChangeEvent(sourceNode, propertyName, oldValue, newValue)),
-					                        () -> log.warn("UI not present for changeListener for node {}", node)); //$NON-NLS-1$
-				});
-			log.info("changeListener set on node {}", node); //$NON-NLS-1$
+		if (newNode != null) {
+			newNode.addChangeListener(this);
+			log.info("changeListener set on node {}", newNode); //$NON-NLS-1$
 			updateResolvableValues();
 		}
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
-		readBean(this.node); // to bind the values from the node to the UI fields.
+		readBean(newNode); // to update the form values from the new node to the UI fields.
 		return true;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		@SuppressWarnings("unchecked")
+		N sourceNode = (N)event.getSource();
+		String propertyName = event.getPropertyName();
+		Object oldValue = event.getOldValue();
+		Object newValue = event.getNewValue();
+		log.info("changeListener called for '{}': '{}' -> '{}' for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
+		getUI().ifPresentOrElse((ui) -> ui.access(() -> handleChangeEvent(sourceNode, propertyName, oldValue, newValue)),
+		                        () -> log.warn("UI not present for changeListener for node {}", this.node)); //$NON-NLS-1$
 	}
 
 	/** to be extended by subclasses if they handle further property-updates */
@@ -134,7 +137,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			break;
 		default:
 			// ignore
-			// NodeView.ProgrammingError(String.format("Unexpected property name '%s' for %s", propertyName, sourceNode), new Exception("dummy to obtain stacktrace")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		fireEvent(new UpdateEvent(this, this.node));
 	}
@@ -353,7 +355,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		}
 	}
 
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class SaveEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -8255534604198398835L;
@@ -362,7 +364,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			super(source, node);
 		}
 	}
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class DeleteEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -5394186746319400182L;
@@ -371,7 +373,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			super(source, node);
 		}
 	}
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class CloseEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -657451450305155687L;
@@ -380,7 +382,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			super(source, null);
 		}
 	}
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it an not be used in lambdas
+	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class UpdateEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -5848948485202766204L;

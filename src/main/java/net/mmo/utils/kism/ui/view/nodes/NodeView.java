@@ -1,5 +1,7 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,7 +61,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 // This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
 // see https://github.com/vaadin/vaadin-grid/issues/1934
 @CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
-public class NodeView <N extends Node> extends VerticalLayout
+public class NodeView <N extends Node> extends VerticalLayout implements PropertyChangeListener
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
@@ -211,16 +213,15 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void configureTree() {
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
-		// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!  ||-(
-		this.tree = new TreeGrid<>(createDataProvider());
+		this.tree = new TreeGrid<>();
 		this.tree.addClassName(TreeClassName);
 		this.tree.setSizeFull();
 		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
 		this.tree.addColumn(Node::getDescription).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")); //$NON-NLS-1$
 		this.tree.addColumn(Node::getState      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")); //$NON-NLS-1$
 		this.tree.addColumn(Node::isEnabled     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
-		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
+		updateTree();
 
 		// connect view and model:
 		this.tree.asSingleSelect().addValueChangeListener(event ->
@@ -281,7 +282,35 @@ public class NodeView <N extends Node> extends VerticalLayout
 			log.trace("ValueProvider({}) -> <empty-list>", node.getName()); //$NON-NLS-1$
 			return Collections.emptyList();
 		});
-		return new TreeDataProvider<>(treeData);
+		TreeDataProvider<Node> dataProvider = new TreeDataProvider<>(treeData);
+		// register a refresh-trigger with each root-node:
+		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this));
+
+		// dataProvider.
+		return dataProvider;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		@SuppressWarnings("unchecked")
+		N sourceNode = (N)event.getSource();
+		String propertyName = event.getPropertyName();
+		Object oldValue = event.getOldValue();
+		Object newValue = event.getNewValue();
+		log.info("changeListener called for '{}': '{}' -> '{}' for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
+		getUI().ifPresentOrElse((ui) -> ui.access(() -> handleChangeEvent(sourceNode, propertyName, oldValue, newValue)),
+		                        () -> log.warn("UI not present for changeListener for node {}", sourceNode)); //$NON-NLS-1$
+	}
+
+	/** to be extended by subclasses if they handle further property-updates */
+	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		switch (propertyName) {
+		case Node.PROPERTYNAME_STATE: // we only need to refresh the tree view, if the state changed
+			this.tree.getDataProvider().refreshItem(sourceNode);
+			break;
+		default:
+			// ignore others
+		}
 	}
 
 	// This Java restriction that one can not pass a Collection<subclass> as Collection<superclass> is soooo brain-damaged!!!
@@ -317,9 +346,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				// this.tree.getDataProvider().refreshAll();
 			});
 		if (NodeView.alwaysSave) saveNode(newNode);
-		this.tree.setDataProvider(createDataProvider());
-		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
-		// this.tree.getDataProvider().refreshAll();
+		updateTree();
 	}
 
 	private void IfSuitableNodeSelected(Consumer<Node> action) {
@@ -357,8 +384,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
 		node.bubbleUp(n ->
 			{
-				if (NodeView.alwaysSave) saveNode(n);
 				dataProvider.refreshItem(n);
+				if (NodeView.alwaysSave) saveNode(n);
 			});
 	}
 
@@ -393,7 +420,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 					this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 					this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-					this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
+//					this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
 				}
 				this.form.setHeader(header);
 				this.form.setNode(node);
@@ -481,17 +508,21 @@ public class NodeView <N extends Node> extends VerticalLayout
 //			reportException(fileName, t);
 //		}
 //	}
-
+//
 	private void reportResult(RootNode rootNode, String sourceName) {
 		if (rootNode != null) { // new root was read: update UI
-			this.tree.setDataProvider(createDataProvider());
-			this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
-			// this.tree.getDataProvider().refreshAll();
+			updateTree();
 		} else { // reading failed:
 			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
 			log.info(msg);
 			new Notification(msg, 0).open();
 		}
+	}
+
+	private void updateTree() {
+		this.tree.setDataProvider(createDataProvider());
+		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
+		// this.tree.getDataProvider().refreshAll();
 	}
 
 	@SuppressWarnings("static-method")
@@ -518,9 +549,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			log.error(msg, t);
 			new Notification(msg, 10000).open();
 		} finally {
-			this.tree.setDataProvider(createDataProvider());
-			this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
-			// this.tree.getDataProvider().refreshAll();
+			updateTree();
 		}
 	}
 
@@ -568,4 +597,5 @@ public class NodeView <N extends Node> extends VerticalLayout
 				dialog.open();
 			});
 	}
+
 }

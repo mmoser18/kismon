@@ -5,22 +5,31 @@
 
 package net.mmo.utils.kism.entities;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.HashSet;
+
 import javax.persistence.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Setter
 @Getter
-// @Slf4j
+@Slf4j
 public class RootNode extends IntermediateNode
 {
 	private static final long serialVersionUID = -1717387035835870973L;
 
-	@JsonIgnore // no point in writing that value into the file itself. Restored/set after reading
+	@JsonIgnore // no point in writing that value into the file itself. Restored/set after reading from it
 	private String filePath;
+
+	@JsonIgnore
+	public transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
 
 	/** required for deserialization only */
 	@SuppressWarnings("unused")
@@ -36,6 +45,29 @@ public class RootNode extends IntermediateNode
 		if (parent != null) {
 			throw new RuntimeException("This should NEVER be called!"); //$NON-NLS-1$
 		}
+	}
+
+	/**
+	 * Register a listener
+	 */
+	@Override
+	public void addChangeListener(PropertyChangeListener listener) {
+		this.getChangeListeners().add(listener);
+	}
+
+	/**
+	 * Deregister a listener
+	 */
+	@Override
+	public void removeChangeListener(PropertyChangeListener listener) {
+		this.getChangeListeners().remove(listener);
+	}
+
+	/** method to inform listener(s) re. property changes that may have happened outside the GUI */
+	@Override
+	protected void informOnPropertyChange(Node node, String propertyName, Object oldValue, Object newValue) {
+		log.debug("informOnPropertyChange({}, {}, {}, {})", node.getName(), propertyName, oldValue, newValue); //$NON-NLS-1$
+		this.getChangeListeners().forEach((listener) -> listener.propertyChange(new PropertyChangeEvent(node, propertyName, oldValue, newValue)));
 	}
 
 	@Override

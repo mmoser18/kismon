@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.function.Consumer;
@@ -64,9 +63,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	@JsonIgnore
 	transient private State state = State.OK;
-
-	@JsonIgnore
-	public transient PropertyChangeListener changeListener;
 
 	@JsonIgnore
 	public static boolean initializing = true; // signals that we are still initializing the application
@@ -188,11 +184,32 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		action.accept(this);
 	}
 
+	public void onMyRootNodeDo(Consumer<Node> action) {
+		// instead of recursively calling the above we bubble up ourself:
+		Node n = this;
+		while (n.getParent() != null) { n = n.getParent(); }
+		// and call the above on the (presumable) RootNode:
+		action.accept(n);
+	}
+
+	/** method to be overwritten by root node */
+	protected void informOnPropertyChange(Node node, String propertyName, Object oldValue, Object newValue) {
+		log.warn("informOnPropertyChange() called on non-root-node - ignored"); //$NON-NLS-1$
+	}
+
 	/** method to inform listener(s) re. property changes that may have happened outside the GUI */
-	protected void informOnPropertyChange(String propertyName, Object oldValue, Object newValue) {
-		if (this.changeListener != null) {
-			this.changeListener.propertyChange(new PropertyChangeEvent(this, propertyName, oldValue, newValue));
-		}
+	public void informOnPropertyChange(String propertyName, Object oldValue, Object newValue) {
+		onMyRootNodeDo((n) -> n.informOnPropertyChange(this, propertyName, oldValue, newValue));
+	}
+
+	/** method to be overwritten by root node */
+	public void addChangeListener(PropertyChangeListener listener) {
+		onMyRootNodeDo((n) -> n.addChangeListener(listener));
+	}
+
+	/** method to be overwritten by root node */
+	public void removeChangeListener(PropertyChangeListener listener) {
+		onMyRootNodeDo((n) -> n.removeChangeListener(listener));
 	}
 
 	public String resolveProperties(String str) throws Exception {

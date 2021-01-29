@@ -421,7 +421,7 @@ abstract public class HTTPConnection extends IPConnection
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}
 		}
-		log.info("deriveState: {}", res); //$NON-NLS-1$
+		log.info("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
 		setState(res);
 	}
 
