@@ -26,7 +26,7 @@ public class RootNode extends IntermediateNode
 	private static final long serialVersionUID = -1717387035835870973L;
 
 	@JsonIgnore // no point in writing that value into the file itself. Restored/set after reading from it
-	private String filePath;
+	private transient String filePath;
 
 	@JsonIgnore
 	public transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
@@ -41,6 +41,12 @@ public class RootNode extends IntermediateNode
 		super(name, description);
 	}
 
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void finalize() {
+		this.changeListeners.clear();
+	}
+
 	public void setParent(Node parent) {
 		if (parent != null) {
 			throw new RuntimeException("This should NEVER be called!"); //$NON-NLS-1$
@@ -48,7 +54,7 @@ public class RootNode extends IntermediateNode
 	}
 
 	/**
-	 * Register a listener
+	 * Register a listener. A listener can only be registered once.
 	 */
 	@Override
 	public void addChangeListener(PropertyChangeListener listener) {
@@ -67,7 +73,12 @@ public class RootNode extends IntermediateNode
 	@Override
 	protected void informOnPropertyChange(Node node, String propertyName, Object oldValue, Object newValue) {
 		log.debug("informOnPropertyChange({}, {}, {}, {})", node.getName(), propertyName, oldValue, newValue); //$NON-NLS-1$
-		this.getChangeListeners().forEach((listener) -> listener.propertyChange(new PropertyChangeEvent(node, propertyName, oldValue, newValue)));
+		PropertyChangeEvent evt = new PropertyChangeEvent(node, propertyName, oldValue, newValue);
+		this.getChangeListeners().forEach((listener) ->
+		{
+			log.trace("Calling listener {}:", listener); //$NON-NLS-1$
+			listener.propertyChange(evt);
+		});
 	}
 
 	@Override

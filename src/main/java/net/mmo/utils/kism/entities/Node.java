@@ -184,32 +184,32 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		action.accept(this);
 	}
 
-	public void onMyRootNodeDo(Consumer<Node> action) {
-		// instead of recursively calling the above we bubble up ourself:
+	/** instead of recursively bubbling up we iterate up the parent ladder to execute action on the root node: */
+	public void onRootNodeDo(Consumer<Node> action) {
 		Node n = this;
 		while (n.getParent() != null) { n = n.getParent(); }
 		// and call the above on the (presumable) RootNode:
 		action.accept(n);
 	}
 
-	/** method to be overwritten by root node */
+	/** method to be overwritten by root nodes only! */
 	protected void informOnPropertyChange(Node node, String propertyName, Object oldValue, Object newValue) {
 		log.warn("informOnPropertyChange() called on non-root-node - ignored"); //$NON-NLS-1$
 	}
 
 	/** method to inform listener(s) re. property changes that may have happened outside the GUI */
 	public void informOnPropertyChange(String propertyName, Object oldValue, Object newValue) {
-		onMyRootNodeDo((n) -> n.informOnPropertyChange(this, propertyName, oldValue, newValue));
+		onRootNodeDo((n) -> n.informOnPropertyChange(this, propertyName, oldValue, newValue));
 	}
 
 	/** method to be overwritten by root node */
 	public void addChangeListener(PropertyChangeListener listener) {
-		onMyRootNodeDo((n) -> n.addChangeListener(listener));
+		onRootNodeDo((n) -> n.addChangeListener(listener));
 	}
 
 	/** method to be overwritten by root node */
 	public void removeChangeListener(PropertyChangeListener listener) {
-		onMyRootNodeDo((n) -> n.removeChangeListener(listener));
+		onRootNodeDo((n) -> n.removeChangeListener(listener));
 	}
 
 	public String resolveProperties(String str) throws Exception {

@@ -1,7 +1,5 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -43,6 +41,7 @@ import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
@@ -61,7 +60,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 // This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
 // see https://github.com/vaadin/vaadin-grid/issues/1934
 @CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
-public class NodeView <N extends Node> extends VerticalLayout implements PropertyChangeListener
+public class NodeView <N extends Node> extends VerticalLayout
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
@@ -81,8 +80,9 @@ public class NodeView <N extends Node> extends VerticalLayout implements Propert
 	NodeForm<N> form; // package visible for ITs - is there no other way?
 	LayoutDirection contentDirection = LayoutDirection.DirectionRow;
 
-	private static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
+	protected static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
+	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
 
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
@@ -105,6 +105,7 @@ public class NodeView <N extends Node> extends VerticalLayout implements Propert
 			CommonConstants.setClassName(this.content, this.contentDirection);
 
 			add(createToolbar(), this.content);
+
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
@@ -283,30 +284,34 @@ public class NodeView <N extends Node> extends VerticalLayout implements Propert
 			return Collections.emptyList();
 		});
 		TreeDataProvider<Node> dataProvider = new TreeDataProvider<>(treeData);
-		// register a refresh-trigger with each root-node:
-		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this));
 
 		// dataProvider.
 		return dataProvider;
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		@SuppressWarnings("unchecked")
-		N sourceNode = (N)event.getSource();
-		String propertyName = event.getPropertyName();
-		Object oldValue = event.getOldValue();
-		Object newValue = event.getNewValue();
-		log.info("changeListener called for '{}': '{}' -> '{}' for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
-		getUI().ifPresentOrElse((ui) -> ui.access(() -> handleChangeEvent(sourceNode, propertyName, oldValue, newValue)),
-		                        () -> log.warn("UI not present for changeListener for node {}", sourceNode)); //$NON-NLS-1$
+	protected void createNodeRefreshListener() {
+		this.nodeRefreshListener = new PropertyChangeListenerWithPriorUIReservation<N>(this)
+		{
+			@Override
+			protected void handlePropertyChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+				NodeView.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+			}
+		};
 	}
 
-	/** to be extended by subclasses if they handle further property-updates */
+	/**
+	 * Handles updates to the data that is NOT triggered via the UI but which may require UI updates (like
+	 * the automatic node state updates).
+	 * This method can be extended by subclasses that need to react to further field changes.
+	 * @param sourceNode
+	 * @param propertyName
+	 * @param oldValue
+	 * @param newValue
+	 */
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
-		case Node.PROPERTYNAME_STATE: // we only need to refresh the tree view, if the state changed
-			this.tree.getDataProvider().refreshItem(sourceNode);
+		case Node.PROPERTYNAME_STATE: // we only need to refresh the tree view, if the state changed. Everything else is handled via NodeUpdateEvent
+			NodeView.this.tree.getDataProvider().refreshItem(sourceNode);
 			break;
 		default:
 			// ignore others
@@ -420,7 +425,7 @@ public class NodeView <N extends Node> extends VerticalLayout implements Propert
 					this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 					this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 					this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-//					this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
+					this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
 				}
 				this.form.setHeader(header);
 				this.form.setNode(node);
@@ -520,7 +525,13 @@ public class NodeView <N extends Node> extends VerticalLayout implements Propert
 	}
 
 	private void updateTree() {
+// is this necessary?
+//		// remove old refreshListener:
+//		if (this.nodeRefreshListener == null) this.nodeService.getRootNodes().forEach((node) -> node.removeChangeListener(this.nodeRefreshListener));
 		this.tree.setDataProvider(createDataProvider());
+		// register our refresh-listener with each (new)root-node:
+		if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
+		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
 		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
 		// this.tree.getDataProvider().refreshAll();
 	}

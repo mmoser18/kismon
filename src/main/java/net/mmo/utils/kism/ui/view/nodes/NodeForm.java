@@ -3,8 +3,6 @@ package net.mmo.utils.kism.ui.view.nodes;
 
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.function.BiConsumer;
 
 import com.vaadin.flow.component.ComponentEvent;
@@ -26,11 +24,12 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Slf4j
-public abstract class NodeForm <N extends Node> extends VerticalLayout implements PropertyChangeListener
+public abstract class NodeForm <N extends Node> extends VerticalLayout
 {
 	private static final long serialVersionUID = -4928837821374748141L;
 
@@ -69,6 +68,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout implement
 	protected N node;
 	protected Binder<N> binder; // a Binder that is aware of bean validation annotations
 
+	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
+
+
 	public NodeForm(Class<N> clazz) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
@@ -101,14 +103,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout implement
 				                  ).open();
 				return false;
 			}
-			this.node.removeChangeListener(this);
+			this.node.removeChangeListener(this.nodeRefreshListener);
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = newNode;
 		log.debug("NodeForm.setNode({}) - new node accepted!", newNode); //$NON-NLS-1$
 		// this.binder.setBean(node);
 		if (newNode != null) {
-			newNode.addChangeListener(this);
+			if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
+			newNode.addChangeListener(this.nodeRefreshListener);
 			log.info("changeListener set on node {}", newNode); //$NON-NLS-1$
 			updateResolvableValues();
 		}
@@ -117,19 +120,27 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout implement
 		return true;
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		@SuppressWarnings("unchecked")
-		N sourceNode = (N)event.getSource();
-		String propertyName = event.getPropertyName();
-		Object oldValue = event.getOldValue();
-		Object newValue = event.getNewValue();
-		log.info("changeListener called for '{}': '{}' -> '{}' for node '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
-		getUI().ifPresentOrElse((ui) -> ui.access(() -> handleChangeEvent(sourceNode, propertyName, oldValue, newValue)),
-		                        () -> log.warn("UI not present for changeListener for node {}", this.node)); //$NON-NLS-1$
+	protected void createNodeRefreshListener() {
+		this.nodeRefreshListener = new PropertyChangeListenerWithPriorUIReservation<N>(this)
+		{
+
+			@Override
+			protected boolean predicate(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+				return sourceNode == NodeForm.this.getNode(); // *this* form is only interested in updates to the *current* node!
+			}
+
+			@Override
+			protected void handlePropertyChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+				NodeForm.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+			}
+		};
 	}
 
-	/** to be extended by subclasses if they handle further property-updates */
+	/**
+	 * Handles updates to the data that is NOT triggered via the UI but which may require UI updates (like
+	 * the automatic node state updates).
+	 * This method can be extended by subclasses that need to react to further field changes.
+	 */
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
 		case Node.PROPERTYNAME_STATE:
@@ -138,7 +149,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout implement
 		default:
 			// ignore
 		}
-		fireEvent(new UpdateEvent(this, this.node));
 	}
 
 	/** derived classes need to override this */
