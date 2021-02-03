@@ -76,7 +76,7 @@ public class RootNode extends IntermediateNode
 		PropertyChangeEvent evt = new PropertyChangeEvent(node, propertyName, oldValue, newValue);
 		this.getChangeListeners().forEach((listener) ->
 		{
-			log.trace("Calling listener {}:", listener); //$NON-NLS-1$
+			log.trace("Calling listener {}: {}", listener, evt); //$NON-NLS-1$
 			listener.propertyChange(evt);
 		});
 	}

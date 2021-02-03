@@ -21,6 +21,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
@@ -54,7 +57,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected TextField name;
 	protected TextArea description;
-	protected TextField state;	// state is calculated automatically - never entered!
+	protected TextField stateField;	// stateField is calculated automatically - never entered!
 	protected Checkbox enabled;
 	protected TextArea properties;
 
@@ -70,10 +73,28 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
 
+	/** reusable validator for fields that support properties */
+	protected Validator<String> propertiesResolvable;
 
 	public NodeForm(Class<N> clazz) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
+
+		this.propertiesResolvable = new Validator<>()
+			{
+				private static final long serialVersionUID = -7211887363956128833L;
+
+				@Override
+				public ValidationResult apply(String value, ValueContext context) {
+					try {
+						if (NodeForm.this.node != null) NodeForm.this.node.resolveProperties(value);
+						return ValidationResult.ok(); // still here -> the above conversion succeeded
+					} catch (Exception ex) { // Exception -> the above conversion failed
+						return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
+																	value, ex.getMessage()));
+					}
+				}
+			};
 
 		this.binder = new BeanValidationBinder<>(clazz);
 
@@ -107,12 +128,12 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = newNode;
-		log.debug("NodeForm.setNode({}) - new node accepted!", newNode); //$NON-NLS-1$
+		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "<null>")); //$NON-NLS-1$ //$NON-NLS-2$
 		// this.binder.setBean(node);
 		if (newNode != null) {
 			if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
 			newNode.addChangeListener(this.nodeRefreshListener);
-			log.info("changeListener set on node {}", newNode); //$NON-NLS-1$
+			log.info("changeListener set on node '{}'", newNode.getName()); //$NON-NLS-1$
 			updateResolvableValues();
 		}
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
@@ -133,18 +154,24 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			protected void handlePropertyChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 				NodeForm.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
 			}
+			// for better log-messages:
+			@Override
+			public String toString() {
+				return "ChangeListener_on_" + NodeForm.this.getClass().getSimpleName() + "_for_" + (NodeForm.this.getNode() != null ? NodeForm.this.getNode().getName() : "<no_node>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			}
+
 		};
 	}
 
 	/**
 	 * Handles updates to the data that is NOT triggered via the UI but which may require UI updates (like
-	 * the automatic node state updates).
+	 * the automatic node stateField updates).
 	 * This method can be extended by subclasses that need to react to further field changes.
 	 */
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
 		case Node.PROPERTYNAME_STATE:
-			this.state.setValue(newValue.toString());
+			this.stateField.setValue(newValue.toString());
 			break;
 		default:
 			// ignore
@@ -157,6 +184,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name.addClassName(NameClassName);
 		this.name.setThemeName(LabelPaddingTheme);
 //		this.binder.forField(this.name)
+//			.withValidator(this.resolvableValidator)
 //			.withValidator(name ->
 //				{ // Explicit validator instance
 //					return nodeService.getRootNodes().stream()
@@ -164,42 +192,43 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 //						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
 //						.findAny().isEmpty();
 //				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
-//			.bind(Node::getName, Node::setName);
+//			.bind(Node::getName, Node::setName)
+//		;
 
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
 		this.description.setThemeName(LabelPaddingTheme);
 
-		this.state = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
-		this.state.addClassName(StateClassName);
-		this.state.setReadOnly(true); // state is calculated automatically!
-		this.binder.forField(this.state).bind(n -> n.getState().toString(), null);
+		this.stateField = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
+		this.stateField.addClassName(StateClassName);
+		this.stateField.setReadOnly(true); // stateField is calculated!
+		this.binder.forField(this.stateField).bind(n -> n.getState().toString(), null);
 
 		this.enabled  = new Checkbox(Messages.getString("NodeForm.Enabled.Label")); //$NON-NLS-1$
 		this.enabled.addClassName(EnabledClassName);
 
-		HorizontalLayout stateAndEnabled = new HorizontalLayout(this.enabled, this.state);
+		HorizontalLayout stateAndEnabled = new HorizontalLayout(this.enabled, this.stateField);
 		stateAndEnabled.addClassName(CombinedClassName);
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
 		this.properties.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.properties)
-			.withValidator(str ->
+			.withValidator((value, context) ->
 				{ // Explicit validator instance:
 					try {
-						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(str));
-						return true; // still here -> the above conversion succeeded
+						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(value));
+						return ValidationResult.ok(); // still here -> the above conversion succeeded
 					} catch (Exception ex) { // Exception -> the above conversion failed
-						log.error("Exception converting '{}' to properties: {}", str, ex); //$NON-NLS-1$
-						return false;
+						return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
+						                                            value, ex.getMessage()));
 					}
-				}, Messages.getString("NodeForm.Validator.Properties.IllegalValue")) //$NON-NLS-1$
+				})
 			.bind(Node::getPropertiesAsString, Node::propertiesFromString);
 		// we also may have to update the resulting URL if any of the properties change:
 		this.properties.addValueChangeListener(event ->
 			{
-				log.debug("properties value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				log.debug("properties value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					if (this.node != null) this.node.propertiesFromString(event.getValue());
 				}
@@ -330,15 +359,17 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	protected void validateAndSave() {
-		log.info("validateAndSave {}", this.node.getName()); //$NON-NLS-1$
-		try {
-			validate(); // throws ValidationException if data not valid
-			writeBean(this.node);
-			fireEvent(new SaveEvent(this, this.node));
-			readBean(this.node);
-		} catch (ValidationException e) {
-			log.warn("Validation failed: ", e); //$NON-NLS-1$
-			new Notification(e.getMessage(), 0).open();
+		if (this.node != null) {
+			log.info("validateAndSave {}", this.node.getName()); //$NON-NLS-1$
+			try {
+				validate(); // throws ValidationException if data not valid
+				writeBean(this.node);
+				fireEvent(new SaveEvent(this, this.node));
+				readBean(this.node);
+			} catch (ValidationException e) {
+				log.warn("Validation failed: ", e); //$NON-NLS-1$
+				new Notification(e.getMessage(), 0).open();
+			}
 		}
 	}
 
@@ -355,7 +386,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		private Node node;
 
-		protected NodeFormEvent(NodeForm source, Node node) {
+		protected NodeFormEvent(NodeForm<?> source, Node node) {
 			super(source, false);
 			this.node = node;
 		}
@@ -365,39 +396,39 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		}
 	}
 
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
+	// this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class SaveEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -8255534604198398835L;
 
-		SaveEvent(NodeForm source, Node node) {
+		SaveEvent(NodeForm<?> source, Node node) {
 			super(source, node);
 		}
 	}
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
+	// this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class DeleteEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -5394186746319400182L;
 
-		DeleteEvent(NodeForm source, Node node) {
+		DeleteEvent(NodeForm<?> source, Node node) {
 			super(source, node);
 		}
 	}
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
+	// this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class CloseEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -657451450305155687L;
 
-		CloseEvent(NodeForm source) {
+		CloseEvent(NodeForm<?> source) {
 			super(source, null);
 		}
 	}
-	@SuppressWarnings("rawtypes") // this class must NOT be parameterized or else it can not be used in lambdas!
+	// this class must NOT be parameterized or else it can not be used in lambdas!
 	public static class UpdateEvent extends NodeFormEvent
 	{
 		private static final long serialVersionUID = -5848948485202766204L;
 
-		UpdateEvent(NodeForm source, Node node) {
+		UpdateEvent(NodeForm<?> source, Node node) {
 			super(source, node);
 		}
 	}

@@ -28,7 +28,6 @@ import org.springframework.util.Assert;
 @Entity
 @Setter
 @Getter
-//@EqualsAndHashCode(callSuper = true)
 // @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 // This was supposed to avoid infinite recursion when serializing the tree as JSON
 // but it did not work. Instead I have set "parent" as @JsonIgnore. It is redundant and can
@@ -115,7 +114,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	/**
-	 *  to be overrriden by subclasses if they contribute resolvable a field(s)
+	 *  to be overrriden by subclasses if they contribute resolvable (a) field(s)
 	 */
 	public void updateResolvableValues() {
 		// empty
@@ -141,8 +140,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.state != state) {
 			State oldState = this.state;
 			this.state = state;
-			if (this.parent != null) this.parent.deriveNewState();
 			informOnPropertyChange(PROPERTYNAME_STATE, oldState, state);
+			if (this.enabled && this.parent != null) this.parent.deriveNewState();
 		}
 	}
 

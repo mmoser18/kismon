@@ -7,17 +7,19 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
+import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationResult;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.ui.view.nodes.NodeView;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Slf4j
@@ -25,28 +27,33 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
-	static final String MethodClassName             = NodeFormField + "method"; //$NON-NLS-1$
-	static final String RequestHeadersClassName     = NodeFormField + "httpRequest-headers"; //$NON-NLS-1$
-	static final String RequestBodyClassName        = NodeFormField + "httpRequest-body"; //$NON-NLS-1$
+	static final String MethodClassName                = NodeFormField + "method"; //$NON-NLS-1$
+	static final String RequestHeadersClassName        = NodeFormField + "httpRequest-headers"; //$NON-NLS-1$
+	static final String RequestBodyClassName           = NodeFormField + "httpRequest-body"; //$NON-NLS-1$
 
-	static final String ResponseStatusCodeClassName = NodeFormField + "response-status"; //$NON-NLS-1$
-	static final String ResponseHeadersClassName    = NodeFormField + "response-headers"; //$NON-NLS-1$
-	static final String ResponseBodyClassName       = NodeFormField + "response-body"; //$NON-NLS-1$
+	static final String ResponseStatusCodeClassName    = NodeFormField + "response-status"; //$NON-NLS-1$
+	static final String ResponseHeadersClassName       = NodeFormField + "response-headers"; //$NON-NLS-1$
+	static final String ResponseBodyClassName          = NodeFormField + "response-body"; //$NON-NLS-1$
 	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
+
+	static final String RequestDetailsClassName        = NodeFormField + "request-details"; //$NON-NLS-1$
 
 	protected Select<HTTP_Method> method;
 
+	// original request values (possibly containing properties):
 	protected TextArea headers;
 	protected TextArea payload;
 
+	// resolved request values:
 	protected TextArea requestHeaders;
 	protected TextArea requestBody;
 
+	// response values:
 	protected IntegerField responseStatusCode;
-
 	protected TextArea responseHeaders;
 	protected TextArea responseBody;
 
+	// validation values
 	protected TextField acceptableReturnCodes;
 
 
@@ -85,19 +92,17 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 				updateRequestData();
 			}
 		});
-
 		this.binder.forField(this.headers)
-			.withValidator(str ->
-				{ // Explicit validator instance
+			.withValidator((value, context) ->
+				{ // Explicit validator instance:
 					try {
-						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(str));
-						return true; // still here -> the above conversion went succeeded
-					} catch (Exception ex) {
-						log.error("Exception converting '{}' to headers: {}", str, ex); //$NON-NLS-1$
-						NodeView.UsageError(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), str, ex)); //$NON-NLS-1$
-						return false;
+						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(value));
+						return ValidationResult.ok(); // still here -> the above conversion succeeded
+					} catch (Exception ex) { // Exception -> the above conversion failed
+						return ValidationResult.error(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorConvertingHeaders"), //$NON-NLS-1$
+						                                            value, ex.getMessage()));
 					}
-				}, Messages.getString("IPConnectionForm.Validator.Headers.IllegalValue")) //$NON-NLS-1$
+				})
 			.bind(HTTPConnection::getHeaders, HTTPConnection::setHeaders);
 
 		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
@@ -112,6 +117,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 				updateRequestData();
 			}
 		});
+		this.binder.forField(this.payload).withValidator(this.propertiesResolvable);
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
@@ -145,6 +151,13 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseBody.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseBody).bind(HTTPConnection::responseBodyAsString, null);
 
+		Accordion requestDetails = new Accordion();
+		requestDetails.close(); // initially closed
+		VerticalLayout requestDetailsPanel = new VerticalLayout();
+		requestDetailsPanel.setClassName(RequestDetailsClassName);
+		requestDetailsPanel.add(this.requestHeaders, this.requestBody, this.responseHeaders, this.responseBody);
+		requestDetails.add(Messages.getString("HTTPConnectionForm.RequestDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
+
 		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
@@ -153,6 +166,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		// we cross-link the validators of the checkResults-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
 			this.binder.forField(this.acceptableReturnCodes)
+				.withValidator(this.propertiesResolvable)
 				.withValidator(text -> {
 									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.checkResults.getValue() && text.isEmpty()); //$NON-NLS-1$
 									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
@@ -177,12 +191,11 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		                ,methodAndExecuteButton
 		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
 		                ,responseDetailsFields
-		                ,this.requestHeaders, this.requestBody
-		                ,this.responseHeaders, this.responseBody
+		                ,requestDetails
 		                ,checkResultFields
 		                // ,this.resultChecker
-		            	,this.condition
-		            	,this.operand
+		                ,this.condition
+		                ,this.operand
 		                );
 	}
 

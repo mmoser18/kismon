@@ -179,11 +179,11 @@ abstract public class HTTPConnection extends IPConnection
 
 	public void setTargetUid(String targetUid) {
 		this.targetUid = targetUid;
-		setHttpClient(null); // trigger a recreation of the connection if the uid changes
+		setHttpClient(null); // trigger a recreation of the connection if the dbUid changes
 	}
 	public void setTargetPwd(String targetPwd) {
 		this.targetPwd = targetPwd;
-		setHttpClient(null); // trigger a recreation of the connection if the pwd changes
+		setHttpClient(null); // trigger a recreation of the connection if the dbPwd changes
 	}
 
 	public void setHeaders(String headers) {
@@ -244,7 +244,7 @@ abstract public class HTTPConnection extends IPConnection
 		return (value != null ? value.getBytes(charset) : EMPTY_BODY);
 	}
 
-	// received data:
+	// update received data:
 
 	public void setResponseStatusCode(int responseStatusCode ) {
 		if (!Objects.equal(this.responseStatusCode, responseStatusCode)) {
@@ -426,7 +426,7 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public void logRequestValues() {
-		log.debug("{}-httpRequest to '{}':\nheaders: {}", getHttpRequest().method(), getHttpRequest().uri(), getRequestHeaders()); //$NON-NLS-1$
+		log.debug("{}-httpRequest to '{}' / headers: {}", getHttpRequest().method(), getHttpRequest().uri(), getRequestHeaders()); //$NON-NLS-1$
 		Optional<BodyPublisher> optional = getHttpRequest().bodyPublisher();
 		if (!optional.isEmpty()) {
 			log.debug("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
@@ -434,7 +434,7 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public void logResponseValues() {
-		log.debug("response: status={} / payload-length={}\nheaders:{}\nbody: \"{}\"", //$NON-NLS-1$
+		log.debug("response: status={} / payload-length={} / headers:{} / body: \"{}\"", //$NON-NLS-1$
 		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), responseBodyAsString());
 	}
 
@@ -512,17 +512,16 @@ abstract public class HTTPConnection extends IPConnection
 //			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
 //			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
-
 			.append(", acceptableReturnCodes:").append(this.acceptableReturnCodes) //$NON-NLS-1$
-			.append(", headers:").append(this.headers) //$NON-NLS-1$
-			.append(", payload:").append(this.payload) //$NON-NLS-1$
+			.append(", headers:").append(this.headers.replace("\n", "\\n")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			.append(", payload:").append((this.payload != null ? this.payload.length() : 0)).append(" characters)") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", httpClient:").append(this.httpClient) //$NON-NLS-1$
 			.append(", httpRequest:").append(this.httpRequest) //$NON-NLS-1$
 			.append(", requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
-			.append(", requestBody:").append(this.requestBody) //$NON-NLS-1$
+			.append(", requestBody:").append((this.requestBody != null ? this.requestBody.length : 0)).append(" bytes)") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
 			.append(", responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
-			.append(", responseBody:").append(this.responseBody) //$NON-NLS-1$
+			.append(", responseBody:(").append((this.responseBody != null ? this.responseBody.length : 0)).append(" bytes)") //$NON-NLS-1$ //$NON-NLS-2$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

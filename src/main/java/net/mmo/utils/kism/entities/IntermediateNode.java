@@ -11,7 +11,6 @@ import java.util.function.Consumer;
 
 import javax.persistence.Entity;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,17 +18,18 @@ import lombok.extern.slf4j.Slf4j;
 @Entity
 @Setter
 @Getter
-@EqualsAndHashCode(callSuper = true, exclude = {"children"})
 @Slf4j
 public class IntermediateNode extends Node
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 
+	public static final String PROPERTYNAME_CHILDREN_CONDITION = "children_condition"; //$NON-NLS-1$
+
 	public enum ChildrenCondition {
-		ALL_MUST_BE_OK,  /** ALL children must be OK for an OK, else FAILED */
-		AT_LEAST_ONE_OK, /** ALL must be OK for an OK, any OK is DEGRADED, none OK is failed */
-		ANY_NON_FAILED,  /** At least one child must be OK for an OK, else FAILED */
-		EXACTLY_ONE_OK   /** Exactly one must be OK, the others must be NOT OK */
+		ALL_MUST_BE_OK, // ALL children must be OK for an OK, else FAILED
+		DEGRADED_ON_NOT_ALL_OK, // ALL children OK is OK, DEGRADED if ONE child is not OK, else FAILED
+		ANY_NON_FAILED, // At least one child must be OK/DEGRADED for an OK/DEGRADED, else FAILED
+		EXACTLY_ONE_OK // Exactly ONE child must be OK, all others must not be OK
 	}
 
 	private ArrayList<Node>	children = new ArrayList<>();
@@ -50,7 +50,9 @@ public class IntermediateNode extends Node
 
 	public void setCondition(ChildrenCondition condition) {
 		if (this.condition != condition) {
+			ChildrenCondition oldCondition = this.getCondition();
 			this.condition = condition;
+			informOnPropertyChange(PROPERTYNAME_CHILDREN_CONDITION, oldCondition, condition);
 			deriveNewState();
 		}
 	}
@@ -79,29 +81,36 @@ public class IntermediateNode extends Node
 		return child;
 	}
 
-	// default implementation: find minimal child-state:
+	// default implementation: find minimal child-state: FAILED < DEGRADED < OK
 	public void deriveNewState() {
-		log.trace("derivedState: {}", getCondition()); //$NON-NLS-1$
+		log.trace("deriveNewState using condition '{}':", getCondition()); //$NON-NLS-1$
 		State derivedState;
 		switch (getCondition()) {
 		case ALL_MUST_BE_OK:
 			derivedState = State.OK;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled()) { // child is to be considered
-						if (child.getState() != null && child.getState().ordinal() < derivedState.ordinal()) derivedState = child.getState();
+					if (child.isEnabled() && child.getState() != null) { // child is to be considered
+						if (child.getState().ordinal() < State.OK.ordinal()) {
+							derivedState = State.FAILED;
+							break;
+						}
 					}
 				}
 			}
 			break;
-		case AT_LEAST_ONE_OK:
-			derivedState = State.FAILED;
+		case DEGRADED_ON_NOT_ALL_OK:
+			derivedState = State.OK;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled()) { // child is to be considered
-						if (child.getState() != null && child.getState() == State.OK) {
-							derivedState = State.OK;
-							break; // for
+					if (child.isEnabled() && child.getState() != null) { // child is to be considered
+						if (child.getState() != State.OK) {
+							if (derivedState == State.OK) { // first non-OK:
+								derivedState = State.DEGRADED;
+							} else { // second non-OK
+								derivedState = State.FAILED;
+								break; // one non-OK is enough for FAILED!
+							}
 						}
 					}
 				}
@@ -111,8 +120,15 @@ public class IntermediateNode extends Node
 			derivedState = State.FAILED;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled()) { // child is to be considered
-						if (child.getState() != null && child.getState().ordinal() > derivedState.ordinal()) derivedState = child.getState();
+					if (child.isEnabled() && child.getState() != null) { // child is to be considered
+						if (child.getState() == State.OK) {
+							derivedState = State.OK;
+							break; //leave for - it can't get better than OK
+						}
+						if (child.getState() == State.DEGRADED) {
+							derivedState = State.DEGRADED;
+							// no break - there is still room for an OK
+						}
 					}
 				}
 			}
@@ -125,7 +141,7 @@ public class IntermediateNode extends Node
 						if (child.getState() != null && child.getState() == State.OK) {
 							if (derivedState == State.FAILED) { // first OK
 								derivedState = State.OK;
-							} else { // already had an OK
+							} else { // we already had an OK! ==> Error!
 								derivedState = State.FAILED;
 								break;
 							}
@@ -137,10 +153,12 @@ public class IntermediateNode extends Node
 		default:
 			throw new IllegalArgumentException("Unsupported Child-Operation: " + getCondition()); //$NON-NLS-1$
 		}
-		if (getState() != derivedState) {
-			log.debug("{}: {} --> new state: {}", getName(), getCondition(), derivedState); //$NON-NLS-1$
+//		if (getState() != derivedState) {
+			log.debug("'{}': '{}' --> new state: '{}'", getName(), getCondition(), derivedState); //$NON-NLS-1$
 			setState(derivedState); // this triggers deriveNewState() on parent, so no need to call that explicitly
-		}
+//		} else {
+//			log.debug("'{}': '{}' --> state remained: '{}'", getName(), getCondition(), derivedState); //$NON-NLS-1$
+//		}
 	}
 
 	// spread down the branch:

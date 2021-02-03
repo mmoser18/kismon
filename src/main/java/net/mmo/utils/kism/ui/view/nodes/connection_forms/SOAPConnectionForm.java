@@ -35,6 +35,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 		this.soapOperation = new TextField(Messages.getString("SOAPConnectionForm.SoapOperation.Label")); //$NON-NLS-1$
 		this.soapOperation.setClassName(SoapOperationClassName);
 		this.soapOperation.setThemeName(LabelPaddingTheme);
+//		this.soapOperation.addValueChangeListener(event -> { /**/} );
 		this.binder.forField(this.soapOperation)
 			.withValidator(operation ->
 				{
@@ -42,8 +43,6 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 					return ((this.soapOperationErrorMsg = checkSoapOperation(operation)) == null); // no error message -> OK
 				}, (context) -> this.soapOperationErrorMsg)
 		.bind(SOAPConnection::getSoapOperation, SOAPConnection::setSoapOperation);
-
-//		this.soapOperation.addValueChangeListener(event -> { /**/} );
 
 		// there is no choice of methods for SOAP!
 		this.method.setVisible(false);
@@ -59,10 +58,6 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 	}
 
 	String checkSoapOperation(String value) {
-		return updateResultingField(this.soapOperation.getLabel(),
-		                            this.node,
-		                            value,
-		                            null,
-		                            null);
+		return updateResultingField(this.soapOperation.getLabel(), this.node, value, null, null);
 	}
 }

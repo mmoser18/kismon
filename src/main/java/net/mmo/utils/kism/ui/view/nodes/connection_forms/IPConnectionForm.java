@@ -22,6 +22,7 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import lombok.extern.slf4j.Slf4j;
@@ -114,24 +115,25 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 				}
 			});
 		this.binder.forField(this.url)
-			.withValidator(urlStr ->
+			.withValidator((value, context) ->
 				{ // Explicit validator instance
-					log.trace("validating url: '{}'", urlStr); //$NON-NLS-1$
+					log.trace("validating url: '{}'", value); //$NON-NLS-1$
 					try {
 						if (this.node != null) {
 							// we check whether we can resolve the url and convert it to a valid URL:
-							URI uri = new URI(this.node.resolveProperties(urlStr));
+							URI uri = new URI(this.node.resolveProperties(value));
 							// no check necessary - any error is thrown!
-							log.debug("validation succeeded: '{}' => '{}'", urlStr, uri); //$NON-NLS-1$
+							log.debug("validation succeeded: '{}' => '{}'", value, uri); //$NON-NLS-1$
 						} else {
 							log.debug("node == null: validation succeeded"); //$NON-NLS-1$
 						}
-						return true;
+						return ValidationResult.ok();
 					} catch (Exception ex) {
-						log.debug("validation failed: '{}' -> {}", urlStr, ex); //$NON-NLS-1$
-						return false;
+						log.debug("validation failed: '{}' -> {}", value, ex); //$NON-NLS-1$
+						return ValidationResult.error(String.format(Messages.getString("IPConnectionForm.URL.ValidatorErrorMsg"), //$NON-NLS-1$
+						                                            value, ex));
 					}
-				}, Messages.getString("IPConnectionForm.URL.ValidatorErrorMsg")) //$NON-NLS-1$
+				})
 			.bind(IPConnection::getUrl, IPConnection::setUrl);
 
 		this.resultingURL = new TextField(Messages.getString("IPConnectionForm.ResultingUrl.Value")); //$NON-NLS-1$
@@ -224,7 +226,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.operand.setThemeName(UIConstants.LabelPaddingTheme);
 
 		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
-		this.binder.forField(this.operand).bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
+		this.binder.forField(this.operand)
+			.withValidator(this.propertiesResolvable)
+			.bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
 
 		this.fields.add(activeAndPeriod, this.url, this.resultingURL);
 	}

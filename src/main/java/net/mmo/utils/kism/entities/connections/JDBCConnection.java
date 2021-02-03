@@ -39,8 +39,8 @@ public class JDBCConnection extends IPConnection
 	public static final String RESULTSET_NR_RESULTS = AppProperties.getProperties().getProperty("JDBC.ResultSet.NrRresults", "#results: {}"); //$NON-NLS-1$ //$NON-NLS-2$
 	public static final String RESULTSET_NO_RESULTS = AppProperties.getProperties().getProperty("JDBC.ResultSet.NoResults", "no results"); //$NON-NLS-1$ //$NON-NLS-2$
 
-	protected String uid;
-	protected String pwd;
+	protected String dbUid;
+	protected String dbPwd;
 
 	protected String query;
 
@@ -90,12 +90,12 @@ public class JDBCConnection extends IPConnection
 	}
 
 	public void setUid(String uid) {
-		this.uid = uid;
-		resetConnection(); // trigger a recreation of the connection if the uid changes
+		this.dbUid = uid;
+		resetConnection(); // trigger a recreation of the connection if the dbUid changes
 	}
 	public void setPwd(String pwd) {
-		this.pwd = pwd;
-		resetConnection(); // trigger a recreation of the connection if the pwd changes
+		this.dbPwd = pwd;
+		resetConnection(); // trigger a recreation of the connection if the dbPwd changes
 	}
 
 	protected void setQuery(String query) {
@@ -138,14 +138,13 @@ public class JDBCConnection extends IPConnection
 			registerDriver();
 		}
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
-			this.connection = DriverManager.getConnection(resultingUrlResolved(), getUid(), getPwd());
+			this.connection = DriverManager.getConnection(resultingUrlResolved(), resolveProperties(getDbUid()), resolveProperties(getDbPwd()));
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void registerDriver() throws Exception {
 		log.debug("registerDriver:"); //$NON-NLS-1$
-		setDriver((Driver)Class.forName(this.driverName).newInstance());
+		setDriver((Driver)Class.forName(resolveProperties(this.driverName)).getDeclaredConstructor().newInstance());
 		DriverManager.registerDriver(this.driver);
 	}
 
@@ -274,8 +273,8 @@ public class JDBCConnection extends IPConnection
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-			.append(", uid:").append(this.uid) //$NON-NLS-1$
-			.append(", pwd:").append(this.pwd) //$NON-NLS-1$
+			.append(", dbUid:").append(this.dbUid) //$NON-NLS-1$
+			.append(", dbPwd:").append(this.dbPwd) //$NON-NLS-1$
 			.append(", query:").append(this.query) //$NON-NLS-1$
 			.append(", resultingQuery:").append(this.resultingQuery) //$NON-NLS-1$
 			.append(", driverName:").append(this.driverName) //$NON-NLS-1$

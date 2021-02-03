@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Objects;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -296,6 +297,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 			protected void handlePropertyChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 				NodeView.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
 			}
+
+			// as long as ther are no derivatived of NodeView we can short-cut the call to handleChangeEvent:
+			@Override
+			protected boolean predicate(N source, String propertyName, Object oldValue, Object newValue) {
+				return Objects.equal(propertyName, Node.PROPERTYNAME_STATE);
+			}
+			// for better log-messages:
+			@Override
+			public String toString() {
+				return "ChangeListener_on_NodeView"; //$NON-NLS-1$
+			}
 		};
 	}
 
@@ -309,9 +321,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 	 * @param newValue
 	 */
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		log.trace("handleChangeEvent called for '{}': '{}' -> '{}' for '{}'", propertyName, oldValue, newValue, sourceNode); //$NON-NLS-1$
 		switch (propertyName) {
-		case Node.PROPERTYNAME_STATE: // we only need to refresh the tree view, if the state changed. Everything else is handled via NodeUpdateEvent
-			NodeView.this.tree.getDataProvider().refreshItem(sourceNode);
+		case Node.PROPERTYNAME_STATE:
+			// we only need to refresh the tree view, if the state changed. Everything else is handled via NodeUpdateEvent
+			log.trace("refreshItem on node '{}': state={}", sourceNode.getName(), newValue); //$NON-NLS-1$
+			NodeView.this.tree.getDataProvider().refreshItem(sourceNode, true);
 			break;
 		default:
 			// ignore others
@@ -387,11 +402,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
 		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
-		node.bubbleUp(n ->
-			{
-				dataProvider.refreshItem(n);
-				if (NodeView.alwaysSave) saveNode(n);
-			});
+		dataProvider.refreshItem(node);
+//		node.bubbleUp(n ->
+//			{
+//				dataProvider.refreshItem(n);
+//				if (NodeView.alwaysSave) saveNode(n);
+//			});
 	}
 
 	@SuppressWarnings("unchecked")
@@ -525,9 +541,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void updateTree() {
-// is this necessary?
-//		// remove old refreshListener:
-//		if (this.nodeRefreshListener == null) this.nodeService.getRootNodes().forEach((node) -> node.removeChangeListener(this.nodeRefreshListener));
+		log.info("updateTree"); //$NON-NLS-1$
+		// remove old refreshListener:
+		if (this.nodeRefreshListener == null) this.nodeService.getRootNodes().forEach((node) -> node.removeChangeListener(this.nodeRefreshListener));
 		this.tree.setDataProvider(createDataProvider());
 		// register our refresh-listener with each (new)root-node:
 		if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...

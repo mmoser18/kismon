@@ -7,14 +7,12 @@ package net.mmo.utils.kism.entities;
 
 import javax.persistence.Entity;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Setter
 @Getter
-@EqualsAndHashCode(callSuper = true)
 abstract public class LeafNode extends Node
 {
 	private static final long serialVersionUID = 265720619758262963L;

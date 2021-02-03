@@ -19,23 +19,27 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 {
 	private static final long serialVersionUID = 5726368043436831511L;
 
-	static final String UidClassName   = NodeFormField + "uid"; //$NON-NLS-1$
-	static final String PwdClassName   = NodeFormField + "pwd"; //$NON-NLS-1$
+	static final String UidClassName   = NodeFormField + "dbUid"; //$NON-NLS-1$
+	static final String PwdClassName   = NodeFormField + "dbPwd"; //$NON-NLS-1$
 	static final String QueryClassName = NodeFormField + "query"; //$NON-NLS-1$
 	static final String ResultingQueryClassName = NodeFormField + "resulting-query"; //$NON-NLS-1$
 	static final String DriverNameClassName = NodeFormField + "drivername"; //$NON-NLS-1$
 	static final String DbResponseClassName = NodeFormField + "db-response"; //$NON-NLS-1$
 
-	protected TextField uid;
-	protected TextField pwd;
+	protected TextField dbUid;
+	protected TextField dbPwd;
 
+	// original query (possibly containing properties):
 	protected TextField query;
+	// resolved query - displayed only when different from above
 	protected TextField resultingQuery;
 
 	protected TextField driverName;
 
+	// response values
 	protected TextField responseStatus;
 	protected TextArea  responsePayload;
+
 
 	public JDBCConnectionForm() {
 		super(JDBCConnection.class);
@@ -45,15 +49,17 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	protected void createFormFields() {
 		super.createFormFields();
 
-		this.uid = new TextField(Messages.getString("JDBCConnectionForm.Uid.Label")); //$NON-NLS-1$
-		this.uid.setClassName(UidClassName);
-		this.uid.setThemeName(LabelPaddingTheme);
+		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
+		this.dbUid.setClassName(UidClassName);
+		this.dbUid.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvable);
 
-		this.pwd = new TextField(Messages.getString("JDBCConnectionForm.Pwd.Label")); //$NON-NLS-1$
-		this.pwd.setClassName(PwdClassName);
-		this.pwd.setThemeName(LabelPaddingTheme);
+		this.dbPwd = new TextField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
+		this.dbPwd.setClassName(PwdClassName);
+		this.dbPwd.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvable);
 
-		HorizontalLayout uidAndPwd = new HorizontalLayout(this.uid, this.pwd);
+		HorizontalLayout uidAndPwd = new HorizontalLayout(this.dbUid, this.dbPwd);
 		uidAndPwd.addClassName(CombinedClassName);
 
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
@@ -70,6 +76,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 					}
 				}
 			});
+		this.binder.forField(this.query).withValidator(this.propertiesResolvable);
 
 		this.resultingQuery = new TextField(Messages.getString("JDBCConnectionForm.ResultingQuery.Value")); //$NON-NLS-1$
 		this.resultingQuery.setClassName(ResultingQueryClassName);
@@ -80,6 +87,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);
 		this.driverName.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.driverName).withValidator(this.propertiesResolvable);
 
 		this.responseStatus = new TextField(Messages.getString("JDBCConnectionForm.ResponseStatus.Label")); //$NON-NLS-1$
 		this.responseStatus.setClassName(DbResponseClassName);

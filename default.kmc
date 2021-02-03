@@ -18,12 +18,12 @@
       "description" : "REST Connection",
       "enabled" : true,
       "properties" : {
-        "bar" : "foo",
+        "bar" : "${foo}",
         "c" : "y",
         "x" : "*",
         "xxx" : "yyy"
       },
-      "active" : true,
+      "active" : false,
       "period" : 30,
       "timeout" : 15,
       "url" : "http://localhost:8080/${foo}",
@@ -49,14 +49,14 @@
       "properties" : {
         "x" : "Operation"
       },
-      "active" : true,
+      "active" : false,
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
       "checkResults" : true,
       "resultChecker" : {
         "condition" : "Contains",
-        "operand" : "SOAPEnvelope"
+        "operand" : "SoapEnvelope"
       },
       "shortRequestLogEntries" : false,
       "method" : "POST",
@@ -77,7 +77,7 @@
         "bar" : "zzz",
         "foo" : "*"
       },
-      "active" : true,
+      "active" : false,
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
@@ -87,11 +87,12 @@
         "operand" : "Frau"
       },
       "shortRequestLogEntries" : false,
-      "uid" : "C##QUEST",
-      "pwd" : "QUEST",
+      "dbUid" : "C##QUEST",
+      "dbPwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
       "driverName" : "oracle.jdbc.driver.OracleDriver"
-    } ]
+    } ],
+    "condition" : "DEGRADED_ON_NOT_ALL_OK"
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.2",
@@ -104,7 +105,10 @@
       "description" : "bar",
       "enabled" : true,
       "properties" : { },
-      "children" : [ ]
-    } ]
-  } ]
+      "children" : [ ],
+      "condition" : "ALL_MUST_BE_OK"
+    } ],
+    "condition" : "ALL_MUST_BE_OK"
+  } ],
+  "condition" : "DEGRADED_ON_NOT_ALL_OK"
 }

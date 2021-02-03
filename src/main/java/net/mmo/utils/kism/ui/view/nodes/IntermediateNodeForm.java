@@ -10,6 +10,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 import com.vaadin.flow.component.select.Select;
 import net.mmo.utils.kism.entities.IntermediateNode;
 
+// @Slf4j
 public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 {
 	private static final long serialVersionUID = -6878512672974473759L;
@@ -31,6 +32,15 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 		this.condition.addClassName(OperationClassName);
 		this.condition.setLabel(Messages.getString("IntermediateNode.ChildCondition.Label")); //$NON-NLS-1$
 		this.condition.setItemLabelGenerator((cond) -> Messages.getString("IntermediateNode.ChildCondition." + cond.name())); //$NON-NLS-1$
+		this.binder.forField(this.condition)
+			.bind(IntermediateNode::getCondition, IntermediateNode::setCondition);
+//		this.condition.addValueChangeListener(event ->
+//		{
+//			log.info("condition value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+//			if (event.isFromClient()) {
+//				this.node.deriveNewState();
+//			}
+//		});
 
 		this.fields.add(this.condition);
 	}

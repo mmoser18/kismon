@@ -182,7 +182,7 @@ abstract public class IPConnection extends LeafNode
 		}
 	}
 
-	private void adjustExecutor() {
+	protected void adjustExecutor() {
 		if (getPeriodicExecutor() != null) {
 			log.info("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
 			if (!getPeriodicExecutor().isTerminated()) {

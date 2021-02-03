@@ -32,12 +32,20 @@ public abstract class PropertyChangeListenerWithPriorUIReservation<N> implements
 		Object oldValue = event.getOldValue();
 		Object newValue = event.getNewValue();
 		log.trace("changeListener called for '{}': '{}' -> '{}' for '{}'", propertyName, oldValue, newValue, source); //$NON-NLS-1$
-		if (predicate(source, propertyName, oldValue, newValue)) { // since acquiring the UI is a costly operation we try to avoid that unless necessary
+		if (predicate(source, propertyName, oldValue, newValue)) {
 			this.component.getUI().ifPresentOrElse((ui) -> ui.access(() -> handlePropertyChangeEvent(source, propertyName, oldValue, newValue)),
 			                                       () -> log.warn("UI not present for changeListener for {}", source)); //$NON-NLS-1$
 		}
 	}
 
+	/**
+	 * Since acquiring the UI is a costly operation we allow to avoid that unless necessary by overriding the predicate method
+	 * @param source
+	 * @param propertyName
+	 * @param oldValue
+	 * @param newValue
+	 * @return
+	 */
 	protected boolean predicate(N source, String propertyName, Object oldValue, Object newValue) {
 		return true;
 	}
