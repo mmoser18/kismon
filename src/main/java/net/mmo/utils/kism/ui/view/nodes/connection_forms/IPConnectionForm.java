@@ -12,10 +12,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -43,12 +45,15 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	static final String PeriodClassName  = NodeFormField + "period"; //$NON-NLS-1$
 	static final String TimeoutClassName = NodeFormField + "timeout"; //$NON-NLS-1$
 
+	static final String ConnectionDetailsClassName = NodeFormField + "connection-details"; //$NON-NLS-1$
 	static final String URLClassName           = NodeFormField + "url"; //$NON-NLS-1$
 	static final String ResultingURLClassName  = NodeFormField + "resulting-url"; //$NON-NLS-1$
+
 	static final String ExecuteClassName       = NodeFormField + "execute"; //$NON-NLS-1$
 	static final String DurationClassName      = NodeFormField + "duration"; //$NON-NLS-1$
 	static final String TimeStampClassName     = NodeFormField + "timestamp"; //$NON-NLS-1$
 
+	static final String ValidationDetailsClassName = NodeFormField + "validation-details"; //$NON-NLS-1$
 	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
 	static final String ConditionClassName = NodeFormField + "condition"; //$NON-NLS-1$
 	static final String OperandClassName = NodeFormField + "operand"; //$NON-NLS-1$
@@ -57,6 +62,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected IntegerField period;
 	protected IntegerField timeout;
 
+	protected Accordion connnectionDetails;
+	protected VerticalLayout connnectionDetailsPanel;
+
 	protected TextField url;
 	protected TextField resultingURL;
 
@@ -64,6 +72,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected Button execute;
 	protected TextField timestamp;
 	protected NumberField duration;
+
+	protected Accordion validationDetails;
+	protected VerticalLayout validationDetailsPanel;
 
 	protected DateTimeFormatter dateTimeFormatter =
 		DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("LocalDateTimeStamp.Format", //$NON-NLS-1$
@@ -96,9 +107,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.timeout.setSuffixComponent(new Span(Messages.getString("IPConnectionForm.Timeout.Suffix"))); //$NON-NLS-1$
 		this.timeout.addClassName(TimeoutClassName);
 		this.timeout.setThemeName(LabelPaddingTheme);
-
-		HorizontalLayout activeAndPeriod = new HorizontalLayout(this.active, this.period, this.timeout);
-		activeAndPeriod.addClassName(CombinedClassName);
 
 		this.url = new TextField(Messages.getString("IPConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
@@ -200,7 +208,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 				try {
 					this.node.executeRequest();
 				} catch (Throwable t) {
-					NodeView.ExecutionError("creating/executing httpRequest:", t); //$NON-NLS-1$
+					NodeView.ExecutionError("manually triggered execution", t); //$NON-NLS-1$
 				}
 			});
 
@@ -230,7 +238,24 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 			.withValidator(this.propertiesResolvable)
 			.bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
 
-		this.fields.add(activeAndPeriod, this.url, this.resultingURL);
+		HorizontalLayout activeAndPeriod = new HorizontalLayout(this.active, this.period, this.timeout);
+		activeAndPeriod.addClassName(CombinedClassName);
+
+		this.connnectionDetails = new Accordion();
+		this.connnectionDetails.close(); // initially closed
+		this.connnectionDetailsPanel = new VerticalLayout();
+		this.connnectionDetailsPanel.setClassName(ConnectionDetailsClassName);
+		this.connnectionDetails.add(Messages.getString("IPConnectionForm.ConnectionDetails.Label"), this.connnectionDetailsPanel); //$NON-NLS-1$
+		this.connnectionDetailsPanel.add(this.url, this.resultingURL);
+
+		this.validationDetails = new Accordion();
+		this.validationDetails.close(); // initially closed
+		this.validationDetailsPanel = new VerticalLayout();
+		this.validationDetailsPanel.setClassName(ValidationDetailsClassName);
+		this.validationDetails.add(Messages.getString("ResultChecker.ValidationDetails.Label"), this.validationDetailsPanel); //$NON-NLS-1$
+		this.validationDetailsPanel.add(this.checkResults, this.condition, this.operand);
+
+		this.fields.add(activeAndPeriod, this.connnectionDetails, this.execute);
 	}
 
 	@Override

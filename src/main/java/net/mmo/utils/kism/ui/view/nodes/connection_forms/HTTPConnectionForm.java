@@ -77,9 +77,6 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 				}
 			});
 
-		HorizontalLayout methodAndExecuteButton = new HorizontalLayout(this.method, this.execute);
-		methodAndExecuteButton.addClassName(CombinedClassName);
-
 		this.headers = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
@@ -124,9 +121,6 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.responseStatusCode).bind(HTTPConnection::getResponseStatusCode, null);
 
-		HorizontalLayout responseDetailsFields = new HorizontalLayout(this.responseStatusCode, this.duration, this.timestamp);
-		responseDetailsFields.addClassName(CombinedClassName);
-
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
 		this.requestHeaders.setThemeName(LabelPaddingTheme);
@@ -150,13 +144,6 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseBody.setThemeName(LabelPaddingTheme);
 		this.responseBody.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseBody).bind(HTTPConnection::responseBodyAsString, null);
-
-		Accordion requestDetails = new Accordion();
-		requestDetails.close(); // initially closed
-		VerticalLayout requestDetailsPanel = new VerticalLayout();
-		requestDetailsPanel.setClassName(RequestDetailsClassName);
-		requestDetailsPanel.add(this.requestHeaders, this.requestBody, this.responseHeaders, this.responseBody);
-		requestDetails.add(Messages.getString("HTTPConnectionForm.RequestDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
 
 		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
@@ -184,19 +171,26 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 			}
 		});
 
-		HorizontalLayout checkResultFields = new HorizontalLayout(this.checkResults, this.acceptableReturnCodes);
-		checkResultFields.addClassName(CombinedClassName);
+		// combining and grouping bits and pieces:
+		this.connnectionDetailsPanel.add(this.method, this.headers, this.payload);
 
-		this.fields.add(this.headers, this.payload
-		                ,methodAndExecuteButton
-		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
-		                ,responseDetailsFields
-		                ,requestDetails
-		                ,checkResultFields
-		                // ,this.resultChecker
-		                ,this.condition
-		                ,this.operand
-		                );
+		Accordion requestDetails = new Accordion();
+		requestDetails.close(); // initially closed
+		VerticalLayout requestDetailsPanel = new VerticalLayout();
+		requestDetailsPanel.setClassName(RequestDetailsClassName);
+		requestDetailsPanel.add(this.requestHeaders, this.requestBody, this.responseHeaders, this.responseBody);
+		requestDetails.add(Messages.getString("HTTPConnectionForm.RequestDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
+
+		HorizontalLayout responseDetailsFields = new HorizontalLayout(this.responseStatusCode, this.duration, this.timestamp);
+		responseDetailsFields.addClassName(CombinedClassName);
+
+		this.validationDetailsPanel.addComponentAtIndex(1, this.acceptableReturnCodes);
+
+		this.fields.add(new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
+		                responseDetailsFields,
+		                requestDetails,
+		                this.validationDetails
+		               );
 	}
 
 	@Override

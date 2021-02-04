@@ -19,6 +19,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 {
 	private static final long serialVersionUID = 5726368043436831511L;
 
+	// these are package visible so that unit-tests can access them:
 	static final String UidClassName   = NodeFormField + "dbUid"; //$NON-NLS-1$
 	static final String PwdClassName   = NodeFormField + "dbPwd"; //$NON-NLS-1$
 	static final String QueryClassName = NodeFormField + "query"; //$NON-NLS-1$
@@ -49,6 +50,11 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	protected void createFormFields() {
 		super.createFormFields();
 
+		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
+		this.driverName.setClassName(DriverNameClassName);
+		this.driverName.setThemeName(LabelPaddingTheme);
+		this.binder.forField(this.driverName).withValidator(this.propertiesResolvable);
+
 		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
 		this.dbUid.setClassName(UidClassName);
 		this.dbUid.setThemeName(LabelPaddingTheme);
@@ -58,9 +64,6 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.dbPwd.setClassName(PwdClassName);
 		this.dbPwd.setThemeName(LabelPaddingTheme);
 		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvable);
-
-		HorizontalLayout uidAndPwd = new HorizontalLayout(this.dbUid, this.dbPwd);
-		uidAndPwd.addClassName(CombinedClassName);
 
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
@@ -84,19 +87,11 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.resultingQuery.setVisible(false);
 		this.binder.forField(this.resultingQuery).bind(JDBCConnection::getResultingQuery, null);
 
-		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
-		this.driverName.setClassName(DriverNameClassName);
-		this.driverName.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.driverName).withValidator(this.propertiesResolvable);
-
 		this.responseStatus = new TextField(Messages.getString("JDBCConnectionForm.ResponseStatus.Label")); //$NON-NLS-1$
 		this.responseStatus.setClassName(DbResponseClassName);
 		this.responseStatus.setThemeName(LabelPaddingTheme);
 		this.responseStatus.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responseStatus).bind(JDBCConnection::getResponseStatus, null);
-
-		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration, this.timestamp);
-		responseResults.addClassName(CombinedClassName);
 
 		this.responsePayload = new TextArea(Messages.getString("JDBCConnectionForm.ResponsePayload.Label")); //$NON-NLS-1$
 		this.responsePayload.setClassName(DbResponseClassName);
@@ -104,18 +99,19 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.responsePayload.addThemeName(MonospaceTheme);
 		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
 
-		this.fields.add(uidAndPwd
-		                ,this.query
-		                ,this.resultingQuery
-		                ,this.execute
-		                ,this.driverName
-		                ,new Label(Messages.getString("HTTPConnectionForm.Result.Label")) //$NON-NLS-1$
-		                ,responseResults
-		                ,this.responsePayload
-		                ,this.checkResults
-		                // ,this.resultChecker
-		            	,this.condition
-		            	,this.operand
+		// combining and grouping bits and pieces:
+		HorizontalLayout uidAndPwd = new HorizontalLayout(this.dbUid, this.dbPwd);
+		uidAndPwd.addClassName(CombinedClassName);
+
+		this.connnectionDetailsPanel.add(this.driverName, uidAndPwd, this.query, this.resultingQuery);
+
+		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration, this.timestamp);
+		responseResults.addClassName(CombinedClassName);
+
+		this.fields.add(new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
+		                responseResults,
+		                this.responsePayload,
+		                this.validationDetails
 		                );
 	}
 

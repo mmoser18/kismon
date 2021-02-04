@@ -37,12 +37,14 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 		this.soapOperation.setThemeName(LabelPaddingTheme);
 //		this.soapOperation.addValueChangeListener(event -> { /**/} );
 		this.binder.forField(this.soapOperation)
+			.withValidator(this.propertiesResolvable)
 			.withValidator(operation ->
 				{
 					log.trace("validating soapOperation: '{}'", operation); //$NON-NLS-1$
 					return ((this.soapOperationErrorMsg = checkSoapOperation(operation)) == null); // no error message -> OK
 				}, (context) -> this.soapOperationErrorMsg)
 		.bind(SOAPConnection::getSoapOperation, SOAPConnection::setSoapOperation);
+		this.connnectionDetailsPanel.addComponentAtIndex(2, this.soapOperation); // put soapOperation right after URL fields.
 
 		// there is no choice of methods for SOAP!
 		this.method.setVisible(false);
@@ -53,8 +55,6 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 					throw new IllegalArgumentException("HTTP-Method for SOAP can only be POST!"); //$NON-NLS-1$
 				}
 			});
-
-		this.fields.addComponentAtIndex(7, this.soapOperation); // put soapOperation right after URL field.
 	}
 
 	String checkSoapOperation(String value) {

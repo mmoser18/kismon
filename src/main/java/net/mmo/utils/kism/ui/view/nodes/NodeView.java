@@ -21,6 +21,8 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -218,10 +220,28 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree = new TreeGrid<>();
 		this.tree.addClassName(TreeClassName);
 		this.tree.setSizeFull();
-		this.tree.addHierarchyColumn(Node::getName).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")); //$NON-NLS-1$
-		this.tree.addColumn(Node::getDescription).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")); //$NON-NLS-1$
-		this.tree.addColumn(Node::getState      ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")); //$NON-NLS-1$
-		this.tree.addColumn(Node::isEnabled     ).setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")); //$NON-NLS-1$
+
+		// this.tree.addHierachyColumn(Node::getState)
+		this.tree.addComponentHierarchyColumn(node -> {
+				switch (node.getState()) {
+				case FAILED: return new Icon(VaadinIcon.CLOSE_CIRCLE);  // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
+				case DEGRADED: return new Icon(VaadinIcon.WARNING); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
+				case OK: return new Icon(VaadinIcon.CHECK_CIRCLE); // alternatives: SMILEY_O, THUMBS_UP
+				default: throw new IllegalArgumentException("illegal state"); //$NON-NLS-1$
+				}
+			})
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
+			.setKey("state"); // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
+		this.tree.addHierarchyColumn(Node::getName)
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
+			.setKey("name"); //$NON-NLS-1$
+		this.tree.addColumn(Node::getDescription)
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")) //$NON-NLS-1$
+			.setKey("description"); //$NON-NLS-1$
+		this.tree.addColumn(Node::isEnabled)
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")) //$NON-NLS-1$
+			.setKey("enabled"); //$NON-NLS-1$`
+
 		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 		updateTree();
 
@@ -595,7 +615,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	public static void ExecutionError(String msg, Throwable t) {
 		String text = String.format(Messages.getString("NodeView.Notification.ExecutionError"), msg); //$NON-NLS-1$
-		log.warn(text, t);
+		log.warn(msg, t);
 		openDialog(text, t);
 	}
 
