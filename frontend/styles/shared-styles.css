@@ -1,34 +1,9 @@
 /*
-
 <tag>
 .<class>
 #<id>
 
 */
-
-/* List-View: */
-.list-view .list-view-content {
-	display: flex;
-}
-
-.list-view .list-view-grid {
-	flex: 2;
-}
-
-.list-view .contact-form {
-	flex: 1;
-	/* padding: var(- -lumo-space-m); */
-	padding: 5px;
-}
-
-.contact-form-fields * {
-	padding: 3px;
-	margin: 0px;
-/*
-	flex-direction: row;
-*/
-}
-
 
 /* Nodes-View: */
 .node-view .node-view-content {
@@ -44,14 +19,10 @@
 }
 
 .node-view .node-view-tree {
-	flex: 1;
+	/* flex: 1; */
+	align-self: flex-start;
+	align-items: flex-start;
 }
-
-/*
-.node-view .node-view-tree vaadin-grid-cell-content {
-	font-size: +2;
-}
-*/
 
 /* Node-Form: */
 .node-view .node-form {

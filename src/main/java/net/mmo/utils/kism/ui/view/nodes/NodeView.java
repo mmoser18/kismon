@@ -219,20 +219,22 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
 		this.tree = new TreeGrid<>();
 		this.tree.addClassName(TreeClassName);
-		this.tree.setSizeFull();
+		// this.tree.setSizeFull();
 
 		// this.tree.addHierachyColumn(Node::getState)
 		this.tree.addComponentHierarchyColumn(node -> {
-				switch (node.getState()) {
-				case FAILED: return new Icon(VaadinIcon.CLOSE_CIRCLE);  // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
-				case DEGRADED: return new Icon(VaadinIcon.WARNING); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
-				case OK: return new Icon(VaadinIcon.CHECK_CIRCLE); // alternatives: SMILEY_O, THUMBS_UP
-				default: throw new IllegalArgumentException("illegal state"); //$NON-NLS-1$
+				Node.State state = node.getState();
+				switch (state) {
+				case FAILED: return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, state);  // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
+				case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING, state); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
+				case OK: return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, state); // alternatives: SMILEY_O, THUMBS_UP
+				default: throw new IllegalArgumentException("illegal state: " + state); //$NON-NLS-1$
 				}
 			})
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
 			.setKey("state"); // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
-		this.tree.addHierarchyColumn(Node::getName)
+		// this.tree.addHierarchyColumn(Node::getName)
+		this.tree.addColumn(Node::getName)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
 			.setKey("name"); //$NON-NLS-1$
 		this.tree.addColumn(Node::getDescription)
@@ -422,12 +424,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
 		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
-		dataProvider.refreshItem(node);
+// not necessary
 //		node.bubbleUp(n ->
 //			{
 //				dataProvider.refreshItem(n);
 //				if (NodeView.alwaysSave) saveNode(n);
 //			});
+		dataProvider.refreshItem(node);
+		if (NodeView.alwaysSave) saveNode(node);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -440,39 +444,35 @@ public class NodeView <N extends Node> extends VerticalLayout
 				return;
 			}
 		}
-//		if (node == null) {
-//			closeEditor();
-//		} else {
+		try {
+			NodeForm<N> newForm;
 			try {
-				NodeForm<N> newForm;
-				try {
-					newForm = this.formFactory.createForm((Class<N>)node.getClass());
-				} catch (Exception ex) {
-					log.error("Error creating node:", ex); //$NON-NLS-1$
-					ProgrammingError("Error creating node", ex); //$NON-NLS-1$
-					return;
-				}
-				if (newForm != this.form) { // different form assigned:
-					log.info("editNode: new form {}", newForm); //$NON-NLS-1$
-					this.form = newForm;
-					this.content.removeAll(); // remove old form
-					this.content.add(this.tree, this.form); // add new form
-					// add listeners (if not already present):
-					this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
-					this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-					this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-					this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
-				}
-				this.form.setHeader(header);
-				this.form.setNode(node);
-				this.form.setVisible(true);
-				addClassName("editing"); //$NON-NLS-1$
-			} catch (java.lang.IllegalStateException ex) {
-				log.error("wtf?", ex); //$NON-NLS-1$
-				this.content.removeAll(); // remove old form
-				this.form = null;
+				newForm = this.formFactory.createForm((Class<N>)node.getClass());
+			} catch (Exception ex) {
+				log.error("Error creating node:", ex); //$NON-NLS-1$
+				ProgrammingError("Error creating node", ex); //$NON-NLS-1$
+				return;
 			}
-//		}
+			if (newForm != this.form) { // different form assigned:
+				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
+				this.form = newForm;
+				this.content.removeAll(); // remove old form
+				this.content.add(this.tree, this.form); // add new form
+				// add listeners (if not already present):
+				this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
+				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
+				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
+				this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
+			}
+			this.form.setHeader(header);
+			this.form.setNode(node);
+			this.form.setVisible(true);
+			addClassName("editing"); //$NON-NLS-1$
+		} catch (java.lang.IllegalStateException ex) {
+			log.error("WTF?", ex); //$NON-NLS-1$
+			this.content.removeAll(); // remove old form
+			this.form = null;
+		}
 	}
 
 	private void closeEditor() {
@@ -645,4 +645,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 			});
 	}
 
+	private static class LabelWithIcon extends HorizontalLayout
+	{
+		private static final long serialVersionUID = 5149939812863789723L;
+
+		public LabelWithIcon(VaadinIcon icon, Node.State state) {
+			add(new Icon(icon));
+			add(new Label(StateLabelProvider.getStateLabel(state)));
+		}
+	}
 }

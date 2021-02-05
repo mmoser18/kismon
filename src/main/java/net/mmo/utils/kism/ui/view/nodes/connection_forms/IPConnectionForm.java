@@ -396,7 +396,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
 		case IPConnection.PROPERTYNAME_RESPONSE_COMPLETE:
-			if (!this.binderHasChanges()) readBean(sourceNode); // we only update the form if the user hasn't changed anything, i.e. is editing the form right now!
+			/*if (!this.binderHasChanges())*/ readBean(sourceNode); // we only update the form if the user hasn't changed anything, i.e. is editing the form right now!
 			break;
 		default:
 			break;

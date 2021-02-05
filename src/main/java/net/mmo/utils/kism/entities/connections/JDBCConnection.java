@@ -177,6 +177,7 @@ public class JDBCConnection extends IPConnection
 			setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (reqConnection != null) {
+				if (ex instanceof SQLException) setConnection(null); // delete old connection so that a new connection is attempted. Otherwise, if a connection had been terminate no new one will ever be attempted
 				throw new Exception(String.format("sending query '%s' to %s: ", resQuery, getResultingUrl()), ex); //$NON-NLS-1$
 			} else {
 				throw new Exception(String.format("creating query to '%s'", getResultingUrl()), ex); //$NON-NLS-1$

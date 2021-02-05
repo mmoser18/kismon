@@ -27,6 +27,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.entities.Node.State;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
@@ -107,6 +108,10 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		add(this.header, this.fields, createButtonsLayout());
 	}
 
+	public void setState(Node.State state) {
+		this.stateField.setValue(StateLabelProvider.getStateLabel(state));
+	}
+
 	public void setHeader(String header) {
 		this.header.setText(header);
 	}
@@ -171,7 +176,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
 		switch (propertyName) {
 		case Node.PROPERTYNAME_STATE:
-			this.stateField.setValue(newValue.toString());
+			setState((State)newValue);
 			break;
 		default:
 			// ignore
@@ -202,7 +207,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.stateField = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.stateField.addClassName(StateClassName);
 		this.stateField.setReadOnly(true); // stateField is calculated!
-		this.binder.forField(this.stateField).bind(n -> n.getState().toString(), null);
+		this.binder.forField(this.stateField).bind(n -> StateLabelProvider.getStateLabel(n.getState()), null);
 
 		this.enabled  = new Checkbox(Messages.getString("NodeForm.Enabled.Label")); //$NON-NLS-1$
 		this.enabled.addClassName(EnabledClassName);
