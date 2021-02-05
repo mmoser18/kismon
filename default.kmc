@@ -32,7 +32,6 @@
         "condition" : "EndsWithIgnoreCase",
         "operand" : ""
       },
-      "shortRequestLogEntries" : false,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -58,7 +57,6 @@
         "condition" : "Contains",
         "operand" : "SoapEnvelope"
       },
-      "shortRequestLogEntries" : false,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -86,13 +84,13 @@
         "condition" : "ContainsIgnoreCase",
         "operand" : "Frau"
       },
-      "shortRequestLogEntries" : false,
       "dbUid" : "C##QUEST",
       "dbPwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ],
-    "condition" : "DEGRADED_ON_NOT_ALL_OK"
+    "condition" : "DEGRADED_ON_NOT_ALL_OK",
+    "expanded" : false
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.2",
@@ -106,9 +104,12 @@
       "enabled" : true,
       "properties" : { },
       "children" : [ ],
-      "condition" : "ALL_MUST_BE_OK"
+      "condition" : "ALL_MUST_BE_OK",
+      "expanded" : false
     } ],
-    "condition" : "ALL_MUST_BE_OK"
+    "condition" : "ALL_MUST_BE_OK",
+    "expanded" : true
   } ],
-  "condition" : "DEGRADED_ON_NOT_ALL_OK"
+  "condition" : "DEGRADED_ON_NOT_ALL_OK",
+  "expanded" : true
 }

@@ -13,6 +13,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -54,6 +56,8 @@ public class JDBCConnection extends IPConnection
 	transient protected Driver driver;
 	@JsonIgnore
 	transient protected Connection connection;
+	@JsonIgnore
+	transient protected Executor timeoutExecutor = Executors.newFixedThreadPool(3);
 
 	// result stuff - later to be collected into some "history"-object:
 
@@ -87,6 +91,12 @@ public class JDBCConnection extends IPConnection
 	public void updateResolvableValues() {
 		super.updateResolvableValues();
 		updateResultingQuery();
+	}
+
+	@Override
+	public void setTimeout(int timeout) {
+		super.setTimeout(timeout);
+
 	}
 
 	public void setUid(String uid) {
@@ -128,8 +138,21 @@ public class JDBCConnection extends IPConnection
 
 	private void resetConnection() {
 		synchronized(this) {
+			if (this.connection != null) {
+				try {
+					this.connection.abort(this.timeoutExecutor);
+				} catch (SQLException ex) {
+					log.info("Exception aborting connection", ex); //$NON-NLS-1$
+				}
+			}
 			setConnection(null);
 		}
+	}
+
+	private void registerDriver() throws Exception {
+		log.debug("registerDriver:"); //$NON-NLS-1$
+		setDriver((Driver)Class.forName(resolveProperties(this.driverName)).getDeclaredConstructor().newInstance());
+		DriverManager.registerDriver(this.driver);
 	}
 
 	private void createConnection() throws Exception {
@@ -139,13 +162,8 @@ public class JDBCConnection extends IPConnection
 		}
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
 			this.connection = DriverManager.getConnection(resultingUrlResolved(), resolveProperties(getDbUid()), resolveProperties(getDbPwd()));
+			this.connection.setNetworkTimeout(this.timeoutExecutor, this.timeout * 1000); // sec --> msecs
 		}
-	}
-
-	private void registerDriver() throws Exception {
-		log.debug("registerDriver:"); //$NON-NLS-1$
-		setDriver((Driver)Class.forName(resolveProperties(this.driverName)).getDeclaredConstructor().newInstance());
-		DriverManager.registerDriver(this.driver);
 	}
 
 	@SuppressWarnings("resource")
@@ -162,6 +180,7 @@ public class JDBCConnection extends IPConnection
 				reqConnection = getConnection();
 			}
 			statement = reqConnection.createStatement();
+			statement.setQueryTimeout(this.timeout);
 			log.debug("statement.execute():", resQuery); //$NON-NLS-1$
 			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);

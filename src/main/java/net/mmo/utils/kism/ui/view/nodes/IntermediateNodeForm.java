@@ -8,6 +8,7 @@ package net.mmo.utils.kism.ui.view.nodes;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.select.Select;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
 
 // @Slf4j
@@ -17,16 +18,16 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 
 	static final String OperationClassName = NodeFormField + "operation"; //$NON-NLS-1$
 
-
-	public IntermediateNodeForm() {
-		super(IntermediateNode.class);
-	}
-
 	protected Select<IntermediateNode.ChildrenCondition> condition;
 
+
+	public IntermediateNodeForm(NodeService nodeService) {
+		super(IntermediateNode.class, nodeService);
+	}
+
 	@Override
-	protected void createFormFields() {
-		super.createFormFields();
+	protected void createFormFields(NodeService nodeService) {
+		super.createFormFields(nodeService);
 
 		this.condition = new Select<>(IntermediateNode.ChildrenCondition.values());
 		this.condition.addClassName(OperationClassName);

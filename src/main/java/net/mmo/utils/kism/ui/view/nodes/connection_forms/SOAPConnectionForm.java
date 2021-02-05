@@ -9,6 +9,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.connections.SOAPConnection;
 
@@ -23,21 +24,21 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 
 	private String soapOperationErrorMsg; // used to pass an error message from the validator's predicate to the validator's message provider.
 
-	public SOAPConnectionForm() {
-		super(SOAPConnection.class);
+	public SOAPConnectionForm(NodeService nodeService) {
+		super(SOAPConnection.class, nodeService);
 	}
 
 	@Override
-	protected void createFormFields() {
-		super.createFormFields();
+	protected void createFormFields(NodeService nodeService) {
+		super.createFormFields(nodeService);
 
 		this.soapOperation = new TextField();
 		this.soapOperation = new TextField(Messages.getString("SOAPConnectionForm.SoapOperation.Label")); //$NON-NLS-1$
 		this.soapOperation.setClassName(SoapOperationClassName);
 		this.soapOperation.setThemeName(LabelPaddingTheme);
-//		this.soapOperation.addValueChangeListener(event -> { /**/} );
+		this.soapOperation.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.soapOperation)
-			.withValidator(this.propertiesResolvable)
+			.withValidator(this.propertiesResolvableChecker)
 			.withValidator(operation ->
 				{
 					log.trace("validating soapOperation: '{}'", operation); //$NON-NLS-1$

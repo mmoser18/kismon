@@ -19,9 +19,7 @@
 }
 
 .node-view .node-view-tree {
-	/* flex: 1; */
-	align-self: flex-start;
-	align-items: flex-start;
+	flex: 1;
 }
 
 /* Node-Form: */
@@ -56,6 +54,12 @@ vaadin-form-layout {
 	align-items: flex-start;
 }
 
+/*
+.node-form {
+	overflow: visible;
+}
+*/
+
 vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-select[class^='node-form-field-'],vaadin-date-time-picker[class^='node-form-field-'],vaadin-upload,vaadin-horizontal-layout[class^='node-form-field-'],vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-date-time-picker[class^='node-form-field-'],vaadin-accordion[class^='node-form-field-'],vaadin-upload {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -75,6 +79,10 @@ vaadin-vertical-layout.label-padding {
 	align-items: baseline;
 }
 
+#nodeform-save-button {
+	margin-left: 20px	
+}
+
 vaadin-button {
 	margin-left: 5px;
 	margin-right: 5px;
@@ -91,11 +99,32 @@ vaadin-upload {
 	padding-right: 0px;
 }
 
+.icon-OK {
+	color: green;
+}
+.icon-DEGRADED {
+	color: orange;
+}
+.icon-FAILED {
+	color: red;
+}
+.label-OK {
+	color: green;
+}
+.label-DEGRADED {
+	color: orange;
+}
+.label-FAILED {
+	color: red;
+}
+
 .direction_row {
-	flex-direction: row;
+	orientation: horizontal;
+	/* flex-direction: row; */
 }
 .direction_col {
-	flex-direction: column;
+	orientation: vertical;
+	/* flex-direction: column; */
 }
 
 @media all and (max-width: 1100px) {

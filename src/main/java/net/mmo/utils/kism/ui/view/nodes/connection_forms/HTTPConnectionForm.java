@@ -18,6 +18,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
@@ -35,8 +36,6 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	static final String ResponseHeadersClassName       = NodeFormField + "response-headers"; //$NON-NLS-1$
 	static final String ResponseBodyClassName          = NodeFormField + "response-body"; //$NON-NLS-1$
 	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
-
-	static final String RequestDetailsClassName        = NodeFormField + "request-details"; //$NON-NLS-1$
 
 	protected Select<HTTP_Method> method;
 
@@ -57,13 +56,13 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	protected TextField acceptableReturnCodes;
 
 
-	public HTTPConnectionForm(Class<N> clazz) {
-		super(clazz);
+	public HTTPConnectionForm(Class<N> clazz, NodeService nodeService) {
+		super(clazz, nodeService);
 	}
 
 	@Override
-	protected void createFormFields() {
-		super.createFormFields();
+	protected void createFormFields(NodeService nodeService) {
+		super.createFormFields(nodeService);
 
 		this.method = new Select<>(HTTP_Method.values());
 		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
@@ -81,6 +80,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
 		this.headers.addThemeName(MonospaceTheme);
+		this.headers.setClearButtonVisible(clearButtonsVisible);
 		this.headers.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
@@ -106,6 +106,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.payload.setClassName(RequestBodyClassName);
 		this.payload.setThemeName(LabelPaddingTheme);
 		this.payload.addThemeName(MonospaceTheme);
+		this.payload.setClearButtonVisible(clearButtonsVisible);
 		this.payload.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
@@ -114,7 +115,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 				updateRequestData();
 			}
 		});
-		this.binder.forField(this.payload).withValidator(this.propertiesResolvable);
+		this.binder.forField(this.payload).withValidator(this.propertiesResolvableChecker);
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
@@ -149,11 +150,12 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
 		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
+		this.acceptableReturnCodes.setClearButtonVisible(clearButtonsVisible);
 
 		// we cross-link the validators of the checkResults-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
 			this.binder.forField(this.acceptableReturnCodes)
-				.withValidator(this.propertiesResolvable)
+				.withValidator(this.propertiesResolvableChecker)
 				.withValidator(text -> {
 									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.checkResults.getValue() && text.isEmpty()); //$NON-NLS-1$
 									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$

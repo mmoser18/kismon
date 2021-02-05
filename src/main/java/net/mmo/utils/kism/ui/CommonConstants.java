@@ -6,6 +6,8 @@
 package net.mmo.utils.kism.ui;
 
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout.Orientation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -18,8 +20,8 @@ public class CommonConstants
 	public static final String LogoutURLSuffix = "logout"; //$NON-NLS-1$
 
 	public enum LayoutDirection {
-		DirectionRow(Messages.getString("CommonConstants.LayoutDirection.Row")), //$NON-NLS-1$
-		DirectionCol(Messages.getString("CommonConstants.LayoutDirection.Col")); //$NON-NLS-1$
+		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$
+		Vertical  (Messages.getString("CommonConstants.LayoutDirection.Vertical")); //$NON-NLS-1$
 
 		String name;
 
@@ -28,9 +30,17 @@ public class CommonConstants
 		}
 
 		public static LayoutDirection invert(LayoutDirection dir) {
-			return (dir == LayoutDirection.DirectionRow
-			       ? LayoutDirection.DirectionCol
-			       : LayoutDirection.DirectionRow);
+			return (dir == LayoutDirection.Horizontal
+			       ? LayoutDirection.Vertical
+			       : LayoutDirection.Horizontal);
+		}
+
+		public SplitLayout.Orientation getOrientation() {
+			switch (this) {
+			case Horizontal: return Orientation.HORIZONTAL;
+			case Vertical  : return Orientation.VERTICAL;
+			default: throw new IllegalArgumentException("Unknown layout direction: " + this); //$NON-NLS-1$
+			}
 		}
 
 		@Override

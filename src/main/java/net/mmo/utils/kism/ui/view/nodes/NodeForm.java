@@ -26,9 +26,11 @@ import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.Node.State;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
+import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
@@ -72,16 +74,28 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected N node;
 	protected Binder<N> binder; // a Binder that is aware of bean validation annotations
 
+	/** Unfortunately the Vaadin binder not only considers changes via the UI but also programmatically
+	 * updated fields as changes. Its hasCHanges()-method is thus not properly reflecting whether the
+	 * *user* has changed anything. We need to keep track of that ourselves.
+	 */
+	protected boolean uiChanges = false;
+
+	protected static boolean clearButtonsVisible = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeForm.ClearButtonsVisible", "true")); //$NON-NLS-1$ //$NON-NLS-2$
+
+
 	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
 
 	/** reusable validator for fields that support properties */
-	protected Validator<String> propertiesResolvable;
+	protected Validator<String> propertiesResolvableChecker;
 
-	public NodeForm(Class<N> clazz) {
+
+	public NodeForm(Class<N> clazz, NodeService nodeService) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
 
-		this.propertiesResolvable = new Validator<>()
+		// We create a Validator that can be used everywhere where we need to check whether a field
+		// contains unresolvable properties:
+		this.propertiesResolvableChecker = new Validator<>()
 			{
 				private static final long serialVersionUID = -7211887363956128833L;
 
@@ -97,15 +111,34 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				}
 			};
 
+		// we create our binder:
 		this.binder = new BeanValidationBinder<>(clazz);
 
-		createFormFields();
+		createFormFields(nodeService);
 
+		// we bind the binder to our node-beans:
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form fields
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-op... ||-(
 
 		add(this.header, this.fields, createButtonsLayout());
+
+		// we need to keep track of user-changes ourselves - see explanation at "uiChanges"
+		this.binder.addValueChangeListener(event -> {
+			if (event.isFromClient()) {
+				log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
+				setUiChanges(true);
+			}
+		});
+	}
+
+	private void setUiChanges(boolean hasUIchanges) {
+		this.uiChanges = hasUIchanges;
+		updateSaveEnabled();
+	}
+
+	private boolean hasUiChanges() {
+		return this.uiChanges;
 	}
 
 	public void setState(Node.State state) {
@@ -119,8 +152,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public boolean setNode(N newNode) {
 		log.debug("NodeForm.setNode({})", newNode); //$NON-NLS-1$
 		if (this.node != null) {
-			if (this.binder.hasChanges()) {
-				log.debug("binder has changes!"); //$NON-NLS-1$
+			if (hasUiChanges()) {
+				log.debug("we have unsaved UI changes!"); //$NON-NLS-1$
 				new ConfirmDialog("There are unsaved changes!", //$NON-NLS-1$
 				                  "Are you sure you want to leave this node?", //$NON-NLS-1$
 				                  "Save node", (confirmEvent) -> { confirmEvent.getSource().close(); validateAndSave(); }, //$NON-NLS-1$
@@ -184,25 +217,27 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	/** derived classes need to override this */
-	protected void createFormFields() {
+	protected void createFormFields(NodeService nodeService) {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
 		this.name.setThemeName(LabelPaddingTheme);
-//		this.binder.forField(this.name)
-//			.withValidator(this.resolvableValidator)
-//			.withValidator(name ->
-//				{ // Explicit validator instance
-//					return nodeService.getRootNodes().stream()
-//						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
-//						.filter(rootNode -> rootNode.getName().equals(name)) // same name as any other rootnode?
-//						.findAny().isEmpty();
-//				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
-//			.bind(Node::getName, Node::setName)
-//		;
+		this.name.setClearButtonVisible(clearButtonsVisible);
+		this.binder.forField(this.name)
+			.withValidator(this.propertiesResolvableChecker)
+			.withValidator(value ->
+				{ // Explicit validator instance
+					return nodeService.getRootNodes().stream()
+						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
+						.filter(rootNode -> rootNode.getName().equals(value)) // same name as any other rootnode?
+						.findAny().isEmpty();
+				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
+			.bind(Node::getName, Node::setName)
+		;
 
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
 		this.description.setThemeName(LabelPaddingTheme);
+		this.description.setClearButtonVisible(clearButtonsVisible);
 
 		this.stateField = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.stateField.addClassName(StateClassName);
@@ -218,6 +253,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
 		this.properties.setThemeName(LabelPaddingTheme);
+		this.properties.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.properties)
 			.withValidator((value, context) ->
 				{ // Explicit validator instance:
@@ -260,6 +296,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected void readBean(N n) {
 		log.info("readBean node={}", n); //$NON-NLS-1$
 		this.binder.readBean(n);
+		setUiChanges(false);
 	}
 
 	protected void writeBean(N n) throws ValidationException {
@@ -267,11 +304,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.binder.writeBean(n);
 	}
 
-	protected boolean binderHasChanges() {
-		boolean res = this.binder.hasChanges();
-		log.debug("binderHasChanges(): {}", res); //$NON-NLS-1$
-		return res;
-	}
 
 	// We need to prevent bean validation when there is currently no bean set or else we get
 	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
@@ -279,6 +311,12 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		boolean res = (this.binder.getBean() != null ? this.binder.isValid() : true);
 		log.debug("binderIsValid(): {} (bean:{})", res, this.binder.getBean()); //$NON-NLS-1$
 		return res;
+	}
+
+	protected void updateSaveEnabled() {
+		boolean enable = this.uiChanges && binderIsValid();
+		log.debug("binder status change -> [save] enabled:{}", enable); //$NON-NLS-1$
+		this.save.setEnabled(enable);
 	}
 
 	protected void updateResolvableValues() {
@@ -335,17 +373,14 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	private HorizontalLayout createButtonsLayout() {
+		// saves all changes values of the current node
 		this.save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		this.save.setId("nodeform-save-button"); //$NON-NLS-1$
 		this.save.addClickShortcut(Key.ENTER);
 		this.save.addClickListener(event -> validateAndSave());
-		this.binder.addStatusChangeListener(event ->
-			{
-				@SuppressWarnings("hiding")
-				boolean enabled = binderHasChanges() && binderIsValid();
-				log.debug("binder status change -> [save] enabled:{}", enabled); //$NON-NLS-1$
-				this.save.setEnabled(enabled);
-			});
+		this.save.setEnabled(false);
+
+		// deletes the current node - sent as event to the top NodeView
 		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.delete.setId("nodeform-delete-button"); //$NON-NLS-1$
 		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
@@ -355,6 +390,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.reset.setId("nodeform-reset-button"); //$NON-NLS-1$
 		this.reset.addClickListener(event -> readBean(this.node));
 
+		// close the node details form
 		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.close.setId("nodeform-close-button"); //$NON-NLS-1$
 		this.close.addClickShortcut(Key.ESCAPE);

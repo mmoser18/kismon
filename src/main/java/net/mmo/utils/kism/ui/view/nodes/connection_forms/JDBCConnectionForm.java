@@ -7,11 +7,14 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
+import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
 
 @Slf4j
@@ -42,32 +45,36 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	protected TextArea  responsePayload;
 
 
-	public JDBCConnectionForm() {
-		super(JDBCConnection.class);
+	public JDBCConnectionForm(NodeService nodeService) {
+		super(JDBCConnection.class, nodeService);
 	}
 
 	@Override
-	protected void createFormFields() {
-		super.createFormFields();
+	protected void createFormFields(NodeService nodeService) {
+		super.createFormFields(nodeService);
 
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);
 		this.driverName.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.driverName).withValidator(this.propertiesResolvable);
+		this.driverName.setClearButtonVisible(clearButtonsVisible);
+		this.binder.forField(this.driverName).withValidator(this.propertiesResolvableChecker);
 
 		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
 		this.dbUid.setClassName(UidClassName);
 		this.dbUid.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvable);
+		this.dbUid.setClearButtonVisible(clearButtonsVisible);
+		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableChecker);
 
 		this.dbPwd = new TextField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
 		this.dbPwd.setClassName(PwdClassName);
 		this.dbPwd.setThemeName(LabelPaddingTheme);
-		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvable);
+		this.dbPwd.setClearButtonVisible(clearButtonsVisible);
+		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableChecker);
 
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
 		this.query.setThemeName(LabelPaddingTheme);
+		this.query.setClearButtonVisible(clearButtonsVisible);
 		this.query.addValueChangeListener(event ->
 			{
 				log.info("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -79,7 +86,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 					}
 				}
 			});
-		this.binder.forField(this.query).withValidator(this.propertiesResolvable);
+		this.binder.forField(this.query).withValidator(this.propertiesResolvableChecker);
 
 		this.resultingQuery = new TextField(Messages.getString("JDBCConnectionForm.ResultingQuery.Value")); //$NON-NLS-1$
 		this.resultingQuery.setClassName(ResultingQueryClassName);
@@ -105,12 +112,19 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 
 		this.connnectionDetailsPanel.add(this.driverName, uidAndPwd, this.query, this.resultingQuery);
 
+		Accordion requestDetails = new Accordion();
+		requestDetails.close(); // initially closed
+		VerticalLayout requestDetailsPanel = new VerticalLayout();
+		requestDetailsPanel.setClassName(RequestDetailsClassName);
+		requestDetailsPanel.add(this.responsePayload);
+		requestDetails.add(Messages.getString("JDBCConnectionForm.RequestDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
+
 		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration, this.timestamp);
 		responseResults.addClassName(CombinedClassName);
 
 		this.fields.add(new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
 		                responseResults,
-		                this.responsePayload,
+		                requestDetails,
 		                this.validationDetails
 		                );
 	}

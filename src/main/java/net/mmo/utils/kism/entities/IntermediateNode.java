@@ -36,6 +36,8 @@ public class IntermediateNode extends Node
 
 	private ChildrenCondition condition = ChildrenCondition.ALL_MUST_BE_OK;
 
+	public boolean expanded = false;
+
 	// required for deserialization only
 	protected IntermediateNode() {
 		super();

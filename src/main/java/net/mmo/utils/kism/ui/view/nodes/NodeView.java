@@ -79,9 +79,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	Div content;
+//	SplitLayout content;
 
 	NodeForm<N> form; // package visible for ITs - is there no other way?
-	LayoutDirection contentDirection = LayoutDirection.DirectionRow;
+	LayoutDirection contentDirection = LayoutDirection.Horizontal;
 
 	protected static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -103,8 +104,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 			log.trace("Creating content:"); //$NON-NLS-1$
 			this.content = new Div(this.tree);
+			// this.content = new SplitLayout(this.tree, new Div());
 			this.content.addClassName(ViewContentClassName);
 			this.content.setSizeFull();
+			// this.content.setOrientation(this.contentDirection.getOrientation());
 			CommonConstants.setClassName(this.content, this.contentDirection);
 
 			add(createToolbar(), this.content);
@@ -131,13 +134,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 				log.info("nodeTypeSelector changed to {}", change.getValue()); //$NON-NLS-1$
 			});
 
-		Button addChildNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
-		addChildNodeButton.addClickListener(click ->
+		Button addNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
+		addNodeButton.addClickListener(click ->
 			{
 				NodeType type = nodeTypeSelector.getValue();
 				log.info("add node (type={})", type); //$NON-NLS-1$
-				if (type.ordinal() <= 0) {
-					UsageError("NodeView.ErrorMsg.NodeTypeMustBeSelected"); //$NON-NLS-1$
+				if (type == NodeType.RootNode) {
+					createNewRootNode();
 				} else {
 					IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode(type)); // in the first step we only create a new node
 				}
@@ -172,6 +175,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				directionButton.setText(String.format(Messages.getString("NodeView.Button.Direction.Label"), this.contentDirection.toString())); //$NON-NLS-1$
 				// ... before changing the direction:
 				this.contentDirection = LayoutDirection.invert(this.contentDirection);
+				// this.content.setOrientation(this.contentDirection.getOrientation());
 				CommonConstants.setClassName(this.content, this.contentDirection);
 			});
 
@@ -210,7 +214,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			}
 		});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addChildNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, downloadFileButton, uploadFile);
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, downloadFileButton, uploadFile);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
 	}
@@ -219,32 +223,38 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
 		this.tree = new TreeGrid<>();
 		this.tree.addClassName(TreeClassName);
-		// this.tree.setSizeFull();
+		this.tree.setSizeFull();
 
 		// this.tree.addHierachyColumn(Node::getState)
 		this.tree.addComponentHierarchyColumn(node -> {
 				Node.State state = node.getState();
 				switch (state) {
-				case FAILED: return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, state);  // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
-				case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING, state); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
-				case OK: return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, state); // alternatives: SMILEY_O, THUMBS_UP
+				case FAILED: return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, state, "red");  // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN? //$NON-NLS-1$
+				case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING, state, "yellow"); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE //$NON-NLS-1$
+				case OK: return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, state, "green"); // alternatives: SMILEY_O, THUMBS_UP //$NON-NLS-1$
 				default: throw new IllegalArgumentException("illegal state: " + state); //$NON-NLS-1$
 				}
 			})
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
-			.setKey("state"); // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
-		// this.tree.addHierarchyColumn(Node::getName)
+			.setKey("state") // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
+			.setAutoWidth(true)
+			;
 		this.tree.addColumn(Node::getName)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
-			.setKey("name"); //$NON-NLS-1$
-		this.tree.addColumn(Node::getDescription)
+			.setKey("name") //$NON-NLS-1$
+			.setAutoWidth(true)
+			;
+		this.tree.addColumn(node -> getNodeDescription(node))
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")) //$NON-NLS-1$
-			.setKey("description"); //$NON-NLS-1$
+			.setKey("description") //$NON-NLS-1$
+			.setAutoWidth(false)
+			;
 		this.tree.addColumn(Node::isEnabled)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")) //$NON-NLS-1$
-			.setKey("enabled"); //$NON-NLS-1$`
-
-		this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
+			.setKey("enabled") //$NON-NLS-1$`
+			.setAutoWidth(true)
+			;
+		// this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 		updateTree();
 
 		// connect view and model:
@@ -282,14 +292,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.addExpandListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
-			// any action?
+			nodes.forEach(node -> ((IntermediateNode)node).expanded = true);
 		});
 		this.tree.addCollapseListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
-			// any action?
+			nodes.forEach(node -> ((IntermediateNode)node).expanded = false);
 		});
-
 	}
 
 	private TreeDataProvider<Node> createDataProvider() {
@@ -333,6 +342,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 		};
 	}
 
+	private static String getNodeDescription(Node node) {
+		return node instanceof RootNode
+			? node.getDescription() + " [" + ((RootNode)node).getFilePath() + "]" //$NON-NLS-1$ //$NON-NLS-2$
+			: node.getDescription();
+	}
+
 	/**
 	 * Handles updates to the data that is NOT triggered via the UI but which may require UI updates (like
 	 * the automatic node state updates).
@@ -348,7 +363,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		case Node.PROPERTYNAME_STATE:
 			// we only need to refresh the tree view, if the state changed. Everything else is handled via NodeUpdateEvent
 			log.trace("refreshItem on node '{}': state={}", sourceNode.getName(), newValue); //$NON-NLS-1$
-			NodeView.this.tree.getDataProvider().refreshItem(sourceNode, true);
+			NodeView.this.tree.getDataProvider().refreshItem(sourceNode);
 			break;
 		default:
 			// ignore others
@@ -378,6 +393,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 		deleteNodes(Collections.singletonList(node));
 		if (NodeView.alwaysSave) saveNode(node);
 		closeEditor();
+	}
+
+	private void createNewRootNode() {
+		RootNode newNode = new RootNode("new node", "new description"); //$NON-NLS-1$ //$NON-NLS-2$
+		this.nodeService.getRootNodes().add(newNode);
+		if (NodeView.alwaysSave) saveNode(newNode);
+		updateTree();
 	}
 
 	private void addNewNode(Node newNode) {
@@ -447,7 +469,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		try {
 			NodeForm<N> newForm;
 			try {
-				newForm = this.formFactory.createForm((Class<N>)node.getClass());
+				newForm = this.formFactory.createForm((Class<N>)node.getClass(), this.nodeService);
 			} catch (Exception ex) {
 				log.error("Error creating node:", ex); //$NON-NLS-1$
 				ProgrammingError("Error creating node", ex); //$NON-NLS-1$
@@ -458,6 +480,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 				this.form = newForm;
 				this.content.removeAll(); // remove old form
 				this.content.add(this.tree, this.form); // add new form
+//				this.content.addToPrimary(this.tree);
+//				this.content.addToSecondary(this.form);
 				// add listeners (if not already present):
 				this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
 				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
@@ -568,8 +592,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// register our refresh-listener with each (new)root-node:
 		if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
 		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
-		this.tree.expandRecursively(getRootNodesAsBareNodes(), 3);
-		// this.tree.getDataProvider().refreshAll();
+		// expand tree to saved state:
+		getRootNodesAsBareNodes().forEach(node -> node.trickleDown(n ->
+			{
+				if (n instanceof IntermediateNode) {
+					IntermediateNode rn = (IntermediateNode)n;
+					if (rn.expanded) this.tree.expand(rn); else this.tree.collapse(rn);
+				}
+			}));
 	}
 
 	@SuppressWarnings("static-method")
@@ -649,9 +679,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 	{
 		private static final long serialVersionUID = 5149939812863789723L;
 
-		public LabelWithIcon(VaadinIcon icon, Node.State state) {
-			add(new Icon(icon));
-			add(new Label(StateLabelProvider.getStateLabel(state)));
+		public LabelWithIcon(VaadinIcon iconName, Node.State state, String color) {
+			Icon icon = new Icon(iconName);
+			icon.setClassName("icon-" + state.name()); //$NON-NLS-1$
+			Label label = new Label(StateLabelProvider.getStateLabel(state));
+			label.setClassName("label-" + state.name()); //$NON-NLS-1$
+			add(icon);
+			add(label);
 		}
 	}
 }

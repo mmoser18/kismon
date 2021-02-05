@@ -46,7 +46,7 @@ public class ListView extends VerticalLayout
 	Grid<Contact> grid = new Grid<>(Contact.class); // package visible for UTs - is there no other way?
 	ContactForm form; // package visible for ITs - is there no other way?
 	Div content;
-	LayoutDirection contentDirection = LayoutDirection.DirectionRow;
+	LayoutDirection contentDirection = LayoutDirection.Horizontal;
 
 	// This gets autowired but still puzzled which annotation causes this...
 	public ListView(ContactService contactService,

@@ -31,6 +31,7 @@ public class RootNode extends IntermediateNode
 	@JsonIgnore
 	public transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
 
+
 	/** required for deserialization only */
 	@SuppressWarnings("unused")
 	private RootNode() {

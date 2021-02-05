@@ -6,6 +6,7 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
@@ -26,21 +27,21 @@ public class FormFactory <N extends Node>
 
 	// @Cacheable("forms") // tried using Spring cache here but didn't work. And as a sideeffect it caused darn slow application startup, so back to a good ol' Hashtable...
 	@SuppressWarnings("unchecked")
-	NodeForm<N> createForm(Class<N> clazz) {
+	NodeForm<N> createForm(Class<N> clazz, NodeService nodeService) {
 //		NodeForm<N> form = this.forms.get(clazz);
 //		if (form == null) {
 		NodeForm<N> form;
 			log.info("creating new form for node-class {}:", clazz); //$NON-NLS-1$
 			if (clazz == RootNode.class) {
-				form = (NodeForm<N>)new RootNodeForm();
+				form = (NodeForm<N>)new RootNodeForm(nodeService);
 			} else if (clazz == IntermediateNode.class) {
-				form = (NodeForm<N>)new IntermediateNodeForm();
+				form = (NodeForm<N>)new IntermediateNodeForm(nodeService);
 			} else if (clazz == RESTConnection.class) {
-				form = (NodeForm<N>)new RESTConnectionForm();
+				form = (NodeForm<N>)new RESTConnectionForm(nodeService);
 			} else if (clazz == SOAPConnection.class) {
-				form = (NodeForm<N>)new SOAPConnectionForm();
+				form = (NodeForm<N>)new SOAPConnectionForm(nodeService);
 			} else if (clazz == JDBCConnection.class) {
-				form = (NodeForm<N>)new JDBCConnectionForm();
+				form = (NodeForm<N>)new JDBCConnectionForm(nodeService);
 			} else {
 				throw new IllegalArgumentException("No form defined for unexpected class " + clazz); //$NON-NLS-1$
 			}

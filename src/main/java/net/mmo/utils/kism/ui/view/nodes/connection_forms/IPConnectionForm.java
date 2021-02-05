@@ -28,6 +28,7 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.ResultChecker;
 import net.mmo.utils.kism.entities.ResultChecker.Condition;
 import net.mmo.utils.kism.entities.connections.IPConnection;
@@ -52,6 +53,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 	static final String ExecuteClassName       = NodeFormField + "execute"; //$NON-NLS-1$
 	static final String DurationClassName      = NodeFormField + "duration"; //$NON-NLS-1$
 	static final String TimeStampClassName     = NodeFormField + "timestamp"; //$NON-NLS-1$
+
+	static final String RequestDetailsClassName = NodeFormField + "request-details"; //$NON-NLS-1$
 
 	static final String ValidationDetailsClassName = NodeFormField + "validation-details"; //$NON-NLS-1$
 	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
@@ -81,19 +84,19 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		                                                                      "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$
 
 	protected Checkbox checkResults;
-	// protected ResultCheckerForm resultChecker;
 
+	// protected ResultCheckerForm resultChecker;
 	protected Select<ResultChecker.Condition> condition;
 	protected TextArea operand;
 
 
-	public IPConnectionForm(Class<N> clazz) {
-		super(clazz);
+	public IPConnectionForm(Class<N> clazz, NodeService nodeService) {
+		super(clazz, nodeService);
 	}
 
 	@Override
-	protected void createFormFields() {
-		super.createFormFields();
+	protected void createFormFields(NodeService nodeService) {
+		super.createFormFields(nodeService);
 
 		this.active = new Checkbox(Messages.getString("IPConnectionForm.Active.Label")); //$NON-NLS-1$
 		this.active.addClassName(ActiveClassName);
@@ -102,15 +105,18 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.period.setSuffixComponent(new Span(Messages.getString("IPConnectionForm.Period.Suffix"))); //$NON-NLS-1$
 		this.period.addClassName(PeriodClassName);
 		this.period.setThemeName(LabelPaddingTheme);
+		this.period.setClearButtonVisible(clearButtonsVisible);
 
 		this.timeout = new IntegerField(Messages.getString("IPConnectionForm.Timeout.Label")); //$NON-NLS-1$
 		this.timeout.setSuffixComponent(new Span(Messages.getString("IPConnectionForm.Timeout.Suffix"))); //$NON-NLS-1$
 		this.timeout.addClassName(TimeoutClassName);
 		this.timeout.setThemeName(LabelPaddingTheme);
+		this.timeout.setClearButtonVisible(clearButtonsVisible);
 
 		this.url = new TextField(Messages.getString("IPConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
 		this.url.setThemeName(LabelPaddingTheme);
+		this.url.setClearButtonVisible(clearButtonsVisible);
 		this.url.addValueChangeListener(event ->
 			{
 				log.info("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -190,21 +196,10 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.execute = new Button(Messages.getString("HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
 		this.execute.setThemeName(LabelPaddingTheme);
-		this.binder.addStatusChangeListener(event ->
-			{
-				log.info("binder statusChange: {} / {}", event, event.getSource().getStatusLabel()); //$NON-NLS-1$
-				this.execute.setText(Messages.getString(this.binder.hasChanges()
-				                                        ? "HTTPConnectionForm.SaveAndExecute.Label" //$NON-NLS-1$
-				                                        : "HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
-				boolean isValid = binderIsValid();
-				log.debug("binder status change -> [execute] active:{}", isValid); //$NON-NLS-1$
-				this.execute.setEnabled(isValid);
-			});
-
 		this.execute.addClickListener(event ->
 			{
 				log.info("execute clicked"); //$NON-NLS-1$
-				if (binderHasChanges()) validateAndSave();
+				if (this.uiChanges) validateAndSave();
 				try {
 					this.node.executeRequest();
 				} catch (Throwable t) {
@@ -232,10 +227,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.operand = new TextArea(Messages.getString("ResultChecker.Operand.Label")); //$NON-NLS-1$
 		this.operand.addClassName(OperandClassName);
 		this.operand.setThemeName(UIConstants.LabelPaddingTheme);
+		this.operand.setClearButtonVisible(clearButtonsVisible);
 
 		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
 		this.binder.forField(this.operand)
-			.withValidator(this.propertiesResolvable)
+			.withValidator(this.propertiesResolvableChecker)
 			.bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
 
 		HorizontalLayout activeAndPeriod = new HorizontalLayout(this.active, this.period, this.timeout);
@@ -325,6 +321,18 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 //		}
 //		return super.binderIsValid();
 //	}
+
+	@Override
+	protected void updateSaveEnabled() {
+		super.updateSaveEnabled();
+		this.execute.setText(Messages.getString(this.uiChanges
+		                                        ? "HTTPConnectionForm.SaveAndExecute.Label" //$NON-NLS-1$
+		                                        : "HTTPConnectionForm.Execute.Label")); //$NON-NLS-1$
+		boolean isValid = binderIsValid();
+		log.debug("binder status change -> [execute] active:{}", isValid); //$NON-NLS-1$
+		this.execute.setEnabled(isValid);
+	}
+
 
 	static <N extends IPConnection> ResultChecker.Condition getCondition(N n) {
 		return (n != null && n.getResultChecker() != null

@@ -44,13 +44,6 @@ abstract public class IPConnection extends LeafNode
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
 
-	protected static boolean AsyncRequestsDefault =
-		Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.AsyncRequests", //$NON-NLS-1$
-		                                                               "false")); //$NON-NLS-1$
-	protected static boolean ShortRequestLogEntriesDefault =
-		Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.ShortRequestLogEntries", //$NON-NLS-1$
-		                                                               "false")); //$NON-NLS-1$
-
 	protected boolean active = false; // should connection be regularly checked?
 
 	@Min(0) // 0 means off
@@ -73,7 +66,7 @@ abstract public class IPConnection extends LeafNode
 	protected String url = "http://www.example.com:8080";
 
 	@JsonIgnore
-	transient protected String resultingUrl;
+	protected transient String resultingUrl;
 
 	protected boolean checkResults = false; // should be boolean but when using the basic type the construct "IPConnection::getCheckResult" can not be found ||-(
 
@@ -81,18 +74,16 @@ abstract public class IPConnection extends LeafNode
 	@JoinColumn(name = "result_checker_id")
 	protected ResultChecker resultChecker;
 
-	protected boolean shortRequestLogEntries = ShortRequestLogEntriesDefault;
-
 	// transient stuff:
 
 	@JsonIgnore
-	transient protected Runnable runnable; // runs the runnable
+	protected transient Runnable runnable; // runs the runnable
 	@JsonIgnore
-	transient protected ScheduledExecutorService periodicExecutor; // for periodic/automatic execution
+	protected transient ScheduledExecutorService periodicExecutor; // for periodic/automatic execution
 	@JsonIgnore
-	transient protected ScheduledFuture<?> future;
+	protected transient ScheduledFuture<?> future;
 	@JsonIgnore
-	transient protected ExecutorService interactiveExecutor; // for interactive execution (via GUI)
+	protected transient ExecutorService interactiveExecutor; // for interactive execution (via GUI)
 
 	// result stuff:
 	// TODO: the below should be kept into some kind of "history"-list:
@@ -104,10 +95,21 @@ abstract public class IPConnection extends LeafNode
 //	@JsonSerialize(using = LocalDateTimeSerializer.class)
 //	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
 	@JsonIgnore
-	transient protected LocalDateTime timestamp;
+	protected transient LocalDateTime timestamp;
 
 	@JsonIgnore
-	transient protected long duration;
+	protected transient long duration;
+
+	@JsonIgnore
+	public transient static boolean asyncRequests =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.AsyncRequests", //$NON-NLS-1$
+		                                                               "true")); //$NON-NLS-1$
+
+	@JsonIgnore
+	public transient static boolean shortRequestLogEntries =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("IPConnection.ShortRequestLogEntries", //$NON-NLS-1$
+		                                                               "true")); //$NON-NLS-1$
+
 
 	/**required for deserialization only */
 	protected IPConnection() {
@@ -127,7 +129,7 @@ abstract public class IPConnection extends LeafNode
 					try {
 						sendRequest();
 					} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
-						if (IPConnection.this.shortRequestLogEntries) {
+						if (IPConnection.shortRequestLogEntries) {
 							log.info("Error executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 						} else {
 							log.error("Error executing '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
@@ -135,7 +137,7 @@ abstract public class IPConnection extends LeafNode
 					}
 				}
 			});
-		if (AsyncRequestsDefault) {
+		if (asyncRequests) {
 			setInteractiveExecutor(Executors.newSingleThreadExecutor());
 		}
 	}
@@ -229,7 +231,7 @@ abstract public class IPConnection extends LeafNode
 	}
 
 	public void executeRequest() throws Exception {
-		if (IPConnection.AsyncRequestsDefault) {
+		if (IPConnection.asyncRequests) {
 			log.info("sendRequest-async:"); //$NON-NLS-1$
 			this.interactiveExecutor.execute(() -> {
 				try {
