@@ -39,6 +39,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	private static final long serialVersionUID = 3875470009216934341L;
 
 	public final static String PROPERTYNAME_STATE  = "state";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_PARENT  = "parent";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_ENABLED  = "enabled";  //$NON-NLS-1$
 
 	public enum State {
 		FAILED,
@@ -65,9 +67,12 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	@JsonIgnore
 	public static boolean initializing = true; // signals that we are still initializing the application
+	                                           // necessary to avoid calling updateAllResolvableValues
+	                                           // while still initializing/deserializing a node.
 
 	// required for deserialization
 	protected Node() {
+		super();
 		log.info("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	protected Node(String name, String description) {
@@ -126,13 +131,16 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public void setParent(IntermediateNode parent) {
 		if (this.parent != parent) {
+			IntermediateNode oldParent = this.parent;
+			this.parent = parent;
+			informOnPropertyChange(PROPERTYNAME_PARENT, oldParent, parent);
+			// changing parent also requires to adapt parent-properties:
 			if (this.properties == null) this.properties = new NodeProperties();
 			if (parent != null) {
 				this.properties.setParentProperties(parent.getProperties());
 			} else { // remove (from) parent
 				this.properties.setParentProperties(null);
 			}
-			this.parent = parent;
 		}
 	}
 
@@ -146,8 +154,12 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-		if (this.parent != null) this.parent.deriveNewState();
+		if (this.enabled != enabled) {
+			boolean oldEnabled = this.enabled;
+			this.enabled = enabled;
+			informOnPropertyChange(PROPERTYNAME_STATE, oldEnabled, enabled);
+			if (this.parent != null) this.parent.deriveNewState();
+		}
 	}
 
 	protected void updateResultingValue(String originalValue, Consumer<String> setter) {
@@ -187,8 +199,10 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	public void onRootNodeDo(Consumer<Node> action) {
 		Node n = this;
 		while (n.getParent() != null) { n = n.getParent(); }
-		// and call the above on the (presumable) RootNode:
-		action.accept(n);
+		if (n instanceof RootNode) {
+			action.accept(n);
+		// no else: this is normal for "free-floating" nodes, e.g. when creating a new node that hasn't yet been plugged into the tree
+		}
 	}
 
 	/** method to be overwritten by root nodes only! */

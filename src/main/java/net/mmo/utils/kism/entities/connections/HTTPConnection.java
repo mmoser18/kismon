@@ -426,16 +426,18 @@ abstract public class HTTPConnection extends IPConnection
 	}
 
 	public void logRequestValues() {
-		log.debug("{}-httpRequest to '{}' / headers: {}", getHttpRequest().method(), getHttpRequest().uri(), getRequestHeaders()); //$NON-NLS-1$
 		Optional<BodyPublisher> optional = getHttpRequest().bodyPublisher();
+		log.debug("{}-httpRequest to '{}' / headers: {} / body: {} bytes", //$NON-NLS-1$
+		          getHttpRequest().method(), getHttpRequest().uri(), (optional.isEmpty() ? 0 : getRequestBody().length));
 		if (!optional.isEmpty()) {
-			log.debug("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
+			log.trace("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
 		}
 	}
 
 	public void logResponseValues() {
-		log.debug("response: status={} / payload-length={} / headers:{} / body: \"{}\"", //$NON-NLS-1$
-		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), responseBodyAsString());
+		log.debug("response: status={} / payload-length={} / headers:{} / body: {} bytes", //$NON-NLS-1$
+		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), getResponseBody().length);
+		log.trace("response: body: \"{}\"", responseBodyAsString()); //$NON-NLS-1$
 	}
 
 	// utility methods:

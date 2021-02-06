@@ -34,7 +34,7 @@ public class NodeFactory <N extends Node>
 	public N createNode(NodeType type) {
 		switch (type) {
 		case IntermediateNode:
-			return (N)new IntermediateNode("Node_" + this.nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
+			return (N)new IntermediateNode("Intermediate_Node_" + this.nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
 		case RESTConnection:
 			return (N)new RESTConnection("REST_" + this.nodeCtr, "REST IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
 		case SOAPConnection:

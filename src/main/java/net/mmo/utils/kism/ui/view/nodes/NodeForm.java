@@ -132,13 +132,14 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		});
 	}
 
-	private void setUiChanges(boolean hasUIchanges) {
+	protected void setUiChanges(boolean hasUIchanges) {
 		this.uiChanges = hasUIchanges;
 		updateSaveEnabled();
 	}
 
-	private boolean hasUiChanges() {
-		return this.uiChanges;
+	protected boolean hasUiChanges() {
+		return this.uiChanges
+			|| (this.node != null) && (this.node.getParent() == null); // a node without parent is a free floating node which has changes by definition (as it was just created)
 	}
 
 	public void setState(Node.State state) {
@@ -169,6 +170,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "<null>")); //$NON-NLS-1$ //$NON-NLS-2$
 		// this.binder.setBean(node);
 		if (newNode != null) {
+			this.setHeader(Messages.getString(newNode.getParent() != null
+			                                  ? "NodeForm.Header.EditOrDeleteNode" //$NON-NLS-1$
+			                                  : "NodeForm.Header.NewNode")); //$NON-NLS-1$
 			if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
 			newNode.addChangeListener(this.nodeRefreshListener);
 			log.info("changeListener set on node '{}'", newNode.getName()); //$NON-NLS-1$
@@ -314,7 +318,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	protected void updateSaveEnabled() {
-		boolean enable = this.uiChanges && binderIsValid();
+		boolean enable = hasUiChanges() && binderIsValid();
 		log.debug("binder status change -> [save] enabled:{}", enable); //$NON-NLS-1$
 		this.save.setEnabled(enable);
 	}

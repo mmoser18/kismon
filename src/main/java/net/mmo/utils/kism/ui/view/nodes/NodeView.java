@@ -29,10 +29,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -115,6 +113,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
+		this.tree.getDataProvider().refreshAll();
+		this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -238,21 +238,25 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
 			.setKey("state") // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
 			.setAutoWidth(true)
+			.setFlexGrow(0)
 			;
 		this.tree.addColumn(Node::getName)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
 			.setKey("name") //$NON-NLS-1$
 			.setAutoWidth(true)
+			.setFlexGrow(0)
 			;
 		this.tree.addColumn(node -> getNodeDescription(node))
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")) //$NON-NLS-1$
 			.setKey("description") //$NON-NLS-1$
 			.setAutoWidth(false)
+			.setFlexGrow(1)
 			;
 		this.tree.addColumn(Node::isEnabled)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")) //$NON-NLS-1$
 			.setKey("enabled") //$NON-NLS-1$`
 			.setAutoWidth(true)
+			.setFlexGrow(0)
 			;
 		// this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
 		updateTree();
@@ -266,7 +270,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					log.info("Selection changed: node='{}'.", node); //$NON-NLS-1$
 					if (this.form != null && this.form.isVisible()) {
 						if (node != null) {
-							editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+							editNode(node);
 						} else {
 							closeEditor();
 						}
@@ -286,18 +290,20 @@ public class NodeView <N extends Node> extends VerticalLayout
 			N node = (N)event.getItem(); // returns the selected Node or null if none is selected /
 			log.info("DoubleClicked node '{}'.", node); //$NON-NLS-1$
 			// action:
-			editNode(node, Messages.getString("NodeView.Form.EditOrDeleteNode.Title")); //$NON-NLS-1$)
+			editNode(node);
 		});
 
 		this.tree.addExpandListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			nodes.forEach(node -> ((IntermediateNode)node).expanded = true);
+			this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		});
 		this.tree.addCollapseListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			nodes.forEach(node -> ((IntermediateNode)node).expanded = false);
+			this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		});
 	}
 
@@ -363,7 +369,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		case Node.PROPERTYNAME_STATE:
 			// we only need to refresh the tree view, if the state changed. Everything else is handled via NodeUpdateEvent
 			log.trace("refreshItem on node '{}': state={}", sourceNode.getName(), newValue); //$NON-NLS-1$
-			NodeView.this.tree.getDataProvider().refreshItem(sourceNode);
+			refreshNode(sourceNode, false);
 			break;
 		default:
 			// ignore others
@@ -395,11 +401,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 		closeEditor();
 	}
 
+	@SuppressWarnings("static-method")
 	private void createNewRootNode() {
-		RootNode newNode = new RootNode("new node", "new description"); //$NON-NLS-1$ //$NON-NLS-2$
-		this.nodeService.getRootNodes().add(newNode);
-		if (NodeView.alwaysSave) saveNode(newNode);
-		updateTree();
+//		RootNode newNode = new RootNode("new node", "new description"); //$NON-NLS-1$ //$NON-NLS-2$
+//		this.nodeService.getRootNodes().add(newNode);
+//		if (NodeView.alwaysSave) saveNode(newNode);
+//		updateTree();
+		// disabled until I have decided how to name this and where to store etc.
+		UsageError("Sorry, additional RootNode(s) not supported, yet."); //$NON-NLS-1$
 	}
 
 	private void addNewNode(Node newNode) {
@@ -407,7 +416,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		IfSuitableNodeSelectedForAddition((selectedNode) -> // in the second step we add node to the selected node
 			{
 				this.nodeService.addChild(selectedNode, newNode);
-				// this.tree.getDataProvider().refreshAll();
 			});
 		if (NodeView.alwaysSave) saveNode(newNode);
 		updateTree();
@@ -439,25 +447,28 @@ public class NodeView <N extends Node> extends VerticalLayout
 	void createNewChildNode(NodeType nodeType) {
 		log.info("createNewChildNode"); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
-		editNode(this.nodeFactory.createNode(nodeType),
-		         Messages.getString("NodeView.Form.NewNode.Title")); //$NON-NLS-1$
+		editNode(this.nodeFactory.createNode(nodeType));
 	}
 
 	private void updateNode(Node node) {
 		log.info("updateNode {}", node); //$NON-NLS-1$
-		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
+//		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
 // not necessary
 //		node.bubbleUp(n ->
 //			{
 //				dataProvider.refreshItem(n);
 //				if (NodeView.alwaysSave) saveNode(n);
 //			});
-		dataProvider.refreshItem(node);
+		refreshNode(node, false);
 		if (NodeView.alwaysSave) saveNode(node);
 	}
 
+	protected void refreshNode(Node node, boolean refreshChildren) {
+		NodeView.this.tree.getDataProvider().refreshItem(node, refreshChildren);
+	}
+
 	@SuppressWarnings("unchecked")
-	public void editNode(N node, String header) {
+	public void editNode(N node) {
 		log.info("editNode {}", node); //$NON-NLS-1$
 		if (this.form != null) {
 			N currentNode = this.form.getNode();
@@ -488,7 +499,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
 				this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
 			}
-			this.form.setHeader(header);
 			this.form.setNode(node);
 			this.form.setVisible(true);
 			addClassName("editing"); //$NON-NLS-1$
@@ -592,12 +602,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// register our refresh-listener with each (new)root-node:
 		if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
 		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
-		// expand tree to saved state:
+		// expand/collapse tree to previously saved state:
 		getRootNodesAsBareNodes().forEach(node -> node.trickleDown(n ->
 			{
 				if (n instanceof IntermediateNode) {
 					IntermediateNode rn = (IntermediateNode)n;
-					if (rn.expanded) this.tree.expand(rn); else this.tree.collapse(rn);
+					if (rn.expanded) {
+						this.tree.expand(rn);
+					} else {
+						this.tree.collapse(rn);
+					}
+					refreshNode(rn, false);
 				}
 			}));
 	}
@@ -631,7 +646,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	/* User operation error - this CAN happen but does no harm */
-	public static void UsageError(String msg) {
+public static void UsageError(String msg) {
 		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), msg); //$NON-NLS-1$
 		log.info(text);
 		openDialog(text, null);

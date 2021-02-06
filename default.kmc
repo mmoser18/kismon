@@ -23,7 +23,7 @@
         "x" : "*",
         "xxx" : "yyy"
       },
-      "active" : true,
+      "active" : false,
       "period" : 30,
       "timeout" : 15,
       "url" : "http://localhost:8080/${foo}",
@@ -42,13 +42,13 @@
       "acceptableReturnCodes" : "200"
     }, {
       "className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
-      "name" : "SOAP_0",
+      "name" : "SOAP_request_with_long_name",
       "description" : "SOAP Connection",
       "enabled" : true,
       "properties" : {
         "x" : "Operation"
       },
-      "active" : true,
+      "active" : false,
       "period" : 60,
       "timeout" : 45,
       "url" : "http://localhost:8080",
@@ -75,7 +75,7 @@
         "bar" : "zzz",
         "foo" : "*"
       },
-      "active" : true,
+      "active" : false,
       "period" : 60,
       "timeout" : 45,
       "url" : "jdbc:oracle:thin:@localhost:1521/xe",
@@ -90,7 +90,7 @@
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ],
     "condition" : "DEGRADED_ON_NOT_ALL_OK",
-    "expanded" : false
+    "expanded" : true
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "root.2",
@@ -109,6 +109,15 @@
     } ],
     "condition" : "ALL_MUST_BE_OK",
     "expanded" : true
+  }, {
+    "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+    "name" : "Intermediate_Node_0",
+    "description" : "Intermediate Node 0",
+    "enabled" : true,
+    "properties" : { },
+    "children" : [ ],
+    "condition" : "ALL_MUST_BE_OK",
+    "expanded" : false
   } ],
   "condition" : "DEGRADED_ON_NOT_ALL_OK",
   "expanded" : true

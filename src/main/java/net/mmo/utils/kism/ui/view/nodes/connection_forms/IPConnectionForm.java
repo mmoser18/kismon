@@ -199,7 +199,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends NodeForm
 		this.execute.addClickListener(event ->
 			{
 				log.info("execute clicked"); //$NON-NLS-1$
-				if (this.uiChanges) validateAndSave();
+				if (hasUiChanges()) validateAndSave();
 				try {
 					this.node.executeRequest();
 				} catch (Throwable t) {

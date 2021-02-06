@@ -20,7 +20,7 @@ public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 	@Override
 	public void serviceInit(ServiceInitEvent event) {
 		// listens for the initialization of the UI (the internal root component
-		// in Vaadin and then add a listener before every view transition to the UI:
+		// in Vaadin) and then add a listener before every view transition to the UI:
 		event.getSource().addUIInitListener(uiEvent ->
 			{
     			final UI ui = uiEvent.getUI();
