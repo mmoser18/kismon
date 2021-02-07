@@ -93,17 +93,11 @@ public class JDBCConnection extends IPConnection
 		updateResultingQuery();
 	}
 
-	@Override
-	public void setTimeout(int timeout) {
-		super.setTimeout(timeout);
-
-	}
-
-	public void setUid(String uid) {
+	public void setDbUid(String uid) {
 		this.dbUid = uid;
 		resetConnection(); // trigger a recreation of the connection if the dbUid changes
 	}
-	public void setPwd(String pwd) {
+	public void setDbPwd(String pwd) {
 		this.dbPwd = pwd;
 		resetConnection(); // trigger a recreation of the connection if the dbPwd changes
 	}
