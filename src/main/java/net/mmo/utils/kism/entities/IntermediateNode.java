@@ -25,6 +25,9 @@ public class IntermediateNode extends Node
 
 	public static final String PROPERTYNAME_CHILDREN_CONDITION = "children_condition"; //$NON-NLS-1$
 
+	/**
+	 * Defines the possible conditions to be evaluated by Intermediate nodes:
+	 */
 	public enum ChildrenCondition {
 		ALL_MUST_BE_OK, // ALL children must be OK for an OK, else FAILED
 		DEGRADED_ON_NOT_ALL_OK, // ALL children OK is OK, DEGRADED if ONE child is not OK, else FAILED
@@ -32,11 +35,20 @@ public class IntermediateNode extends Node
 		EXACTLY_ONE_OK // Exactly ONE child must be OK, all others must not be OK
 	}
 
-	private ArrayList<Node>	children = new ArrayList<>();
+	protected ChildrenCondition condition = ChildrenCondition.ALL_MUST_BE_OK;
 
-	private ChildrenCondition condition = ChildrenCondition.ALL_MUST_BE_OK;
+	/**
+	 * Container for this IntermediateNode's children:
+	 */
+	protected ArrayList<Node>	children = new ArrayList<>();
 
+	/**
+	 * This flag mirror's the UI's current state whether an item is expanded or collapsed:
+	 * It allows to expand/collapse the exact same nodes when restarting the GUI.
+	 * One could consider saving this flag per user but simplicity considerations prevented this... ;-)
+	 */
 	public boolean expanded = false;
+
 
 	// required for deserialization only
 	protected IntermediateNode() {

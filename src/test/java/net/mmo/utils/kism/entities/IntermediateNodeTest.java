@@ -31,17 +31,33 @@ public class IntermediateNodeTest
 	}
 
 	@SuppressWarnings("serial")
+	class TestLeafNode extends LeafNode // LeafNode has an abstract method that we are not interested in here:
+	{
+		TestLeafNode(String name, String description, State state) {
+			super(name, description, state);
+		}
+		TestLeafNode(String name, String description, State state, IntermediateNode parent) {
+			super(name, description, state, parent);
+		}
+
+		@Override
+		public void sendRequest() throws Exception {
+			// empty
+		}
+	}
+
+	@SuppressWarnings("serial")
 	@Test
 	void checkNodesAdded() {
 		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		Assertions.assertEquals(0, root.getChildren().size());
-		LeafNode leaf1 = new LeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
+		LeafNode leaf1 = new TestLeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(1, root.getChildren().size());
 		Assertions.assertEquals(State.OK, leaf1.getState());
-		LeafNode leaf2 = new LeafNode("leaf2", "leaf-node2", State.FAILED) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
+		LeafNode leaf2 = new TestLeafNode("leaf2", "leaf-node2", State.FAILED) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		this.nodeService.addChild(root, leaf2);
-		LeafNode leaf3 = new LeafNode("leaf3", "leaf-node3", State.DEGRADED) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
+		LeafNode leaf3 = new TestLeafNode("leaf3", "leaf-node3", State.DEGRADED) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		this.nodeService.addChild(root, leaf3);
 		Assertions.assertEquals(3, root.getChildren().size());
 		Assertions.assertEquals(State.FAILED, leaf2.getState());
@@ -55,9 +71,9 @@ public class IntermediateNodeTest
 	void checkNodesActive() {
 		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
-		new LeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
-		new LeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setEnabled(false); //$NON-NLS-1$ //$NON-NLS-2$
-		new LeafNode("leaf3", "leaf-node3", State.DEGRADED, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
+		new TestLeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
+		new TestLeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setEnabled(false); //$NON-NLS-1$ //$NON-NLS-2$
+		new TestLeafNode("leaf3", "leaf-node3", State.DEGRADED, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(State.DEGRADED, root.getState()); // FAILED since the worst child (FAILED) is ignored
 	}
 }

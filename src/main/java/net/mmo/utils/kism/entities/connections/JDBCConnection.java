@@ -47,7 +47,7 @@ public class JDBCConnection extends IPConnection
 	protected String query;
 
 	protected String driverName =
-		AppProperties.getProperties().getProperty("JDBC.DriverName", //$NON-NLS-1$
+		AppProperties.getProperties().getProperty("JDBC.DriverName.Default", //$NON-NLS-1$
 		                                          "oracle.jdbc.driver.OracleDriver"); //$NON-NLS-1$
 
 	// transient stuff:
@@ -108,7 +108,7 @@ public class JDBCConnection extends IPConnection
 		resetConnection(); // trigger a recreation of the connection if the dbPwd changes
 	}
 
-	protected void setQuery(String query) {
+	public void setQuery(String query) {
 		this.query = query;
 		updateResultingQuery();
 	}

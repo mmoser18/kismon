@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
+import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
 @Slf4j
@@ -63,6 +64,18 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
+
+		// overriding the default URL label:
+		this.url.setLabel(Messages.getString("HTTPConnectionForm.DriverName.Label")); //$NON-NLS-1$
+		// had to movethe URL validation here since JDBC-URLs look completely differently and
+		// didn't pass the conventional URI check!
+		this.binder.forField(this.url)
+			.withValidator(this.urlValidator)
+			.bind(IPConnection::getUrl, IPConnection::setUrl);
+
+		this.binder.forField(this.resultingURL)
+			.withValidator(this.urlValidator)
+			.bind(IPConnection::getResultingUrl, null);
 
 		this.method = new Select<>(HTTP_Method.values());
 		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
@@ -115,7 +128,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 				updateRequestData();
 			}
 		});
-		this.binder.forField(this.payload).withValidator(this.propertiesResolvableChecker);
+		this.binder.forField(this.payload).withValidator(this.propertiesResolvableValidator);
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
@@ -155,7 +168,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		// we cross-link the validators of the checkResults-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it
 			this.binder.forField(this.acceptableReturnCodes)
-				.withValidator(this.propertiesResolvableChecker)
+				.withValidator(this.propertiesResolvableValidator)
 				.withValidator(text -> {
 									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.checkResults.getValue() && text.isEmpty()); //$NON-NLS-1$
 									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$

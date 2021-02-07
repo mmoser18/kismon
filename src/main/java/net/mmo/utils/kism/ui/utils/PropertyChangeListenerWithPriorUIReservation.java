@@ -50,5 +50,12 @@ public abstract class PropertyChangeListenerWithPriorUIReservation<N> implements
 		return true;
 	}
 
+	/**
+	 * This method handles the property change event. It is only called if the predicate yielded "true".
+	 * @param source
+	 * @param propertyName
+	 * @param oldValue
+	 * @param newValue
+	 */
 	protected abstract void handlePropertyChangeEvent(N source, String propertyName, Object oldValue, Object newValue);
 }

@@ -36,8 +36,9 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	protected Condition condition;
 	protected String operand;
 
+
 	public boolean checkResult(Node contextNode, String value) throws Exception {
-		String resolvedOperand = (this.operand != null ? contextNode.resolveProperties(this.operand) : null);
+		String resolvedOperand = contextNode.resolveProperties(this.operand);
 		switch (this.condition) {
 		case Equals:
 			return Objects.equals(value, resolvedOperand);

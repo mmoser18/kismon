@@ -3,6 +3,8 @@ package net.mmo.utils.kism.ui.view.nodes;
 
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
+import java.net.URI;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import com.vaadin.flow.component.ComponentEvent;
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.Node.State;
+import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
@@ -86,7 +89,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
 
 	/** reusable validator for fields that support properties */
-	protected Validator<String> propertiesResolvableChecker;
+	protected Validator<String> propertiesResolvableValidator;
+	/** reusable URL validator for URL fields */
+	protected Validator<String> urlValidator;
 
 
 	public NodeForm(Class<N> clazz, NodeService nodeService) {
@@ -95,7 +100,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		// We create a Validator that can be used everywhere where we need to check whether a field
 		// contains unresolvable properties:
-		this.propertiesResolvableChecker = new Validator<>()
+		this.propertiesResolvableValidator = new Validator<>()
 			{
 				private static final long serialVersionUID = -7211887363956128833L;
 
@@ -107,6 +112,31 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					} catch (Exception ex) { // Exception -> the above conversion failed
 						return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
 																	value, ex.getMessage()));
+					}
+				}
+			};
+
+			this.urlValidator = new Validator<>()
+			{
+				private static final long serialVersionUID = 4829240255774815878L;
+
+				@Override
+				public ValidationResult apply(String value, ValueContext context) {
+					log.trace("validating url: '{}'", value); //$NON-NLS-1$
+					try {
+						if (NodeForm.this.node != null) {
+							// we check whether we can resolve the url and convert it to a valid URL:
+							URI uri = new URI(NodeForm.this.node.resolveProperties(value));
+							// no check necessary - any error is thrown!
+							log.debug("validation succeeded: '{}' => '{}'", value, uri); //$NON-NLS-1$
+						} else {
+							log.debug("node == null: validation succeeded"); //$NON-NLS-1$
+						}
+						return ValidationResult.ok();
+					} catch (Exception ex) {
+						log.debug("validation failed: '{}' -> {}", value, ex); //$NON-NLS-1$
+						return ValidationResult.error(String.format(Messages.getString("NodeFormForm.URL.ValidatorErrorMsg"), //$NON-NLS-1$
+						                                            value, ex));
 					}
 				}
 			};
@@ -139,7 +169,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected boolean hasUiChanges() {
 		return this.uiChanges
-			|| (this.node != null) && (this.node.getParent() == null); // a node without parent is a free floating node which has changes by definition (as it was just created)
+			|| (this.node != null) && (!(this.node instanceof RootNode) && (this.node.getParent() == null)); // a non-root node without parent is a free floating node which has changes by definition (as it was just created)
 	}
 
 	public void setState(Node.State state) {
@@ -167,6 +197,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = newNode;
+		this.uiChanges = false; // when we have a new node this is always the case!
 		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "<null>")); //$NON-NLS-1$ //$NON-NLS-2$
 		// this.binder.setBean(node);
 		if (newNode != null) {
@@ -227,7 +258,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name.setThemeName(LabelPaddingTheme);
 		this.name.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.name)
-			.withValidator(this.propertiesResolvableChecker)
+			.withValidator(this.propertiesResolvableValidator)
 			.withValidator(value ->
 				{ // Explicit validator instance
 					return nodeService.getRootNodes().stream()
@@ -257,6 +288,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
 		this.properties.setThemeName(LabelPaddingTheme);
+		this.properties.addThemeName(MonospaceTheme);
 		this.properties.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.properties)
 			.withValidator((value, context) ->
@@ -364,7 +396,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			resolvedValue = errorMsg;
 		}
 		if (textField != null) {
-			if (!resolvedValue.equals(originalValue)) {
+			if (!Objects.equals(resolvedValue, originalValue)) {
 				log.debug("{}: Setting and displaying textField '{}' -> '{}'", logPrefix, textField.getValue(), resolvedValue); //$NON-NLS-1$
 				textField.setValue(resolvedValue);
 				textField.setVisible(true);

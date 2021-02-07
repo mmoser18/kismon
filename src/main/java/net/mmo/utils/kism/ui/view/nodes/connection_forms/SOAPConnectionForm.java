@@ -38,7 +38,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 		this.soapOperation.setThemeName(LabelPaddingTheme);
 		this.soapOperation.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.soapOperation)
-			.withValidator(this.propertiesResolvableChecker)
+			.withValidator(this.propertiesResolvableValidator)
 			.withValidator(operation ->
 				{
 					log.trace("validating soapOperation: '{}'", operation); //$NON-NLS-1$

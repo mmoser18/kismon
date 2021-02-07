@@ -235,7 +235,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			+ "{name:" + getName() //$NON-NLS-1$
 			+ ", description:" + getDescription() //$NON-NLS-1$
 			+ ", state:" + getState() //$NON-NLS-1$
-			// to avoid recursion we only emit the parent's name:
+			// to avoid recursion we only emit the parent's name, not the entire object!:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			+ ", enabled:" + isEnabled() //$NON-NLS-1$
 			+ ", properties: {" + KeyValuesConverter.convertMapToString(getProperties(), ", ") + "}" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

@@ -15,6 +15,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
+import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
 
 @Slf4j
@@ -53,23 +54,36 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
 
+		// overriding the default URL label:
+		this.url.setLabel(Messages.getString("JDBCConnectionForm.URL.Label")); //$NON-NLS-1$
+
+		// had to movethe URL validation here since JDBC-URLs look completely differently and
+		// didn't pass the conventional URI check!
+		this.binder.forField(this.url)
+			// .withValidator(this.urlValidator)
+			.bind(IPConnection::getUrl, IPConnection::setUrl);
+
+		this.binder.forField(this.resultingURL)
+			// .withValidator(this.urlValidator)
+			.bind(IPConnection::getResultingUrl, null);
+
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);
 		this.driverName.setThemeName(LabelPaddingTheme);
 		this.driverName.setClearButtonVisible(clearButtonsVisible);
-		this.binder.forField(this.driverName).withValidator(this.propertiesResolvableChecker);
+		this.binder.forField(this.driverName).withValidator(this.propertiesResolvableValidator);
 
 		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
 		this.dbUid.setClassName(UidClassName);
 		this.dbUid.setThemeName(LabelPaddingTheme);
 		this.dbUid.setClearButtonVisible(clearButtonsVisible);
-		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableChecker);
+		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableValidator);
 
 		this.dbPwd = new TextField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
 		this.dbPwd.setClassName(PwdClassName);
 		this.dbPwd.setThemeName(LabelPaddingTheme);
 		this.dbPwd.setClearButtonVisible(clearButtonsVisible);
-		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableChecker);
+		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableValidator);
 
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
@@ -86,7 +100,9 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 					}
 				}
 			});
-		this.binder.forField(this.query).withValidator(this.propertiesResolvableChecker);
+		this.binder.forField(this.query)
+			.withValidator(this.propertiesResolvableValidator)
+			.bind(JDBCConnection::getQuery, JDBCConnection::setQuery);
 
 		this.resultingQuery = new TextField(Messages.getString("JDBCConnectionForm.ResultingQuery.Value")); //$NON-NLS-1$
 		this.resultingQuery.setClassName(ResultingQueryClassName);

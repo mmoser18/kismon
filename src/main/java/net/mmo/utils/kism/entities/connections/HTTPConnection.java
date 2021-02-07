@@ -400,19 +400,21 @@ abstract public class HTTPConnection extends IPConnection
 	private void deriveState() throws Exception {
 		State res = State.OK;
 		if (isCheckResults()) {
-			String acceptableCodes = getAcceptableReturnCodes() != null ? getAcceptableReturnCodes() : "200"; //$NON-NLS-1$
-			String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
-			log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
-			search: {
-				for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
-					if (acceptable.equals(responseStatusCodeStr)) {
-						log.debug("responseStatusCode:{} -> matched: {}", getResponseStatusCode(), acceptable); //$NON-NLS-1$
-						break search;
+			String acceptableCodes = resolveProperties(getAcceptableReturnCodes());
+			if (acceptableCodes != null && !acceptableCodes.isBlank()) {
+				String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
+				log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
+				search: {
+					for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
+						if (acceptable.equals(responseStatusCodeStr)) {
+							log.debug("responseStatusCode:{} -> matched: {}", getResponseStatusCode(), acceptable); //$NON-NLS-1$
+							break search;
+						}
 					}
-				}
-				log.debug("responseStatusCode:{} -> no match found.", getResponseStatusCode()); //$NON-NLS-1$
-				res = State.FAILED;
-			} // :search
+					log.debug("responseStatusCode:{} -> no match found.", getResponseStatusCode()); //$NON-NLS-1$
+					res = State.FAILED;
+				} // :search
+			}
 			if (getResultChecker() != null) {
 				if (!getResultChecker().checkResult(this, responseBodyAsString())) {
 					res = State.FAILED;

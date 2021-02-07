@@ -424,9 +424,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void IfSuitableNodeSelected(Consumer<Node> action) {
 		Set<Node> nodes = this.tree.getSelectedItems();
 		if (nodes.isEmpty()) {
-			UsageError("NodeView.ErrorMsg.AddChildNodeSelectNode"); //$NON-NLS-1$
+			UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeSelectNode")); //$NON-NLS-1$
 		} else if (nodes.size() > 1) {
-			UsageError("NodeView.ErrorMsg.AddChildNodeSelectOneNodeOnly"); //$NON-NLS-1$
+			UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeSelectOneNodeOnly")); //$NON-NLS-1$
 		} else {
 			Node selectedNode = nodes.iterator().next(); // get first selected node
 			action.accept(selectedNode);
@@ -439,7 +439,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			if (selectedNode instanceof IntermediateNode) {
 				action.accept((IntermediateNode)selectedNode);
 			} else {
-				UsageError("NodeView.ErrorMsg.AddChildNodeOnlyForIntermediateNodes"); //$NON-NLS-1$
+				UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeOnlyForIntermediateNodes")); //$NON-NLS-1$
 			}
 		});
 	}

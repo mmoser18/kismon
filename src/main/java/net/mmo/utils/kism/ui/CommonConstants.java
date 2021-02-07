@@ -13,11 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommonConstants
 {
+	// These strings are used as annotation arguments and hence unfortunately need to be constants (and can not be made application properties):
 	public static final String ApplicationFullName = "KIS-Monitoring"; //$NON-NLS-1$
 	public static final String ApplicationShortName = "KISM"; //$NON-NLS-1$
 
 	public static final String LoginURLSuffix = "login"; //$NON-NLS-1$
 	public static final String LogoutURLSuffix = "logout"; //$NON-NLS-1$
+
 
 	public enum LayoutDirection {
 		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$

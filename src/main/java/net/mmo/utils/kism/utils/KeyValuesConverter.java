@@ -21,8 +21,8 @@ public class KeyValuesConverter
 {
 	// reading:
 	private final static String KEY_VALUE_SEPARATORS = ":"; //$NON-NLS-1$
-	private final static String PROPERTY_SEPARATORS = "[,\t\n]"; //$NON-NLS-1$
-	private final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-]*"; //$NON-NLS-1$
+	private final static String PROPERTY_SEPARATORS = "[\t\n]"; //$NON-NLS-1$
+	private final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-_]*"; //$NON-NLS-1$
 	private final static String OPTIONAL_WHITE_SPACE = "\\s*"; //$NON-NLS-1$
 	// generating:
 	public final static char KEY_VALUE_SEPARATOR = ':';
@@ -32,6 +32,11 @@ public class KeyValuesConverter
 	public final static String KEY_VALUE_SEPARATOR_STRING = KEY_VALUE_SEPARATOR + " "; //$NON-NLS-1$
 	public final static String VALUES_SEPARATOR_STRING    = VALUES_SEPARATOR + " "; //$NON-NLS-1$
 	public final static String PROPERTY_SEPARATOR_STRING  = Character.toString(PROPERTY_SEPARATOR);
+
+	private final static Pattern KEY_VALUE_PATTERN =
+		Pattern.compile("(" + LEGAL_KEY_NAME_PATTERN + ")" + // group 1: key //$NON-NLS-1$ //$NON-NLS-2$
+		                OPTIONAL_WHITE_SPACE + KEY_VALUE_SEPARATORS + OPTIONAL_WHITE_SPACE + // separator
+		                "(.*)"); // group 2: value //$NON-NLS-1$
 
 	private KeyValuesConverter() {
 		// utility class only - must never be created as instance!
@@ -54,17 +59,34 @@ public class KeyValuesConverter
 		for (String entry: values.split(PROPERTY_SEPARATORS)) {
 			if (!entry.isBlank()) {
 //				log.trace("convertStringToMap(\"{}\"): entry:\"{}\"", values, entry); //$NON-NLS-1$
-				String[] splits = entry.split(OPTIONAL_WHITE_SPACE + KEY_VALUE_SEPARATORS + OPTIONAL_WHITE_SPACE);
-				if (splits.length != 2) {
-					log.error("convertStringToMap(\"{}\"): entry:\"{}\": splits:{} (length:{})", values, entry, splits, splits.length); //$NON-NLS-1$
-					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalSyntax"), entry)); //$NON-NLS-1$
-				} else if (!splits[0].matches(LEGAL_KEY_NAME_PATTERN)) {
-					log.error("convertStringToMap(\"{}\"): entry:\"{}\": split[0]:'{}')", values, entry, splits[0]); //$NON-NLS-1$
-					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalKeyName"), splits[0])); //$NON-NLS-1$
+				Matcher m = KEY_VALUE_PATTERN.matcher(entry);
+				if (m.matches()) {
+					String key   = m.group(1);
+					String value = m.group(2);
+					if (key == null || key.isBlank()) {
+						log.error("convertStringToMap(\"{}\"): entry:\"{}\") -> key is null or blank", values, entry); //$NON-NLS-1$
+						throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalKeyName"), key)); //$NON-NLS-1$
+					}
+					if (value == null) {
+						log.error("convertStringToMap(\"{}\"): entry:\"{}\") -> value is null", values, entry); //$NON-NLS-1$
+						throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalValue"), key)); //$NON-NLS-1$
+					}
+					map.put(key, value.trim());
 				} else {
-//					log.trace("getEntriesFromString(\"{}\"): entry:\"{}\": splits:\"{}\"=\"{}\"", values, entry, splits[0], splits[1]); //$NON-NLS-1$
-					map.put(splits[0], splits[1].trim());
+					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalSyntax"), entry)); //$NON-NLS-1$
 				}
+//				// old implementation:
+//				String[] splits = entry.split(OPTIONAL_WHITE_SPACE + KEY_VALUE_SEPARATORS + OPTIONAL_WHITE_SPACE);
+//				if (splits.length != 2) {
+//					log.error("convertStringToMap(\"{}\"): entry:\"{}\": splits:{} (length:{})", values, entry, splits, splits.length); //$NON-NLS-1$
+//					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalSyntax"), entry)); //$NON-NLS-1$
+//				} else if (!splits[0].matches(LEGAL_KEY_NAME_PATTERN)) {
+//					log.error("convertStringToMap(\"{}\"): entry:\"{}\": split[0]:'{}')", values, entry, splits[0]); //$NON-NLS-1$
+//					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalKeyName"), splits[0])); //$NON-NLS-1$
+//				} else {
+//					// log.trace("getEntriesFromString(\"{}\"): entry:\"{}\": splits:\"{}\"=\"{}\"", values, entry, splits[0], splits[1]); //$NON-NLS-1$
+//					map.put(splits[0], splits[1].trim());
+//				}
 			}
 		}
 		return map;
