@@ -4,8 +4,10 @@
   "description" : "default",
   "enabled" : true,
   "properties" : {
+    "DB_Server_URL_New" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))",
     "foo" : "outer",
-    "DB_Server_URL" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
+    "DB_Server_URL" : "${DB_Server_URL_New}",
+    "DB_Server_URL_Old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))"
   },
   "condition" : "DEGRADED_ON_NOT_ALL_OK",
   "children" : [ {
@@ -92,7 +94,7 @@
       "query" : "select ${foo} from REF_ANREDE",
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ],
-    "expanded" : false
+    "expanded" : true
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "test 2",
@@ -110,7 +112,7 @@
       "children" : [ ],
       "expanded" : false
     } ],
-    "expanded" : false
+    "expanded" : true
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "ZHQuest",
@@ -128,9 +130,11 @@
       "children" : [ {
         "className" : "net.mmo.utils.kism.entities.IntermediateNode",
         "name" : "DEV",
-        "description" : "DEV environment (server: )",
+        "description" : "DEV environment (server: ksta-zhquest-int3.elcadev.local)",
         "enabled" : true,
-        "properties" : { },
+        "properties" : {
+          "host" : "ksta-zhquest-int3.elcadev.local"
+        },
         "condition" : "ALL_MUST_BE_OK",
         "children" : [ {
           "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
@@ -140,7 +144,7 @@
           "properties" : { },
           "active" : false,
           "period" : 60,
-          "timeout" : 45,
+          "timeout" : 15,
           "checkResults" : false,
           "url" : "${DB_Server_URL}",
           "resultChecker" : {
@@ -156,9 +160,11 @@
       }, {
         "className" : "net.mmo.utils.kism.entities.IntermediateNode",
         "name" : "QA",
-        "description" : "QA Environment (server: )",
+        "description" : "QA Environment (server: ksta-zh-zhquest.elcadev.local)",
         "enabled" : true,
-        "properties" : { },
+        "properties" : {
+          "host" : "ksta-zh-zhquest.elcadev.local"
+        },
         "condition" : "ALL_MUST_BE_OK",
         "children" : [ {
           "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
@@ -168,7 +174,7 @@
           "properties" : { },
           "active" : false,
           "period" : 60,
-          "timeout" : 45,
+          "timeout" : 15,
           "checkResults" : false,
           "url" : "${DB_Server_URL}",
           "resultChecker" : {
@@ -184,9 +190,11 @@
       }, {
         "className" : "net.mmo.utils.kism.entities.IntermediateNode",
         "name" : "DMZ",
-        "description" : "DMZ Environment (server: )",
+        "description" : "DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
         "enabled" : true,
-        "properties" : { },
+        "properties" : {
+          "host" : "ksta-zh-zhquest-dmz.elca.ch"
+        },
         "condition" : "ALL_MUST_BE_OK",
         "children" : [ {
           "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
@@ -196,7 +204,7 @@
           "properties" : { },
           "active" : false,
           "period" : 60,
-          "timeout" : 45,
+          "timeout" : 15,
           "checkResults" : false,
           "url" : "jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(ADDRESS = (PROTOCOL = tcp)(HOST = vm-dmzoracle.elca.ch)(PORT = 1521)))(CONNECT_DATA =(UR=A)(SERVER = DEDICATED)(SERVICE_NAME = DL05DMZ)))",
           "resultChecker" : {
@@ -220,8 +228,50 @@
     "enabled" : true,
     "properties" : { },
     "condition" : "ALL_MUST_BE_OK",
-    "children" : [ ],
-    "expanded" : false
+    "children" : [ {
+      "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+      "name" : "Dev-Environments",
+      "description" : "RegisterJP Dev-Environments",
+      "enabled" : true,
+      "properties" : { },
+      "condition" : "ALL_MUST_BE_OK",
+      "children" : [ {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "DEV",
+        "description" : "DEV environment (server: )",
+        "enabled" : true,
+        "properties" : {
+          "host" : "zhstregisterjp-dev.elcadev.local"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ ],
+        "expanded" : false
+      }, {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "QA",
+        "description" : "QA environment (server: )",
+        "enabled" : true,
+        "properties" : {
+          "host" : "zhstregisterjp-qa.elcadev.local"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ ],
+        "expanded" : false
+      }, {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "PROD",
+        "description" : "PROD environment (server: )",
+        "enabled" : true,
+        "properties" : {
+          "host" : "zhstregisterjp-prod.elcadev.local"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ ],
+        "expanded" : false
+      } ],
+      "expanded" : true
+    } ],
+    "expanded" : true
   } ],
   "expanded" : true
 }

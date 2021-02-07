@@ -20,10 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 public class KeyValuesConverter
 {
 	// reading:
-	private final static String KEY_VALUE_SEPARATORS = ":"; //$NON-NLS-1$
-	private final static String PROPERTY_SEPARATORS = "[\t\n]"; //$NON-NLS-1$
-	private final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-_]*"; //$NON-NLS-1$
-	private final static String OPTIONAL_WHITE_SPACE = "\\s*"; //$NON-NLS-1$
+	public final static String KEY_VALUE_SEPARATORS = ":"; //$NON-NLS-1$
+	public final static String PROPERTY_SEPARATORS = "[\t\n]"; //$NON-NLS-1$
+	public final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-_]*"; //$NON-NLS-1$
+	public final static String OPTIONAL_WHITE_SPACE = "\\s*"; //$NON-NLS-1$
 	// generating:
 	public final static char KEY_VALUE_SEPARATOR = ':';
 	public final static char VALUES_SEPARATOR     = ',';
@@ -51,7 +51,7 @@ public class KeyValuesConverter
 		return convertMapToString(map, PROPERTY_SEPARATOR_STRING);
 	}
 	public static String convertMapToString(Map<? extends Object, Object> map, String propSeparator) { // ? extends object to satisfy the Java compiler when assigning a Map<String, Object>
-		return map.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR_STRING + entry.getValue()).collect(Collectors.joining(propSeparator));
+		return map.entrySet().stream().map(entry -> entry.getKey() + KEY_VALUE_SEPARATOR_STRING + entry.getValue()).sorted().collect(Collectors.joining(propSeparator));
 	}
 	public static TreeMap<String, Object> convertStringToMap(String values) {
 		TreeMap<String, Object> map = new TreeMap<>();
@@ -75,18 +75,6 @@ public class KeyValuesConverter
 				} else {
 					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalSyntax"), entry)); //$NON-NLS-1$
 				}
-//				// old implementation:
-//				String[] splits = entry.split(OPTIONAL_WHITE_SPACE + KEY_VALUE_SEPARATORS + OPTIONAL_WHITE_SPACE);
-//				if (splits.length != 2) {
-//					log.error("convertStringToMap(\"{}\"): entry:\"{}\": splits:{} (length:{})", values, entry, splits, splits.length); //$NON-NLS-1$
-//					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalSyntax"), entry)); //$NON-NLS-1$
-//				} else if (!splits[0].matches(LEGAL_KEY_NAME_PATTERN)) {
-//					log.error("convertStringToMap(\"{}\"): entry:\"{}\": split[0]:'{}')", values, entry, splits[0]); //$NON-NLS-1$
-//					throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalKeyName"), splits[0])); //$NON-NLS-1$
-//				} else {
-//					// log.trace("getEntriesFromString(\"{}\"): entry:\"{}\": splits:\"{}\"=\"{}\"", values, entry, splits[0], splits[1]); //$NON-NLS-1$
-//					map.put(splits[0], splits[1].trim());
-//				}
 			}
 		}
 		return map;

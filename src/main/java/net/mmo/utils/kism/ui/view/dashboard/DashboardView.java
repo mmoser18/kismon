@@ -5,13 +5,11 @@
 
 package net.mmo.utils.kism.ui.view.dashboard;
 
-import java.util.Map;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.charts.Chart;
-import com.vaadin.flow.component.charts.model.ChartType;
-import com.vaadin.flow.component.charts.model.DataSeries;
-import com.vaadin.flow.component.charts.model.DataSeriesItem;
+//import com.vaadin.flow.component.charts.Chart;
+//import com.vaadin.flow.component.charts.model.ChartType;
+//import com.vaadin.flow.component.charts.model.DataSeries;
+//import com.vaadin.flow.component.charts.model.DataSeriesItem;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -30,6 +28,7 @@ public class DashboardView extends VerticalLayout
 	private static final long serialVersionUID = -1954281705187898725L;
 
 	private ContactService contactService;
+	@SuppressWarnings("unused")
 	private CompanyService companyService;
 
 	public DashboardView(ContactService contactService, CompanyService companyService) {
@@ -38,7 +37,7 @@ public class DashboardView extends VerticalLayout
 			this.companyService = companyService;
 			addClassName("dashboard-view"); //$NON-NLS-1$
 			setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-			add(getContactStats(), getCompaniesChart());
+			add(getContactStats() /*, getCompaniesChart()*/);
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
@@ -50,13 +49,12 @@ public class DashboardView extends VerticalLayout
 		return stats;
 	}
 
-	private Chart getCompaniesChart() {
-		Chart chart = new Chart(ChartType.PIE);
-		DataSeries dataSeries = new DataSeries();
-		Map<String, Integer> companies = this.companyService.getStats();
-		companies.forEach((company, employees) -> dataSeries.add(new DataSeriesItem(company, employees)));
-		chart.getConfiguration().setSeries(dataSeries);
-		return chart;
-	}
-
+//	private Chart getCompaniesChart() {
+//		Chart chart = new Chart(ChartType.PIE);
+//		DataSeries dataSeries = new DataSeries();
+//		Map<String, Integer> companies = this.companyService.getStats();
+//		companies.forEach((company, employees) -> dataSeries.add(new DataSeriesItem(company, employees)));
+//		chart.getConfiguration().setSeries(dataSeries);
+//		return chart;
+//	}
 }
