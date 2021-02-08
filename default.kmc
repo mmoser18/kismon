@@ -4,10 +4,11 @@
   "description" : "default",
   "enabled" : true,
   "properties" : {
-    "DB_Server_URL_New" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))",
+    "db_default_driver" : "oracle.jdbc.driver.OracleDriver",
+    "db_server_url_old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
     "foo" : "outer",
-    "DB_Server_URL" : "${DB_Server_URL_New}",
-    "DB_Server_URL_Old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))"
+    "db_server_url" : "${db_server_url_new}",
+    "db_server_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
   },
   "condition" : "DEGRADED_ON_NOT_ALL_OK",
   "children" : [ {
@@ -112,7 +113,7 @@
       "children" : [ ],
       "expanded" : false
     } ],
-    "expanded" : true
+    "expanded" : false
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
     "name" : "ZHQuest",
@@ -125,36 +126,59 @@
       "name" : "Dev-Environments",
       "description" : "ZHQuest Dev-Environments",
       "enabled" : true,
-      "properties" : { },
-      "condition" : "ALL_MUST_BE_OK",
+      "properties" : {
+        "db_uid" : "to-be-overridden-below",
+        "db_pwd" : "${db_uid}"
+      },
+      "condition" : "DEGRADED_ON_NOT_ALL_OK",
       "children" : [ {
         "className" : "net.mmo.utils.kism.entities.IntermediateNode",
         "name" : "DEV",
         "description" : "DEV environment (server: ksta-zhquest-int3.elcadev.local)",
         "enabled" : true,
         "properties" : {
-          "host" : "ksta-zhquest-int3.elcadev.local"
+          "host" : "ksta-zhquest-int3.elcadev.local",
+          "db_uid" : "ZHQUEST_INT3"
         },
         "condition" : "ALL_MUST_BE_OK",
         "children" : [ {
           "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-          "name" : "DEV-DB",
+          "name" : "DEV-DB-ping",
           "description" : "DB for DEV Environment",
           "enabled" : true,
           "properties" : { },
-          "active" : false,
+          "active" : true,
           "period" : 60,
           "timeout" : 15,
           "checkResults" : false,
-          "url" : "${DB_Server_URL}",
+          "url" : "${db_server_url}",
           "resultChecker" : {
             "condition" : null,
             "operand" : ""
           },
-          "dbUid" : "ZHQUEST_INT3",
-          "dbPwd" : "ZHQUEST_INT3",
-          "query" : "select * from dual;",
-          "driverName" : "oracle.jdbc.driver.OracleDriver"
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select * from dual",
+          "driverName" : "${db_default_driver}"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "DEV-DB-query",
+          "description" : "send specific query to DB",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : true,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : "ContainsIgnoreCase",
+            "operand" : "FRAU"
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select TEXT from REF_ANREDE",
+          "driverName" : "${db_default_driver}"
         } ],
         "expanded" : true
       }, {
@@ -163,28 +187,48 @@
         "description" : "QA Environment (server: ksta-zh-zhquest.elcadev.local)",
         "enabled" : true,
         "properties" : {
-          "host" : "ksta-zh-zhquest.elcadev.local"
+          "host" : "ksta-zh-zhquest.elcadev.local",
+          "db_uid" : "ZHQUEST_QA"
         },
         "condition" : "ALL_MUST_BE_OK",
         "children" : [ {
           "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-          "name" : "QA-DB",
+          "name" : "QA-DB-ping",
           "description" : "DB for QA-Environment",
           "enabled" : true,
           "properties" : { },
-          "active" : false,
+          "active" : true,
           "period" : 60,
           "timeout" : 15,
           "checkResults" : false,
-          "url" : "${DB_Server_URL}",
+          "url" : "${db_server_url}",
           "resultChecker" : {
             "condition" : null,
             "operand" : ""
           },
-          "dbUid" : "ZHQUEST_QA",
-          "dbPwd" : "ZHQUEST_QA",
-          "query" : "select * from dual;",
-          "driverName" : "oracle.jdbc.driver.OracleDriver"
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select * from dual",
+          "driverName" : "${db_default_driver}"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "QA-DB-query",
+          "description" : "send specific query to DB",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : true,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : "ContainsIgnoreCase",
+            "operand" : "FRAU"
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select TEXT from REF_ANREDE",
+          "driverName" : "${db_default_driver}"
         } ],
         "expanded" : true
       }, {
@@ -193,28 +237,50 @@
         "description" : "DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
         "enabled" : true,
         "properties" : {
-          "host" : "ksta-zh-zhquest-dmz.elca.ch"
+          "host" : "ksta-zh-zhquest-dmz.elca.ch",
+          "db_server_url" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=vm-dmzoracle.elca.ch)(PORT=54345)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=DL05DMZ)))",
+          "db_uid" : "ZHQUESTDMZ",
+          "db_pwd" : "dU8fdzsC"
         },
         "condition" : "ALL_MUST_BE_OK",
         "children" : [ {
           "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-          "name" : "DMZ-DB",
+          "name" : "DMZ-DB-ping",
           "description" : "DB for DMZ-Environment",
           "enabled" : true,
           "properties" : { },
-          "active" : false,
+          "active" : true,
           "period" : 60,
           "timeout" : 15,
           "checkResults" : false,
-          "url" : "jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(ADDRESS = (PROTOCOL = tcp)(HOST = vm-dmzoracle.elca.ch)(PORT = 1521)))(CONNECT_DATA =(UR=A)(SERVER = DEDICATED)(SERVICE_NAME = DL05DMZ)))",
+          "url" : "${db_server_url}",
           "resultChecker" : {
             "condition" : null,
             "operand" : ""
           },
-          "dbUid" : "ZHQUESTDMZ",
-          "dbPwd" : "dU8fdzsC",
-          "query" : "select * from dual;",
-          "driverName" : "oracle.jdbc.driver.OracleDriver"
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select * from dual",
+          "driverName" : "${db_default_driver}"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "DMZ-DB-query",
+          "description" : "send specific query to DB",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : true,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : "ContainsIgnoreCase",
+            "operand" : "FRAU"
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select TEXT from REF_ANREDE",
+          "driverName" : "${db_default_driver}"
         } ],
         "expanded" : true
       } ],

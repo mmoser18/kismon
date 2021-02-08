@@ -16,7 +16,6 @@ import com.google.common.base.Objects;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -42,6 +41,7 @@ import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
 import net.mmo.utils.kism.utils.AppProperties;
@@ -536,9 +536,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 		String question = nodes.stream()
 			.map(node -> NodeService.getCorrespondingRootNode(node).getName())
 			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) [", "]?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
-		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())), //$NON-NLS-1$
-		                  "Cancel", evt -> {/**/}); //$NON-NLS-1$
+		new ConfirmDialog("Confirm deletion", question,
+		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())),
+		                  "Cancel", evt -> {/**/});
 	}
 
 	private void saveNode(Node node) {

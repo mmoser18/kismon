@@ -8,6 +8,7 @@ package net.mmo.utils.kism.entities;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.Messages;
 import net.mmo.utils.kism.backend.service.NodeService;
+import net.mmo.utils.kism.entities.IntermediateNode.ChildrenCondition;
 import net.mmo.utils.kism.entities.Node.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,7 @@ public class IntermediateNodeTest
 	void checkNodesActive() {
 		this.nodeService.reset(); // re-initialize the root to null before each test
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
+		root.condition = ChildrenCondition.DEGRADED_ON_NOT_ALL_OK;
 		new TestLeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		new TestLeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setEnabled(false); //$NON-NLS-1$ //$NON-NLS-2$
 		new TestLeafNode("leaf3", "leaf-node3", State.DEGRADED, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$

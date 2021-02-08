@@ -119,7 +119,7 @@ public class JDBCConnection extends IPConnection
 		if (!Objects.equal(this.responseStatus, responseStatus)) {
 			String oldResponseStatus = this.responseStatus;
 			this.responseStatus = responseStatus;
-			informOnPropertyChange(PROPERTYNAME_RESPONSE_PAYLOAD, oldResponseStatus, responseStatus);
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_STATUS, oldResponseStatus, responseStatus);
 		}
 	}
 	public void setResponsePayload(String responsePayload) {
@@ -134,9 +134,9 @@ public class JDBCConnection extends IPConnection
 		synchronized(this) {
 			if (this.connection != null) {
 				try {
-					this.connection.abort(this.timeoutExecutor);
-				} catch (SQLException ex) {
-					log.info("Exception aborting connection", ex); //$NON-NLS-1$
+					this.connection.abort(this.timeoutExecutor); // the Oracle-Driver doesn't implement that...
+				} catch (Throwable ex) { // ... and then throws an java.lang.reflect.InvocationTargetException
+					log.trace("Exception aborting connection: " + ex.getMessage()); //$NON-NLS-1$
 				}
 			}
 			setConnection(null);
@@ -156,7 +156,11 @@ public class JDBCConnection extends IPConnection
 		}
 		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
 			this.connection = DriverManager.getConnection(resultingUrlResolved(), resolveProperties(getDbUid()), resolveProperties(getDbPwd()));
-			this.connection.setNetworkTimeout(this.timeoutExecutor, this.timeout * 1000); // sec --> msecs
+			try {
+				this.connection.setNetworkTimeout(this.timeoutExecutor, this.timeout * 1000); // sec --> msecs
+			} catch (java.lang.AbstractMethodError ex) { // Oracle driver doesn't implement that method ||-(
+				log.trace("setNetworkTimeout() not supported by {}", this.getDriverName()); //$NON-NLS-1$
+			}
 		}
 	}
 
@@ -205,8 +209,10 @@ public class JDBCConnection extends IPConnection
 	private void responseReceived(Statement statement, boolean isRS) throws Exception {
 		if (isRS) { // result is a ResultSet
 			convertResultSet(statement);
-			log.debug("response: status={} / payload=\"{}\"", //$NON-NLS-1$
-			         getResponseStatus(), getResponsePayload());
+			log.debug("response: status={} / payload={} bytes", //$NON-NLS-1$
+			         getResponseStatus(), getResponsePayload().length());
+			log.trace("payload=\"{}\"", //$NON-NLS-1$
+				      getResponsePayload());
 			deriveState();
 		} else { // result is not a ResultSet but an update count or there are no results
 			int updates = statement.getUpdateCount();

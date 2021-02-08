@@ -13,7 +13,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -32,6 +31,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.Node.State;
 import net.mmo.utils.kism.entities.RootNode;
+import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
@@ -168,8 +168,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	protected boolean hasUiChanges() {
+		if (!this.isVisible()) this.uiChanges = false; // if we are not visible (any more) we can't have changes (work-around for some buggy conditions).
 		return this.uiChanges
-			|| (this.node != null) && (!(this.node instanceof RootNode) && (this.node.getParent() == null)); // a non-root node without parent is a free floating node which has changes by definition (as it was just created)
+			   || ((this.node != null) && (!(this.node instanceof RootNode) && (this.node.getParent() == null))); // a non-root node without parent is a free floating node which has changes by definition (since it was just created)
 	}
 
 	public void setState(Node.State state) {
@@ -185,11 +186,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		if (this.node != null) {
 			if (hasUiChanges()) {
 				log.debug("we have unsaved UI changes!"); //$NON-NLS-1$
-				new ConfirmDialog("There are unsaved changes!", //$NON-NLS-1$
-				                  "Are you sure you want to leave this node?", //$NON-NLS-1$
-				                  "Save node", (confirmEvent) -> { confirmEvent.getSource().close(); validateAndSave(); }, //$NON-NLS-1$
-				                  "Abandon changes", (rejectEvent) -> { rejectEvent.getSource().close(); readBean(this.node); }, //$NON-NLS-1$
-				                  "Stay on node", (cancelEvent)  -> { /*nothing to do*/ } //$NON-NLS-1$
+				new ConfirmDialog("There are unsaved changes!",
+				                  "Are you sure you want to leave this node?",
+				                  "Save node", (confirmEvent) -> { validateAndSave(); },
+				                  "Abandon changes", (rejectEvent) -> { readBean(this.node); },
+				                  "Stay on node", (cancelEvent)  -> { /*nothing to do*/ }
 				                  ).open();
 				return false;
 			}

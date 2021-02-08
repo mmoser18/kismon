@@ -9,7 +9,6 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
@@ -107,14 +106,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 		this.timestamp = new TextField(Messages.getString("LeafNodeForm.TimeStamp.Label")); //$NON-NLS-1$
 		this.timestamp.setClassName(TimeStampClassName);
 		this.timestamp.setThemeName(LabelPaddingTheme);
-		String languageTag = Messages.getString("TimeStamp.Locale"); //$NON-NLS-1$
-		Locale locale = null;
-		try {
-			locale = Locale.forLanguageTag(languageTag);
-			log.debug("Locale for '{}': '{}'", languageTag, locale); //$NON-NLS-1$
-		} catch (Exception ex) {
-			log.debug("Error converting {} to locale! Availabel locales are: {}", languageTag, Locale.getAvailableLocales()); //$NON-NLS-1$
-		}
 
 		this.binder.forField(this.timestamp)
 			.withConverter(new Converter<String, LocalDateTime>()
