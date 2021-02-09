@@ -135,7 +135,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 						return ValidationResult.ok();
 					} catch (Exception ex) {
 						log.debug("validation failed: '{}' -> {}", value, ex); //$NON-NLS-1$
-						return ValidationResult.error(String.format(Messages.getString("NodeFormForm.URL.ValidatorErrorMsg"), //$NON-NLS-1$
+						return ValidationResult.error(String.format(Messages.getString("NodeForm.URL.ValidatorErrorMsg"), //$NON-NLS-1$
 						                                            value, ex));
 					}
 				}

@@ -23,6 +23,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
+	// these are package visible so that unit-tests can access them:
 	static final String URLClassName           = NodeFormField + "url"; //$NON-NLS-1$
 	static final String ResultingURLClassName  = NodeFormField + "resulting-url"; //$NON-NLS-1$
 

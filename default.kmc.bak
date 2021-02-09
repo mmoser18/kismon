@@ -4,14 +4,20 @@
   "description" : "default",
   "enabled" : true,
   "properties" : {
-    "foo" : "outer"
+    "db_default_driver" : "oracle.jdbc.driver.OracleDriver",
+    "db_server_url_old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
+    "foo" : "outer",
+    "db_server_url" : "${db_server_url_new}",
+    "db_server_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
   },
+  "condition" : "DEGRADED_ON_NOT_ALL_OK",
   "children" : [ {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
-    "name" : "root.1",
-    "description" : "default.1",
+    "name" : "test",
+    "description" : "a list of all possible nodes types",
     "enabled" : true,
     "properties" : { },
+    "condition" : "DEGRADED_ON_NOT_ALL_OK",
     "children" : [ {
       "className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
       "name" : "REST_0",
@@ -23,16 +29,15 @@
         "x" : "*",
         "xxx" : "yyy"
       },
-      "active" : true,
+      "active" : false,
       "period" : 30,
       "timeout" : 15,
-      "url" : "http://localhost:8080/${foo}",
       "checkResults" : true,
+      "url" : "http://localhost:8080/${foo}",
       "resultChecker" : {
         "condition" : "EndsWithIgnoreCase",
         "operand" : ""
       },
-      "shortRequestLogEntries" : false,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -43,22 +48,21 @@
       "acceptableReturnCodes" : "200"
     }, {
       "className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
-      "name" : "SOAP_0",
+      "name" : "SOAP_request_with_long_name",
       "description" : "SOAP Connection",
       "enabled" : true,
       "properties" : {
         "x" : "Operation"
       },
-      "active" : true,
+      "active" : false,
       "period" : 60,
       "timeout" : 45,
-      "url" : "http://localhost:8080",
       "checkResults" : true,
+      "url" : "http://localhost:8080",
       "resultChecker" : {
         "condition" : "Contains",
         "operand" : "SoapEnvelope"
       },
-      "shortRequestLogEntries" : false,
       "method" : "POST",
       "httpVersion" : "HTTP_1_1",
       "redirectBehavior" : "NORMAL",
@@ -77,38 +81,316 @@
         "bar" : "zzz",
         "foo" : "*"
       },
-      "active" : true,
+      "active" : false,
       "period" : 60,
       "timeout" : 45,
-      "url" : "jdbc:oracle:thin:@localhost:1521/xe",
       "checkResults" : true,
+      "url" : "jdbc:oracle:thin:@localhost:1521/xe",
       "resultChecker" : {
         "condition" : "ContainsIgnoreCase",
         "operand" : "Frau"
       },
-      "shortRequestLogEntries" : false,
       "dbUid" : "C##QUEST",
       "dbPwd" : "QUEST",
       "query" : "select ${foo} from REF_ANREDE",
       "driverName" : "oracle.jdbc.driver.OracleDriver"
     } ],
-    "condition" : "DEGRADED_ON_NOT_ALL_OK"
+    "expanded" : false
   }, {
     "className" : "net.mmo.utils.kism.entities.IntermediateNode",
-    "name" : "root.2",
-    "description" : "default.2",
+    "name" : "test 2",
+    "description" : "misc. test nodes",
     "enabled" : true,
     "properties" : { },
+    "condition" : "ALL_MUST_BE_OK",
     "children" : [ {
       "className" : "net.mmo.utils.kism.entities.IntermediateNode",
       "name" : "foo2",
       "description" : "bar",
       "enabled" : true,
       "properties" : { },
+      "condition" : "ALL_MUST_BE_OK",
       "children" : [ ],
-      "condition" : "ALL_MUST_BE_OK"
+      "expanded" : false
     } ],
-    "condition" : "ALL_MUST_BE_OK"
+    "expanded" : false
+  }, {
+    "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+    "name" : "ZHQuest",
+    "description" : "All ZHQuest-related servers and DBs",
+    "enabled" : true,
+    "properties" : { },
+    "condition" : "ALL_MUST_BE_OK",
+    "children" : [ {
+      "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+      "name" : "Dev-Environments",
+      "description" : "ZHQuest Dev-Environments",
+      "enabled" : true,
+      "properties" : {
+        "db_uid" : "to-be-overridden-below",
+        "db_pwd" : "${db_uid}"
+      },
+      "condition" : "DEGRADED_ON_NOT_ALL_OK",
+      "children" : [ {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "DEV",
+        "description" : "DEV environment (server: ksta-zhquest-int3.elcadev.local)",
+        "enabled" : true,
+        "properties" : {
+          "app_host" : "ksta-zhquest-int3.elcadev.local",
+          "app_url" : "https://${app_host}:{app_port}",
+          "app_port" : "443",
+          "db_uid" : "ZHQUEST_INT3"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "DEV-DB-ping",
+          "description" : "DB for DEV Environment",
+          "enabled" : true,
+          "properties" : { },
+          "active" : true,
+          "period" : 60,
+          "timeout" : 15,
+          "checkResults" : false,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : null,
+            "operand" : ""
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select * from dual",
+          "driverName" : "${db_default_driver}"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "DEV-DB-query",
+          "description" : "send specific query to DB",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : true,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : "ContainsIgnoreCase",
+            "operand" : "FRAU"
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select TEXT from REF_ANREDE",
+          "driverName" : "${db_default_driver}"
+        } ],
+        "expanded" : true
+      }, {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "QA",
+        "description" : "QA Environment (server: ksta-zh-zhquest.elcadev.local)",
+        "enabled" : true,
+        "properties" : {
+          "host" : "ksta-zh-zhquest.elcadev.local",
+          "db_uid" : "ZHQUEST_QA"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "QA-DB-ping",
+          "description" : "DB for QA-Environment",
+          "enabled" : true,
+          "properties" : { },
+          "active" : true,
+          "period" : 60,
+          "timeout" : 15,
+          "checkResults" : false,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : null,
+            "operand" : ""
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select * from dual",
+          "driverName" : "${db_default_driver}"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "QA-DB-query",
+          "description" : "send specific query to DB",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : true,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : "ContainsIgnoreCase",
+            "operand" : "FRAU"
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select TEXT from REF_ANREDE",
+          "driverName" : "${db_default_driver}"
+        } ],
+        "expanded" : true
+      }, {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "DMZ",
+        "description" : "DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
+        "enabled" : true,
+        "properties" : {
+          "host" : "ksta-zh-zhquest-dmz.elca.ch",
+          "db_server_url" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=vm-dmzoracle.elca.ch)(PORT=54345)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=DL05DMZ)))",
+          "db_uid" : "ZHQUESTDMZ",
+          "db_pwd" : "dU8fdzsC"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "DMZ-DB-ping",
+          "description" : "DB for DMZ-Environment",
+          "enabled" : true,
+          "properties" : { },
+          "active" : true,
+          "period" : 60,
+          "timeout" : 15,
+          "checkResults" : false,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : null,
+            "operand" : ""
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select * from dual",
+          "driverName" : "${db_default_driver}"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+          "name" : "DMZ-DB-query",
+          "description" : "send specific query to DB",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : true,
+          "url" : "${db_server_url}",
+          "resultChecker" : {
+            "condition" : "ContainsIgnoreCase",
+            "operand" : "FRAU"
+          },
+          "dbUid" : "${db_uid}",
+          "dbPwd" : "${db_pwd}",
+          "query" : "select TEXT from REF_ANREDE",
+          "driverName" : "${db_default_driver}"
+        } ],
+        "expanded" : true
+      } ],
+      "expanded" : true
+    } ],
+    "expanded" : false
+  }, {
+    "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+    "name" : "ZHStRegisterJP",
+    "description" : "All RegisterJP-related servers and DBs",
+    "enabled" : true,
+    "properties" : { },
+    "condition" : "DEGRADED_ON_NOT_ALL_OK",
+    "children" : [ {
+      "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+      "name" : "Dev-Environments",
+      "description" : "RegisterJP Dev-Environments",
+      "enabled" : true,
+      "properties" : {
+        "mock_port" : "8090",
+        "mock_host" : "zhstregisterjp-dev.elcadev.local",
+        "mock_url" : "http://${mock_host}:${mock_port}/zhstregisterjp-mock-external-services/"
+      },
+      "condition" : "DEGRADED_ON_NOT_ALL_OK",
+      "children" : [ {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "DEV",
+        "description" : "DEV environment (server: )",
+        "enabled" : true,
+        "properties" : {
+          "app_host" : "zhstregisterjp-dev.elcadev.local",
+          "app_url" : "https://${app_host}/registerjp/"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ {
+          "className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+          "name" : "Mock-Server",
+          "description" : "SOAP-UI Mock Server",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 45,
+          "checkResults" : false,
+          "url" : "${mock_url}",
+          "resultChecker" : {
+            "condition" : null,
+            "operand" : ""
+          },
+          "method" : "GET",
+          "httpVersion" : "HTTP_1_1",
+          "redirectBehavior" : "NORMAL",
+          "targetUid" : "user",
+          "targetPwd" : "password",
+          "headers" : "",
+          "payload" : "",
+          "acceptableReturnCodes" : "200"
+        }, {
+          "className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+          "name" : "Application basic connection",
+          "description" : "Application Server",
+          "enabled" : true,
+          "properties" : { },
+          "active" : false,
+          "period" : 60,
+          "timeout" : 10,
+          "checkResults" : true,
+          "url" : "${app_url}",
+          "resultChecker" : {
+            "condition" : "Contains",
+            "operand" : "<title>ZHStRegisterJP</title>"
+          },
+          "method" : "GET",
+          "httpVersion" : "HTTP_1_1",
+          "redirectBehavior" : "NORMAL",
+          "targetUid" : "user",
+          "targetPwd" : "password",
+          "headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+          "payload" : "",
+          "acceptableReturnCodes" : "200"
+        } ],
+        "expanded" : true
+      }, {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "QA",
+        "description" : "QA environment (server: )",
+        "enabled" : true,
+        "properties" : {
+          "host" : "zhstregisterjp-qa.elcadev.local"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ ],
+        "expanded" : false
+      }, {
+        "className" : "net.mmo.utils.kism.entities.IntermediateNode",
+        "name" : "PROD",
+        "description" : "PROD environment (server: )",
+        "enabled" : true,
+        "properties" : {
+          "host" : "zhstregisterjp-prod.elcadev.local"
+        },
+        "condition" : "ALL_MUST_BE_OK",
+        "children" : [ ],
+        "expanded" : false
+      } ],
+      "expanded" : true
+    } ],
+    "expanded" : true
   } ],
-  "condition" : "DEGRADED_ON_NOT_ALL_OK"
+  "expanded" : true
 }

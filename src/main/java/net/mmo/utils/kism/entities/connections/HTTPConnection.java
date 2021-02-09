@@ -88,8 +88,8 @@ abstract public class HTTPConnection extends IPConnection
 
 	protected Redirect redirectBehavior = Redirect.NORMAL;
 
-	protected String targetUid = "user"; //$NON-NLS-1$
-	protected String targetPwd = "password"; //$NON-NLS-1$
+	protected String targetUid = "<user>"; //$NON-NLS-1$
+	protected String targetPwd = "<password>"; //$NON-NLS-1$
 
 	protected String headers;
 	protected String payload;
@@ -377,14 +377,16 @@ abstract public class HTTPConnection extends IPConnection
 			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
 			setState(State.FAILED);
 			if (response != null) {
-				throw new Exception(String.format("Error for '%s' processing response from %s: ", //$NON-NLS-1$
+				throw new Exception(String.format("Error for '%s' processing response from '%s': ", //$NON-NLS-1$
 				                                  getName(), request.uri()), ex);
 			} else if (request != null) {
-				throw new Exception(String.format("Error for '%s' sending request to %s: ", //$NON-NLS-1$
+				throw new Exception(String.format("Error for '%s' sending request to '%s':", //$NON-NLS-1$
 				                                  getName(), request.uri()), ex);
 			} else {
 				throw new Exception(String.format("Error for '%s' creating request", getName()), ex); //$NON-NLS-1$
 			}
+		} finally {
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, response);
 		}
 	}
 
@@ -394,7 +396,6 @@ abstract public class HTTPConnection extends IPConnection
 		setResponseBody(response.body());
 		logResponseValues();
 		deriveState();
-		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, response);
 	}
 
 	private void deriveState() throws Exception {
@@ -517,7 +518,7 @@ abstract public class HTTPConnection extends IPConnection
 //			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
 			.append(", acceptableReturnCodes:").append(this.acceptableReturnCodes) //$NON-NLS-1$
-			.append(", headers:").append(this.headers.replace("\n", "\\n")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			.append(", headers:").append(this.headers != null ? this.headers.replace("\n", "\\n") : null) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			.append(", payload:").append((this.payload != null ? this.payload.length() : 0)).append(" characters)") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", httpClient:").append(this.httpClient) //$NON-NLS-1$
 			.append(", httpRequest:").append(this.httpRequest) //$NON-NLS-1$

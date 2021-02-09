@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +43,7 @@ public class NodeService
 	*/
 
 	private List<RootNode> roots = new ArrayList<>();
-	private ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+	private ObjectMapper mapper;
 
 	private Properties commonRootProperties = new NodeProperties();
 	{
@@ -51,6 +53,7 @@ public class NodeService
 	public NodeService(// IntermediateNodeRepository intermediateNodeRepository,
 	                   // LeafNodeRepository leafNodeRepository
 	                  ) {
+		this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 		/*
 		this.intermediateNodeRepository = intermediateNodeRepository;
 		this.leafNodeRepository = leafNodeRepository;
@@ -179,7 +182,10 @@ public class NodeService
 	}
 
 	public void write(RootNode rootNode, OutputStream out) throws IOException {
-		this.mapper.writeValue(out, rootNode);
+		// this.mapper.writeValue(out, rootNode);
+		// we want the DefaultPrettyPrinter to use \t instead of 2 spaces for indentation:
+		this.mapper.writer(new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))).writeValue(out, rootNode); //$NON-NLS-1$
+
 	}
 
 	public Node addChild(IntermediateNode parent, Node child) {

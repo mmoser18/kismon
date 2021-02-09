@@ -29,6 +29,9 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
+	static final String UidClassName   = NodeFormField + "dbUid"; //$NON-NLS-1$
+	static final String PwdClassName   = NodeFormField + "dbPwd"; //$NON-NLS-1$
+
 	static final String MethodClassName                = NodeFormField + "method"; //$NON-NLS-1$
 	static final String RequestHeadersClassName        = NodeFormField + "httpRequest-headers"; //$NON-NLS-1$
 	static final String RequestBodyClassName           = NodeFormField + "httpRequest-body"; //$NON-NLS-1$
@@ -37,6 +40,9 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	static final String ResponseHeadersClassName       = NodeFormField + "response-headers"; //$NON-NLS-1$
 	static final String ResponseBodyClassName          = NodeFormField + "response-body"; //$NON-NLS-1$
 	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
+
+	protected TextField targetUid;
+	protected TextField targetPwd;
 
 	protected Select<HTTP_Method> method;
 
@@ -65,9 +71,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
 
-		// overriding the default URL label:
-		this.url.setLabel(Messages.getString("HTTPConnectionForm.DriverName.Label")); //$NON-NLS-1$
-		// had to movethe URL validation here since JDBC-URLs look completely differently and
+		// had to move the URL validation here since JDBC-URLs look completely differently and
 		// didn't pass the conventional URI check!
 		this.binder.forField(this.url)
 			.withValidator(this.urlValidator)
@@ -76,6 +80,18 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.binder.forField(this.resultingURL)
 			.withValidator(this.urlValidator)
 			.bind(IPConnection::getResultingUrl, null);
+
+		this.targetUid = new TextField(Messages.getString("HTTPConnectionForm.Uid.Label")); //$NON-NLS-1$
+		this.targetUid.setClassName(UidClassName);
+		this.targetUid.setThemeName(LabelPaddingTheme);
+		this.targetUid.setClearButtonVisible(clearButtonsVisible);
+		this.binder.forField(this.targetUid).withValidator(this.propertiesResolvableValidator);
+
+		this.targetPwd = new TextField(Messages.getString("HTTPConnectionForm.Pwd.Label")); //$NON-NLS-1$
+		this.targetPwd.setClassName(PwdClassName);
+		this.targetPwd.setThemeName(LabelPaddingTheme);
+		this.targetPwd.setClearButtonVisible(clearButtonsVisible);
+		this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
 
 		this.method = new Select<>(HTTP_Method.values());
 		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
@@ -187,7 +203,11 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		});
 
 		// combining and grouping bits and pieces:
-		this.connnectionDetailsPanel.add(this.method, this.headers, this.payload);
+		HorizontalLayout uidAndPwd = new HorizontalLayout(this.targetUid, this.targetPwd);
+		uidAndPwd.addClassName(CombinedClassName);
+
+		// combining and grouping bits and pieces:
+		this.connnectionDetailsPanel.add(uidAndPwd, this.method, this.headers, this.payload);
 
 		Accordion requestDetails = new Accordion();
 		requestDetails.close(); // initially closed

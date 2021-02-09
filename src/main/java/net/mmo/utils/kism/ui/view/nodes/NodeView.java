@@ -113,8 +113,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
-		this.tree.getDataProvider().refreshAll();
 		this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
+		this.tree.getDataProvider().refreshAll();
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -562,12 +562,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 			} else {
 				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
 				log.info(msg);
-				new Notification(msg, 0).open();
+				new Notification(msg, 10000).open();
 			}
 		} catch (Throwable t) {
 			String msg = String.format("Exception saving node '%s': %s", rootNode, t); //$NON-NLS-1$
 			log.error(msg, t);
-			new Notification(msg, 0).open();
+			new Notification(msg, 10000).open();
 		}
 	}
 
@@ -632,15 +632,16 @@ public class NodeView <N extends Node> extends VerticalLayout
 				if (node instanceof RootNode) {
 					this.nodeService.getRootNodes().remove(NodeService.getCorrespondingRootNode(node));
 				} else {
-					Node deletedNode = this.nodeService.removeChild(node.getParent(), node);
+					IntermediateNode parent = node.getParent();
+					Node deletedNode = this.nodeService.removeChild(parent, node);
 					log.info("deleted node '{}'", deletedNode); //$NON-NLS-1$
+					refreshNode(parent, true);
 				}
 			});
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node '%s': %s", nodes, t); //$NON-NLS-1$
 			log.error(msg, t);
-			new Notification(msg, 10000).open();
-		} finally {
+			new Notification(msg, 1000).open();
 			updateTree();
 		}
 	}
