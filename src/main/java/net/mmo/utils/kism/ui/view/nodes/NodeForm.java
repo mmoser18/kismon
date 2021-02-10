@@ -186,11 +186,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		if (this.node != null) {
 			if (hasUiChanges()) {
 				log.debug("we have unsaved UI changes!"); //$NON-NLS-1$
-				new ConfirmDialog("There are unsaved changes!",
-				                  "Are you sure you want to leave this node?",
-				                  "Save node", (confirmEvent) -> { validateAndSave(); },
-				                  "Abandon changes", (rejectEvent) -> { readBean(this.node); },
-				                  "Stay on node", (cancelEvent)  -> { /*nothing to do*/ }
+				new ConfirmDialog(Messages.getString("NodeForm.UnsavedChanges.Label"), //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Question"), //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Confirm"), (confirmEvent) -> { validateAndSave(); }, //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Reject"), (rejectEvent) -> { readBean(this.node); }, //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Cancel"), (cancelEvent)  -> { /*nothing to do*/ } //$NON-NLS-1$
 				                  ).open();
 				return false;
 			}
@@ -319,8 +319,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		this.fields = new VerticalLayout(this.name, this.description, stateAndEnabled, this.properties);
 		this.fields.setClassName(FieldsClassName);
-		// this.fields.setSizeFull();
-		this.fields.setWidthFull();
+		this.fields.setSizeFull();
+		// this.fields.setWidthFull();
 		this.fields.setMargin(false);
 	}
 

@@ -51,18 +51,19 @@ public class CommonConstants
 		}
 	}
 
+	private CommonConstants() {}
+
 	/* set a classname to only ONE of a list of enumerated values */
 	public static void setClassName(HasStyle component, Enum<?> t) {
 		for (Enum<?> x: t.getDeclaringClass().getEnumConstants()) {
 			if (x == t) {
-				log.info("Component {}: setting class '{}'", component, x.name()); //$NON-NLS-1$
+				log.trace("Component {}: setting class '{}'", component, x.name()); //$NON-NLS-1$
 				component.addClassName(x.name());
 			} else {
-				log.info("Component {}: removing class '{}'", component, x.name()); //$NON-NLS-1$
+				log.trace("Component {}: removing class '{}'", component, x.name()); //$NON-NLS-1$
 				component.removeClassName(x.name());
 			}
 		}
 	}
 
-	private CommonConstants() {}
 }

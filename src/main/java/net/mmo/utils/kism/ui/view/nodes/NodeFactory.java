@@ -28,20 +28,31 @@ public class NodeFactory <N extends Node>
 		}
 	}
 
-	private int nodeCtr = 0;
+	private static int nodeCtr = 0;
 
 	@SuppressWarnings("unchecked")
 	public N createNode(NodeType type) {
+		N newNode;
 		switch (type) {
 		case IntermediateNode:
-			return (N)new IntermediateNode("Intermediate_Node_" + this.nodeCtr, "Intermediate Node"); //$NON-NLS-1$ //$NON-NLS-2$
+			newNode = (N)new IntermediateNode(String.format(Messages.getString("IntermediateNode.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
+			                                  String.format(Messages.getString("IntermediateNode.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
+			break;
 		case RESTConnection:
-			return (N)new RESTConnection("REST_" + this.nodeCtr, "REST IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
+			newNode = (N)new RESTConnection(String.format(Messages.getString("RESTConnection.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
+			                                String.format(Messages.getString("RESTConnection.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
+			break;
 		case SOAPConnection:
-			return (N)new SOAPConnection("SOAP_" + this.nodeCtr, "SOAP IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
+			newNode = (N)new SOAPConnection(String.format(Messages.getString("SOAPConnection.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
+			                                String.format(Messages.getString("SOAPConnection.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
+			break;
 		case JDBCConnection:
-			return (N)new JDBCConnection("JDBC_" + this.nodeCtr, "JDBC IPConnection"); //$NON-NLS-1$ //$NON-NLS-2$
+			newNode = (N)new JDBCConnection(String.format(Messages.getString("JDBCConnection.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
+			                                String.format(Messages.getString("JDBCConnection.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
+			break;
 		default: throw new IllegalArgumentException("Unexpected node type " + type + " in NodeFactory.createNode()"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
+		nodeCtr++;
+		return newNode;
 	}
 }

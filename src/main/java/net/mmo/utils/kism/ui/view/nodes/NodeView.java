@@ -1,9 +1,11 @@
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,9 +17,9 @@ import java.util.stream.Collectors;
 import com.google.common.base.Objects;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
@@ -36,6 +38,7 @@ import com.vaadin.flow.server.StreamResource;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.IntermediateNode;
+import net.mmo.utils.kism.entities.LeafNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
@@ -84,7 +87,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	protected static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
-	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
+	protected PropertyChangeListener nodeRefreshListener;
 
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
@@ -142,7 +145,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				if (type == NodeType.RootNode) {
 					createNewRootNode();
 				} else {
-					IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode(type)); // in the first step we only create a new node
+					IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode(type, selectedNode)); // in the first step we only create a new node
 				}
 			});
 
@@ -214,7 +217,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 			}
 		});
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton, directionButton, saveAllButton, downloadFileButton, uploadFile);
+		Checkbox haltRequests = new Checkbox(Messages.getString("NodeView.HaltAllRequests.Label")); //$NON-NLS-1$
+		haltRequests.addValueChangeListener(event ->
+			{
+				LeafNode.haltAllRequests = event.getValue();
+				log.info("Requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				haltRequests.setClassName(LeafNode.haltAllRequests ? "red" : "green"); //$NON-NLS-1$ //$NON-NLS-2$
+			});
+		haltRequests.setValue(LeafNode.haltAllRequests); // make sure checkbox and actual value are in sync
+
+		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
+		                                                directionButton, saveAllButton, downloadFileButton, uploadFile, haltRequests);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
 	}
@@ -252,7 +265,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.setAutoWidth(false)
 			.setFlexGrow(1)
 			;
-		this.tree.addColumn(Node::isEnabled)
+		this.tree.addColumn((node) -> node.isEnabled() ? "\u2714" : "\u2716") // ✔ ✖ //$NON-NLS-1$ //$NON-NLS-2$
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")) //$NON-NLS-1$
 			.setKey("enabled") //$NON-NLS-1$`
 			.setAutoWidth(true)
@@ -295,13 +308,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 		this.tree.addExpandListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
-			log.info("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
+			log.trace("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			nodes.forEach(node -> ((IntermediateNode)node).expanded = true);
 			this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		});
 		this.tree.addCollapseListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
-			log.info("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
+			log.trace("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			nodes.forEach(node -> ((IntermediateNode)node).expanded = false);
 			this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		});
@@ -327,8 +340,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		return dataProvider;
 	}
 
-	protected void createNodeRefreshListener() {
-		this.nodeRefreshListener = new PropertyChangeListenerWithPriorUIReservation<N>(this)
+	protected PropertyChangeListener createNodeRefreshListener() {
+		return new PropertyChangeListenerWithPriorUIReservation<N>(this)
 		{
 			@Override
 			protected void handlePropertyChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
@@ -397,7 +410,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		Node node = event.getNode();
 		log.debug("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
 		deleteNodes(Collections.singletonList(node));
-		if (NodeView.alwaysSave) saveNode(node);
 		closeEditor();
 	}
 
@@ -416,9 +428,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 		IfSuitableNodeSelectedForAddition((selectedNode) -> // in the second step we add node to the selected node
 			{
 				this.nodeService.addChild(selectedNode, newNode);
+				selectedNode.expanded = true; // make sure the newly added child gets visible
 			});
 		if (NodeView.alwaysSave) saveNode(newNode);
 		updateTree();
+		this.tree.select(newNode); // and select it
 	}
 
 	private void IfSuitableNodeSelected(Consumer<Node> action) {
@@ -444,10 +458,15 @@ public class NodeView <N extends Node> extends VerticalLayout
 		});
 	}
 
-	void createNewChildNode(NodeType nodeType) {
+	void createNewChildNode(NodeType nodeType, IntermediateNode parentNode) {
 		log.info("createNewChildNode"); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
-		editNode(this.nodeFactory.createNode(nodeType));
+		N newNode = this.nodeFactory.createNode(nodeType);
+		// We don't hook the newly defined node into the tree, yet, but before we allow a user to
+		// edit it we need to provide it with upstream properties or else the user will get
+		// "property not found"-errors during validation when entering a placeholder into a field:
+		newNode.getProperties().setParentProperties(parentNode.getProperties());
+		editNode(newNode);
 	}
 
 	private void updateNode(Node node) {
@@ -535,10 +554,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.info("removeList {}.", nodes); //$NON-NLS-1$
 		String question = nodes.stream()
 			.map(node -> NodeService.getCorrespondingRootNode(node).getName())
-			.collect(Collectors.joining(", ", "Are you sure you want to delete ENTIRE list(s) [", "]?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		new ConfirmDialog("Confirm deletion", question,
-		                  "Delete", evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())),
-		                  "Cancel", evt -> {/**/});
+			.collect(Collectors.joining(Messages.getString("NodeView.Deletion.Question.ListSeparator"), //$NON-NLS-1$
+			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
+			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
+		new ConfirmDialog(Messages.getString("NodeView.Deletion.Header"), question, //$NON-NLS-1$
+		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())), //$NON-NLS-1$
+		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> {/**/}); //$NON-NLS-1$
 	}
 
 	private void saveNode(Node node) {
@@ -596,12 +617,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void updateTree() {
 		log.info("updateTree"); //$NON-NLS-1$
-		// remove old refreshListener:
+//		// remove old refreshListener:
 		if (this.nodeRefreshListener == null) this.nodeService.getRootNodes().forEach((node) -> node.removeChangeListener(this.nodeRefreshListener));
-		this.tree.setDataProvider(createDataProvider());
-		// register our refresh-listener with each (new)root-node:
-		if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
-		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
+		log.info("data-provider: {}", this.tree.getDataProvider()); //$NON-NLS-1$
+//		if (this.tree.getDataProvider() == null) {
+			this.tree.setDataProvider(createDataProvider());
+			if (this.nodeRefreshListener == null) {
+				this.nodeRefreshListener = createNodeRefreshListener(); // make sure we have one...
+			}
+			// register our refresh-listener with each (new)root-node:
+			this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
+//		}
 		// expand/collapse tree to previously saved state:
 		getRootNodesAsBareNodes().forEach(node -> node.trickleDown(n ->
 			{
@@ -624,8 +650,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 		openDialog(msg, t);
 	}
 
+	/**
+	 * The method could handle multiple nodes, but we currently allow selection of one node only
+	 * @param nodes
+	 */
 	private void deleteNodes(Collection<Node> nodes) {
 		log.info("deleteNodes {}", nodes); //$NON-NLS-1$
+		List<IntermediateNode> parents = new ArrayList<>();
 		try {
 			nodes.forEach((node) -> {
 				log.info("deleting nodes '{}'", node); //$NON-NLS-1$
@@ -635,19 +666,21 @@ public class NodeView <N extends Node> extends VerticalLayout
 					IntermediateNode parent = node.getParent();
 					Node deletedNode = this.nodeService.removeChild(parent, node);
 					log.info("deleted node '{}'", deletedNode); //$NON-NLS-1$
-					refreshNode(parent, true);
+					if (NodeView.alwaysSave) saveNode(parent);
+					parents.add(parent);
 				}
 			});
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node '%s': %s", nodes, t); //$NON-NLS-1$
 			log.error(msg, t);
-			new Notification(msg, 1000).open();
-			updateTree();
+			new Notification(msg, 5000).open();
 		}
+		updateTree();
+		parents.forEach((node) -> this.tree.select(node));
 	}
 
 	/* User operation error - this CAN happen but does no harm */
-public static void UsageError(String msg) {
+	public static void UsageError(String msg) {
 		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), msg); //$NON-NLS-1$
 		log.info(text);
 		openDialog(text, null);
@@ -676,18 +709,9 @@ public static void UsageError(String msg) {
 		UI ui = UI.getCurrent();
 		ui.access(() ->
 			{
-				Dialog dialog = new Dialog();
-				VerticalLayout msgLane = new VerticalLayout();
-				for (String str: msg.split("\n")) { //$NON-NLS-1$
-					msgLane.add(new Label(str));
-				}
-				for (String str: ExceptionUtils.exceptionCauseSummary(t).split("\n")) { //$NON-NLS-1$
-					msgLane.add(new Label(str));
-				}
-				Button button = new Button(Messages.getString("NodeView.Notification.Close.Label")); //$NON-NLS-1$
-				button.addClickListener(event -> dialog.close());
-				dialog.add(msgLane, button);
-				dialog.open();
+				new ConfirmDialog(null, msg + "\n" + ExceptionUtils.exceptionCauseSummary(t),  //$NON-NLS-1$
+				                  Messages.getString("NodeView.Notification.Close.Label"), null) //$NON-NLS-1$
+					.open();
 			});
 	}
 

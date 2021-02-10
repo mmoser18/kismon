@@ -148,7 +148,7 @@ public class NodeService
 			} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 				throw t;
 			} finally {
-				// to automatically close the above streams
+				// only to automatically close the above streams
 			}
 		} else {
 			return null;
@@ -164,7 +164,9 @@ public class NodeService
 		newRoot.deriveNewState();
 		newRoot.updateAllResolvableValues(); // this triggers a trickle-down updating all resolvable properties in the entire tree
 		addNewRootNode(newRoot);
-		if (log.isTraceEnabled()) log.trace("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
+		if (log.isInfoEnabled()) {
+			log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
+		}
 		return newRoot;
 	}
 
@@ -173,7 +175,7 @@ public class NodeService
 		try (OutputStream fos = new FileOutputStream(file);
 		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
 			write(rootNode, bos);
-			log.info("rootNode '{}' was written to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
+			log.info("rootNode '{}' successfully written to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
 		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 			throw t;
 		} finally {

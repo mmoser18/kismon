@@ -1,0 +1,16 @@
+/* these did not work...
+
+:host([class~="red"]) [part="checkbox"] {
+	color: red;
+}
+:host([class~="green"]) [part="checkbox"] {
+	color: green;
+}
+
+:host(.red) [part="checkbox"] {
+	color: red;
+}
+:host(.green) [part="checkbox"] {
+	color: green;
+}
+*/

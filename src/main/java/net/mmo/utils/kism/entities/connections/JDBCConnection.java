@@ -299,7 +299,7 @@ public class JDBCConnection extends IPConnection
 			.append(", resultingQuery:").append(this.resultingQuery) //$NON-NLS-1$
 			.append(", driverName:").append(this.driverName) //$NON-NLS-1$
 			.append(", responseStatus:").append(this.responseStatus) //$NON-NLS-1$
-			.append(", responsePayload:").append(this.responsePayload) //$NON-NLS-1$
+			.append(", responsePayload:(").append((this.responsePayload != null ? this.responsePayload.length() : 0)).append(" bytes)") // echoing the entire payload was flooding the logs //$NON-NLS-1$ //$NON-NLS-2$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

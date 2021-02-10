@@ -20,6 +20,9 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +30,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.persistence.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -271,12 +278,47 @@ abstract public class HTTPConnection extends IPConnection
 	// the functional part:
 
 	public void createClient() {
+		// We enable ALL SSL and TLS protocol versions. We only want to connect and *monitor*
+		// those systems not impose any new requirements (e.g. on our old dev-environments):
+		SSLParameters sslParameters = new SSLParameters();
+		sslParameters.setProtocols(new String[]{"TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3", "SSLv3"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		// We also disable hostname verification:
+		System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString()); //$NON-NLS-1$
+		// And finally we use a TrustManager that trusts ALL certificates (also self signed):
+		TrustManager[] trustAllCerts = new TrustManager[]
+			{
+				new X509TrustManager() {
+					@Override
+					public X509Certificate[] getAcceptedIssuers() {
+						return new X509Certificate[0];
+					}
+					@Override
+					public void checkClientTrusted(X509Certificate[] certs, String authType) {
+						// empty
+					}
+					@Override
+					public void checkServerTrusted(X509Certificate[] certs, String authType) {
+						// empty
+					}
+				}
+			};
+		SSLContext sslContext = null;
+		try {
+			sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$
+			sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+		} catch (NoSuchAlgorithmException | KeyManagementException ex) {
+			log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
+		}
+
 		HttpClient.Builder builder = HttpClient
 			.newBuilder()
+			.sslParameters(sslParameters)
 			.version(getHttpVersion())
 			.followRedirects(getRedirectBehavior())
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
+		if (sslContext != null) builder.sslContext(sslContext);
+
 		if (getTargetUid() != null && getTargetPwd() != null) {
 			builder.authenticator(new Authenticator()
 				{
@@ -518,15 +560,15 @@ abstract public class HTTPConnection extends IPConnection
 //			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
 			.append(", acceptableReturnCodes:").append(this.acceptableReturnCodes) //$NON-NLS-1$
-			.append(", headers:").append(this.headers != null ? this.headers.replace("\n", "\\n") : null) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			.append(", headers:").append(this.headers != null ? this.headers.replace("\n", "\u2424") : null) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			.append(", payload:").append((this.payload != null ? this.payload.length() : 0)).append(" characters)") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", httpClient:").append(this.httpClient) //$NON-NLS-1$
 			.append(", httpRequest:").append(this.httpRequest) //$NON-NLS-1$
 			.append(", requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
-			.append(", requestBody:").append((this.requestBody != null ? this.requestBody.length : 0)).append(" bytes)") //$NON-NLS-1$ //$NON-NLS-2$
+			.append(", requestBody:").append((this.requestBody != null ? this.requestBody.length : 0)).append(" bytes)") // echoing the entire requestBody was flooding the logs  //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
 			.append(", responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
-			.append(", responseBody:(").append((this.responseBody != null ? this.responseBody.length : 0)).append(" bytes)") //$NON-NLS-1$ //$NON-NLS-2$
+			.append(", responseBody:(").append((this.responseBody != null ? this.responseBody.length : 0)).append(" bytes)") // echoing the entire responseBody was flooding the logs //$NON-NLS-1$ //$NON-NLS-2$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

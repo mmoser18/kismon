@@ -114,7 +114,7 @@ public class KeyValuesConverter
 				log.trace("extractValueFragment: '{}' not found in headers.", key); //$NON-NLS-1$
 			}
 		}
-		log.debug("extractValueFragment: using default value: '{}'", defaultValue); //$NON-NLS-1$
+		log.trace("extractValueFragment: using default value: '{}'", defaultValue); //$NON-NLS-1$
 		return defaultValue;
 	}
 

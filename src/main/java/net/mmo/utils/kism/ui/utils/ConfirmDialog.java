@@ -11,11 +11,20 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class ConfirmDialog extends Dialog
 {
 	private static final long serialVersionUID = -3151200601662024616L;
+
+	public ConfirmDialog(String header, String question,
+	                     String confirmLabel, ComponentEventListener<ClickEvent<Button>> confirmListener) {
+		this(header, question,
+		     confirmLabel, confirmListener,
+		     null, null,
+		     null, null);
+	}
 
 	public ConfirmDialog(String header, String question,
 	                     String confirmLabel, ComponentEventListener<ClickEvent<Button>> confirmListener,
@@ -33,35 +42,34 @@ public class ConfirmDialog extends Dialog
 		setCloseOnEsc(true);
 		setCloseOnOutsideClick(false);
 
-		add(new H3(header));
-		add(new Label(question));
+		VerticalLayout msgLane = new VerticalLayout();
 
-		Span result = new Span();
-		add(result);
+		if (header != null) msgLane.add(new H3(header));
+		for (String str: question.split("\n")) { //$NON-NLS-1$
+			msgLane.add(new Label(str));
+		}
 
+		HorizontalLayout buttons = new HorizontalLayout();
 		Button confirmButton = new Button(confirmLabel, event -> {
-			result.setText("Confirmed!"); //$NON-NLS-1$
 			close();
-			confirmListener.onComponentEvent(event);
+			if (confirmListener != null) confirmListener.onComponentEvent(event);
 		});
-		add(confirmButton);
+		buttons.add(confirmButton);
 
 		if (rejectLabel != null) {
 			Button rejectButton = new Button(rejectLabel, event -> {
-				result.setText("Rejected!"); //$NON-NLS-1$
 				close();
-				rejectListener.onComponentEvent(event);
+				if (rejectListener != null) rejectListener.onComponentEvent(event);
 			});
-			add(rejectButton);
+			buttons.add(rejectButton);
 		}
 		if (cancelLabel != null) {
 			Button cancelButton = new Button(cancelLabel, event -> {
-				result.setText("Cancelled..."); //$NON-NLS-1$
 				close();
-				cancelListener.onComponentEvent(event);
+				if (cancelListener != null) cancelListener.onComponentEvent(event);
 			});
-			add(cancelButton);
+			buttons.add(cancelButton);
 		}
+		add(msgLane, buttons);
 	}
-
 }

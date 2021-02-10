@@ -5,16 +5,17 @@
 	"enabled" : true,
 	"properties" : {
 		"db_default_driver" : "oracle.jdbc.driver.OracleDriver",
-		"db_server_url_old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
+		"db_server_url_old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=kstazh-common-oracle.elcadev.local)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=kstazhCommon.elcadev.local)))",
 		"foo" : "outer",
 		"db_server_url" : "${db_server_url_new}",
+		"db_server_url_local" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
 		"db_server_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
 	},
 	"condition" : "DEGRADED_ON_NOT_ALL_OK",
 	"children" : [ {
 		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-		"name" : "test",
-		"description" : "a list of all possible nodes types",
+		"name" : "test-nodes",
+		"description" : "Just an example list of all possible nodes types",
 		"enabled" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
@@ -56,7 +57,7 @@
 			},
 			"active" : false,
 			"period" : 60,
-			"timeout" : 45,
+			"timeout" : 10,
 			"checkResults" : true,
 			"url" : "http://localhost:8080",
 			"resultChecker" : {
@@ -76,14 +77,14 @@
 			"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 			"name" : "JDBC_0",
 			"description" : "JDBC Connection",
-			"enabled" : true,
+			"enabled" : false,
 			"properties" : {
 				"bar" : "zzz",
 				"foo" : "*"
 			},
 			"active" : false,
 			"period" : 60,
-			"timeout" : 45,
+			"timeout" : 10,
 			"checkResults" : true,
 			"url" : "jdbc:oracle:thin:@localhost:1521/xe",
 			"resultChecker" : {
@@ -95,32 +96,14 @@
 			"query" : "select ${foo} from REF_ANREDE",
 			"driverName" : "oracle.jdbc.driver.OracleDriver"
 		} ],
-		"expanded" : false
-	}, {
-		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-		"name" : "test 2",
-		"description" : "misc. test nodes",
-		"enabled" : true,
-		"properties" : { },
-		"condition" : "ALL_MUST_BE_OK",
-		"children" : [ {
-			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-			"name" : "foo2",
-			"description" : "bar",
-			"enabled" : true,
-			"properties" : { },
-			"condition" : "ALL_MUST_BE_OK",
-			"children" : [ ],
-			"expanded" : false
-		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 		"name" : "ZHQuest",
 		"description" : "All ZHQuest-related servers and DBs",
 		"enabled" : true,
 		"properties" : { },
-		"condition" : "ALL_MUST_BE_OK",
+		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 			"name" : "Dev-Environments",
@@ -150,8 +133,8 @@
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "DEV-DB-ping",
-					"description" : "DB for DEV Environment",
+					"name" : "ZHQ DEV DB-ping",
+					"description" : "DB for ZHQ DEV Environment",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -169,7 +152,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "DEV-DB-query",
+					"name" : "ZHQ DEV DB-query",
 					"description" : "send specific query to DB",
 					"enabled" : true,
 					"properties" : { },
@@ -188,7 +171,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "DEV Application basic connection",
+					"name" : "ZHQ DEV Application basic connection",
 					"description" : "Application Server DEV",
 					"enabled" : true,
 					"properties" : { },
@@ -223,8 +206,8 @@
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "QA-DB-ping",
-					"description" : "DB for QA-Environment",
+					"name" : "ZHQ QA DB-ping",
+					"description" : "DB for ZHQ QA-Environment",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -242,8 +225,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "QA-DB-query",
-					"description" : "send specific query to DB",
+					"name" : "ZHQ QA DB-query",
+					"description" : "send specific query to ZHQ QA DB",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -261,7 +244,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "QA Application basic connection",
+					"name" : "ZHQ QA Application basic connection",
 					"description" : "Application Server QA",
 					"enabled" : true,
 					"properties" : { },
@@ -298,8 +281,8 @@
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "DMZ-DB-ping",
-					"description" : "DB for DMZ-Environment",
+					"name" : "ZHQ DMZ DB-ping",
+					"description" : "DB for ZHQ DMZ-Environment",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -317,8 +300,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "DMZ-DB-query",
-					"description" : "send specific query to DB",
+					"name" : "ZHQ DMZ DB-query",
+					"description" : "send specific query to ZHQ DMZ DB",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -336,8 +319,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "DMZ Application basic connection",
-					"description" : "Application Server DMZ",
+					"name" : "ZHQ DMZ Application basic connection",
+					"description" : "ZHQ Application Server DMZ",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -380,6 +363,8 @@
 				"app_host" : "---",
 				"mock_port" : "8090",
 				"app_url" : "https://${app_host}/registerjp/",
+				"db_query" : "select TEXT from REF_ANREDE_TYP",
+				"db_server_url" : "${db_server_url_old}",
 				"db_uid" : "---",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "register",
@@ -394,13 +379,51 @@
 				"enabled" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-dev.elcadev.local",
-					"app_url" : "https://${app_host}/registerjp/"
+					"db_uid" : "REGISTERJP_DEV"
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RJP DEV DB-ping",
+					"description" : "DB for RJP DEV Environment",
+					"enabled" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_server_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RJP DEV DB query",
+					"description" : "send specific query to RJP DEV DB",
+					"enabled" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"url" : "${db_server_url}",
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operand" : "Firma"
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "${db_query}",
+					"driverName" : "${db_default_driver}"
+				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "RJP Mock-Server",
-					"description" : "SOAP-UI Mock Server",
+					"name" : "RJP DEV Mock-Server",
+					"description" : "SOAP-UI Mock Server for RJP DEV (actually shared among all RJP Dev-Environments)",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -422,8 +445,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "DEV Application basic connection",
-					"description" : "Application Server DEV",
+					"name" : "RJP DEV Application basic connection",
+					"description" : "RJP Application Server DEV",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -451,13 +474,52 @@
 				"description" : "QA environment (server: )",
 				"enabled" : true,
 				"properties" : {
-					"app_host" : "zhstregisterjp-qa.elcadev.local"
+					"app_host" : "zhstregisterjp-qa.elcadev.local",
+					"db_uid" : "REGISTERJP_QA"
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RJP QA DB-ping",
+					"description" : "DB for RJP QA-Environment",
+					"enabled" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_server_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RJP QA DB-query",
+					"description" : "send specific query to RJP QA DB",
+					"enabled" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"url" : "${db_server_url}",
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operand" : "Firma"
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "${db_query}",
+					"driverName" : "${db_default_driver}"
+				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "(Mock-Server)",
-					"description" : "SOAP-UI Mock Server",
+					"name" : "(RJP QA Mock-Server)",
+					"description" : "SOAP-UI Mock Server for RJP QA (actually the same as RJP DEV)",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -479,8 +541,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "QA Application basic connection",
-					"description" : "Application Server QA",
+					"name" : "RJP QA Application basic connection",
+					"description" : "RJP Application Server QA",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -508,13 +570,52 @@
 				"description" : "PROD environment (server: )",
 				"enabled" : true,
 				"properties" : {
-					"app_host" : "zhstregisterjp-prod.elcadev.local"
+					"app_host" : "zhstregisterjp-prod.elcadev.local",
+					"db_uid" : "REGISTERJP_PROD"
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RJP PROD DB-ping",
+					"description" : "DB for RJP PROD-Environment",
+					"enabled" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_server_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RJP PROD DB-query",
+					"description" : "send specific query to RJP PROD DB",
+					"enabled" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"url" : "${db_server_url}",
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operand" : "Firma"
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "${db_query}",
+					"driverName" : "${db_default_driver}"
+				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "(Mock-Server)",
-					"description" : "SOAP-UI Mock Server",
+					"name" : "(RJP PROD Mock-Server)",
+					"description" : "SOAP-UI Mock Server for RJP PROD (actually the same as RJP DEV)",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,
@@ -536,8 +637,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "PROD Application basic connection",
-					"description" : "Application Server PROD",
+					"name" : "RJP PROD Application basic connection",
+					"description" : "RJP Application Server PROD",
 					"enabled" : true,
 					"properties" : { },
 					"active" : true,

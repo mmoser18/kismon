@@ -77,8 +77,18 @@ abstract public class LeafNode extends Node
 
 	// transient stuff:
 
+
+	/**
+	 * This allows to halt ALL automatic requests. This can be useful e.g. while doing changes to avoid
+	 * being locked out of an account by too many failed attempts.
+	 */
 	@JsonIgnore
-	protected transient Runnable runnable; // runs the runnable
+	public static boolean haltAllRequests =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("StartupWithHaltedRequests", //$NON-NLS-1$
+		                                                               "false")); //$NON-NLS-1$;
+
+	@JsonIgnore
+	protected transient Runnable requestSender; // runs the automatic requests
 	@JsonIgnore
 	protected transient ScheduledExecutorService periodicExecutor; // for periodic/automatic execution
 	@JsonIgnore
@@ -139,19 +149,23 @@ abstract public class LeafNode extends Node
 		}
 	}
 
-
 	private void initExecutors() {
-		setRunnable(new Runnable()
-			{
+		setRequestSender(new Runnable()
+			{ // this is the code being executed by the automatic executors
 				@Override
 				public void run() {
-					try {
-						sendRequest();
-					} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
-						if (shortRequestLogEntries) {
-							log.info("Error executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
-						} else {
-							log.error("Error executing '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+					if (LeafNode.haltAllRequests) {
+						log.debug("Requests halted for '{}':", getName()); //$NON-NLS-1$
+					} else {
+						log.trace("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
+						try {
+							sendRequest();
+						} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
+							if (shortRequestLogEntries) {
+								log.info("Error executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+							} else {
+								log.error("Error executing '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+							}
 						}
 					}
 				}
@@ -163,6 +177,8 @@ abstract public class LeafNode extends Node
 
 	abstract public void sendRequest() throws Exception;
 
+
+	// this is the code being executed when clicking "execute" manually:
 	public void executeRequest() throws Exception {
 		if (asyncRequests) {
 			log.info("sendRequest-async:"); //$NON-NLS-1$
@@ -196,12 +212,13 @@ abstract public class LeafNode extends Node
 			setPeriodicExecutor(null);
 			setFuture(null);
 		}
-		if (getFuture() != null) throw new IllegalStateException("Future must be null!"); //$NON-NLS-1$
-		if (getPeriodicExecutor() != null) throw new IllegalStateException("Executor must be null!"); //$NON-NLS-1$
+		if (getFuture() != null) log.error("Future should be null after shutting down executor!"); //$NON-NLS-1$
+		if (getPeriodicExecutor() != null) log.error("Executor should be null before creating a new one!"); //$NON-NLS-1$
+
 		if (isActive()) { // we (re)start - possibly with a different period and/or timeout:
 			log.info("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
 			setPeriodicExecutor(Executors.newScheduledThreadPool(1));
-			setFuture(getPeriodicExecutor().scheduleAtFixedRate(getRunnable(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
+			setFuture(getPeriodicExecutor().scheduleAtFixedRate(getRequestSender(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
 		}
 	}
 
