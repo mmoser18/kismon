@@ -53,18 +53,17 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
-
 		// overriding the default URL label:
 		this.url.setLabel(Messages.getString("JDBCConnectionForm.URL.Label")); //$NON-NLS-1$
 
 		// had to movethe URL validation here since JDBC-URLs look completely differently and
 		// didn't pass the conventional URI check!
 		this.binder.forField(this.url)
-			// .withValidator(this.urlValidator)
+			// .withValidator(this.urlValidator) // the default validator can't cope with the JDBC-URLs
 			.bind(IPConnection::getUrl, IPConnection::setUrl);
 
 		this.binder.forField(this.resultingURL)
-			// .withValidator(this.urlValidator)
+			// .withValidator(this.urlValidator) // the default validator can't cope with the JDBC-URLs
 			.bind(IPConnection::getResultingUrl, null);
 
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$

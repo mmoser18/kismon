@@ -74,7 +74,7 @@ public class IntermediateNodeTest
 		IntermediateNode root = this.nodeService.getRootNodes().get(0);
 		root.condition = ChildrenCondition.DEGRADED_ON_NOT_ALL_OK;
 		new TestLeafNode("leaf1", "leaf-node1", State.OK, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
-		new TestLeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setEnabled(false); //$NON-NLS-1$ //$NON-NLS-2$
+		new TestLeafNode("leaf2", "leaf-node2", State.FAILED, root) {/*empty*/}.setApplicable(false); //$NON-NLS-1$ //$NON-NLS-2$
 		new TestLeafNode("leaf3", "leaf-node3", State.DEGRADED, root) {/*empty*/}; //$NON-NLS-1$ //$NON-NLS-2$
 		Assertions.assertEquals(State.DEGRADED, root.getState()); // FAILED since the worst child (FAILED) is ignored
 	}

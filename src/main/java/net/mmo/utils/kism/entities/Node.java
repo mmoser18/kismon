@@ -40,7 +40,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public final static String PROPERTYNAME_STATE  = "state";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_PARENT  = "parent";  //$NON-NLS-1$
-	public final static String PROPERTYNAME_ENABLED  = "enabled";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_APLLICABLE  = "applicable";  //$NON-NLS-1$
 
 	public enum State {
 		FAILED,
@@ -55,7 +55,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private String description;
 
-	private boolean enabled = true; // child is to be considered for bubbling up state
+	private boolean applicable = true; // child is to be considered for bubbling up state
 
 	private NodeProperties properties = new NodeProperties();
 
@@ -149,15 +149,15 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			State oldState = this.state;
 			this.state = state;
 			informOnPropertyChange(PROPERTYNAME_STATE, oldState, state);
-			if (this.enabled && this.parent != null) this.parent.deriveNewState();
+			if (this.applicable && this.parent != null) this.parent.deriveNewState();
 		}
 	}
 
-	public void setEnabled(boolean enabled) {
-		if (this.enabled != enabled) {
-			boolean oldEnabled = this.enabled;
-			this.enabled = enabled;
-			informOnPropertyChange(PROPERTYNAME_STATE, oldEnabled, enabled);
+	public void setApplicable(boolean applicable) {
+		if (this.applicable != applicable) {
+			boolean oldApplicable = this.applicable;
+			this.applicable = applicable;
+			informOnPropertyChange(PROPERTYNAME_STATE, oldApplicable, applicable);
 			if (this.parent != null) this.parent.deriveNewState();
 		}
 	}
@@ -237,7 +237,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			+ ", state:" + getState() //$NON-NLS-1$
 			// to avoid recursion we only emit the parent's name, not the entire object!:
 			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
-			+ ", enabled:" + isEnabled() //$NON-NLS-1$
+			+ ", applicable:" + isApplicable() //$NON-NLS-1$
 			+ ", properties: {" + KeyValuesConverter.convertMapToString(getProperties(), ", ") + "}" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			+ "}"; //$NON-NLS-1$
 	}

@@ -8,6 +8,7 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.accordion.Accordion;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,6 +24,7 @@ import net.mmo.utils.kism.entities.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
+import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
 @Slf4j
 public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPConnectionForm<N>
@@ -31,6 +33,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 
 	static final String UidClassName   = NodeFormField + "dbUid"; //$NON-NLS-1$
 	static final String PwdClassName   = NodeFormField + "dbPwd"; //$NON-NLS-1$
+	static final String BasicAuthHdrClassName = NodeFormField + "basicAuthHeader"; //$NON-NLS-1$
 
 	static final String MethodClassName                = NodeFormField + "method"; //$NON-NLS-1$
 	static final String RequestHeadersClassName        = NodeFormField + "httpRequest-headers"; //$NON-NLS-1$
@@ -43,6 +46,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 
 	protected TextField targetUid;
 	protected TextField targetPwd;
+	protected Checkbox includeBasicAuthHeader;
 
 	protected Select<HTTP_Method> method;
 
@@ -61,6 +65,9 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 
 	// validation values
 	protected TextField acceptableReturnCodes;
+
+	protected Checkbox prettyPrintRequestXml;
+	protected Checkbox prettyPrintResponseXml;
 
 
 	public HTTPConnectionForm(Class<N> clazz, NodeService nodeService) {
@@ -92,6 +99,30 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.targetPwd.setThemeName(LabelPaddingTheme);
 		this.targetPwd.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
+
+		this.includeBasicAuthHeader= new Checkbox(Messages.getString("HTTPConnectionForm.IncludeBasicAuthHeader.Label")); //$NON-NLS-1$
+		this.includeBasicAuthHeader.setClassName(BasicAuthHdrClassName);
+		this.binder.forField(this.includeBasicAuthHeader)
+			.withValidator((value, context) ->
+			{ // Explicit validator instance:
+				if (value) {
+					if (this.node != null) {
+						try {
+							String resolvedUid = this.node.resolveProperties(this.node.getTargetUid());
+							@SuppressWarnings("unused")
+							String resolvedPwd = this.node.resolveProperties(this.node.getTargetPwd());
+							if ((resolvedUid == null) || resolvedUid.isBlank()) { // No check on pwd! Pwd CAN resolve to empty - an account without password is possible and legal!
+								return ValidationResult.error(Messages.getString("HTTPConnectionForm.Validator.IncludeBasicAuth.UidPwdNotSet")); //$NON-NLS-1$
+							}
+						} catch (Exception ex) { // exception in resolveProperties:
+							return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
+							                                            value, ex.getMessage()));
+						}
+					}
+				}
+				return ValidationResult.ok();
+			})
+			.bind(HTTPConnection::isIncludeBasicAuthHeader, HTTPConnection::setIncludeBasicAuthHeader);
 
 		this.method = new Select<>(HTTP_Method.values());
 		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
@@ -161,7 +192,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.requestBody.setClassName(RequestBodyClassName);
 		this.requestBody.setThemeName(LabelPaddingTheme);
 		this.requestBody.addThemeName(MonospaceTheme);
-		this.binder.forField(this.requestBody).bind(HTTPConnection::requestBodyAsString, null);
+		this.binder.forField(this.requestBody).bind((n) -> requestBodyAsString(n), null);
 
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
@@ -173,7 +204,15 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.responseBody.setClassName(ResponseBodyClassName);
 		this.responseBody.setThemeName(LabelPaddingTheme);
 		this.responseBody.addThemeName(MonospaceTheme);
-		this.binder.forField(this.responseBody).bind(HTTPConnection::responseBodyAsString, null);
+		this.binder.forField(this.responseBody).bind((n) -> responseBodyAsString(n), null);
+
+		this.prettyPrintRequestXml = new Checkbox(Messages.getString("HTTPConnectionForm.PrettyPrintXml.Label")); //$NON-NLS-1$
+		this.prettyPrintRequestXml.setClassName(BasicAuthHdrClassName);
+		this.prettyPrintRequestXml.addValueChangeListener((value) -> this.requestBody.setValue(requestBodyAsString(this.node)));
+
+		this.prettyPrintResponseXml = new Checkbox(Messages.getString("HTTPConnectionForm.PrettyPrintXml.Label")); //$NON-NLS-1$
+		this.prettyPrintResponseXml.setClassName(BasicAuthHdrClassName);
+		this.prettyPrintResponseXml.addValueChangeListener((value) -> this.responseBody.setValue(responseBodyAsString(this.node)));
 
 		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
@@ -203,18 +242,19 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		});
 
 		// combining and grouping bits and pieces:
-		HorizontalLayout uidAndPwd = new HorizontalLayout(this.targetUid, this.targetPwd);
-		uidAndPwd.addClassName(CombinedClassName);
+		HorizontalLayout credentials = new HorizontalLayout(this.targetUid, this.targetPwd, this.includeBasicAuthHeader);
+		credentials.addClassName(CombinedClassName);
 
 		// combining and grouping bits and pieces:
-		this.connnectionDetailsPanel.add(uidAndPwd, this.method, this.headers, this.payload);
+		this.connnectionDetailsPanel.add(credentials, this.method, this.headers, this.payload);
 
 		Accordion requestDetails = new Accordion();
 		requestDetails.close(); // initially closed
 		VerticalLayout requestDetailsPanel = new VerticalLayout();
 		requestDetailsPanel.setClassName(RequestDetailsClassName);
-		requestDetailsPanel.add(this.requestHeaders, this.requestBody, this.responseHeaders, this.responseBody);
-		requestDetails.add(Messages.getString("HTTPConnectionForm.RequestDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
+		requestDetailsPanel.add(this.requestHeaders,  this.requestBody,  this.prettyPrintRequestXml,
+		                        this.responseHeaders, this.responseBody, this.prettyPrintResponseXml);
+		requestDetails.add(Messages.getString("HTTPConnectionForm.RequestAndResponseDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
 
 		HorizontalLayout responseDetailsFields = new HorizontalLayout(this.responseStatusCode, this.duration, this.timestamp);
 		responseDetailsFields.addClassName(CombinedClassName);
@@ -253,7 +293,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 //		}
 //	}
 
-	private void updateRequestInfo() {
+	protected void updateRequestInfo() {
 		adaptPayloadVisibility(this.node != null ? this.node.getMethod() : null);
 		updateRequestData();
 	}
@@ -265,7 +305,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	}
 
 	/* we want the payload field only be visible when a corresponding method is selected */
-	private void adaptPayloadVisibility(HTTP_Method methodValue) {
+	protected  void adaptPayloadVisibility(HTTP_Method methodValue) {
 		this.payload.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 		this.requestBody.setVisible(methodValue != null ? methodValue.isWithPayload() : false); // null happens when setting the form's node to null (when closing it)
 	}
@@ -278,11 +318,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 //		return hasChanges;
 //	}
 
-	@SuppressWarnings("unused")
-	private void updateRequestData(String value) {
-		updateRequestData();
-	}
-	private void updateRequestData() {
+	protected void updateRequestData() {
 		if (this.node != null) {
 			try {
 				this.node.createRequest();
@@ -296,5 +332,17 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 			this.responseHeaders.setValue(Messages.getString("HTTPConnectionForm.ResponseHeaders.Undefined")); //$NON-NLS-1$
 			this.responseBody.setValue(Messages.getString("HTTPConnectionForm.ResponseBody.Undefined")); //$NON-NLS-1$
 		}
+	}
+
+	protected String requestBodyAsString(N n) {
+		String convertedRequest = n.requestBodyAsString();
+		String requestText = (this.prettyPrintRequestXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedRequest, false) : convertedRequest);
+		return requestText != null ? requestText : ""; //$NON-NLS-1$
+
+	}
+	protected String responseBodyAsString(N n) {
+		String convertedResponse = n.responseBodyAsString();
+		String responseText = (this.prettyPrintResponseXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedResponse, false) : convertedResponse);
+		return responseText != null ? responseText : ""; //$NON-NLS-1$
 	}
 }

@@ -48,7 +48,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	static final String NameClassName        = NodeFormField + "name"; //$NON-NLS-1$
 	static final String DescriptionClassName = NodeFormField + "description"; //$NON-NLS-1$
 	static final String StateClassName       = NodeFormField + "state"; //$NON-NLS-1$
-	static final String EnabledClassName      = NodeFormField + "enabled"; //$NON-NLS-1$
+	static final String ApplicableClassName  = NodeFormField + "applicable"; //$NON-NLS-1$
 	static final String PropertiesClassName  = NodeFormField + "properties"; //$NON-NLS-1$
 
 	/** class name to mark combined fields */
@@ -64,7 +64,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected TextField name;
 	protected TextArea description;
 	protected TextField stateField;	// stateField is calculated automatically - never entered!
-	protected Checkbox enabled;
+	protected Checkbox applicable;
 	protected TextArea properties;
 
 	protected VerticalLayout fields;
@@ -164,7 +164,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected void setUiChanges(boolean hasUIchanges) {
 		this.uiChanges = hasUIchanges;
-		updateSaveEnabled();
+		updateSaveButtonState();
 	}
 
 	protected boolean hasUiChanges() {
@@ -178,7 +178,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	public void setHeader(String header) {
-		this.header.setText(header);
+		this.header.setText(String.format(header, Messages.getString("NodeForm.Header.Type." + this.getClass().getSimpleName()))); //$NON-NLS-1$
 	}
 
 	public boolean setNode(N newNode) {
@@ -202,7 +202,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "<null>")); //$NON-NLS-1$ //$NON-NLS-2$
 		// this.binder.setBean(node);
 		if (newNode != null) {
-			this.setHeader(Messages.getString(newNode.getParent() != null
+			this.setHeader(Messages.getString(newNode instanceof RootNode || newNode.getParent() != null
 			                                  ? "NodeForm.Header.EditOrDeleteNode" //$NON-NLS-1$
 			                                  : "NodeForm.Header.NewNode")); //$NON-NLS-1$
 			if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
@@ -280,11 +280,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.stateField.setReadOnly(true); // stateField is calculated!
 		this.binder.forField(this.stateField).bind(n -> StateLabelProvider.getStateLabel(n.getState()), null);
 
-		this.enabled  = new Checkbox(Messages.getString("NodeForm.Enabled.Label")); //$NON-NLS-1$
-		this.enabled.addClassName(EnabledClassName);
+		this.applicable  = new Checkbox(Messages.getString("NodeForm.Applicable.Label")); //$NON-NLS-1$
+		this.applicable.addClassName(ApplicableClassName);
 
-		HorizontalLayout stateAndEnabled = new HorizontalLayout(this.enabled, this.stateField);
-		stateAndEnabled.addClassName(CombinedClassName);
+		HorizontalLayout stateAndApplicable = new HorizontalLayout(this.applicable, this.stateField);
+		stateAndApplicable.addClassName(CombinedClassName);
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
@@ -317,7 +317,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				}
 			});
 
-		this.fields = new VerticalLayout(this.name, this.description, stateAndEnabled, this.properties);
+		this.fields = new VerticalLayout(this.name, this.description, stateAndApplicable, this.properties);
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();
 		// this.fields.setWidthFull();
@@ -350,7 +350,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		return res;
 	}
 
-	protected void updateSaveEnabled() {
+	protected void updateSaveButtonState() {
 		boolean enable = hasUiChanges() && binderIsValid();
 		log.debug("binder status change -> [save] enabled:{}", enable); //$NON-NLS-1$
 		this.save.setEnabled(enable);

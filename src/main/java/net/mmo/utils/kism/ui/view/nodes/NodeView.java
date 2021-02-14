@@ -27,6 +27,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -78,9 +79,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private NodeFactory<N> nodeFactory;
 	private FormFactory<N> formFactory;
 
+	Checkbox haltRequests;
+
+	SplitLayout content;
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
-	Div content;
-//	SplitLayout content;
+	Div formWrapper;
 
 	NodeForm<N> form; // package visible for ITs - is there no other way?
 	LayoutDirection contentDirection = LayoutDirection.Horizontal;
@@ -104,10 +107,16 @@ public class NodeView <N extends Node> extends VerticalLayout
 			configureTree();
 
 			log.trace("Creating content:"); //$NON-NLS-1$
-			this.content = new Div(this.tree);
-			// this.content = new SplitLayout(this.tree, new Div());
+			this.tree.setSizeFull();
+
+			this.formWrapper = new Div(); // the framing Div is to force a scrollbar when the inner form gets too to fit its half of the screen
+			this.formWrapper.setSizeFull();
+
+			this.content = new SplitLayout(this.tree, this.formWrapper);
 			this.content.addClassName(ViewContentClassName);
 			this.content.setSizeFull();
+			this.content.setSplitterPosition(200); // initial position
+
 			// this.content.setOrientation(this.contentDirection.getOrientation());
 			CommonConstants.setClassName(this.content, this.contentDirection);
 
@@ -210,27 +219,31 @@ public class NodeView <N extends Node> extends VerticalLayout
 			String fileName = event.getFileName();
 			try (InputStream is = buffer.getInputStream();
 			     BufferedInputStream bis = new BufferedInputStream(is)) {
-				RootNode rootNode = this.nodeService.read(is, fileName);
+				RootNode rootNode = this.nodeService.readStream(is, fileName);
 				reportResult(rootNode, fileName);
 			} catch (Throwable t) {
 				reportException(fileName, t);
 			}
 		});
 
-		Checkbox haltRequests = new Checkbox(Messages.getString("NodeView.HaltAllRequests.Label")); //$NON-NLS-1$
-		haltRequests.addValueChangeListener(event ->
-			{
-				LeafNode.haltAllRequests = event.getValue();
-				log.info("Requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				haltRequests.setClassName(LeafNode.haltAllRequests ? "red" : "green"); //$NON-NLS-1$ //$NON-NLS-2$
-			});
-		haltRequests.setValue(LeafNode.haltAllRequests); // make sure checkbox and actual value are in sync
+		this.haltRequests = new Checkbox(Messages.getString("NodeView.HaltAllRequests.Label")); //$NON-NLS-1$
+		this.haltRequests.addValueChangeListener(event -> adjustHaltRequest(event.getValue()));
+		adjustHaltRequest(LeafNode.haltAllRequests);
 
 		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
-		                                                directionButton, saveAllButton, downloadFileButton, uploadFile, haltRequests);
+		                                                directionButton, saveAllButton, downloadFileButton, uploadFile, this.haltRequests);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
 	}
+
+	protected void adjustHaltRequest(boolean newValue) {
+		LeafNode.haltAllRequests = newValue;
+		log.info("Requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		// make sure the checkbox (and its coloring) and the actual value are in sync:
+		if (this.haltRequests.getValue() != LeafNode.haltAllRequests) this.haltRequests.setValue(LeafNode.haltAllRequests);
+		this.haltRequests.setClassName(LeafNode.haltAllRequests ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
+	}
+
 
 	private void configureTree() {
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
@@ -241,15 +254,23 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// this.tree.addHierachyColumn(Node::getState)
 		this.tree.addComponentHierarchyColumn(node -> {
 				Node.State state = node.getState();
+				String stateText = StateLabelProvider.getStateLabel(state);
+				String classSuffix = state.name(); // will yield class names icon-<classSuffix> and label-<classSuffix> - used to style these red/orange/green
 				switch (state) {
-				case FAILED: return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, state, "red");  // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN? //$NON-NLS-1$
-				case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING, state, "yellow"); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE //$NON-NLS-1$
-				case OK: return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, state, "green"); // alternatives: SMILEY_O, THUMBS_UP //$NON-NLS-1$
+				case FAILED:   return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, stateText, classSuffix); // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
+				case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING,      stateText, classSuffix); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
+				case OK:       return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, stateText, classSuffix); // alternatives: SMILEY_O, THUMBS_UP
 				default: throw new IllegalArgumentException("illegal state: " + state); //$NON-NLS-1$
 				}
 			})
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
 			.setKey("state") // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
+			.setAutoWidth(true)
+			.setFlexGrow(0)
+			;
+		this.tree.addColumn(node -> { return null; } )
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
+			.setKey("type") //$NON-NLS-1$
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
@@ -265,9 +286,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.setAutoWidth(false)
 			.setFlexGrow(1)
 			;
-		this.tree.addColumn((node) -> node.isEnabled() ? "\u2714" : "\u2716") // ✔ ✖ //$NON-NLS-1$ //$NON-NLS-2$
-			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Enabled")) //$NON-NLS-1$
-			.setKey("enabled") //$NON-NLS-1$`
+		this.tree.addColumn((node) -> node.isApplicable() ? "\u2714" : "\u2716") // ✔ ✖ //$NON-NLS-1$ //$NON-NLS-2$
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Applicable")) //$NON-NLS-1$
+			.setKey("applicable") //$NON-NLS-1$`
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
@@ -283,7 +304,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					log.info("Selection changed: node='{}'.", node); //$NON-NLS-1$
 					if (this.form != null && this.form.isVisible()) {
 						if (node != null) {
-							editNode(node);
+							editNode(node, null);
 						} else {
 							closeEditor();
 						}
@@ -303,7 +324,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			N node = (N)event.getItem(); // returns the selected Node or null if none is selected /
 			log.info("DoubleClicked node '{}'.", node); //$NON-NLS-1$
 			// action:
-			editNode(node);
+			editNode(node, null);
 		});
 
 		this.tree.addExpandListener(event -> {
@@ -395,11 +416,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 		return Arrays.asList(rootNodes.toArray(new Node[rootNodes.size()]));
 	}
 
-	private void saveNode(NodeForm.SaveEvent event) {
+	private void saveNodeAfterEditing(NodeForm.SaveEvent event, IntermediateNode parentNode) {
 		Node node = event.getNode();
 		log.debug("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
-			addNewNode(node);
+			addNewNode(node, parentNode);
 		} else { // updating an existing node:
 			updateNode(node);
 		}
@@ -423,19 +444,16 @@ public class NodeView <N extends Node> extends VerticalLayout
 		UsageError("Sorry, additional RootNode(s) not supported, yet."); //$NON-NLS-1$
 	}
 
-	private void addNewNode(Node newNode) {
-		log.info("addNewNode '{}'", newNode); //$NON-NLS-1$
-		IfSuitableNodeSelectedForAddition((selectedNode) -> // in the second step we add node to the selected node
-			{
-				this.nodeService.addChild(selectedNode, newNode);
-				selectedNode.expanded = true; // make sure the newly added child gets visible
-			});
+	private void addNewNode(Node newNode, IntermediateNode parentNode) {
+		log.info("addNewNode '{}' to parent '{}'", newNode, parentNode); //$NON-NLS-1$
+		this.nodeService.addChild(parentNode, newNode);
+		parentNode.expanded = true; // make sure the newly added child gets visible
 		if (NodeView.alwaysSave) saveNode(newNode);
 		updateTree();
 		this.tree.select(newNode); // and select it
 	}
 
-	private void IfSuitableNodeSelected(Consumer<Node> action) {
+	private void ifSingleNodeSelectedDo(Consumer<Node> action) {
 		Set<Node> nodes = this.tree.getSelectedItems();
 		if (nodes.isEmpty()) {
 			UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeSelectNode")); //$NON-NLS-1$
@@ -448,7 +466,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void IfSuitableNodeSelectedForAddition(Consumer<IntermediateNode> action) {
-		IfSuitableNodeSelected((selectedNode) ->
+		ifSingleNodeSelectedDo((selectedNode) ->
 		{
 			if (selectedNode instanceof IntermediateNode) {
 				action.accept((IntermediateNode)selectedNode);
@@ -463,10 +481,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// this.tree.asSingleSelect().clear();
 		N newNode = this.nodeFactory.createNode(nodeType);
 		// We don't hook the newly defined node into the tree, yet, but before we allow a user to
-		// edit it we need to provide it with upstream properties or else the user will get
+		// edit it we need to provide it with an upstream properties-set or else the user will get
 		// "property not found"-errors during validation when entering a placeholder into a field:
 		newNode.getProperties().setParentProperties(parentNode.getProperties());
-		editNode(newNode);
+		editNode(newNode, parentNode);
 	}
 
 	private void updateNode(Node node) {
@@ -487,7 +505,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	@SuppressWarnings("unchecked")
-	public void editNode(N node) {
+	public void editNode(N node, IntermediateNode parentNode) {
 		log.info("editNode {}", node); //$NON-NLS-1$
 		if (this.form != null) {
 			N currentNode = this.form.getNode();
@@ -498,27 +516,28 @@ public class NodeView <N extends Node> extends VerticalLayout
 		}
 		try {
 			NodeForm<N> newForm;
+			Class<N> clazz = (Class<N>)node.getClass();
 			try {
-				newForm = this.formFactory.createForm((Class<N>)node.getClass(), this.nodeService);
+				newForm = this.formFactory.createForm(clazz, this.nodeService);
 			} catch (Exception ex) {
-				log.error("Error creating node:", ex); //$NON-NLS-1$
-				ProgrammingError("Error creating node", ex); //$NON-NLS-1$
+				log.error("Error creating form for " + clazz , ex); //$NON-NLS-1$
+				ProgrammingError("Error creating node for " + clazz, ex); //$NON-NLS-1$
 				return;
 			}
+
 			if (newForm != this.form) { // different form assigned:
 				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
 				this.form = newForm;
-				this.content.removeAll(); // remove old form
-				this.content.add(this.tree, this.form); // add new form
-//				this.content.addToPrimary(this.tree);
-//				this.content.addToSecondary(this.form);
 				// add listeners (if not already present):
-				this.form.addListener(NodeForm.SaveEvent.class, this::saveNode);
+				this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
 				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
 				this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
+				this.formWrapper.removeAll();
+				this.formWrapper.add(this.form);
 			}
 			this.form.setNode(node);
+
 			this.form.setVisible(true);
 			addClassName("editing"); //$NON-NLS-1$
 		} catch (java.lang.IllegalStateException ex) {
@@ -578,7 +597,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			// TODO : provide some file selection box...
 			File file = new File(fileName);
 			if (file.canWrite()) {
-				this.nodeService.write(rootNode, file);
+				this.nodeService.writeFile(rootNode, file);
 				rootNode.setFilePath(fileName);
 			} else {
 				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
@@ -719,13 +738,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 	{
 		private static final long serialVersionUID = 5149939812863789723L;
 
-		public LabelWithIcon(VaadinIcon iconName, Node.State state, String color) {
-			Icon icon = new Icon(iconName);
-			icon.setClassName("icon-" + state.name()); //$NON-NLS-1$
-			Label label = new Label(StateLabelProvider.getStateLabel(state));
-			label.setClassName("label-" + state.name()); //$NON-NLS-1$
-			add(icon);
-			add(label);
+		public LabelWithIcon(VaadinIcon iconName, String text, String classSuffix) {
+			if (iconName != null) {
+				Icon icon = new Icon(iconName);
+				icon.setClassName("icon-" + classSuffix); //$NON-NLS-1$
+				add(icon);
+			}
+			if (text != null) {
+				Label label = new Label(text);
+				label.setClassName("label-" + classSuffix); //$NON-NLS-1$
+				add(label);
+			}
 		}
 	}
 }

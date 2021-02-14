@@ -56,7 +56,7 @@ abstract public class LeafNode extends Node
 	 */
 	@Min(0) // 0 means off
 	@Max(120) // 2 minutes
-	protected int timeout = 45;
+	protected int timeout = 15;
 
 	/** common response fields: */
 

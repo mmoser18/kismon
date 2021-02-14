@@ -37,7 +37,7 @@ abstract public class IPConnection extends LeafNode
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	protected String url = "http://www.example.com:8080";
+	protected String url = "https://www.example.com:443";
 
 	@JsonIgnore
 	protected transient String resultingUrl;

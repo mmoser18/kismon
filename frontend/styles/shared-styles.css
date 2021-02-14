@@ -92,11 +92,13 @@ vaadin-combo-box {
 	margin-right: 5px;
 }
 
-.red {
+.halted {
 	color: red;
+	--lumo-primary-color: red;
 }
-.green {
+.enabled {
 	color: green;
+	--lumo-contrast-20pct: green;
 }
 
 vaadin-upload {

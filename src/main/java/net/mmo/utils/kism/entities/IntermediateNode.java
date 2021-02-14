@@ -104,7 +104,7 @@ public class IntermediateNode extends Node
 			derivedState = State.OK;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled() && child.getState() != null) { // child is to be considered
+					if (child.isApplicable() && child.getState() != null) { // child is to be considered
 						if (child.getState().ordinal() < State.OK.ordinal()) {
 							derivedState = State.FAILED;
 							break;
@@ -117,7 +117,7 @@ public class IntermediateNode extends Node
 			derivedState = State.OK;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled() && child.getState() != null) { // child is to be considered
+					if (child.isApplicable() && child.getState() != null) { // child is to be considered
 						if (child.getState() != State.OK) {
 							if (derivedState == State.OK) { // first non-OK:
 								derivedState = State.DEGRADED;
@@ -134,7 +134,7 @@ public class IntermediateNode extends Node
 			derivedState = State.FAILED;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled() && child.getState() != null) { // child is to be considered
+					if (child.isApplicable() && child.getState() != null) { // child is to be considered
 						if (child.getState() == State.OK) {
 							derivedState = State.OK;
 							break; //leave for - it can't get better than OK
@@ -151,7 +151,7 @@ public class IntermediateNode extends Node
 			derivedState = State.FAILED;
 			synchronized(this) {
 				for (Node child: getChildren()) {
-					if (child.isEnabled()) { // child is to be considered
+					if (child.isApplicable()) { // child is to be considered
 						if (child.getState() != null && child.getState() == State.OK) {
 							if (derivedState == State.FAILED) { // first OK
 								derivedState = State.OK;

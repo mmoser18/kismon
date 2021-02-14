@@ -81,8 +81,8 @@ public class NodeService
 		RootNode rootNode = null;
 		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
-			rootNode = read(file);
-			log.info("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
+			rootNode = readFile(file);
+			log.debug("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
 		} catch (IOException t) {
 			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 		} catch (Throwable t) {
@@ -137,13 +137,16 @@ public class NodeService
 		return (RootNode)node;
 	}
 
-	public RootNode read(File file) throws IOException {
+	public RootNode readFile(File file) throws IOException {
 		log.info("reading from file {}:", file); //$NON-NLS-1$
 		if (file.isFile() && file.canRead()) {
 			try (FileInputStream fis = new FileInputStream(file);
 			     BufferedInputStream bis = new BufferedInputStream(fis)) {
-				RootNode newRoot = read(bis, file.getAbsolutePath());
+				RootNode newRoot = readStream(bis, file.getAbsolutePath());
 				log.info("rootNode '{}' was read from file '{}'.", newRoot.getName(), file); //$NON-NLS-1$
+				if (log.isTraceEnabled()) { // it's on purpose that the following uses log.info(...)!
+					log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
+				}
 				return newRoot;
 			} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 				throw t;
@@ -155,7 +158,7 @@ public class NodeService
 		}
 	}
 
-	public RootNode read(InputStream inp, String fileName) throws IOException {
+	public RootNode readStream(InputStream inp, String fileName) throws IOException {
 		Node.initializing = true; // since our "beans" also contain logic we need to prevent certain functions while the are being deserialized
 		RootNode newRoot = this.mapper.readValue(inp, RootNode.class);
 		restoreParents(newRoot);
@@ -164,17 +167,14 @@ public class NodeService
 		newRoot.deriveNewState();
 		newRoot.updateAllResolvableValues(); // this triggers a trickle-down updating all resolvable properties in the entire tree
 		addNewRootNode(newRoot);
-		if (log.isInfoEnabled()) {
-			log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
-		}
 		return newRoot;
 	}
 
-	public void write(RootNode rootNode, File file) throws IOException {
+	public void writeFile(RootNode rootNode, File file) throws IOException {
 		log.info("saving rootNode '{}' to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
 		try (OutputStream fos = new FileOutputStream(file);
 		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-			write(rootNode, bos);
+			writeStream(rootNode, bos);
 			log.info("rootNode '{}' successfully written to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
 		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 			throw t;
@@ -183,10 +183,11 @@ public class NodeService
 		}
 	}
 
-	public void write(RootNode rootNode, OutputStream out) throws IOException {
-		// this.mapper.writeValue(out, rootNode);
+	public void writeStream(RootNode rootNode, OutputStream out) throws IOException {
 		// we want the DefaultPrettyPrinter to use \t instead of 2 spaces for indentation:
-		this.mapper.writer(new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))).writeValue(out, rootNode); //$NON-NLS-1$
+		this.mapper.writer(new DefaultPrettyPrinter()
+		                   .withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))) //$NON-NLS-1$
+			.writeValue(out, rootNode);
 
 	}
 

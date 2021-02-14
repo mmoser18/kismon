@@ -25,7 +25,7 @@ public class SOAPConnection extends HTTPConnection
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	protected String soapOperation;
+	protected String soapAction;
 
 	@SuppressWarnings("unused")
 	private SOAPConnection() { // required for deserialization
@@ -43,14 +43,14 @@ public class SOAPConnection extends HTTPConnection
 		this.method = method;
 	}
 
-	public void setSoapOperation(String soapOperation) {
-		this.soapOperation = soapOperation;
+	public void setSoapAction(String soapAction) {
+		this.soapAction = soapAction;
 		updateRequestHeaders();
 	}
 
 	@Override
 	protected void aditionalRequestPreparations(Builder builder) throws Exception {
-		builder.setHeader("SOAPAction", '"' + resolveProperties(getSoapOperation()) + '"'); //$NON-NLS-1$
+		builder.setHeader("SOAPAction", '"' + resolveProperties(getSoapAction()) + '"'); //$NON-NLS-1$
 	}
 
 

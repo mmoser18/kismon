@@ -130,6 +130,11 @@
 			<artifactId>file-download-wrapper</artifactId>
 			<version>3.0.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vaadin.addons</groupId>
+			<artifactId>sizereporter</artifactId>
+			<version>0.1.4</version>
+		</dependency>
 		<!-- non-declared dependency of the above -->
 		<dependency>
 			<groupId>javax.websocket</groupId>

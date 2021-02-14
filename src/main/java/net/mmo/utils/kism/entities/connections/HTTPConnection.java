@@ -6,6 +6,9 @@
 package net.mmo.utils.kism.entities.connections;
 
 import java.net.Authenticator;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -25,6 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +45,7 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.Application;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
@@ -91,15 +96,18 @@ abstract public class HTTPConnection extends IPConnection
 
 	protected HTTP_Method method = HTTP_Method.POST;
 
-	protected Version httpVersion = Version.HTTP_1_1;
-
-	protected Redirect redirectBehavior = Redirect.NORMAL;
-
 	protected String targetUid = "<user>"; //$NON-NLS-1$
 	protected String targetPwd = "<password>"; //$NON-NLS-1$
+	protected boolean includeBasicAuthHeader = false;
+
+	// these two we don't support via the UI (yet):
+	protected Version httpVersion = Version.HTTP_1_1;
+	protected Redirect redirectBehavior = Redirect.NORMAL; // NORMAL: allow redirection except from https to http-URLs
 
 	protected String headers;
 	protected String payload;
+
+	// for response checking:
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
 	// transient stuff:
@@ -124,6 +132,33 @@ abstract public class HTTPConnection extends IPConnection
 	transient protected HttpHeaders responseHeaders;
 	@JsonIgnore
 	transient protected byte[] responseBody;
+
+
+	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
+	protected final static TrustManager[] trustAllCerts =
+		new TrustManager[] {
+			new X509TrustManager() {
+				@Override
+				public X509Certificate[] getAcceptedIssuers() {
+					return new X509Certificate[0];
+				}
+				@Override
+				public void checkClientTrusted(X509Certificate[] certs, String authType) {
+					// empty
+				}
+				@Override
+				public void checkServerTrusted(X509Certificate[] certs, String authType) {
+					// empty
+				}
+			}
+		};
+
+	protected final static CookieHandler cookieHandler =
+		new CookieManager(null, // CookieStore to be used by cookie manager. If null, cookie manager
+		                        // will use a default one, which is an in-memory CookieStore implementation.
+		                  CookiePolicy.ACCEPT_ALL); // CookiePolicy instance to be used by cookie
+		                                            // manager as policy callback.
+		                                            // If null, ACCEPT_ORIGINAL_SERVER will be used.
 
 
 	public HTTPConnection() { // required for deserialization
@@ -175,8 +210,8 @@ abstract public class HTTPConnection extends IPConnection
 	public void setMethod(HTTP_Method method) {
 		this.method = method;
 		setHttpRequest(null); // trigger a recreation of the request if the method changes
-//?		setRequestHeaders(null);
-//?		setRequestBody((byte[])null);
+		setRequestHeaders(null);
+		setRequestBody((byte[])null);
 	}
 
 	public void setHttpVersion(Version httpVersion) {
@@ -278,46 +313,31 @@ abstract public class HTTPConnection extends IPConnection
 	// the functional part:
 
 	public void createClient() {
-		// We enable ALL SSL and TLS protocol versions. We only want to connect and *monitor*
-		// those systems not impose any new requirements (e.g. on our old dev-environments):
-		SSLParameters sslParameters = new SSLParameters();
-		sslParameters.setProtocols(new String[]{"TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3", "SSLv3"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-		// We also disable hostname verification:
-		System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString()); //$NON-NLS-1$
-		// And finally we use a TrustManager that trusts ALL certificates (also self signed):
-		TrustManager[] trustAllCerts = new TrustManager[]
-			{
-				new X509TrustManager() {
-					@Override
-					public X509Certificate[] getAcceptedIssuers() {
-						return new X509Certificate[0];
-					}
-					@Override
-					public void checkClientTrusted(X509Certificate[] certs, String authType) {
-						// empty
-					}
-					@Override
-					public void checkServerTrusted(X509Certificate[] certs, String authType) {
-						// empty
-					}
-				}
-			};
-		SSLContext sslContext = null;
-		try {
-			sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$
-			sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-		} catch (NoSuchAlgorithmException | KeyManagementException ex) {
-			log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
-		}
 
 		HttpClient.Builder builder = HttpClient
 			.newBuilder()
-			.sslParameters(sslParameters)
 			.version(getHttpVersion())
 			.followRedirects(getRedirectBehavior())
+			.cookieHandler(HTTPConnection.cookieHandler)
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
-		if (sslContext != null) builder.sslContext(sslContext);
+
+		if (Application.sslVersions != null && !Application.sslVersions.isBlank()) {
+			SSLParameters sslParameters = new SSLParameters();
+			sslParameters.setProtocols(Application.sslVersions.split(",|\\s")); //$NON-NLS-1$
+			builder.sslParameters(sslParameters);
+		}
+
+		if (Application.trustAllCertificates) {
+			SSLContext sslContext = null;
+			try {
+				sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$
+				sslContext.init(null, HTTPConnection.trustAllCerts, new java.security.SecureRandom());
+			} catch (NoSuchAlgorithmException | KeyManagementException ex) {
+				log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
+			}
+			if (sslContext != null) builder.sslContext(sslContext);
+		}
 
 		if (getTargetUid() != null && getTargetPwd() != null) {
 			builder.authenticator(new Authenticator()
@@ -331,6 +351,7 @@ abstract public class HTTPConnection extends IPConnection
 		// TODO implement proxied access
 //		if (this.proxyHost != null) {
 //			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
+//			... what to do with proxy-uid and proxy-pwd?
 //		}
 		setHttpClient(builder.build());
 	}
@@ -342,6 +363,15 @@ abstract public class HTTPConnection extends IPConnection
 		if (getHeaders() != null) {
 			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(getHeaders()));
 			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
+		}
+		if (this.includeBasicAuthHeader) {
+			builder.setHeader("Authorization", //$NON-NLS-1$
+			                  "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
+			                                              .encode((resolveProperties(getTargetUid())
+			                                                      + ":" //$NON-NLS-1$
+			                                                      + resolveProperties(getTargetPwd()))
+			                                              .getBytes()),
+			                                        DEFAULT_CHARSET));
 		}
 		switch (getMethod()) {
 		case GET:
@@ -371,6 +401,8 @@ abstract public class HTTPConnection extends IPConnection
 
 		setHttpRequest(builder.build());
 		setRequestHeaders(getHttpRequest().headers());
+		setResponseHeaders(null);
+		setResponseBody(null);
 		logRequestValues();
 	}
 
@@ -405,6 +437,10 @@ abstract public class HTTPConnection extends IPConnection
 				}
 				request = getHttpRequest();
 			}
+			// signal response pending:
+			setResponseHeaders(null);
+			setResponseBody("<not response received (yet)>".getBytes()); //$NON-NLS-1$
+			// ... before executing the actual request:
 			long startTime = System.nanoTime();
 			response = client.send(request, BodyHandlers.ofByteArray());
 			long callDuration = System.nanoTime() - startTime;
@@ -565,7 +601,7 @@ abstract public class HTTPConnection extends IPConnection
 			.append(", httpClient:").append(this.httpClient) //$NON-NLS-1$
 			.append(", httpRequest:").append(this.httpRequest) //$NON-NLS-1$
 			.append(", requestHeaders:").append(this.requestHeaders) //$NON-NLS-1$
-			.append(", requestBody:").append((this.requestBody != null ? this.requestBody.length : 0)).append(" bytes)") // echoing the entire requestBody was flooding the logs  //$NON-NLS-1$ //$NON-NLS-2$
+			.append(", requestBody:(").append((this.requestBody != null ? this.requestBody.length : 0)).append(" bytes)") // echoing the entire requestBody was flooding the logs  //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", responseStatusCode:").append(this.responseStatusCode) //$NON-NLS-1$
 			.append(", responseHeaders:").append(this.responseHeaders) //$NON-NLS-1$
 			.append(", responseBody:(").append((this.responseBody != null ? this.responseBody.length : 0)).append(" bytes)") // echoing the entire responseBody was flooding the logs //$NON-NLS-1$ //$NON-NLS-2$

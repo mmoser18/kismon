@@ -2,48 +2,46 @@
 	"className" : "net.mmo.utils.kism.entities.RootNode",
 	"name" : "root",
 	"description" : "default",
-	"enabled" : true,
+	"applicable" : true,
 	"properties" : {
 		"db_default_driver" : "oracle.jdbc.driver.OracleDriver",
-		"db_server_url_old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=kstazh-common-oracle.elcadev.local)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=kstazhCommon.elcadev.local)))",
-		"foo" : "outer",
-		"db_server_url" : "${db_server_url_new}",
-		"db_server_url_local" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
-		"db_server_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
+		"db_url_dmz" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=vm-dmzoracle.elca.ch)(PORT=54345)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=DL05DMZ)))",
+		"db_url_old" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=kstazh-common-oracle.elcadev.local)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=kstazhCommon.elcadev.local)))",
+		"db_url" : "${db_url_new}",
+		"db_url_local" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
+		"db_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
 	},
 	"condition" : "DEGRADED_ON_NOT_ALL_OK",
 	"children" : [ {
 		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 		"name" : "test-nodes",
 		"description" : "Just an example list of all possible nodes types",
-		"enabled" : true,
+		"applicable" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 			"name" : "REST_0",
 			"description" : "REST Connection",
-			"enabled" : true,
+			"applicable" : true,
 			"properties" : {
-				"bar" : "${foo}",
-				"c" : "y",
-				"x" : "*",
 				"xxx" : "yyy"
 			},
 			"active" : false,
 			"period" : 30,
 			"timeout" : 15,
 			"checkResults" : true,
-			"url" : "http://localhost:8080/${foo}",
+			"url" : "http://localhost:8080/${xxx}",
 			"resultChecker" : {
 				"condition" : "EndsWithIgnoreCase",
 				"operand" : ""
 			},
 			"method" : "POST",
-			"httpVersion" : "HTTP_1_1",
-			"redirectBehavior" : "NORMAL",
 			"targetUid" : "user",
 			"targetPwd" : "password",
+			"includeBasicAuthHeader" : false,
+			"httpVersion" : "HTTP_1_1",
+			"redirectBehavior" : "NORMAL",
 			"headers" : "bar: foo\nContent-Type: text/html; charset=UTF-16\nfoo: bar",
 			"payload" : "foobar ${xxx} abc\t",
 			"acceptableReturnCodes" : "200"
@@ -51,7 +49,7 @@
 			"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
 			"name" : "SOAP_request_with_long_name",
 			"description" : "SOAP Connection",
-			"enabled" : true,
+			"applicable" : true,
 			"properties" : {
 				"x" : "Operation"
 			},
@@ -65,19 +63,20 @@
 				"operand" : "SoapEnvelope"
 			},
 			"method" : "POST",
-			"httpVersion" : "HTTP_1_1",
-			"redirectBehavior" : "NORMAL",
 			"targetUid" : "user",
 			"targetPwd" : "password",
+			"includeBasicAuthHeader" : false,
+			"httpVersion" : "HTTP_1_1",
+			"redirectBehavior" : "NORMAL",
 			"headers" : "",
 			"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns1=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/kStARegisterNrWithoutCheckDigitType/1\" xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns4=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslJuristischePersonType/1\" xmlns:ns5=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns7=\"http://zhstregisterjp.ksta.zh.ch/xmlns/common/vnNumber13Type/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/2\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:registerSSLRequestType>\n         <ticketId>?</ticketId>\n         <sslPersonDetailType>\n            <!--Zero or more repetitions:-->\n            <ns1:registerNrWithoutCheckDigit>\n               <ns2:kStARegisterNr>?</ns2:kStARegisterNr>\n               <ns2:kStARegisterNrType>?</ns2:kStARegisterNrType>\n            </ns1:registerNrWithoutCheckDigit>\n            <ns1:sslPerson>\n               <!--You have a CHOICE of the next 2 items at this level-->\n               <ns3:sslJuristsichePerson>\n                  <!--Optional:-->\n                  <ns4:firmenname>?</ns4:firmenname>\n                  <!--Optional:-->\n                  <ns4:telefonNummer>?</ns4:telefonNummer>\n                  <!--Optional:-->\n                  <ns4:faxNummer>?</ns4:faxNummer>\n                  <!--Optional:-->\n                  <ns4:dateOfFoundation>?</ns4:dateOfFoundation>\n                  <!--Optional:-->\n                  <ns4:liquidationBeschlussDatum>?</ns4:liquidationBeschlussDatum>\n                  <!--Optional:-->\n                  <ns4:liquidationErledigungDatum>?</ns4:liquidationErledigungDatum>\n                  <!--Optional:-->\n                  <ns4:hregLoeschungZustimmungDatum>?</ns4:hregLoeschungZustimmungDatum>\n                  <!--Optional:-->\n                  <ns4:rechtsForm>?</ns4:rechtsForm>\n                  <!--Optional:-->\n                  <ns4:grundkapital>?</ns4:grundkapital>\n                  <!--Optional:-->\n                  <ns4:municipality>?</ns4:municipality>\n                  <!--Zero or more repetitions:-->\n                  <ns4:registerNrWithoutCheckDigitFusion>\n                     <ns2:kStARegisterNr>?</ns2:kStARegisterNr>\n                     <ns2:kStARegisterNrType>?</ns2:kStARegisterNrType>\n                  </ns4:registerNrWithoutCheckDigitFusion>\n                  <!--Optional:-->\n                  <ns4:branche>?</ns4:branche>\n                  <!--Optional:-->\n                  <ns4:vertreterNummer>?</ns4:vertreterNummer>\n                  <!--Optional:-->\n                  <ns4:vertretungsArt>?</ns4:vertretungsArt>\n                  <!--Optional:-->\n                  <ns4:nogaCode>?</ns4:nogaCode>\n                  <!--Optional:-->\n                  <ns4:oe>?</ns4:oe>\n                  <!--Optional:-->\n                  <ns4:uId>\n                     <ns5:uidOrganisationIdCategorie>?</ns5:uidOrganisationIdCategorie>\n                     <ns5:uidOrganisationId>?</ns5:uidOrganisationId>\n                  </ns4:uId>\n                  <!--Optional:-->\n                  <ns4:steuerGruppe>?</ns4:steuerGruppe>\n               </ns3:sslJuristsichePerson>\n               <!--Optional:-->\n               <ns3:sslNatuerlichePerson>\n                  <!--Zero or more repetitions:-->\n                  <ns6:versicherungsNummer>\n                     <!--Optional:-->\n                     <ns7:vn>?</ns7:vn>\n                  </ns6:versicherungsNummer>\n                  <!--Optional:-->\n                  <ns6:anrede>?</ns6:anrede>\n                  <!--Optional:-->\n                  <ns6:titel>?</ns6:titel>\n                  <!--Optional:-->\n                  <ns6:name>?</ns6:name>\n                  <!--Optional:-->\n                  <ns6:vorname>?</ns6:vorname>\n                  <!--Optional:-->\n                  <ns6:geburtsdatum>?</ns6:geburtsdatum>\n                  <!--Optional:-->\n                  <ns6:geschlecht>?</ns6:geschlecht>\n                  <!--Optional:-->\n                  <ns6:telefonNummerGeschaeft>?</ns6:telefonNummerGeschaeft>\n                  <!--Optional:-->\n                  <ns6:telefonNummerPrivat>?</ns6:telefonNummerPrivat>\n                  <!--Optional:-->\n                  <ns6:faxNummer>?</ns6:faxNummer>\n                  <!--Optional:-->\n                  <ns6:municipality>?</ns6:municipality>\n               </ns3:sslNatuerlichePerson>\n            </ns1:sslPerson>\n            <ns1:sslAdresse>\n               <!--Optional:-->\n               <ns8:adresseTyp>?</ns8:adresseTyp>\n               <!--Optional:-->\n               <ns8:addressAddOn1>?</ns8:addressAddOn1>\n               <!--Optional:-->\n               <ns8:addressAddOn2>?</ns8:addressAddOn2>\n               <!--Optional:-->\n               <ns8:street>?</ns8:street>\n               <!--Optional:-->\n               <ns8:houseNumber>?</ns8:houseNumber>\n               <!--Optional:-->\n               <ns8:dwellingNumber>?</ns8:dwellingNumber>\n               <!--Optional:-->\n               <ns8:postOfficeBoxText>?</ns8:postOfficeBoxText>\n               <!--Optional:-->\n               <ns8:swissZipCode>?</ns8:swissZipCode>\n               <!--Optional:-->\n               <ns8:swissZipCodeAddOn>?</ns8:swissZipCodeAddOn>\n               <!--Optional:-->\n               <ns8:swissZipCodeId>?</ns8:swissZipCodeId>\n               <!--Optional:-->\n               <ns8:foreignZipCode>?</ns8:foreignZipCode>\n               <!--Optional:-->\n               <ns8:locality>?</ns8:locality>\n               <!--Optional:-->\n               <ns8:town>?</ns8:town>\n               <!--Optional:-->\n               <ns8:country>?</ns8:country>\n               <!--Optional:-->\n               <ns8:stadtkreis>?</ns8:stadtkreis>\n               <!--Optional:-->\n               <ns8:adresseVonDat>?</ns8:adresseVonDat>\n               <!--Optional:-->\n               <ns8:zustellStoppDat>?</ns8:zustellStoppDat>\n               <!--Optional:-->\n               <ns8:zustellStoppGrund>?</ns8:zustellStoppGrund>\n            </ns1:sslAdresse>\n            <ns1:sslKontakt>\n               <!--Optional:-->\n               <ns9:anrede>?</ns9:anrede>\n               <!--Optional:-->\n               <ns9:titel>?</ns9:titel>\n               <!--Optional:-->\n               <ns9:name>?</ns9:name>\n               <!--Optional:-->\n               <ns9:vorname>?</ns9:vorname>\n               <!--Optional:-->\n               <ns9:namenZusatz>?</ns9:namenZusatz>\n               <!--Optional:-->\n               <ns9:abteilung>?</ns9:abteilung>\n               <!--Optional:-->\n               <ns9:emailAdresse>?</ns9:emailAdresse>\n               <!--Optional:-->\n               <ns9:telefonNummerGeschaeft>?</ns9:telefonNummerGeschaeft>\n               <!--Optional:-->\n               <ns9:telefonNummerMobil>?</ns9:telefonNummerMobil>\n               <!--Optional:-->\n               <ns9:faxNummer>?</ns9:faxNummer>\n            </ns1:sslKontakt>\n            <ns1:status>?</ns1:status>\n            <!--Optional:-->\n            <ns1:konkursEroeffnungDatum>?</ns1:konkursEroeffnungDatum>\n            <!--Optional:-->\n            <ns1:konkursSchuldenrufFristDatum>?</ns1:konkursSchuldenrufFristDatum>\n            <!--Optional:-->\n            <ns1:konkursErledigungDatum>?</ns1:konkursErledigungDatum>\n            <!--Optional:-->\n            <ns1:sslSteuergemeinde>?</ns1:sslSteuergemeinde>\n            <!--Zero or more repetitions:-->\n            <ns1:arbeitgeberNr>?</ns1:arbeitgeberNr>\n         </sslPersonDetailType>\n         <!--Zero or more repetitions:-->\n         <anmeldeForumlare>?</anmeldeForumlare>\n      </ns:registerSSLRequestType>\n   </soapenv:Body>\n</soapenv:Envelope>",
 			"acceptableReturnCodes" : "200",
-			"soapOperation" : "registerSSL"
+			"soapAction" : "registerSSL"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 			"name" : "JDBC_0",
 			"description" : "JDBC Connection",
-			"enabled" : false,
+			"applicable" : false,
 			"properties" : {
 				"bar" : "zzz",
 				"foo" : "*"
@@ -95,20 +94,128 @@
 			"dbPwd" : "QUEST",
 			"query" : "select ${foo} from REF_ANREDE",
 			"driverName" : "oracle.jdbc.driver.OracleDriver"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"name" : "Intermediate Node 0",
+			"description" : "Intermediate Node 0",
+			"applicable" : true,
+			"properties" : { },
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"name" : "Intermediate Node 1",
+				"description" : "Intermediate Node 1",
+				"applicable" : true,
+				"properties" : { },
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+					"name" : "Intermediate Node 2",
+					"description" : "Intermediate Node 2",
+					"applicable" : true,
+					"properties" : { },
+					"condition" : "ALL_MUST_BE_OK",
+					"children" : [ {
+						"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+						"name" : "REST Connection 3",
+						"description" : "REST Connection 3",
+						"applicable" : true,
+						"properties" : { },
+						"active" : false,
+						"period" : 60,
+						"timeout" : 45,
+						"checkResults" : false,
+						"url" : "http://www.example.com:80",
+						"resultChecker" : {
+							"condition" : null,
+							"operand" : ""
+						},
+						"method" : "GET",
+						"targetUid" : "<user>",
+						"targetPwd" : "<password>",
+						"includeBasicAuthHeader" : false,
+						"httpVersion" : "HTTP_1_1",
+						"redirectBehavior" : "NORMAL",
+						"headers" : "",
+						"payload" : "",
+						"acceptableReturnCodes" : "200"
+					} ],
+					"expanded" : true
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "REST Connection 4",
+					"description" : "REST Connection 4",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 45,
+					"checkResults" : false,
+					"url" : "https://www.example.com:443",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "<user>",
+					"targetPwd" : "<password>",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "foo",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+					"name" : "Intermediate Node 6",
+					"description" : "Intermediate Node 6",
+					"applicable" : true,
+					"properties" : { },
+					"condition" : "ALL_MUST_BE_OK",
+					"children" : [ ],
+					"expanded" : false
+				} ],
+				"expanded" : true
+			}, {
+				"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+				"name" : "REST Connection 5",
+				"description" : "REST Connection 5",
+				"applicable" : true,
+				"properties" : { },
+				"active" : false,
+				"period" : 60,
+				"timeout" : 45,
+				"checkResults" : false,
+				"url" : "https://www.example.com:443",
+				"resultChecker" : {
+					"condition" : null,
+					"operand" : ""
+				},
+				"method" : "PUT",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "",
+				"payload" : "",
+				"acceptableReturnCodes" : "200"
+			} ],
+			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 		"name" : "ZHQuest",
 		"description" : "All ZHQuest-related servers and DBs",
-		"enabled" : true,
+		"applicable" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 			"name" : "Dev-Environments",
 			"description" : "ZHQuest Dev-Environments",
-			"enabled" : true,
+			"applicable" : true,
 			"properties" : {
 				"app_uid" : "mms",
 				"app_host" : "---",
@@ -116,7 +223,7 @@
 				"app_url" : "https://${app_host}/zhquest/",
 				"db_uid" : "---",
 				"db_pwd" : "${db_uid}",
-				"app_pwd" : "quest",
+				"app_pwd" : "zhquest",
 				"mock_host" : "zhstregisterjp-dev.elcadev.local",
 				"mock_url" : "http://${mock_host}:${mock_port}/zhstregisterjp-mock-external-services/"
 			},
@@ -125,7 +232,7 @@
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "ZHQuest DEV",
 				"description" : "DEV environment (server: ksta-zhquest-int3.elcadev.local)",
-				"enabled" : true,
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zhquest-int3.elcadev.local",
 					"db_uid" : "ZHQUEST_INT3"
@@ -135,13 +242,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DEV DB-ping",
 					"description" : "DB for ZHQ DEV Environment",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
@@ -154,13 +261,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DEV DB-query",
 					"description" : "send specific query to DB",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : "ContainsIgnoreCase",
 						"operand" : "FRAU"
@@ -173,8 +280,10 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "ZHQ DEV Application basic connection",
 					"description" : "Application Server DEV",
-					"enabled" : true,
-					"properties" : { },
+					"applicable" : true,
+					"properties" : {
+						"cookie" : "JSESSIONID=35527D565D216DEB8F156ED2635D884F"
+					},
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -185,20 +294,70 @@
 						"operand" : ""
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bW1zOnpocXVlc3Q=",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "ZHQ DEV Application Services WSDL",
+					"description" : "Application Server DEV services WSDL",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services?WSDL",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"name" : "ZHQ DEV Service Call",
+					"description" : "Application Server DEV service call",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services/EQuestService",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "equest",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/equest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : ""
 				} ],
 				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "ZHQuest QA",
 				"description" : "QA Environment (server: ksta-zh-zhquest.elcadev.local)",
-				"enabled" : true,
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhquest.elcadev.local",
 					"db_uid" : "ZHQUEST_QA"
@@ -208,13 +367,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ QA DB-ping",
 					"description" : "DB for ZHQ QA-Environment",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
@@ -227,13 +386,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ QA DB-query",
 					"description" : "send specific query to ZHQ QA DB",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : "ContainsIgnoreCase",
 						"operand" : "FRAU"
@@ -246,7 +405,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "ZHQ QA Application basic connection",
 					"description" : "Application Server QA",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -258,23 +417,48 @@
 						"operand" : ""
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bW1zOnpocXVlc3Q=",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "ZHQ QA Application Services WSDL",
+					"description" : "Application Server QA services WSDL",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services?WSDL",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_uid}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "ZHQuest DMZ",
 				"description" : "DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
-				"enabled" : true,
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhquest-dmz.elca.ch",
-					"db_server_url" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=vm-dmzoracle.elca.ch)(PORT=54345)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=DL05DMZ)))",
+					"db_url" : "${db_url_dmz}",
 					"db_uid" : "ZHQUESTDMZ",
 					"db_pwd" : "dU8fdzsC"
 				},
@@ -283,13 +467,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DMZ DB-ping",
 					"description" : "DB for ZHQ DMZ-Environment",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
@@ -302,13 +486,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DMZ DB-query",
 					"description" : "send specific query to ZHQ DMZ DB",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : "ContainsIgnoreCase",
 						"operand" : "FRAU"
@@ -321,7 +505,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "ZHQ DMZ Application basic connection",
 					"description" : "ZHQ Application Server DMZ",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -333,15 +517,16 @@
 						"operand" : ""
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : true
 		} ],
@@ -350,21 +535,21 @@
 		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 		"name" : "ZHStRegisterJP",
 		"description" : "All RegisterJP-related servers and DBs",
-		"enabled" : true,
+		"applicable" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 			"name" : "Dev-Environments",
 			"description" : "RegisterJP Dev-Environments",
-			"enabled" : true,
+			"applicable" : true,
 			"properties" : {
 				"app_uid" : "nsw",
 				"app_host" : "---",
 				"mock_port" : "8090",
 				"app_url" : "https://${app_host}/registerjp/",
 				"db_query" : "select TEXT from REF_ANREDE_TYP",
-				"db_server_url" : "${db_server_url_old}",
+				"db_url" : "${db_url_old}",
 				"db_uid" : "---",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "register",
@@ -375,8 +560,8 @@
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "DEV",
-				"description" : "DEV environment (server: )",
-				"enabled" : true,
+				"description" : "DEV environment (server: zhstregisterjp-dev.elcadev.local)",
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-dev.elcadev.local",
 					"db_uid" : "REGISTERJP_DEV"
@@ -385,14 +570,14 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP DEV DB-ping",
-					"description" : "DB for RJP DEV Environment",
-					"enabled" : true,
+					"description" : "ping RJP DEV DB",
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
@@ -405,13 +590,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP DEV DB query",
 					"description" : "send specific query to RJP DEV DB",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : "ContainsIgnoreCase",
 						"operand" : "Firma"
@@ -424,7 +609,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "RJP DEV Mock-Server",
 					"description" : "SOAP-UI Mock Server for RJP DEV (actually shared among all RJP Dev-Environments)",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -436,10 +621,11 @@
 						"operand" : ""
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "user",
 					"targetPwd" : "password",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
@@ -447,7 +633,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "RJP DEV Application basic connection",
 					"description" : "RJP Application Server DEV",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -459,10 +645,11 @@
 						"operand" : "<title>ZHStRegisterJP</title>"
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
@@ -471,8 +658,8 @@
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "QA",
-				"description" : "QA environment (server: )",
-				"enabled" : true,
+				"description" : "QA environment (server: zhstregisterjp-qa.elcadev.local)",
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-qa.elcadev.local",
 					"db_uid" : "REGISTERJP_QA"
@@ -481,14 +668,14 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP QA DB-ping",
-					"description" : "DB for RJP QA-Environment",
-					"enabled" : true,
+					"description" : "ping RJP QA DB",
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
@@ -501,13 +688,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP QA DB-query",
 					"description" : "send specific query to RJP QA DB",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : "ContainsIgnoreCase",
 						"operand" : "Firma"
@@ -520,7 +707,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "(RJP QA Mock-Server)",
 					"description" : "SOAP-UI Mock Server for RJP QA (actually the same as RJP DEV)",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -532,10 +719,11 @@
 						"operand" : ""
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "user",
 					"targetPwd" : "password",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
@@ -543,7 +731,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "RJP QA Application basic connection",
 					"description" : "RJP Application Server QA",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -555,10 +743,11 @@
 						"operand" : "<title>ZHStRegisterJP</title>"
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
@@ -567,8 +756,8 @@
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "PROD",
-				"description" : "PROD environment (server: )",
-				"enabled" : true,
+				"description" : "PROD environment (server: zhstregisterjp-prod.elcadev.local)",
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-prod.elcadev.local",
 					"db_uid" : "REGISTERJP_PROD"
@@ -577,14 +766,14 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP PROD DB-ping",
-					"description" : "DB for RJP PROD-Environment",
-					"enabled" : true,
+					"description" : "ping RJP PROD DB",
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
@@ -597,13 +786,13 @@
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP PROD DB-query",
 					"description" : "send specific query to RJP PROD DB",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
-					"url" : "${db_server_url}",
+					"url" : "${db_url}",
 					"resultChecker" : {
 						"condition" : "ContainsIgnoreCase",
 						"operand" : "Firma"
@@ -616,7 +805,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "(RJP PROD Mock-Server)",
 					"description" : "SOAP-UI Mock Server for RJP PROD (actually the same as RJP DEV)",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -628,10 +817,11 @@
 						"operand" : ""
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "user",
 					"targetPwd" : "password",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
@@ -639,7 +829,7 @@
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "RJP PROD Application basic connection",
 					"description" : "RJP Application Server PROD",
-					"enabled" : true,
+					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
@@ -651,10 +841,11 @@
 						"operand" : "<title>ZHStRegisterJP</title>"
 					},
 					"method" : "GET",
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
@@ -663,7 +854,310 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
+	}, {
+		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"name" : "WPS",
+		"description" : "All WPS-related servers and DBs",
+		"applicable" : true,
+		"properties" : { },
+		"condition" : "ALL_MUST_BE_OK",
+		"children" : [ {
+			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"name" : "Dev-Environments",
+			"description" : "WPS Development Environments",
+			"applicable" : true,
+			"properties" : { },
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"name" : "DMZ",
+				"description" : "DMZ environment (server: kstazh-wps.elca.ch)",
+				"applicable" : true,
+				"properties" : {
+					"app_uid" : "power",
+					"app_host" : "kstazh-wps.elca.ch",
+					"mock_port" : "8080",
+					"app_url" : "http://${app_host}/wps/home.seam",
+					"db_url" : "${db_url_dmz}",
+					"db_uid" : "WPSJENKINS",
+					"db_pwd" : "JENKINSWPS",
+					"mock_pwd" : "47rjUX8P109Qmvj",
+					"app_pwd" : "",
+					"mock_url" : "http://${app_host}:${mock_port}/#mainInfo",
+					"mock_uid" : "admin"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "WPS DMZ DB-ping",
+					"description" : "ping WPS DMZ DB",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "WPS DMZ DB query",
+					"description" : "send specific query to WPS DMZ DB",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from tbd",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "WPS DMZ Mock",
+					"description" : "Mocker for WPS DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${mock_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${mock_uid}",
+					"targetPwd" : "${mock_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "WPS DMZ Application basic connection",
+					"description" : "WPS Application server DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				} ],
+				"expanded" : true
+			} ],
+			"expanded" : true
+		} ],
+		"expanded" : false
+	}, {
+		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"name" : "RW-Tool",
+		"description" : "All RW-Tool-related servers and DBs",
+		"applicable" : true,
+		"properties" : { },
+		"condition" : "ALL_MUST_BE_OK",
+		"children" : [ {
+			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"name" : "Dev-Environments",
+			"description" : "RWT Development Environments",
+			"applicable" : true,
+			"properties" : { },
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"name" : "DMZ",
+				"description" : "RWT DMZ environment (server: ksta-zh-rwtool.elcadev.local:8080)\n",
+				"applicable" : true,
+				"properties" : {
+					"app_uid" : "THOMAS",
+					"app_host" : "ksta-zh-rwtool.elcadev.local",
+					"app_url" : "http://${app_host}:${app_port}/rwtool/",
+					"app_port" : "8080",
+					"db_url" : "${db_url_dmz}",
+					"db_uid" : "ZHRWTTEST",
+					"db_pwd" : "ZHRWTTEST",
+					"app_pwd" : "4VBtpU4B"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RWT DMZ DB-ping",
+					"description" : "ping RWT DMZ DB\n",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RWT DMZ DP-query",
+					"description" : "send specific query to RWT DMZ DB",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from tbd",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "RWT DMZ Application basic connection",
+					"description" : "RWT Application server DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				} ],
+				"expanded" : true
+			}, {
+				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"name" : "Test",
+				"description" : "Test environment (server: ksta-zh-rwtool.elcadev.local:8081)",
+				"applicable" : true,
+				"properties" : {
+					"app_uid" : "THOMAS",
+					"app_host" : "ksta-zh-rwtool.elcadev.local",
+					"app_url" : "http://${app_host}:${app_port}/rwtool/",
+					"app_port" : "8081",
+					"db_url" : "${db_url_dmz}",
+					"db_uid" : "ZHRWTTEST",
+					"db_pwd" : "ZHRWTTEST",
+					"app_pwd" : "?"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RWT DMZ DB-ping",
+					"description" : "ping RWT DMZ DB\n",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"name" : "RWT DMZ DP-query",
+					"description" : "send specific query to RWT DMZ DB",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from tbd",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "RWT DMZ Application basic connection",
+					"description" : "RWT Application server DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				} ],
+				"expanded" : false
+			} ],
+			"expanded" : true
+		} ],
+		"expanded" : false
 	} ],
 	"expanded" : true
 }

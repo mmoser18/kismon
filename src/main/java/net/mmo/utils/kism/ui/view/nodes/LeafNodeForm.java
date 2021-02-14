@@ -164,8 +164,8 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 	}
 
 	@Override
-	protected void updateSaveEnabled() {
-		super.updateSaveEnabled();
+	protected void updateSaveButtonState() {
+		super.updateSaveButtonState();
 		this.execute.setText(Messages.getString(this.uiChanges
 		                                        ? "LeafNodeForm.SaveAndExecute.Label" //$NON-NLS-1$
 		                                        : "LeafNodeForm.Execute.Label")); //$NON-NLS-1$

@@ -17,26 +17,63 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 @Slf4j
 public class Application extends SpringBootServletInitializer
 {
+	public static String sslVersions;
+	public static boolean disableHostNameVerification;
+	public static boolean trustAllCertificates;
+
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		// This should disable the SpringBoot devtools from reloading the thread - but didn't work:
 		//System.setProperty("spring.devtools.restart.enabled", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		String JavaHome = System.getProperty("$JAVA HOME"); //$NON-NLS-1$
-		String certificatesTrustStorePath =
+
+		sslVersions =
+			AppProperties.getProperties().getProperty("SupportedSslVersions", //$NON-NLS-1$
+			                                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3"); //$NON-NLS-1$
+
+		disableHostNameVerification = // we parse this into a boolean as syntax validation:
+			Boolean.parseBoolean(AppProperties.getProperties().getProperty("DisableHostNameVerification", //$NON-NLS-1$
+			                                                               "true")); //$NON-NLS-1$
+		System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.toString(Application.disableHostNameVerification)); //$NON-NLS-1$
+
+		trustAllCertificates =
+						Boolean.parseBoolean(AppProperties.getProperties().getProperty("TrustAllCertificates", //$NON-NLS-1$
+						                                                               "true")); //$NON-NLS-1$
+
+		// the truststore for certificates that we trust (only relevant, if we trustAllCertificates == false)
+		// not yet supported:
+		String trustStoreType =
+			AppProperties.getProperties().getProperty("TrustStoreType", //$NON-NLS-1$
+			                                          "pkcs12"); //$NON-NLS-1$
+		String trustStorePath =
 			AppProperties.getProperties().getProperty("TrustStorePath", //$NON-NLS-1$
 			                                          (JavaHome != null ? JavaHome : ".") + "/lib/security/cacerts"); //$NON-NLS-1$ //$NON-NLS-2$
-		log.info("Certificates truststore path: '{}'", certificatesTrustStorePath); //$NON-NLS-1$
-		System.setProperty("javax.net.ssl.trustStore", certificatesTrustStorePath); //$NON-NLS-1$
-
-		String certificatesTrustStorePwd =
+		String trustStorePwd =
 			AppProperties.getProperties().getProperty("TrustStorePassword", //$NON-NLS-1$
 			                                          "changeit"); //$NON-NLS-1$
-		System.setProperty("javax.net.ssl.trustStorePassword", certificatesTrustStorePwd); //$NON-NLS-1$
 
-//		// in case we ever need this:
-//		System.setProperty("javax.net.ssl.keyStore", "C:/keystoreFile.jks");
-//		System.setProperty("javax.net.ssl.keyStorePassword", "mypassword");
+		log.info("Truststore path: '{}' / type: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
+		System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
+		System.setProperty("javax.net.ssl.trustStore", trustStorePath); //$NON-NLS-1$
+		System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
+
+		// the keystore we use to connect to other systems:
+		// not yet supported:
+		String keyStoreType =
+			AppProperties.getProperties().getProperty("KeyStoreType", //$NON-NLS-1$
+			                                          "jks"); //$NON-NLS-1$
+		String keyStorePath =
+			AppProperties.getProperties().getProperty("KeyStorePath", //$NON-NLS-1$
+			                                          "D:\\Projects\\KStA_ZH_ZHQuest\\spec\\Testing\\Testsystems\\Testcertificates\\certificates - test systems\\localhost-keystore.p12"); //$NON-NLS-1$
+		String keyStorePwd =
+			AppProperties.getProperties().getProperty("KeyStorePassword", //$NON-NLS-1$
+			                                          "password"); //$NON-NLS-1$
+
+		log.info("Keystore path: '{}' / type: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
+		System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
+		System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
+		System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
 		try {
 			SpringApplication.run(Application.class, args);

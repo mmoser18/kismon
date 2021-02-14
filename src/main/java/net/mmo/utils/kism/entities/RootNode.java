@@ -73,7 +73,7 @@ public class RootNode extends IntermediateNode
 	/** method to inform listener(s) re. property changes that may have happened outside the GUI */
 	@Override
 	protected void informOnPropertyChange(Node node, String propertyName, Object oldValue, Object newValue) {
-		log.debug("informOnPropertyChange({}, {}, {}, {})", node.getName(), propertyName, oldValue, newValue); //$NON-NLS-1$
+		log.trace("informOnPropertyChange({}, {}, {}, {})", node.getName(), propertyName, oldValue, newValue); //$NON-NLS-1$ / this is very verbose thus reduced to trace
 		PropertyChangeEvent evt = new PropertyChangeEvent(node, propertyName, oldValue, newValue);
 		this.getChangeListeners().forEach((listener) ->
 		{

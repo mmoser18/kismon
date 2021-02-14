@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("nls")
 public class KeyValuesConverterTest
 {
-	final static String SIMPLE_CASE  = "foo:bar,bar:foo,baz:else";
-	final static String COMPLEX_CASE = "foo-bar:xyz,bar_foo:zyx+abc\tbaz:some;thing\nxyz:else${abc}";
-	final static String COMPLEX_CASE_SORTED = "bar_foo:zyx+abc\tbaz:some;thing\nfoo-bar:xyz,xyz:else${abc}";
+	final static String SIMPLE_CASE  = "foo:bar\tbar:foo\nbaz:else";
+	final static String COMPLEX_CASE = "foo-bar:xyz\nbar_foo:zyx+abc\tbaz:some;thing\nxyz:else${abc}";
+	final static String COMPLEX_CASE_SORTED = "bar_foo:zyx+abc\tbaz:some;thing\nfoo-bar:xyz\nxyz:else${abc}";
 
 	@Test
 	void SimpleStringToMapTest() {
@@ -39,7 +39,7 @@ public class KeyValuesConverterTest
 		String reconverted = KeyValuesConverter.convertMapToString(map);
 		Assertions.assertEquals(COMPLEX_CASE_SORTED
 		                        .replace('\t', KeyValuesConverter.PROPERTY_SEPARATOR)
-		                        .replace(',', KeyValuesConverter.PROPERTY_SEPARATOR)
+		//                        .replace(',', KeyValuesConverter.PROPERTY_SEPARATOR)
 		                        .replaceAll("\\:",": "),
 		                        reconverted);
 	}

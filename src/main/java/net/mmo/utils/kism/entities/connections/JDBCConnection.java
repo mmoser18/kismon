@@ -179,6 +179,8 @@ public class JDBCConnection extends IPConnection
 			}
 			statement = reqConnection.createStatement();
 			statement.setQueryTimeout(this.timeout);
+			setResponseStatus("<waiting>"); //$NON-NLS-1$
+			setResponsePayload("<no response received (yet>"); //$NON-NLS-1$
 			log.debug("statement.execute():", resQuery); //$NON-NLS-1$
 			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);
