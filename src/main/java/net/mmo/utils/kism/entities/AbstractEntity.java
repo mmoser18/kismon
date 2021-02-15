@@ -13,9 +13,9 @@ public abstract class AbstractEntity
 {
 	//	private static long idCtr;
 
+	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	@JsonIgnore
 	private Long id; // = idCtr++;
 	public Long getId() {
 		return this.id;
@@ -39,5 +39,12 @@ public abstract class AbstractEntity
 		final AbstractEntity other = (AbstractEntity)obj;
 		if (getId() == null || other.getId() == null) return false;
 		return getId().equals(other.getId());
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName()
+			+ "{id:" + getId() //$NON-NLS-1$
+			+ "}"; //$NON-NLS-1$
 	}
 }

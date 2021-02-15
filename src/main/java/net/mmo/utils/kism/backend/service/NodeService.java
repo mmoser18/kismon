@@ -17,7 +17,9 @@ import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.vaadin.flow.component.notification.Notification;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.repositories.NodeRepository;
 import net.mmo.utils.kism.entities.IntermediateNode;
 import net.mmo.utils.kism.entities.Node;
 import net.mmo.utils.kism.entities.RootNode;
@@ -35,12 +37,9 @@ public class NodeService
 	public final static String CONFIG_FILE_TYPE  = "kmc"; //$NON-NLS-1$
 	public final static String DEFAULT_FILE_NAME = "default"; //$NON-NLS-1$
 
-	/*
-	@SuppressWarnings("unused")
-	private IntermediateNodeRepository intermediateNodeRepository;
-	@SuppressWarnings("unused")
-	private LeafNodeRepository leafNodeRepository;
-	*/
+//	private IntermediateNodeRepository intermediateNodeRepository;
+//	private LeafNodeRepository leafNodeRepository;
+	private NodeRepository nodeRepository;
 
 	private List<RootNode> roots = new ArrayList<>();
 	private ObjectMapper mapper;
@@ -52,16 +51,56 @@ public class NodeService
 
 	public NodeService(// IntermediateNodeRepository intermediateNodeRepository,
 	                   // LeafNodeRepository leafNodeRepository
+	                   NodeRepository nodeRepository
 	                  ) {
 		this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-		/*
-		this.intermediateNodeRepository = intermediateNodeRepository;
-		this.leafNodeRepository = leafNodeRepository;
-		*/
+//		this.intermediateNodeRepository = intermediateNodeRepository;
+//		this.leafNodeRepository = leafNodeRepository;
+		this.nodeRepository = nodeRepository;
 		if (getRootNodes().isEmpty()) {
 			init(); // load from file
 		}
 
+	}
+
+	public List<RootNode> getRootNodes() {
+		return this.roots;
+	}
+
+//	public List<Node> findAll() {
+//		return this.nodeRepository.findAll();
+//	}
+//
+//	public List<Node> findAll(String stringFilter) {
+//		if (stringFilter == null || stringFilter.isEmpty()) {
+//			return this.nodeRepository.findAll();
+//		} else {
+//			return this.nodeRepository.search(stringFilter);
+//		}
+//	}
+//
+//	public long count() {
+//		return this.nodeRepository.count();
+//	}
+
+	public void delete(Node node) {
+		this.nodeRepository.delete(node);
+	}
+
+	public void save(Node node) {
+		//save to repo:
+		if (node == null) {
+			log.error("Node is null. Are you sure you have connected your form to the application?"); //$NON-NLS-1$
+			return;
+		}
+		this.nodeRepository.save(node);
+		// save to file:
+		RootNode rootNode = getCorrespondingRootNode(node);
+		saveRootNodeToFile(rootNode);
+	}
+
+	public void saveAllRootNodes() {
+		getRootNodes().forEach(node -> saveRootNodeToFile(node));
 	}
 
 	private void addNewRootNode(RootNode newRootNode) {
@@ -78,11 +117,9 @@ public class NodeService
 
 	/* create a new empty RootNode, if none exists */
 	public void init() {
-		RootNode rootNode = null;
 		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
-			rootNode = readFile(file);
-			log.debug("Node '{}' read from file '{}'.", rootNode, file); //$NON-NLS-1$
+			readFile(file);
 		} catch (IOException t) {
 			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
 		} catch (Throwable t) {
@@ -91,7 +128,7 @@ public class NodeService
 		if (getRootNodes().isEmpty()) { // make sure we always have at least one root node:
 			createDummyRootNode();
 		}
-		log.info("Root nodes: {}", getRootNodes()); //$NON-NLS-1$
+		log.trace("Root nodes: {}", getRootNodes()); //$NON-NLS-1$
 	}
 
 	public void createDummyRootNode() {
@@ -103,7 +140,6 @@ public class NodeService
 		addNewRootNode(rootNode);
 	}
 
-//	@SuppressWarnings({})
 //	private static void addSomeSubNodes(IntermediateNode parent) {
 //		int max = (parent.getParent() == null ? 2 : (int)(Math.random() * 3.0)); // maps [0.0 - 1.0) --> [0..2]
 //		if (parent.getName().length() >= Messages.getString("km_root_name").length() + 6) max = 0; // limit depth... //$NON-NLS-1$
@@ -127,14 +163,31 @@ public class NodeService
 		createDummyRootNode();
 	}
 
-	public List<RootNode> getRootNodes() {
-		return this.roots;
-	}
-
 	public static RootNode getCorrespondingRootNode(Node startNode) {
 		Node node = startNode;
 		while (node.getParent() != null) node = node.getParent();
 		return (RootNode)node;
+	}
+
+	public void saveRootNodeToFile(RootNode rootNode) {
+		try {
+			String fileName = rootNode.getFilePath();
+			if (fileName == null) fileName = DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE;
+			// TODO : provide some file selection box...
+			File file = new File(fileName);
+			if (file.canWrite()) {
+				this.writeFile(rootNode, file);
+				rootNode.setFilePath(fileName);
+			} else {
+				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
+				log.info(msg);
+				new Notification(msg, 10000).open();
+			}
+		} catch (Throwable t) {
+			String msg = String.format("Exception saving node '%s': %s", rootNode, t); //$NON-NLS-1$
+			log.error(msg, t);
+			new Notification(msg, 10000).open();
+		}
 	}
 
 	public RootNode readFile(File file) throws IOException {
@@ -201,10 +254,14 @@ public class NodeService
 	public Node removeChild(IntermediateNode parent, Node child) {
 		if (parent == null) throw new IllegalArgumentException("parent must not be null for removeChild"); //$NON-NLS-1$
 		parent.removeChild(child);
+		this.nodeRepository.delete(child);
 		if (log.isTraceEnabled()) log.trace("removed child '{}': \n{}", child.getName(), PrettyPrint.prettyPrinted(parent)); //$NON-NLS-1$
 		return child;
 	}
 
+	public boolean removeRootNode(RootNode node) {
+		return getRootNodes().remove(node);
+	}
 
 //	public void delete(Collection<Node> nodes, boolean liftUp) {
 //		nodes.forEach(node -> {
@@ -232,15 +289,6 @@ public class NodeService
 //	// make all children a child of the parent-node:
 //	public void deleteAll(Collection<Node> nodes) {
 //		delete(nodes, false);
-//	}
-
-//	/** utility to set all parents null (to avoid infinite recursion in some serialization library). */
-//	public void setParentNull(Node node) {
-//		node.setParent(null);
-//		if (node instanceof IntermediateNode) {
-//			IntermediateNode parent = (IntermediateNode)node;
-//			parent.getChildren().forEach(child -> setParentNull(child));
-//		}
 //	}
 
 	/** utility to restore parents, e.g. after reading from a file */

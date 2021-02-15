@@ -45,7 +45,6 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.Application;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
@@ -322,13 +321,13 @@ abstract public class HTTPConnection extends IPConnection
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
-		if (Application.sslVersions != null && !Application.sslVersions.isBlank()) {
+		if (sslVersions != null && !sslVersions.isBlank()) {
 			SSLParameters sslParameters = new SSLParameters();
-			sslParameters.setProtocols(Application.sslVersions.split(",|\\s")); //$NON-NLS-1$
+			sslParameters.setProtocols(sslVersions.split(",|\\s")); //$NON-NLS-1$
 			builder.sslParameters(sslParameters);
 		}
 
-		if (Application.trustAllCertificates) {
+		if (trustAllCertificates) {
 			SSLContext sslContext = null;
 			try {
 				sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$

@@ -3,7 +3,6 @@ package net.mmo.utils.kism.ui.view.nodes;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,7 +194,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		saveAllButton.addClickListener(click ->
 			{
 				log.info("saveAllButton clicked"); //$NON-NLS-1$
-				saveAllRoots();
+				saveAllRootNodes();
 			});
 
 		Button downloadFileButton = new Button(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
@@ -241,6 +240,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.info("Requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		// make sure the checkbox (and its coloring) and the actual value are in sync:
 		if (this.haltRequests.getValue() != LeafNode.haltAllRequests) this.haltRequests.setValue(LeafNode.haltAllRequests);
+		this.haltRequests.setLabel(Messages.getString(LeafNode.haltAllRequests ? "NodeView.HaltAllRequests.Halted" : "NodeView.HaltAllRequests.Enabled")); //$NON-NLS-1$ //$NON-NLS-2$
 		this.haltRequests.setClassName(LeafNode.haltAllRequests ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
@@ -268,12 +268,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
-		this.tree.addColumn(node -> { return null; } )
-			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
-			.setKey("type") //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0)
-			;
+//		this.tree.addColumn(node -> { return null; } )
+//			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
+//			.setKey("type") //$NON-NLS-1$
+//			.setAutoWidth(true)
+//			.setFlexGrow(0)
+//			;
 		this.tree.addColumn(Node::getName)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
 			.setKey("name") //$NON-NLS-1$
@@ -582,33 +582,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void saveNode(Node node) {
-		RootNode rootNode = NodeService.getCorrespondingRootNode(node);
-		saveRootNode(rootNode);
+		this.nodeService.save(node);
 	}
 
-	private void saveAllRoots() {
-		this.nodeService.getRootNodes().forEach(node -> saveRootNode(node));
-	}
-
-	private void saveRootNode(RootNode rootNode) {
-		try {
-			String fileName = rootNode.getFilePath();
-			if (fileName == null) fileName = NodeService.DEFAULT_FILE_NAME + '.' + NodeService.CONFIG_FILE_TYPE;
-			// TODO : provide some file selection box...
-			File file = new File(fileName);
-			if (file.canWrite()) {
-				this.nodeService.writeFile(rootNode, file);
-				rootNode.setFilePath(fileName);
-			} else {
-				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
-				log.info(msg);
-				new Notification(msg, 10000).open();
-			}
-		} catch (Throwable t) {
-			String msg = String.format("Exception saving node '%s': %s", rootNode, t); //$NON-NLS-1$
-			log.error(msg, t);
-			new Notification(msg, 10000).open();
-		}
+	private void saveAllRootNodes() {
+		this.nodeService.saveAllRootNodes();
 	}
 
 //	@SuppressWarnings("null")
@@ -680,7 +658,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			nodes.forEach((node) -> {
 				log.info("deleting nodes '{}'", node); //$NON-NLS-1$
 				if (node instanceof RootNode) {
-					this.nodeService.getRootNodes().remove(NodeService.getCorrespondingRootNode(node));
+					this.nodeService.removeRootNode((RootNode)node);
 				} else {
 					IntermediateNode parent = node.getParent();
 					Node deletedNode = this.nodeService.removeChild(parent, node);

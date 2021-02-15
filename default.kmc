@@ -213,7 +213,7 @@
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-			"name" : "Dev-Environments",
+			"name" : "ZHQuest Dev-Environments",
 			"description" : "ZHQuest Dev-Environments",
 			"applicable" : true,
 			"properties" : {
@@ -231,7 +231,7 @@
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "ZHQuest DEV",
-				"description" : "DEV environment (server: ksta-zhquest-int3.elcadev.local)",
+				"description" : "ZHQuest DEV environment (server: ksta-zhquest-int3.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zhquest-int3.elcadev.local",
@@ -241,7 +241,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DEV DB-ping",
-					"description" : "DB for ZHQ DEV Environment",
+					"description" : "ping DB for ZHQuest DEV Environment",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -260,7 +260,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DEV DB-query",
-					"description" : "send specific query to DB",
+					"description" : "send specific query to ZHQuest DEV DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -278,8 +278,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "ZHQ DEV Application basic connection",
-					"description" : "Application Server DEV",
+					"name" : "ZHQ DEV Application UI",
+					"description" : "ZHQuest Application Server DEV UI",
 					"applicable" : true,
 					"properties" : {
 						"cookie" : "JSESSIONID=35527D565D216DEB8F156ED2635D884F"
@@ -304,11 +304,11 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "ZHQ DEV Application Services WSDL",
-					"description" : "Application Server DEV services WSDL",
+					"name" : "ZHQ DEV Services WSDL",
+					"description" : "ZHQuest Application Server DEV services WSDL",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -329,26 +329,26 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
 					"name" : "ZHQ DEV Service Call",
-					"description" : "Application Server DEV service call",
+					"description" : "ZHQuest Application Server DEV service call",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
-					"checkResults" : false,
+					"checkResults" : true,
 					"url" : "${app_url}services/EQuestService",
 					"resultChecker" : {
 						"condition" : null,
 						"operand" : ""
 					},
 					"method" : "POST",
-					"targetUid" : "equest",
+					"targetUid" : "",
 					"targetPwd" : "",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
-					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/equest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/zhquest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
@@ -356,7 +356,7 @@
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "ZHQuest QA",
-				"description" : "QA Environment (server: ksta-zh-zhquest.elcadev.local)",
+				"description" : "ZHQuest QA Environment (server: ksta-zh-zhquest.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhquest.elcadev.local",
@@ -366,7 +366,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ QA DB-ping",
-					"description" : "DB for ZHQ QA-Environment",
+					"description" : "ping DB for ZHQuest QA-Environment",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -385,7 +385,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ QA DB-query",
-					"description" : "send specific query to ZHQ QA DB",
+					"description" : "send specific query to ZHQuest QA DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -403,8 +403,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "ZHQ QA Application basic connection",
-					"description" : "Application Server QA",
+					"name" : "ZHQ QA Application UI",
+					"description" : "ZHQuest Application Server QA UI",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -427,8 +427,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "ZHQ QA Application Services WSDL",
-					"description" : "Application Server QA services WSDL",
+					"name" : "ZHQ QA Services WSDL",
+					"description" : "ZHQuest Application Server QA services WSDL",
 					"applicable" : true,
 					"properties" : { },
 					"active" : false,
@@ -449,12 +449,37 @@
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"name" : "ZHQ DEV Service Call",
+					"description" : "ZHQuest Application Server QA service call",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${app_url}services/EQuestService",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/zhquest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : ""
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 				"name" : "ZHQuest DMZ",
-				"description" : "DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
+				"description" : "ZHQuest DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhquest-dmz.elca.ch",
@@ -466,7 +491,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DMZ DB-ping",
-					"description" : "DB for ZHQ DMZ-Environment",
+					"description" : "ping DB for ZHQuest DMZ-Environment",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -485,7 +510,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "ZHQ DMZ DB-query",
-					"description" : "send specific query to ZHQ DMZ DB",
+					"description" : "send specific query to ZHQuest DMZ DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -503,14 +528,14 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "ZHQ DMZ Application basic connection",
-					"description" : "ZHQ Application Server DMZ",
+					"name" : "ZHQ DMZ Application UI",
+					"description" : "ZHQuest Application Server DMZ UI",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
-					"checkResults" : false,
+					"checkResults" : true,
 					"url" : "${app_url}",
 					"resultChecker" : {
 						"condition" : null,
@@ -525,10 +550,59 @@
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "ZHQ DMZ Services WSDL",
+					"description" : "ZHQuest Application Server DMZ services WSDL",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${app_url}services?WSDL",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_uid}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"name" : "ZHQ DMZ Service Call",
+					"description" : "ZHQuest Application Server DMZ service call",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${app_url}services/EQuestService",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/zhquest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : ""
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
 		"expanded" : true
 	}, {
@@ -540,7 +614,7 @@
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-			"name" : "Dev-Environments",
+			"name" : "RegisterJP Dev-Environments",
 			"description" : "RegisterJP Dev-Environments",
 			"applicable" : true,
 			"properties" : {
@@ -559,8 +633,8 @@
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-				"name" : "DEV",
-				"description" : "DEV environment (server: zhstregisterjp-dev.elcadev.local)",
+				"name" : "RegisterJP DEV",
+				"description" : "RegisterJP DEV environment (server: zhstregisterjp-dev.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-dev.elcadev.local",
@@ -570,7 +644,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP DEV DB-ping",
-					"description" : "ping RJP DEV DB",
+					"description" : "ping RegisterJP DEV DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -589,7 +663,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP DEV DB query",
-					"description" : "send specific query to RJP DEV DB",
+					"description" : "send specific query to RegisterJP DEV DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -608,7 +682,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "RJP DEV Mock-Server",
-					"description" : "SOAP-UI Mock Server for RJP DEV (actually shared among all RJP Dev-Environments)",
+					"description" : "SOAP-UI Mock Server for RegisterJP DEV (actually shared among all RJP Dev-Environments)",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -631,8 +705,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "RJP DEV Application basic connection",
-					"description" : "RJP Application Server DEV",
+					"name" : "RJP DEV Application UI",
+					"description" : "RegisterJP Application Server DEV UI",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -653,12 +727,61 @@
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "RJP DEV Services WSDL",
+					"description" : "RegisterJP Application Server DEV services WSDL\n",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services?WSDL",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"name" : "RJP DEV Service Call",
+					"description" : "RegisterJP Application Server DEV service call",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services/ZHQuestService/2",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns1=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/kStARegisterNrWithoutCheckDigitType/1\" xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns4=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslJuristischePersonType/1\" xmlns:ns5=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns7=\"http://zhstregisterjp.ksta.zh.ch/xmlns/common/vnNumber13Type/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/1\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\">\n   <soapenv:Body>\n      <ns15:registerSSLRequestType xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/2\" xmlns:ns10=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\" xmlns:ns11=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/abrechnungsstelleOfSSLPersonType/2\" xmlns:ns12=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/treuhanderRegisterIdType/1\" xmlns:ns13=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/zahlungsverbindungOfLegalPersonType/2\" xmlns:ns14=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/abrechnungsstelleAdresseType/2\" xmlns:ns15=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns16=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/genericType/1\" xmlns:ns17=\"http://www.ech.ch/xmlns/eCH-0044/1\" xmlns:ns18=\"http://www.ech.ch/xmlns/eCH-0007/4\" xmlns:ns19=\"http://www.ech.ch/xmlns/eCH-0008/1\" xmlns:ns20=\"http://www.ech.ch/xmlns/eCH-0010/3\" xmlns:ns21=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/genericType/2\">\n         <ticketId>test-lre-ssljp-20191111-001</ticketId>\n         <sslPersonDetailType>\n            <ns1:registerNrWithoutCheckDigit>\n               <ns2:kStARegisterNr>N987654321</ns2:kStARegisterNr>\n               <ns2:kStARegisterNrType>np</ns2:kStARegisterNrType>\n            </ns1:registerNrWithoutCheckDigit>\n            <ns3:sslPerson>\n               <ns6:sslJuristsichePerson>\n                  <ns4:firmenname>UBS AG</ns4:firmenname>\n                  <ns4:rechtsForm>0</ns4:rechtsForm>\n                  <ns4:uId>\n                     <ns5:uidOrganisationIdCategorie>CHE</ns5:uidOrganisationIdCategorie>\n                     <ns5:uidOrganisationId>105944111</ns5:uidOrganisationId>\n                  </ns4:uId>\n               </ns6:sslJuristsichePerson>\n            </ns3:sslPerson>\n            <ns3:sslAdresse>\n               <ns9:adresseTyp>3</ns9:adresseTyp>\n               <ns9:street>Steinstrasse</ns9:street>\n               <ns9:houseNumber>21</ns9:houseNumber>\n               <ns9:swissZipCode>8000</ns9:swissZipCode>\n               <ns9:locality>ZH</ns9:locality>\n               <ns9:town>Zürich</ns9:town>\n               <ns9:country>8100</ns9:country>\n            </ns3:sslAdresse>\n            <ns3:sslKontakt>\n               <ns10:anrede>1</ns10:anrede>\n               <ns10:name>Roth</ns10:name>\n               <ns10:vorname>Claudia</ns10:vorname>\n               <ns10:abteilung>HR</ns10:abteilung>\n               <ns10:emailAdresse>claudia.roth@elca.ch</ns10:emailAdresse>\n               <ns10:telefonNummerGeschaeft>044 456 32 11</ns10:telefonNummerGeschaeft>\n               <ns10:telefonNummerMobil>+ 41(0)76 123 23 23</ns10:telefonNummerMobil>\n               <ns10:faxNummer>044 456 32 00</ns10:faxNummer>\n            </ns3:sslKontakt>\n            <ns3:status>1</ns3:status>\n         </sslPersonDetailType>\n      </ns15:registerSSLRequestType>\n   </soapenv:Body>\n</soapenv:Envelope> \n ",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-				"name" : "QA",
-				"description" : "QA environment (server: zhstregisterjp-qa.elcadev.local)",
+				"name" : "RegisterJP QA",
+				"description" : "RegisterJP QA environment (server: zhstregisterjp-qa.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-qa.elcadev.local",
@@ -668,7 +791,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP QA DB-ping",
-					"description" : "ping RJP QA DB",
+					"description" : "ping RegisterJP QA DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -687,7 +810,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP QA DB-query",
-					"description" : "send specific query to RJP QA DB",
+					"description" : "send specific query to RegisterJP QA DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -706,7 +829,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "(RJP QA Mock-Server)",
-					"description" : "SOAP-UI Mock Server for RJP QA (actually the same as RJP DEV)",
+					"description" : "SOAP-UI Mock Server for RegisterJP QA (actually the same as RJP DEV)",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -729,8 +852,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "RJP QA Application basic connection",
-					"description" : "RJP Application Server QA",
+					"name" : "RJP QA Application UI",
+					"description" : "RegisterJP Application Server QA UI",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -751,12 +874,61 @@
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "RJP QA Services WSDL",
+					"description" : "RegisterJP Application Server QA services WSDL\n",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services?WSDL",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"name" : "RJP QA Service Call",
+					"description" : "RegisterJP Application Server QA service call",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services/ZHQuestService/2",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns1=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/kStARegisterNrWithoutCheckDigitType/1\" xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns4=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslJuristischePersonType/1\" xmlns:ns5=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns7=\"http://zhstregisterjp.ksta.zh.ch/xmlns/common/vnNumber13Type/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/1\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\">\n   <soapenv:Body>\n      <ns15:registerSSLRequestType xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/2\" xmlns:ns10=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\" xmlns:ns11=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/abrechnungsstelleOfSSLPersonType/2\" xmlns:ns12=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/treuhanderRegisterIdType/1\" xmlns:ns13=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/zahlungsverbindungOfLegalPersonType/2\" xmlns:ns14=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/abrechnungsstelleAdresseType/2\" xmlns:ns15=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns16=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/genericType/1\" xmlns:ns17=\"http://www.ech.ch/xmlns/eCH-0044/1\" xmlns:ns18=\"http://www.ech.ch/xmlns/eCH-0007/4\" xmlns:ns19=\"http://www.ech.ch/xmlns/eCH-0008/1\" xmlns:ns20=\"http://www.ech.ch/xmlns/eCH-0010/3\" xmlns:ns21=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/genericType/2\">\n         <ticketId>test-lre-ssljp-20191111-001</ticketId>\n         <sslPersonDetailType>\n            <ns1:registerNrWithoutCheckDigit>\n               <ns2:kStARegisterNr>N987654321</ns2:kStARegisterNr>\n               <ns2:kStARegisterNrType>np</ns2:kStARegisterNrType>\n            </ns1:registerNrWithoutCheckDigit>\n            <ns3:sslPerson>\n               <ns6:sslJuristsichePerson>\n                  <ns4:firmenname>UBS AG</ns4:firmenname>\n                  <ns4:rechtsForm>0</ns4:rechtsForm>\n                  <ns4:uId>\n                     <ns5:uidOrganisationIdCategorie>CHE</ns5:uidOrganisationIdCategorie>\n                     <ns5:uidOrganisationId>105944111</ns5:uidOrganisationId>\n                  </ns4:uId>\n               </ns6:sslJuristsichePerson>\n            </ns3:sslPerson>\n            <ns3:sslAdresse>\n               <ns9:adresseTyp>3</ns9:adresseTyp>\n               <ns9:street>Steinstrasse</ns9:street>\n               <ns9:houseNumber>21</ns9:houseNumber>\n               <ns9:swissZipCode>8000</ns9:swissZipCode>\n               <ns9:locality>ZH</ns9:locality>\n               <ns9:town>Zürich</ns9:town>\n               <ns9:country>8100</ns9:country>\n            </ns3:sslAdresse>\n            <ns3:sslKontakt>\n               <ns10:anrede>1</ns10:anrede>\n               <ns10:name>Roth</ns10:name>\n               <ns10:vorname>Claudia</ns10:vorname>\n               <ns10:abteilung>HR</ns10:abteilung>\n               <ns10:emailAdresse>claudia.roth@elca.ch</ns10:emailAdresse>\n               <ns10:telefonNummerGeschaeft>044 456 32 11</ns10:telefonNummerGeschaeft>\n               <ns10:telefonNummerMobil>+ 41(0)76 123 23 23</ns10:telefonNummerMobil>\n               <ns10:faxNummer>044 456 32 00</ns10:faxNummer>\n            </ns3:sslKontakt>\n            <ns3:status>1</ns3:status>\n         </sslPersonDetailType>\n      </ns15:registerSSLRequestType>\n   </soapenv:Body>\n</soapenv:Envelope> \n ",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "registerSSL"
 				} ],
 				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-				"name" : "PROD",
-				"description" : "PROD environment (server: zhstregisterjp-prod.elcadev.local)",
+				"name" : "RegisterJP PROD",
+				"description" : "RegisterJP PROD environment (server: zhstregisterjp-prod.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-prod.elcadev.local",
@@ -766,7 +938,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP PROD DB-ping",
-					"description" : "ping RJP PROD DB",
+					"description" : "ping RegisterJP PROD DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -785,7 +957,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
 					"name" : "RJP PROD DB-query",
-					"description" : "send specific query to RJP PROD DB",
+					"description" : "send specific query to RegisterJP PROD DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -804,7 +976,7 @@
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
 					"name" : "(RJP PROD Mock-Server)",
-					"description" : "SOAP-UI Mock Server for RJP PROD (actually the same as RJP DEV)",
+					"description" : "SOAP-UI Mock Server for RegisterJP PROD (actually the same as RJP DEV)",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -827,8 +999,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "RJP PROD Application basic connection",
-					"description" : "RJP Application Server PROD",
+					"name" : "RJP PROD Application UI",
+					"description" : "RegisterJP Application Server PROD UI",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -849,12 +1021,61 @@
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"name" : "RJP PROD Services WSDL",
+					"description" : "RegisterJP Application Server PROD services WSDL\n",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services?WSDL",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"name" : "RJP PROD Service Call",
+					"description" : "RegisterJP Application Server PROD service call",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"url" : "${app_url}services/ZHQuestService/2",
+					"resultChecker" : {
+						"condition" : null,
+						"operand" : ""
+					},
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns1=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/kStARegisterNrWithoutCheckDigitType/1\" xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns4=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslJuristischePersonType/1\" xmlns:ns5=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns7=\"http://zhstregisterjp.ksta.zh.ch/xmlns/common/vnNumber13Type/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/1\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\">\n   <soapenv:Body>\n      <ns15:registerSSLRequestType xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/2\" xmlns:ns10=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\" xmlns:ns11=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/abrechnungsstelleOfSSLPersonType/2\" xmlns:ns12=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/treuhanderRegisterIdType/1\" xmlns:ns13=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/zahlungsverbindungOfLegalPersonType/2\" xmlns:ns14=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/abrechnungsstelleAdresseType/2\" xmlns:ns15=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns16=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/genericType/1\" xmlns:ns17=\"http://www.ech.ch/xmlns/eCH-0044/1\" xmlns:ns18=\"http://www.ech.ch/xmlns/eCH-0007/4\" xmlns:ns19=\"http://www.ech.ch/xmlns/eCH-0008/1\" xmlns:ns20=\"http://www.ech.ch/xmlns/eCH-0010/3\" xmlns:ns21=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/genericType/2\">\n         <ticketId>test-lre-ssljp-20191111-001</ticketId>\n         <sslPersonDetailType>\n            <ns1:registerNrWithoutCheckDigit>\n               <ns2:kStARegisterNr>N987654321</ns2:kStARegisterNr>\n               <ns2:kStARegisterNrType>np</ns2:kStARegisterNrType>\n            </ns1:registerNrWithoutCheckDigit>\n            <ns3:sslPerson>\n               <ns6:sslJuristsichePerson>\n                  <ns4:firmenname>UBS AG</ns4:firmenname>\n                  <ns4:rechtsForm>0</ns4:rechtsForm>\n                  <ns4:uId>\n                     <ns5:uidOrganisationIdCategorie>CHE</ns5:uidOrganisationIdCategorie>\n                     <ns5:uidOrganisationId>105944111</ns5:uidOrganisationId>\n                  </ns4:uId>\n               </ns6:sslJuristsichePerson>\n            </ns3:sslPerson>\n            <ns3:sslAdresse>\n               <ns9:adresseTyp>3</ns9:adresseTyp>\n               <ns9:street>Steinstrasse</ns9:street>\n               <ns9:houseNumber>21</ns9:houseNumber>\n               <ns9:swissZipCode>8000</ns9:swissZipCode>\n               <ns9:locality>ZH</ns9:locality>\n               <ns9:town>Zürich</ns9:town>\n               <ns9:country>8100</ns9:country>\n            </ns3:sslAdresse>\n            <ns3:sslKontakt>\n               <ns10:anrede>1</ns10:anrede>\n               <ns10:name>Roth</ns10:name>\n               <ns10:vorname>Claudia</ns10:vorname>\n               <ns10:abteilung>HR</ns10:abteilung>\n               <ns10:emailAdresse>claudia.roth@elca.ch</ns10:emailAdresse>\n               <ns10:telefonNummerGeschaeft>044 456 32 11</ns10:telefonNummerGeschaeft>\n               <ns10:telefonNummerMobil>+ 41(0)76 123 23 23</ns10:telefonNummerMobil>\n               <ns10:faxNummer>044 456 32 00</ns10:faxNummer>\n            </ns3:sslKontakt>\n            <ns3:status>1</ns3:status>\n         </sslPersonDetailType>\n      </ns15:registerSSLRequestType>\n   </soapenv:Body>\n</soapenv:Envelope> \n ",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "registerSSL"
 				} ],
 				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
 		"name" : "WPS",
@@ -864,7 +1085,7 @@
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-			"name" : "Dev-Environments",
+			"name" : "WPS Dev-Environments",
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : { },
@@ -894,7 +1115,7 @@
 					"description" : "ping WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -913,7 +1134,7 @@
 					"description" : "send specific query to WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -932,7 +1153,7 @@
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -956,7 +1177,7 @@
 					"description" : "WPS Application server DMZ",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -989,15 +1210,15 @@
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-			"name" : "Dev-Environments",
-			"description" : "RWT Development Environments",
+			"name" : "RW-Tool Dev-Environments",
+			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : { },
-			"condition" : "ALL_MUST_BE_OK",
+			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-				"name" : "DMZ",
-				"description" : "RWT DMZ environment (server: ksta-zh-rwtool.elcadev.local:8080)\n",
+				"name" : "RW-Tool DMZ",
+				"description" : "RW-Tool DMZ environment (server: ksta-zh-rwtool.elcadev.local:8080)\n",
 				"applicable" : true,
 				"properties" : {
 					"app_uid" : "THOMAS",
@@ -1016,7 +1237,7 @@
 					"description" : "ping RWT DMZ DB\n",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1035,7 +1256,7 @@
 					"description" : "send specific query to RWT DMZ DB",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1054,7 +1275,7 @@
 					"description" : "RWT Application server DMZ",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1076,9 +1297,9 @@
 				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
-				"name" : "Test",
-				"description" : "Test environment (server: ksta-zh-rwtool.elcadev.local:8081)",
-				"applicable" : true,
+				"name" : "RW-Tool Test",
+				"description" : "RW-Tool Test environment 2 (server: ksta-zh-rwtool.elcadev.local:8081)",
+				"applicable" : false,
 				"properties" : {
 					"app_uid" : "THOMAS",
 					"app_host" : "ksta-zh-rwtool.elcadev.local",
@@ -1092,11 +1313,11 @@
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "RWT DMZ DB-ping",
+					"name" : "RWT Test DB-ping",
 					"description" : "ping RWT DMZ DB\n",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1111,11 +1332,11 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
-					"name" : "RWT DMZ DP-query",
-					"description" : "send specific query to RWT DMZ DB",
+					"name" : "RWT Test DP-query",
+					"description" : "send specific query to RWT Test DB",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1130,11 +1351,11 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
-					"name" : "RWT DMZ Application basic connection",
-					"description" : "RWT Application server DMZ",
+					"name" : "RWT Test Application basic connection",
+					"description" : "RWT Application server Test",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1153,7 +1374,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],

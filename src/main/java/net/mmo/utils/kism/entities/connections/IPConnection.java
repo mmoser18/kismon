@@ -47,6 +47,14 @@ abstract public class IPConnection extends LeafNode
 	protected ResultChecker resultChecker;
 
 
+	@JsonIgnore
+	public transient static String sslVersions;
+	@JsonIgnore
+	public transient static boolean disableHostNameVerification;
+	@JsonIgnore
+	public transient static boolean trustAllCertificates;
+
+
 	protected IPConnection() {
 		super();
 	}

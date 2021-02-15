@@ -231,14 +231,17 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()
-			+ "{name:" + getName() //$NON-NLS-1$
-			+ ", description:" + getDescription() //$NON-NLS-1$
-			+ ", state:" + getState() //$NON-NLS-1$
+		StringBuilder buf = new StringBuilder(super.toString());
+		buf.setLength(buf.length()-1);
+		return buf
+			.append("{name:").append(getName()) //$NON-NLS-1$
+			.append(", description:").append(getDescription()) //$NON-NLS-1$
+			.append(", state:").append(getState()) //$NON-NLS-1$
 			// to avoid recursion we only emit the parent's name, not the entire object!:
-			+ ", parent(name):" + (this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
-			+ ", applicable:" + isApplicable() //$NON-NLS-1$
-			+ ", properties: {" + KeyValuesConverter.convertMapToString(getProperties(), ", ") + "}" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			+ "}"; //$NON-NLS-1$
+			.append(", parent(name):").append(this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
+			.append(", applicable:").append(isApplicable()) //$NON-NLS-1$
+			.append(", properties: {").append(KeyValuesConverter.convertMapToString(getProperties(), ", ")).append('}') //$NON-NLS-1$ //$NON-NLS-2$
+			.append('}')
+			.toString();
 	}
 }

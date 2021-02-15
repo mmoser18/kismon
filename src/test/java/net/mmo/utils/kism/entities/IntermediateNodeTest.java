@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class IntermediateNodeTest
 {
-	private NodeService nodeService = new NodeService(); // autowiring this didn't work, but what the heck!
+	private NodeService nodeService = new NodeService(null); // autowiring this didn't work, but what the heck!
 
 	public IntermediateNodeTest() {
 		// empty
