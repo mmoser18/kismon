@@ -13,12 +13,14 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.connections.IPConnection;
 import net.mmo.utils.kism.entities.connections.JDBCConnection;
 
 @Slf4j
+@PreserveOnRefresh
 public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 {
 	private static final long serialVersionUID = 5726368043436831511L;

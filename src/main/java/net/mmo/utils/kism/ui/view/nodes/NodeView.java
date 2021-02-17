@@ -63,6 +63,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 @Slf4j
 // This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
 // see https://github.com/vaadin/vaadin-grid/issues/1934
+// With this annotation one has to click the *twisty* to collapse/expand, not the column.
 @CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
 public class NodeView <N extends Node> extends VerticalLayout
 {
@@ -230,7 +231,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		adjustHaltRequest(LeafNode.haltAllRequests);
 
 		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
-		                                                directionButton, saveAllButton, downloadFileButton, uploadFile, this.haltRequests);
+		                                                /*directionButton,*/ saveAllButton, downloadFileButton, uploadFile, this.haltRequests);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
 	}

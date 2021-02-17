@@ -10,6 +10,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.ResultChecker;
@@ -19,6 +20,7 @@ import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.LeafNodeForm;
 
 @Slf4j
+@PreserveOnRefresh
 public abstract class IPConnectionForm <N extends IPConnection> extends LeafNodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;

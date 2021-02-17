@@ -18,6 +18,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.connections.HTTPConnection;
@@ -27,6 +28,7 @@ import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
 @Slf4j
+@PreserveOnRefresh
 public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPConnectionForm<N>
 {
 	private static final long serialVersionUID = 7200842663851555372L;
