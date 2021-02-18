@@ -3,7 +3,7 @@
  * @since 06.12.2020
  */
 
-package net.mmo.utils.kism.entities.connections;
+package net.mmo.utils.kism.entities.nodes.connections;
 
 import javax.persistence.Entity;
 
@@ -14,15 +14,15 @@ import org.hibernate.cfg.NotYetImplementedException;
 @Entity
 @Setter
 @Getter
-public class TelnetConnection extends IPConnection
+public class SSHConnection extends IPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
 
 	@SuppressWarnings("unused")
-	private TelnetConnection() { // required for deserialization
+	private SSHConnection() { // required for deserialization
 		super();
 	}
-	public TelnetConnection(String name, String description) {
+	public SSHConnection(String name, String description) {
 		super(name, description);
 	}
 

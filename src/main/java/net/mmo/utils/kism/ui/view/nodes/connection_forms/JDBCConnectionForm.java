@@ -16,8 +16,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.connections.IPConnection;
-import net.mmo.utils.kism.entities.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 
 @Slf4j
 @PreserveOnRefresh

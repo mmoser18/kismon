@@ -11,8 +11,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.entities.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 
 @Slf4j
 public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>

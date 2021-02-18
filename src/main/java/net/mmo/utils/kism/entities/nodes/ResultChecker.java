@@ -3,7 +3,7 @@
  * @since 15.01.2021
  */
 
-package net.mmo.utils.kism.entities;
+package net.mmo.utils.kism.entities.nodes;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.mmo.utils.kism.entities.AbstractEntity;
 
 @Entity
 @Setter

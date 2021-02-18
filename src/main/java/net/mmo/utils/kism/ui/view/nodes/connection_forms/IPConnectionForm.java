@@ -13,9 +13,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.ResultChecker;
-import net.mmo.utils.kism.entities.ResultChecker.Condition;
-import net.mmo.utils.kism.entities.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.ResultChecker;
+import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
+import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.LeafNodeForm;
 

@@ -3,13 +3,13 @@
  * @since 08.11.2020
  */
 
-package net.mmo.utils.kism.entities;
+package net.mmo.utils.kism.entities.nodes;
 
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.Messages;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.IntermediateNode.ChildrenCondition;
-import net.mmo.utils.kism.entities.Node.State;
+import net.mmo.utils.kism.entities.nodes.IntermediateNode.ChildrenCondition;
+import net.mmo.utils.kism.entities.nodes.Node.State;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +44,10 @@ public class IntermediateNodeTest
 		@Override
 		public void sendRequest() throws Exception {
 			// empty
+		}
+		@Override
+		protected String getResult() {
+			return "foobar"; //$NON-NLS-1$
 		}
 	}
 

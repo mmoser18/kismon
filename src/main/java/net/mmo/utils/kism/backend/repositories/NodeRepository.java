@@ -2,7 +2,7 @@ package net.mmo.utils.kism.backend.repositories;
 
 import java.util.List;
 
-import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.entities.nodes.Node;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,8 +15,8 @@ import org.springframework.data.repository.query.Param;
 public interface NodeRepository extends JpaRepository<Node, Long>
 {
 	// using Java Persistence Query Language (JPQL) to phrase the query:
-	@Query("select n from Node n "
-	      + "where lower(n.name) like lower(concat('%', :searchTerm, '%')) "
+	@Query("select n from Node n"
+	     + " where lower(n.name) like lower(concat('%', :searchTerm, '%'))"
 	)
 	List<Node> search(@Param("searchTerm") String searchTerm);
 }

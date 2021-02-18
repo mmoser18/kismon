@@ -37,10 +37,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.IntermediateNode;
-import net.mmo.utils.kism.entities.LeafNode;
-import net.mmo.utils.kism.entities.Node;
-import net.mmo.utils.kism.entities.RootNode;
+import net.mmo.utils.kism.entities.nodes.IntermediateNode;
+import net.mmo.utils.kism.entities.nodes.LeafNode;
+import net.mmo.utils.kism.entities.nodes.Node;
+import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
@@ -92,6 +92,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	protected PropertyChangeListener nodeRefreshListener;
 
+
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
 	                FormFactory<N> formFactory) { // defined as constructor args to force order
@@ -133,7 +134,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private HorizontalLayout createToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 //		this.filterText.setClassName(FilterFieldClassName);
-//		this.filterText.setPlaceholder(Messages.getString("ListView.TextField.FilterText.Label")); //$NON-NLS-1$
+//		this.filterText.setPlaceholder(Messages.getString("ResultView.TextField.FilterText.Label")); //$NON-NLS-1$
 //		this.filterText.setClearButtonVisible(true);
 //		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 //		this.filterText.addValueChangeListener(e -> updateList());
@@ -191,6 +192,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 				CommonConstants.setClassName(this.content, this.contentDirection);
 			});
 
+		Button moveUp = new Button(Messages.getString("NodeView.Button.MoveUp.Label")); //$NON-NLS-1$
+		moveUp.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveUp(node)));
+
+		Button moveDown = new Button(Messages.getString("NodeView.Button.MoveDown.Label")); //$NON-NLS-1$
+		moveDown.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveDown(node)));
+
 		Button saveAllButton = new Button(Messages.getString("NodeView.Button.SaveAll.Label")); //$NON-NLS-1$
 		saveAllButton.addClickListener(click ->
 			{
@@ -231,6 +238,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		adjustHaltRequest(LeafNode.haltAllRequests);
 
 		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
+		                                                moveUp, moveDown,
 		                                                /*directionButton,*/ saveAllButton, downloadFileButton, uploadFile, this.haltRequests);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
@@ -269,12 +277,21 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
-//		this.tree.addColumn(node -> { return null; } )
-//			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
-//			.setKey("type") //$NON-NLS-1$
-//			.setAutoWidth(true)
-//			.setFlexGrow(0)
-//			;
+		this.tree.addColumn(node -> {
+				switch (node.getClass().getSimpleName()) {
+				case "RootNode": return "(Root)"; //$NON-NLS-1$ //$NON-NLS-2$
+				case "IntermediateNode": return " -- "; //$NON-NLS-1$ //$NON-NLS-2$
+				case "RESTConnection":  return "REST"; //$NON-NLS-1$ //$NON-NLS-2$
+				case "SOAPConnection": return "SOAP"; //$NON-NLS-1$ //$NON-NLS-2$
+				case "JDBCConnection": return "JDBC"; //$NON-NLS-1$ //$NON-NLS-2$
+				default: return "???"; //$NON-NLS-1$
+				}
+			})
+			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
+			.setKey("type") //$NON-NLS-1$
+			.setAutoWidth(true)
+			.setFlexGrow(0)
+			;
 		this.tree.addColumn(Node::getName)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
 			.setKey("name") //$NON-NLS-1$
@@ -417,6 +434,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 		return Arrays.asList(rootNodes.toArray(new Node[rootNodes.size()]));
 	}
 
+	private void select(Node node) {
+		this.tree.select(node);
+	}
+
 	private void saveNodeAfterEditing(NodeForm.SaveEvent event, IntermediateNode parentNode) {
 		Node node = event.getNode();
 		log.debug("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
@@ -451,15 +472,15 @@ public class NodeView <N extends Node> extends VerticalLayout
 		parentNode.expanded = true; // make sure the newly added child gets visible
 		if (NodeView.alwaysSave) saveNode(newNode);
 		updateTree();
-		this.tree.select(newNode); // and select it
+		select(newNode); // and select it
 	}
 
 	private void ifSingleNodeSelectedDo(Consumer<Node> action) {
 		Set<Node> nodes = this.tree.getSelectedItems();
 		if (nodes.isEmpty()) {
-			UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeSelectNode")); //$NON-NLS-1$
+			UsageError(Messages.getString("NodeView.ErrorMsg.ChildNodeSelectNode")); //$NON-NLS-1$
 		} else if (nodes.size() > 1) {
-			UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeSelectOneNodeOnly")); //$NON-NLS-1$
+			UsageError(Messages.getString("NodeView.ErrorMsg.ChildNodeSelectOneNodeOnly")); //$NON-NLS-1$
 		} else {
 			Node selectedNode = nodes.iterator().next(); // get first selected node
 			action.accept(selectedNode);
@@ -503,6 +524,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	protected void refreshNode(Node node, boolean refreshChildren) {
 		NodeView.this.tree.getDataProvider().refreshItem(node, refreshChildren);
+		// work-around, since the refreshChildren==true is not working:
+		if (refreshChildren && node instanceof IntermediateNode) {
+			((IntermediateNode)node).getChildren().forEach(n -> refreshNode(n, refreshChildren));
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -511,7 +536,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		if (this.form != null) {
 			N currentNode = this.form.getNode();
 			if (!this.form.setNode(null)) { // signal that we want to leave that node:
-				this.tree.select(currentNode); // if there are unsaved changes remain on current node
+				select(currentNode); // if there are unsaved changes remain on current node
 				return;
 			}
 		}
@@ -590,6 +615,51 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.nodeService.saveAllRootNodes();
 	}
 
+	private void moveUp(Node node) {
+		log.info("moveUp '{}'", node); //$NON-NLS-1$
+		if (node instanceof RootNode) {
+			UsageError("Moving Root-Nodes is NOT YET IMPLEMENTED!"); //$NON-NLS-1$
+		} else {
+			IntermediateNode parent = node.getParent();
+			List<Node> siblings = parent.getChildren();
+			int currentIdx = siblings.indexOf(node);
+			if (currentIdx <= 0) {
+				UsageError("Cannot move up beyond first position!"); //$NON-NLS-1$
+			} else {
+				synchronized(siblings) {
+					siblings.remove(node);
+					siblings.add(currentIdx-1, node);
+				}
+				if (NodeView.alwaysSave) saveNode(node);
+				updateSubTree(parent);
+			}
+		}
+		select(node);
+	}
+
+	private void moveDown(Node node) {
+		log.info("moveDown '{}'", node); //$NON-NLS-1$
+		if (node instanceof RootNode) {
+			UsageError("Moving Root-Nodes is NOT YET IMPLEMENTED!"); //$NON-NLS-1$
+		} else {
+			IntermediateNode parent = node.getParent();
+			List<Node> siblings = parent.getChildren();
+			int currentIdx = siblings.indexOf(node);
+			if (currentIdx+1 >= siblings.size()) {
+				UsageError("Cannot move down beyond last position!"); //$NON-NLS-1$
+			} else {
+				synchronized(siblings) {
+					siblings.remove(node);
+					siblings.add(currentIdx+1, node);
+				}
+				if (NodeView.alwaysSave) saveNode(node);
+				updateSubTree(parent);
+			}
+		}
+		select(node);
+	}
+
+
 //	@SuppressWarnings("null")
 //	private void readLocalFile() {
 //		String fileName = null; // TODO : provide some file selection box...
@@ -627,7 +697,35 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
 //		}
 		// expand/collapse tree to previously saved state:
-		getRootNodesAsBareNodes().forEach(node -> node.trickleDown(n ->
+		getRootNodesAsBareNodes().forEach(node -> adjustCollapseExpanded(node));
+	}
+
+	private void updateSubTree(IntermediateNode parent) {
+		TreeData<Node> treeData = this.tree.getTreeData();
+		parent.getChildren().forEach((node) -> treeData.removeItem(node));
+		addChildren(treeData, parent);
+		adjustCollapseExpanded(parent);
+	}
+
+	private void removeChildren(TreeData<Node> treeData, Node node {
+		if (node instanceof IntermediateNode) {
+			List<Node> children = ((IntermediateNode)node).getChildren();
+			children.forEach((node) -> treeData.removeItem(node));
+		}
+		treeData.removeItem(parent);
+	}
+
+	private void addChildren(TreeData<Node> treeData, Node parent) {
+		if (parent instanceof IntermediateNode) {
+			List<Node> children = ((IntermediateNode)parent).getChildren();
+			treeData.addItems(parent, children);
+			children.forEach(child -> addChildren(treeData, child));
+		}
+	}
+
+	private void adjustCollapseExpanded(Node startNode) {
+		// expand/collapse tree to previously saved state:
+		startNode.trickleDown(n ->
 			{
 				if (n instanceof IntermediateNode) {
 					IntermediateNode rn = (IntermediateNode)n;
@@ -636,9 +734,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 					} else {
 						this.tree.collapse(rn);
 					}
-					refreshNode(rn, false);
 				}
-			}));
+			});
+		refreshNode(startNode, true);
 	}
 
 	@SuppressWarnings("static-method")

@@ -5,11 +5,11 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
-import net.mmo.utils.kism.entities.IntermediateNode;
-import net.mmo.utils.kism.entities.Node;
-import net.mmo.utils.kism.entities.connections.JDBCConnection;
-import net.mmo.utils.kism.entities.connections.RESTConnection;
-import net.mmo.utils.kism.entities.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.IntermediateNode;
+import net.mmo.utils.kism.entities.nodes.Node;
+import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 import org.springframework.stereotype.Component;
 
 @Component

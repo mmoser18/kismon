@@ -3,7 +3,7 @@
  * @since 27.11.2020
  */
 
-package net.mmo.utils.kism.entities;
+package net.mmo.utils.kism.entities.nodes;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

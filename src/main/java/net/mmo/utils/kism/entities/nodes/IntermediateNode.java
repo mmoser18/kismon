@@ -4,7 +4,7 @@
  * @since 08.11.2020
  */
 
-package net.mmo.utils.kism.entities;
+package net.mmo.utils.kism.entities.nodes;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;

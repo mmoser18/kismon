@@ -3,7 +3,7 @@
  * @since 06.12.2020
  */
 
-package net.mmo.utils.kism.entities.connections;
+package net.mmo.utils.kism.entities.nodes.connections;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -16,8 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
-import net.mmo.utils.kism.entities.LeafNode;
-import net.mmo.utils.kism.entities.ResultChecker;
+import net.mmo.utils.kism.entities.nodes.LeafNode;
+import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
 @Entity

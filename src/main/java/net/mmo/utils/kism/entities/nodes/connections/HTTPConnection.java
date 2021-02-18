@@ -3,7 +3,7 @@
  * @since 06.12.2020
  */
 
-package net.mmo.utils.kism.entities.connections;
+package net.mmo.utils.kism.entities.nodes.connections;
 
 import java.net.Authenticator;
 import java.net.CookieHandler;
@@ -559,7 +559,7 @@ abstract public class HTTPConnection extends IPConnection
 		                                                        	String charsetName = str.toUpperCase();
 		                                                        	if (Charset.isSupported(charsetName)) {
 		                                                        		Charset cs = Charset.forName(charsetName);
-		                                                        		log.info("extractRequestCharset: found character set: '{}'", cs); //$NON-NLS-1$
+		                                                        		log.debug("extractRequestCharset: found character set: '{}'", cs); //$NON-NLS-1$
 		                                                        		return cs;
 		                                                        	} else {
 		                                                        		log.warn("extractRequestCharset: charset '{}' not supported", charsetName); //$NON-NLS-1$

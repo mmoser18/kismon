@@ -16,8 +16,8 @@ import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.view.dashboard.DashboardView;
-import net.mmo.utils.kism.ui.view.list.ListView;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
+import net.mmo.utils.kism.ui.view.results.ResultView;
 
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-combo-box-styles.css", themeFor = "vaadin-combo-box")
@@ -62,7 +62,7 @@ public class MainLayout extends AppLayout
 
 	private void createDrawer() {
 		log.debug("createDrawer"); //$NON-NLS-1$
-		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.ListView.Label"), ListView.class); //$NON-NLS-1$
+		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.ListView.Label"), ResultView.class); //$NON-NLS-1$
 		listLink.setHighlightCondition(HighlightConditions.sameLocation());
 		RouterLink treeLink = new RouterLink(Messages.getString("MainLayout.Tab.NodeView.Label"), NodeView.class); //$NON-NLS-1$
 		treeLink.setHighlightCondition(HighlightConditions.sameLocation());

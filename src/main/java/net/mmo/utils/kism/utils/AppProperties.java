@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.utils;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -20,12 +19,11 @@ public class AppProperties
 
 	public final static Properties getProperties() {
 		if (appProperties == null) {
-			String appConfigPath = Thread.currentThread().getContextClassLoader().getResource(APP_PROPS_NAME).getPath();
 			appProperties = new Properties(System.getProperties());
-			try (InputStream is = new FileInputStream(appConfigPath)) {
+			try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(APP_PROPS_NAME)) { // only with getResourceAsStream() one can read from a .jar file
 				appProperties.load(is);
 			} catch (Exception ex) {
-				log.error("Error opening/reading application properties {}: {}", appConfigPath, ex); //$NON-NLS-1$
+				log.error("Error opening/reading application properties '{}': {}", APP_PROPS_NAME, ex); //$NON-NLS-1$
 			}
 		}
 		return appProperties;

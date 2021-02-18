@@ -9,7 +9,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.RootNode;
+import net.mmo.utils.kism.entities.nodes.RootNode;
 
 public class RootNodeForm extends IntermediateNodeForm
 {

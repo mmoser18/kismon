@@ -1,7 +1,7 @@
 package net.mmo.utils.kism;
 
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.entities.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

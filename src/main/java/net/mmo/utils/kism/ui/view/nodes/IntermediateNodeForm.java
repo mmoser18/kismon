@@ -9,7 +9,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.select.Select;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.IntermediateNode;
+import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 
 // @Slf4j
 public class IntermediateNodeForm extends NodeForm<IntermediateNode>

@@ -21,9 +21,9 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.connections.HTTPConnection;
-import net.mmo.utils.kism.entities.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.entities.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 

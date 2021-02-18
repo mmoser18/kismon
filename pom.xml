@@ -79,7 +79,8 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<!-- Replace artifactId 'vaadin' with 'vaadin-core' to use only free components -->
-			<artifactId>vaadin-core</artifactId>
+			<!--  artifactId>vaadin-core</artifactId -->
+			<artifactId>vaadin</artifactId>
 			<exclusions>
 				<!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
 				<exclusion>
@@ -299,6 +300,35 @@
 			<version>0.14.1</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- using javamelody-core for monitoring ->
+		<dependency>
+			<groupId>net.bull.javamelody</groupId>
+			<artifactId>javamelody-core</artifactId>
+			<version>1.86.0</version>
+		</dependency>
+		<!- -->
+		<!-- itext, option to add PDF export ->
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>bcmail-jdk14</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcprov-jdk14</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bctsp-jdk14</artifactId>
+					<groupId>bouncycastle</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!- -->
 	</dependencies>
 
 	<build>

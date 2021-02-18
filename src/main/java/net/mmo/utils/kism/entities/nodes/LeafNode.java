@@ -3,7 +3,7 @@
  * @since 08.11.2020
  */
 
-package net.mmo.utils.kism.entities;
+package net.mmo.utils.kism.entities.nodes;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
@@ -107,6 +107,9 @@ abstract public class LeafNode extends Node
 		Boolean.parseBoolean(AppProperties.getProperties().getProperty("LeafNode.ShortRequestLogEntries", //$NON-NLS-1$
 		                                                               "true")); //$NON-NLS-1$
 
+//	@Autowired
+//	private static ResultService resultService;
+
 
 	/** required for deserialization only */
 	protected LeafNode() {
@@ -167,12 +170,17 @@ abstract public class LeafNode extends Node
 								log.error("Error executing '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
 							}
 						}
+						// resultService.save(new RequestResults(getName(), getDuration(), getTimestamp(), getResult()));
 					}
 				}
 			});
 		if (asyncRequests) {
 			setInteractiveExecutor(Executors.newSingleThreadExecutor());
 		}
+	}
+
+	protected String getResult() {
+		return getState().name();
 	}
 
 	abstract public void sendRequest() throws Exception;

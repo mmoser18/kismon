@@ -6,7 +6,7 @@
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.connections.RESTConnection;
+import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 
 public class RESTConnectionForm extends HTTPConnectionForm<RESTConnection>
 {

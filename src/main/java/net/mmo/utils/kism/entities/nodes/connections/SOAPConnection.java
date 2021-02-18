@@ -3,7 +3,7 @@
  * @since 06.12.2020
  */
 
-package net.mmo.utils.kism.entities.connections;
+package net.mmo.utils.kism.entities.nodes.connections;
 
 import java.net.http.HttpRequest.Builder;
 

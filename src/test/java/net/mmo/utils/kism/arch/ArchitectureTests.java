@@ -72,6 +72,7 @@ public class ArchitectureTests
 		ArchRule rule = Architectures.layeredArchitecture()
 			.layer("Main").definedBy("net.mmo.utils.kism")
 			.layer("Backend").definedBy("..backend..")
+			.layer("Entities").definedBy("..entities..")
 			.layer("UI").definedBy("..ui..")
 			.layer("UINodes").definedBy("..ui.view.nodes")
 			.layer("UINodesConnections").definedBy("..ui.view.nodes.connection_forms..")
@@ -81,7 +82,7 @@ public class ArchitectureTests
 			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections")
 			// .whereLayer("UINodesConnections").mayNotBeAccessedByAnyLayer() // violated by FormFactory but that's OK
 			.whereLayer("Security").mayNotBeAccessedByAnyLayer()
-			.whereLayer("Backend").mayOnlyBeAccessedByLayers("UI")
+			.whereLayer("Backend").mayOnlyBeAccessedByLayers("UI","Entities")
 			;
 
 		rule.check(classes);

@@ -1,5 +1,5 @@
 {
-	"className" : "net.mmo.utils.kism.entities.RootNode",
+	"className" : "net.mmo.utils.kism.entities.nodes.RootNode",
 	"name" : "root",
 	"description" : "default",
 	"applicable" : true,
@@ -13,14 +13,14 @@
 	},
 	"condition" : "DEGRADED_ON_NOT_ALL_OK",
 	"children" : [ {
-		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "test-nodes",
 		"description" : "Just an example list of all possible nodes types",
 		"applicable" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
-			"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 			"name" : "REST_0",
 			"description" : "REST Connection",
 			"applicable" : true,
@@ -46,7 +46,7 @@
 			"payload" : "foobar ${xxx} abc\t",
 			"acceptableReturnCodes" : "200"
 		}, {
-			"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 			"name" : "SOAP_request_with_long_name",
 			"description" : "SOAP Connection",
 			"applicable" : true,
@@ -73,7 +73,7 @@
 			"acceptableReturnCodes" : "200",
 			"soapAction" : "registerSSL"
 		}, {
-			"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 			"name" : "JDBC_0",
 			"description" : "JDBC Connection",
 			"applicable" : false,
@@ -95,28 +95,28 @@
 			"query" : "select ${foo} from REF_ANREDE",
 			"driverName" : "oracle.jdbc.driver.OracleDriver"
 		}, {
-			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "Intermediate Node 0",
 			"description" : "Intermediate Node 0",
 			"applicable" : true,
 			"properties" : { },
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "Intermediate Node 1",
 				"description" : "Intermediate Node 1",
 				"applicable" : true,
 				"properties" : { },
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+					"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 					"name" : "Intermediate Node 2",
 					"description" : "Intermediate Node 2",
 					"applicable" : true,
 					"properties" : { },
 					"condition" : "ALL_MUST_BE_OK",
 					"children" : [ {
-						"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+						"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 						"name" : "REST Connection 3",
 						"description" : "REST Connection 3",
 						"applicable" : true,
@@ -142,7 +142,7 @@
 					} ],
 					"expanded" : true
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "REST Connection 4",
 					"description" : "REST Connection 4",
 					"applicable" : true,
@@ -166,7 +166,7 @@
 					"payload" : "foo",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+					"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 					"name" : "Intermediate Node 6",
 					"description" : "Intermediate Node 6",
 					"applicable" : true,
@@ -177,7 +177,7 @@
 				} ],
 				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 				"name" : "REST Connection 5",
 				"description" : "REST Connection 5",
 				"applicable" : true,
@@ -205,14 +205,14 @@
 		} ],
 		"expanded" : false
 	}, {
-		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
 		"description" : "All ZHQuest-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
-			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "ZHQuest Dev-Environments",
 			"description" : "ZHQuest Dev-Environments",
 			"applicable" : true,
@@ -229,7 +229,7 @@
 			},
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest DEV",
 				"description" : "ZHQuest DEV environment (server: ksta-zhquest-int3.elcadev.local)",
 				"applicable" : true,
@@ -239,7 +239,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "ZHQ DEV DB-ping",
 					"description" : "ping DB for ZHQuest DEV Environment",
 					"applicable" : true,
@@ -258,7 +258,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "ZHQ DEV DB-query",
 					"description" : "send specific query to ZHQuest DEV DB",
 					"applicable" : true,
@@ -277,7 +277,7 @@
 					"query" : "select TEXT from REF_ANREDE",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ DEV Application UI",
 					"description" : "ZHQuest Application Server DEV UI",
 					"applicable" : true,
@@ -303,7 +303,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ DEV Services WSDL",
 					"description" : "ZHQuest Application Server DEV services WSDL",
 					"applicable" : true,
@@ -327,7 +327,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DEV Service Call",
 					"description" : "ZHQuest Application Server DEV service call",
 					"applicable" : true,
@@ -352,7 +352,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DEV Mock SAM",
 					"description" : "Mock SecurityTokenServiceBinding for DEV",
 					"applicable" : true,
@@ -379,7 +379,7 @@
 				} ],
 				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest QA",
 				"description" : "ZHQuest QA Environment (server: ksta-zh-zhquest.elcadev.local)",
 				"applicable" : true,
@@ -389,7 +389,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "ZHQ QA DB-ping",
 					"description" : "ping DB for ZHQuest QA-Environment",
 					"applicable" : true,
@@ -408,7 +408,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "ZHQ QA DB-query",
 					"description" : "send specific query to ZHQuest QA DB",
 					"applicable" : true,
@@ -427,7 +427,7 @@
 					"query" : "select TEXT from REF_ANREDE",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ QA Application UI",
 					"description" : "ZHQuest Application Server QA UI",
 					"applicable" : true,
@@ -451,7 +451,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ QA Services WSDL",
 					"description" : "ZHQuest Application Server QA services WSDL",
 					"applicable" : true,
@@ -475,7 +475,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DEV Service Call",
 					"description" : "ZHQuest Application Server QA service call",
 					"applicable" : true,
@@ -500,7 +500,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ QA Mock SAM",
 					"description" : "Mock SecurityTokenServiceBinding for ZHQuest QA",
 					"applicable" : true,
@@ -527,7 +527,7 @@
 				} ],
 				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest DMZ",
 				"description" : "ZHQuest DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
 				"applicable" : true,
@@ -539,7 +539,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "ZHQ DMZ DB-ping",
 					"description" : "ping DB for ZHQuest DMZ-Environment",
 					"applicable" : true,
@@ -558,7 +558,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "ZHQ DMZ DB-query",
 					"description" : "send specific query to ZHQuest DMZ DB",
 					"applicable" : true,
@@ -577,7 +577,7 @@
 					"query" : "select TEXT from REF_ANREDE",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ DMZ Application UI",
 					"description" : "ZHQuest Application Server DMZ UI",
 					"applicable" : true,
@@ -601,7 +601,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ DMZ Services WSDL",
 					"description" : "ZHQuest Application Server DMZ services WSDL",
 					"applicable" : true,
@@ -625,7 +625,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DMZ Service Call",
 					"description" : "ZHQuest Application Server DMZ service call",
 					"applicable" : true,
@@ -650,7 +650,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DMZ Mock SAM",
 					"description" : "Mock SecurityTokenServiceBinding for ZHQuest DMZ",
 					"applicable" : true,
@@ -681,14 +681,14 @@
 		} ],
 		"expanded" : true
 	}, {
-		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
 		"description" : "All RegisterJP-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
-			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RegisterJP Dev-Environments",
 			"description" : "RegisterJP Dev-Environments",
 			"applicable" : true,
@@ -707,7 +707,7 @@
 			},
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RegisterJP DEV",
 				"description" : "RegisterJP DEV environment (server: zhstregisterjp-dev.elcadev.local)",
 				"applicable" : true,
@@ -717,7 +717,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP DEV DB-ping",
 					"description" : "ping RegisterJP DEV DB",
 					"applicable" : true,
@@ -736,7 +736,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP DEV DB query",
 					"description" : "send specific query to RegisterJP DEV DB",
 					"applicable" : true,
@@ -755,7 +755,7 @@
 					"query" : "${db_query}",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP DEV Mock-Server",
 					"description" : "SOAP-UI Mock Server for RegisterJP DEV (actually shared among all RJP Dev-Environments)",
 					"applicable" : true,
@@ -779,7 +779,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP DEV Application UI",
 					"description" : "RegisterJP Application Server DEV UI",
 					"applicable" : true,
@@ -803,7 +803,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP DEV Services WSDL",
 					"description" : "RegisterJP Application Server DEV services WSDL\n",
 					"applicable" : true,
@@ -827,7 +827,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "RJP DEV Service Call",
 					"description" : "RegisterJP Application Server DEV service call",
 					"applicable" : true,
@@ -854,7 +854,7 @@
 				} ],
 				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RegisterJP QA",
 				"description" : "RegisterJP QA environment (server: zhstregisterjp-qa.elcadev.local)",
 				"applicable" : true,
@@ -864,7 +864,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP QA DB-ping",
 					"description" : "ping RegisterJP QA DB",
 					"applicable" : true,
@@ -883,7 +883,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP QA DB-query",
 					"description" : "send specific query to RegisterJP QA DB",
 					"applicable" : true,
@@ -902,7 +902,7 @@
 					"query" : "${db_query}",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "(RJP QA Mock-Server)",
 					"description" : "SOAP-UI Mock Server for RegisterJP QA (actually the same as RJP DEV)",
 					"applicable" : true,
@@ -926,7 +926,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP QA Application UI",
 					"description" : "RegisterJP Application Server QA UI",
 					"applicable" : true,
@@ -950,7 +950,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP QA Services WSDL",
 					"description" : "RegisterJP Application Server QA services WSDL\n",
 					"applicable" : true,
@@ -974,7 +974,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "RJP QA Service Call",
 					"description" : "RegisterJP Application Server QA service call",
 					"applicable" : true,
@@ -1001,7 +1001,7 @@
 				} ],
 				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RegisterJP PROD",
 				"description" : "RegisterJP PROD environment (server: zhstregisterjp-prod.elcadev.local)",
 				"applicable" : true,
@@ -1011,7 +1011,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP PROD DB-ping",
 					"description" : "ping RegisterJP PROD DB",
 					"applicable" : true,
@@ -1030,7 +1030,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP PROD DB-query",
 					"description" : "send specific query to RegisterJP PROD DB",
 					"applicable" : true,
@@ -1049,7 +1049,7 @@
 					"query" : "${db_query}",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "(RJP PROD Mock-Server)",
 					"description" : "SOAP-UI Mock Server for RegisterJP PROD (actually the same as RJP DEV)",
 					"applicable" : true,
@@ -1073,7 +1073,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP PROD Application UI",
 					"description" : "RegisterJP Application Server PROD UI",
 					"applicable" : true,
@@ -1097,7 +1097,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RJP PROD Services WSDL",
 					"description" : "RegisterJP Application Server PROD services WSDL\n",
 					"applicable" : true,
@@ -1121,7 +1121,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.SOAPConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "RJP PROD Service Call",
 					"description" : "RegisterJP Application Server PROD service call",
 					"applicable" : true,
@@ -1152,21 +1152,21 @@
 		} ],
 		"expanded" : false
 	}, {
-		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
 		"description" : "All WPS-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
-			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "WPS Dev-Environments",
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : { },
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "DMZ",
 				"description" : "DMZ environment (server: kstazh-wps.elca.ch)",
 				"applicable" : true,
@@ -1185,7 +1185,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "WPS DMZ DB-ping",
 					"description" : "ping WPS DMZ DB",
 					"applicable" : true,
@@ -1204,7 +1204,7 @@
 					"query" : "select * from DUAL",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "WPS DMZ DB query",
 					"description" : "send specific query to WPS DMZ DB",
 					"applicable" : true,
@@ -1223,7 +1223,7 @@
 					"query" : "select * from PSTA_NOTIFICATION_TYPE",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "WPS DMZ Mock",
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
@@ -1247,7 +1247,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "WPS DMZ Application basic connection",
 					"description" : "WPS Application server DMZ",
 					"applicable" : true,
@@ -1277,21 +1277,21 @@
 		} ],
 		"expanded" : true
 	}, {
-		"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
 		"description" : "All RW-Tool-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
-			"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RW-Tool Dev-Environments",
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : { },
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RW-Tool DMZ",
 				"description" : "RW-Tool DMZ environment (server: ksta-zh-rwtool.elcadev.local:8080)\n",
 				"applicable" : true,
@@ -1307,7 +1307,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RWT DMZ DB-ping",
 					"description" : "ping RWT DMZ DB\n",
 					"applicable" : true,
@@ -1326,7 +1326,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RWT DMZ DP-query",
 					"description" : "send specific query to RWT DMZ DB",
 					"applicable" : true,
@@ -1345,7 +1345,7 @@
 					"query" : "select * from tbd",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RWT DMZ Application basic connection",
 					"description" : "RWT Application server DMZ",
 					"applicable" : true,
@@ -1371,7 +1371,7 @@
 				} ],
 				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.IntermediateNode",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RW-Tool Test",
 				"description" : "RW-Tool Test environment 2 (server: ksta-zh-rwtool.elcadev.local:8081)",
 				"applicable" : false,
@@ -1387,7 +1387,7 @@
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RWT Test DB-ping",
 					"description" : "ping RWT DMZ DB\n",
 					"applicable" : true,
@@ -1406,7 +1406,7 @@
 					"query" : "select * from dual",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.JDBCConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RWT Test DP-query",
 					"description" : "send specific query to RWT Test DB",
 					"applicable" : true,
@@ -1425,7 +1425,7 @@
 					"query" : "select * from tbd",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.connections.RESTConnection",
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "RWT Test Application basic connection",
 					"description" : "RWT Application server Test",
 					"applicable" : true,

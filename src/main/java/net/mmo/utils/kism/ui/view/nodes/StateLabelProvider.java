@@ -7,7 +7,7 @@ package net.mmo.utils.kism.ui.view.nodes;
 
 import java.util.HashMap;
 
-import net.mmo.utils.kism.entities.Node;
+import net.mmo.utils.kism.entities.nodes.Node;
 
 public class StateLabelProvider
 {

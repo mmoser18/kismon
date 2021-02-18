@@ -7,12 +7,12 @@ package net.mmo.utils.kism.ui.view.nodes;
 
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.IntermediateNode;
-import net.mmo.utils.kism.entities.Node;
-import net.mmo.utils.kism.entities.RootNode;
-import net.mmo.utils.kism.entities.connections.JDBCConnection;
-import net.mmo.utils.kism.entities.connections.RESTConnection;
-import net.mmo.utils.kism.entities.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.IntermediateNode;
+import net.mmo.utils.kism.entities.nodes.Node;
+import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.JDBCConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.RESTConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.SOAPConnectionForm;
