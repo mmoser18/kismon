@@ -524,9 +524,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	protected void refreshNode(Node node, boolean refreshChildren) {
 		NodeView.this.tree.getDataProvider().refreshItem(node, refreshChildren);
-		// work-around, since the refreshChildren==true is not working:
+		// workaround since refreshChildren==true in the above call has no effect:
 		if (refreshChildren && node instanceof IntermediateNode) {
 			((IntermediateNode)node).getChildren().forEach(n -> refreshNode(n, refreshChildren));
+			// NodeView.this.tree.getDataProvider().refreshAll();
 		}
 	}
 
@@ -702,17 +703,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void updateSubTree(IntermediateNode parent) {
 		TreeData<Node> treeData = this.tree.getTreeData();
-		parent.getChildren().forEach((node) -> treeData.removeItem(node));
+		// remove all children:
+		parent.getChildren().forEach((child) -> treeData.removeItem(child));
+		// re-add all children:
 		addChildren(treeData, parent);
 		adjustCollapseExpanded(parent);
-	}
-
-	private void removeChildren(TreeData<Node> treeData, Node node {
-		if (node instanceof IntermediateNode) {
-			List<Node> children = ((IntermediateNode)node).getChildren();
-			children.forEach((node) -> treeData.removeItem(node));
-		}
-		treeData.removeItem(parent);
 	}
 
 	private void addChildren(TreeData<Node> treeData, Node parent) {
