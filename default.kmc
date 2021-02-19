@@ -218,14 +218,14 @@
 			"applicable" : true,
 			"properties" : {
 				"app_uid" : "mms",
+				"app_host" : "---",
 				"mock_port" : "8090",
 				"app_url" : "https://${app_host}/zhquest/",
+				"db_uid" : "---",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "zhquest",
 				"mock_host" : "${app_host}",
-				"mock_url" : "http://${mock_host}:${mock_port}/zhquest-mock-external-services/",
-				"app_host" : "---",
-				"db_uid" : "---"
+				"mock_url" : "http://${mock_host}:${mock_port}/zhquest-mock-external-services/"
 			},
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
@@ -677,9 +677,9 @@
 				} ],
 				"expanded" : true
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -1275,7 +1275,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
@@ -1453,7 +1453,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	} ],
 	"expanded" : true
 }

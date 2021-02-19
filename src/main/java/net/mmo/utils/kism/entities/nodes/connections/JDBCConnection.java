@@ -291,6 +291,11 @@ public class JDBCConnection extends IPConnection
 	}
 
 	@Override
+	protected String getRequestResult() {
+		return getState().name() + '/' + getResponseStatus();
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);

@@ -1,5 +1,5 @@
 echo build using Java-11:
-set JAVA_HOME=C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-hotspot
+set JAVA_HOME=C:\Program Files\Java\jdk-11.0
 
 echo run maven build:  ("call" because that's a cmd-file with an exit at the end. Without the call this also terminates *us*)
 call mvn clean package -Pproduction

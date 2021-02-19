@@ -520,6 +520,11 @@ abstract public class HTTPConnection extends IPConnection
 		log.trace("response: body: \"{}\"", responseBodyAsString()); //$NON-NLS-1$
 	}
 
+	@Override
+	protected String getRequestResult() {
+		return getState().name() + '/' + getResponseStatusCode();
+	}
+
 	// utility methods:
 
 	@JsonIgnore

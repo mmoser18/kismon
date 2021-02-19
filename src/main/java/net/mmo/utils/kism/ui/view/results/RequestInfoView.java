@@ -1,5 +1,7 @@
 package net.mmo.utils.kism.ui.view.results;
 
+import java.util.Arrays;
+
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -9,8 +11,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.ResultService;
-import net.mmo.utils.kism.entities.results.RequestResults;
+import net.mmo.utils.kism.backend.service.RequestInfoService;
+import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import org.springframework.context.annotation.Scope;
@@ -24,7 +26,7 @@ import org.springframework.stereotype.Component;
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
-public class ResultView extends VerticalLayout
+public class RequestInfoView extends VerticalLayout
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
@@ -35,14 +37,14 @@ public class ResultView extends VerticalLayout
 	public static final String FilterFieldClassName = "list-view-filter";  //$NON-NLS-1$
 	public static final String GridClassName        = "list-view-grid"; //$NON-NLS-1$
 
-	private ResultService resultService;
+	private RequestInfoService resultService;
 
 	private TextField filterText = new TextField();
-	Grid<RequestResults> grid = new Grid<>(RequestResults.class); // package visible for UTs - is there no other way?
+	Grid<RequestInfo> grid = new Grid<>(RequestInfo.class); // package visible for UTs - is there no other way?
 	Div content;
 
 	// This gets autowired but still puzzled which annotation causes this...
-	public ResultView(ResultService resultService) {
+	public RequestInfoView(RequestInfoService resultService) {
 		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
 		this.resultService = resultService;
 
@@ -65,7 +67,7 @@ public class ResultView extends VerticalLayout
 	private HorizontalLayout getToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 		this.filterText.setClassName(FilterFieldClassName);
-		this.filterText.setPlaceholder(Messages.getString("ResultView.TextField.FilterText.Label")); //$NON-NLS-1$
+		this.filterText.setPlaceholder(Messages.getString("RequestInfoView.TextField.FilterText.Label")); //$NON-NLS-1$
 		this.filterText.setClearButtonVisible(true);
 		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 		this.filterText.addValueChangeListener(e -> updateList());
@@ -80,11 +82,18 @@ public class ResultView extends VerticalLayout
 		log.trace("Configuring Grid:"); //$NON-NLS-1$
 		this.grid.addClassName(GridClassName);
 		this.grid.setSizeFull();
-		this.grid.setColumns("name", // Messages.getString("ResultView.Grid.ColumnName.Name"), //$NON-NLS-1$
-		                     "duration", // Messages.getString("ResultView.Grid.ColumnName.Duration"), //$NON-NLS-1$
-		                     "timestamp", // Messages.getString("ResultView.Grid.ColumnName.Timestamp"), //$NON-NLS-1$
-		                     "result"); // Messages.getString("ResultView.Grid.ColumnName.Result")); //$NON-NLS-1$
-		this.grid.getColumns().forEach(col -> col.setAutoWidth(true));
+
+		String[] columnNames = {"Name", "Duration", "Timestamp", "Result"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		this.grid.removeAllColumns();
+		Arrays.asList(columnNames).stream()
+			.forEach((name) -> {
+				this.grid
+					.addColumn(name.toLowerCase())
+					.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName." + name)) //$NON-NLS-1$
+					.setAutoWidth(true)
+					.setFlexGrow(0);
+			});
+
 		this.grid.asSingleSelect()
 		         .addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
 	}

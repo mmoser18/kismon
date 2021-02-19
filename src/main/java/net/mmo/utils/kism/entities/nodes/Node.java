@@ -39,9 +39,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 {
 	private static final long serialVersionUID = 3875470009216934341L;
 
-	public final static String PROPERTYNAME_STATE  = "state";  //$NON-NLS-1$
-	public final static String PROPERTYNAME_PARENT  = "parent";  //$NON-NLS-1$
-	public final static String PROPERTYNAME_APLLICABLE  = "applicable";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_STATE = "state";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_PARENT = "parent";  //$NON-NLS-1$
+	public final static String PROPERTYNAME_APPLICABLE = "applicable";  //$NON-NLS-1$
 
 	public enum State {
 		FAILED,

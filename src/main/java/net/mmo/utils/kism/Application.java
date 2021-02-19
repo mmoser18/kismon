@@ -1,6 +1,8 @@
 package net.mmo.utils.kism;
 
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.RequestInfoService;
+import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.boot.SpringApplication;
@@ -18,6 +20,11 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 @Slf4j
 public class Application extends SpringBootServletInitializer
 {
+	// constructor with autowired beans:
+	Application(RequestInfoService requestInfoService) {
+		LeafNode.requestInfoService = requestInfoService;
+	}
+
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		try {

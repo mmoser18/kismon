@@ -46,7 +46,7 @@ public class IntermediateNodeTest
 			// empty
 		}
 		@Override
-		protected String getResult() {
+		protected String getRequestResult() {
 			return "foobar"; //$NON-NLS-1$
 		}
 	}

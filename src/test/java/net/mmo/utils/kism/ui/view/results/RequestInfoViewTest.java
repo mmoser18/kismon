@@ -7,7 +7,7 @@ package net.mmo.utils.kism.ui.view.results;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import net.mmo.utils.kism.entities.results.RequestResults;
+import net.mmo.utils.kism.entities.results.RequestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,22 +22,22 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 // before the tests are run and allow you to use @Autowired in the test.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest // makes sure that the Spring Boot application is initialized before the tests are run and allows you to use @Autowire in the test.
-public class ResultViewTest
+public class RequestInfoViewTest
 {
 	@Autowired
-	private ResultView listView;
+	private RequestInfoView listView;
 
 	// @Test
 	public void formShownWhenContactSelected() {
-		Grid<RequestResults> grid = this.listView.grid;
+		Grid<RequestInfo> grid = this.listView.grid;
 		@SuppressWarnings("unused")
-		RequestResults firstResult = getFirstItem(grid);
+		RequestInfo firstResult = getFirstItem(grid);
 		// to be completed...
 	}
 
 	@SuppressWarnings({"unchecked", "static-method"})
-	private RequestResults getFirstItem(Grid<RequestResults> grid) {
-		return ((ListDataProvider<RequestResults>)grid.getDataProvider()).getItems().iterator().next();
+	private RequestInfo getFirstItem(Grid<RequestInfo> grid) {
+		return ((ListDataProvider<RequestInfo>)grid.getDataProvider()).getItems().iterator().next();
 	}
 }
 

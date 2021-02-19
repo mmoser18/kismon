@@ -21,6 +21,8 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.RequestInfoService;
+import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 
@@ -61,7 +63,7 @@ abstract public class LeafNode extends Node
 	/** common response fields: */
 
 	@JsonIgnore
-	protected transient long duration;
+	protected transient long duration; // in nano-seconds
 
 	//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	//	@JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -107,9 +109,7 @@ abstract public class LeafNode extends Node
 		Boolean.parseBoolean(AppProperties.getProperties().getProperty("LeafNode.ShortRequestLogEntries", //$NON-NLS-1$
 		                                                               "true")); //$NON-NLS-1$
 
-//	@Autowired
-//	private static ResultService resultService;
-
+	public transient static RequestInfoService requestInfoService;
 
 	/** required for deserialization only */
 	protected LeafNode() {
@@ -163,6 +163,7 @@ abstract public class LeafNode extends Node
 						log.trace("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
 						try {
 							sendRequest();
+							requestInfoService.save(new RequestInfo(getName(), getDuration(), getTimestamp(), getRequestResult()));
 						} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
 							if (shortRequestLogEntries) {
 								log.info("Error executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
@@ -170,7 +171,6 @@ abstract public class LeafNode extends Node
 								log.error("Error executing '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
 							}
 						}
-						// resultService.save(new RequestResults(getName(), getDuration(), getTimestamp(), getResult()));
 					}
 				}
 			});
@@ -179,9 +179,8 @@ abstract public class LeafNode extends Node
 		}
 	}
 
-	protected String getResult() {
-		return getState().name();
-	}
+	@JsonIgnore
+	abstract protected String getRequestResult();
 
 	abstract public void sendRequest() throws Exception;
 
@@ -193,6 +192,7 @@ abstract public class LeafNode extends Node
 			this.interactiveExecutor.execute(() -> {
 				try {
 					sendRequest();
+					requestInfoService.save(new RequestInfo(getName(), getDuration(), getTimestamp(), getRequestResult()));
 				} catch (Exception ex) {
 					log.error("Exception executing sendRequest", ex); //$NON-NLS-1$
 				}
@@ -200,6 +200,7 @@ abstract public class LeafNode extends Node
 		} else {
 			log.info("sendRequest-sync:"); //$NON-NLS-1$
 			sendRequest();
+			requestInfoService.save(new RequestInfo(getName(), getDuration(), getTimestamp(), getRequestResult()));
 		}
 	}
 

@@ -30,4 +30,9 @@ public class SSHConnection extends IPConnection
 	public void sendRequest() throws Exception {
 		throw new NotYetImplementedException("SSH not yet implemented"); //$NON-NLS-1$
 	}
+
+	@Override
+	protected String getRequestResult() {
+		return "tbd"; //$NON-NLS-1$
+	}
 }

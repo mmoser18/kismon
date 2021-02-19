@@ -134,7 +134,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private HorizontalLayout createToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 //		this.filterText.setClassName(FilterFieldClassName);
-//		this.filterText.setPlaceholder(Messages.getString("ResultView.TextField.FilterText.Label")); //$NON-NLS-1$
+//		this.filterText.setPlaceholder(Messages.getString("RequestInfoView.TextField.FilterText.Label")); //$NON-NLS-1$
 //		this.filterText.setClearButtonVisible(true);
 //		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
 //		this.filterText.addValueChangeListener(e -> updateList());

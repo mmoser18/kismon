@@ -13,7 +13,7 @@ import net.mmo.utils.kism.entities.AbstractEntity;
 @Entity
 @Setter
 @Getter
-public class RequestResults extends AbstractEntity implements Serializable
+public class RequestInfo extends AbstractEntity implements Serializable
 {
 	private static final long serialVersionUID = -974098342485642213L;
 
@@ -22,7 +22,7 @@ public class RequestResults extends AbstractEntity implements Serializable
 
 	protected String name;
 
-	protected long duration;
+	protected double duration; // in micro-seconds!
 
 	//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	//	@JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -31,10 +31,14 @@ public class RequestResults extends AbstractEntity implements Serializable
 
 	protected String result;
 
+	@SuppressWarnings("unused")
+	private RequestInfo() {
+		// empty
+	}
 
-	public RequestResults(String name, long duration, LocalDateTime timestamp, String result) {
+	public RequestInfo(String name, long duration, LocalDateTime timestamp, String result) {
 		setName(name);
-		setDuration(duration);
+		setDuration(duration/1000.0);
 		setTimestamp(timestamp);
 		setResult(result);
 	}
