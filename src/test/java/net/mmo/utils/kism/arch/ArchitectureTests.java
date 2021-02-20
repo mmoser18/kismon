@@ -75,14 +75,15 @@ public class ArchitectureTests
 			.layer("Entities").definedBy("..entities..")
 			.layer("UI").definedBy("..ui..")
 			.layer("UINodes").definedBy("..ui.view.nodes")
+			.layer("UIResults").definedBy("..ui.view.results")
 			.layer("UINodesConnections").definedBy("..ui.view.nodes.connection_forms..")
 			.layer("Security").definedBy("..security")
 			.whereLayer("Main").mayNotBeAccessedByAnyLayer()
 			.whereLayer("UI").mayNotBeAccessedByAnyLayer()
-			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections")
+			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections", "UIResults")
 			// .whereLayer("UINodesConnections").mayNotBeAccessedByAnyLayer() // violated by FormFactory but that's OK
 			.whereLayer("Security").mayNotBeAccessedByAnyLayer()
-			.whereLayer("Backend").mayOnlyBeAccessedByLayers("UI","Entities")
+			.whereLayer("Backend").mayOnlyBeAccessedByLayers("Main", "UI","Entities")
 			;
 
 		rule.check(classes);

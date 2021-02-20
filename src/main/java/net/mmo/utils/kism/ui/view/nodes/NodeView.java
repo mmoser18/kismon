@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,13 +41,13 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.Node;
+import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
-import net.mmo.utils.kism.ui.view.nodes.NodeFactory.NodeType;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import org.springframework.context.annotation.Scope;
@@ -96,7 +97,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
 	                FormFactory<N> formFactory) { // defined as constructor args to force order
-		log.debug("creating {}:", this.getClassName()); //$NON-NLS-1$
+		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
 			this.nodeFactory = nodeFactory;
@@ -133,11 +134,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private HorizontalLayout createToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
-//		this.filterText.setClassName(FilterFieldClassName);
-//		this.filterText.setPlaceholder(Messages.getString("RequestInfoView.TextField.FilterText.Label")); //$NON-NLS-1$
-//		this.filterText.setClearButtonVisible(true);
-//		this.filterText.setValueChangeMode(ValueChangeMode.LAZY);
-//		this.filterText.addValueChangeListener(e -> updateList());
 
 		ComboBox<NodeType> nodeTypeSelector = new ComboBox<>(Messages.getString("NodeView.ComboBox.NodeTypes.Label")); //$NON-NLS-1$
 		nodeTypeSelector.setItems(NodeType.values());
@@ -151,7 +147,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		addNodeButton.addClickListener(click ->
 			{
 				NodeType type = nodeTypeSelector.getValue();
-				log.info("add node (type={})", type); //$NON-NLS-1$
+				log.info("add node (nodeType={})", type); //$NON-NLS-1$
 				if (type == NodeType.RootNode) {
 					createNewRootNode();
 				} else {
@@ -237,7 +233,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.haltRequests.addValueChangeListener(event -> adjustHaltRequest(event.getValue()));
 		adjustHaltRequest(LeafNode.haltAllRequests);
 
-		HorizontalLayout toolbar = new HorizontalLayout(/*this.filterText,*/ nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
+		HorizontalLayout toolbar = new HorizontalLayout(nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
 		                                                moveUp, moveDown,
 		                                                /*directionButton,*/ saveAllButton, downloadFileButton, uploadFile, this.haltRequests);
 		toolbar.addClassName(ViewToolbarClassName);
@@ -260,7 +256,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.addClassName(TreeClassName);
 		this.tree.setSizeFull();
 
-		// this.tree.addHierachyColumn(Node::getState)
 		this.tree.addComponentHierarchyColumn(node -> {
 				Node.State state = node.getState();
 				String stateText = StateLabelProvider.getStateLabel(state);
@@ -277,18 +272,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
-		this.tree.addColumn(node -> {
-				switch (node.getClass().getSimpleName()) {
-				case "RootNode": return "(Root)"; //$NON-NLS-1$ //$NON-NLS-2$
-				case "IntermediateNode": return " -- "; //$NON-NLS-1$ //$NON-NLS-2$
-				case "RESTConnection":  return "REST"; //$NON-NLS-1$ //$NON-NLS-2$
-				case "SOAPConnection": return "SOAP"; //$NON-NLS-1$ //$NON-NLS-2$
-				case "JDBCConnection": return "JDBC"; //$NON-NLS-1$ //$NON-NLS-2$
-				default: return "???"; //$NON-NLS-1$
-				}
-			})
+		this.tree.addColumn(node -> NodeTypeLabelProvider.getNodeTypeLabel(node))
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
-			.setKey("type") //$NON-NLS-1$
+			.setKey("nodeType") //$NON-NLS-1$
 			.setAutoWidth(true)
 			.setFlexGrow(0)
 			;
@@ -501,7 +487,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 	void createNewChildNode(NodeType nodeType, IntermediateNode parentNode) {
 		log.info("createNewChildNode"); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
-		N newNode = this.nodeFactory.createNode(nodeType);
+		N newNode;
+		try {
+			newNode = this.nodeFactory.createNode(nodeType);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+			ExecutionError(String.format("Exception creating node of type '%s':", nodeType), ex); //$NON-NLS-1$
+			return;
+		}
 		// We don't hook the newly defined node into the tree, yet, but before we allow a user to
 		// edit it we need to provide it with an upstream properties-set or else the user will get
 		// "property not found"-errors during validation when entering a placeholder into a field:

@@ -185,6 +185,17 @@ public class IntermediateNode extends Node
 	}
 
 	@Override
+	public void executeRequest() throws Exception {
+		getChildren().forEach((node) -> {
+			try {
+				node.executeRequest();
+			} catch (Exception ex) {
+				log.info("Exception executing '{}': {}", node, ex); //$NON-NLS-1$
+			}
+		});
+	}
+
+	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer(super.toString());
 		buf.setLength(buf.length()-1);

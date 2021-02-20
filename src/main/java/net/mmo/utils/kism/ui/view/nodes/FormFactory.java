@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
+import java.util.Hashtable;
+
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
@@ -22,15 +24,15 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class FormFactory <N extends Node>
 {
-//	// Here we cache the forms - one per type. Since we don't have that many form types there is no cleanup nor eviction
-//	Hashtable<Class<N>, NodeForm<N>> forms = new Hashtable<>();
+//	// Here we cache the forms - one per nodeType. Since we don't have that many form types there is no cleanup nor eviction
+	Hashtable<Class<N>, NodeForm<N>> forms = new Hashtable<>();
 
-	// @Cacheable("forms") // tried using Spring cache here but didn't work. And as a sideeffect it caused darn slow application startup, so back to a good ol' Hashtable...
 	@SuppressWarnings("unchecked")
+	// @Cacheable("forms") // tried using Spring cache here but didn't work. And as a sideeffect
+	// it caused darn slow application startup, so back to a good ol' Hashtable...
 	NodeForm<N> createForm(Class<N> clazz, NodeService nodeService) {
-//		NodeForm<N> form = this.forms.get(clazz);
-//		if (form == null) {
-		NodeForm<N> form;
+		NodeForm<N> form = this.forms.get(clazz);
+		if (form == null) {
 			log.info("creating new form for node-class {}:", clazz); //$NON-NLS-1$
 			if (clazz == RootNode.class) {
 				form = (NodeForm<N>)new RootNodeForm(nodeService);
@@ -43,13 +45,13 @@ public class FormFactory <N extends Node>
 			} else if (clazz == JDBCConnection.class) {
 				form = (NodeForm<N>)new JDBCConnectionForm(nodeService);
 			} else {
-				throw new IllegalArgumentException("No form defined for unexpected class " + clazz); //$NON-NLS-1$
+				throw new IllegalArgumentException("No form defined (yet) for node class " + clazz); //$NON-NLS-1$
 			}
-//			this.forms.put(clazz, form); // cache it
+			this.forms.put(clazz, form); // cache it
 			log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
-//		} else {
-//			log.info("found existing form for class {}: {}", clazz, form); //$NON-NLS-1$
-//		}
+		} else {
+			log.info("found existing form for class {}: {}", clazz, form); //$NON-NLS-1$
+		}
 		return form;
 	}
 }

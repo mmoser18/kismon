@@ -29,7 +29,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver
 	private LoginForm login = new LoginForm();
 
 	public LoginView() {
-		log.info("Creating LoginView:");
+		log.debug("Creating {}:", this.getClass().getSimpleName());
 		try {
 			addClassName(ViewClassName);
 			setSizeFull();

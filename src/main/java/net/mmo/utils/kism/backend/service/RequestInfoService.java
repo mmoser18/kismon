@@ -5,10 +5,12 @@
 
 package net.mmo.utils.kism.backend.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.repositories.RequestInfoRepository;
+import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.results.RequestInfo;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ public class RequestInfoService
 	private RequestInfoRepository requestInfoRepository;
 
 	public RequestInfoService(RequestInfoRepository requestInfoRepository) {
+		log.debug("RequestInfoService c'tor"); //$NON-NLS-1$
 		this.requestInfoRepository = requestInfoRepository;
 	}
 
@@ -26,11 +29,16 @@ public class RequestInfoService
 		return this.requestInfoRepository.findAll();
 	}
 
-	public List<RequestInfo> findAll(String stringFilter) {
-		if (stringFilter == null || stringFilter.isEmpty()) {
+	public List<RequestInfo> findAll(String nameFilter, NodeType typeFilter,
+	                     			long durationLowerBound, long durationUpperBound,
+	                     			LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
+		if ((nameFilter == null || nameFilter.isEmpty()) &&
+			typeFilter == null &&
+			durationLowerBound == 0 && durationUpperBound == 0 &&
+			timestampLowerBound == null && timestampUpperBound == null) {
 			return this.requestInfoRepository.findAll();
 		} else {
-			return this.requestInfoRepository.findByName(stringFilter);
+			return this.requestInfoRepository.findByFilter(nameFilter, typeFilter/*, 0, 0, null, null*/);
 		}
 	}
 

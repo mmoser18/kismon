@@ -43,6 +43,6 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 //			}
 //		});
 
-		this.fields.add(this.condition);
+		this.fields.add(this.execute, this.condition);
 	}
 }

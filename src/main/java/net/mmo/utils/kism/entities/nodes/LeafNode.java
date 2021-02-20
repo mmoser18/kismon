@@ -163,7 +163,7 @@ abstract public class LeafNode extends Node
 						log.trace("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
 						try {
 							sendRequest();
-							requestInfoService.save(new RequestInfo(getName(), getDuration(), getTimestamp(), getRequestResult()));
+							requestInfoService.save(new RequestInfo(getName(), getClass().getSimpleName(), getDuration(), getTimestamp(), getRequestResult()));
 						} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
 							if (shortRequestLogEntries) {
 								log.info("Error executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
@@ -184,15 +184,14 @@ abstract public class LeafNode extends Node
 
 	abstract public void sendRequest() throws Exception;
 
-
-	// this is the code being executed when clicking "execute" manually:
+	@Override
 	public void executeRequest() throws Exception {
 		if (asyncRequests) {
 			log.info("sendRequest-async:"); //$NON-NLS-1$
 			this.interactiveExecutor.execute(() -> {
 				try {
 					sendRequest();
-					requestInfoService.save(new RequestInfo(getName(), getDuration(), getTimestamp(), getRequestResult()));
+					requestInfoService.save(new RequestInfo(getName(), getClass().getSimpleName(), getDuration(), getTimestamp(), getRequestResult()));
 				} catch (Exception ex) {
 					log.error("Exception executing sendRequest", ex); //$NON-NLS-1$
 				}
@@ -200,7 +199,7 @@ abstract public class LeafNode extends Node
 		} else {
 			log.info("sendRequest-sync:"); //$NON-NLS-1$
 			sendRequest();
-			requestInfoService.save(new RequestInfo(getName(), getDuration(), getTimestamp(), getRequestResult()));
+			requestInfoService.save(new RequestInfo(getName(), getClass().getSimpleName(), getDuration(), getTimestamp(), getRequestResult()));
 		}
 	}
 
@@ -256,6 +255,7 @@ abstract public class LeafNode extends Node
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
+			.append(", checkResults:").append(this.checkResults) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

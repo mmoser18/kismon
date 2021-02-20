@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -22,13 +21,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.utils.AppProperties;
 
-@Slf4j
 public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
@@ -39,7 +36,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 
 	static final String ConnectionDetailsClassName = NodeFormField + "connection-details"; //$NON-NLS-1$
 
-	static final String ExecuteClassName       = NodeFormField + "execute"; //$NON-NLS-1$
 	static final String DurationClassName      = NodeFormField + "duration"; //$NON-NLS-1$
 	static final String TimeStampClassName     = NodeFormField + "timestamp"; //$NON-NLS-1$
 
@@ -57,8 +53,7 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 	protected Accordion connnectionDetails;
 	protected VerticalLayout connnectionDetailsPanel;
 
-	// these are not yet added to the form to allow subclasses to include them at appropriate places:
-	protected Button execute;
+
 
 	protected TextField timestamp;
 	protected NumberField duration;
@@ -126,20 +121,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 				})
 			.bind(LeafNode::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)
 
-		this.execute = new Button(Messages.getString("LeafNodeForm.Execute.Label")); //$NON-NLS-1$
-		this.execute.setClassName(ExecuteClassName);
-		this.execute.setThemeName(LabelPaddingTheme);
-		this.execute.addClickListener(event ->
-			{
-				log.info("execute clicked"); //$NON-NLS-1$
-				if (hasUiChanges()) validateAndSave();
-				try {
-					this.node.executeRequest();
-				} catch (Throwable t) {
-					NodeView.ExecutionError("manually triggered execution", t); //$NON-NLS-1$
-				}
-			});
-
 		this.checkResults = new Checkbox(Messages.getString("LeafNodeForm.CheckResult.Label")); //$NON-NLS-1$
 		this.checkResults.setClassName(ActiveClassName);
 
@@ -161,17 +142,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 		this.validationDetailsPanel.add(this.checkResults);
 
 		this.fields.add(activeAndPeriod, this.connnectionDetails, this.execute);
-	}
-
-	@Override
-	protected void updateSaveButtonState() {
-		super.updateSaveButtonState();
-		this.execute.setText(Messages.getString(this.uiChanges
-		                                        ? "LeafNodeForm.SaveAndExecute.Label" //$NON-NLS-1$
-		                                        : "LeafNodeForm.Execute.Label")); //$NON-NLS-1$
-		boolean isValid = binderIsValid();
-		log.debug("binder status change -> [execute] active:{}", isValid); //$NON-NLS-1$
-		this.execute.setEnabled(isValid);
 	}
 
 	// convenience method to convert duration in nano-seconds to milli-sec's

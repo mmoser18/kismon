@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.AbstractEntity;
+import net.mmo.utils.kism.entities.nodes.NodeType;
 
 @Entity
 @Setter
@@ -20,25 +21,33 @@ public class RequestInfo extends AbstractEntity implements Serializable
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 
+	/** name of node that generated this result */
 	protected String name;
 
-	protected double duration; // in micro-seconds!
+	/** simple name of node class that generated this result */
+	protected NodeType nodeType;
 
+	/** duration of request (in nano-seconds) */
+	protected long duration;
+
+	/** timestamp of request(-start) */
 	//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	//	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	//	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
 	protected LocalDateTime timestamp;
 
+	/** node-specific string describing the result */
 	protected String result;
 
-	@SuppressWarnings("unused")
-	private RequestInfo() {
+
+	protected RequestInfo() { // required for deserialization
 		// empty
 	}
 
-	public RequestInfo(String name, long duration, LocalDateTime timestamp, String result) {
+	public RequestInfo(String name, String nodeType, long duration, LocalDateTime timestamp, String result) {
 		setName(name);
-		setDuration(duration/1000.0);
+		setNodeType(NodeType.valueOf(nodeType));
+		setDuration(duration);
 		setTimestamp(timestamp);
 		setResult(result);
 	}
@@ -50,6 +59,7 @@ public class RequestInfo extends AbstractEntity implements Serializable
 		buf.setLength(buf.length()-1);
 		return buf
 			.append(", name:").append(getName()) //$NON-NLS-1$
+			.append(", nodeType:").append(getNodeType()) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", result:").append(this.result) //$NON-NLS-1$

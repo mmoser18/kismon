@@ -27,6 +27,7 @@ public class SOAPConnection extends HTTPConnection
 	@NotBlank
 	protected String soapAction;
 
+
 	@SuppressWarnings("unused")
 	private SOAPConnection() { // required for deserialization
 		super();

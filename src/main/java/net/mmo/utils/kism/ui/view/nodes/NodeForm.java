@@ -29,8 +29,8 @@ import com.vaadin.flow.shared.Registration;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.Node;
-import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
+import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.utils.AppProperties;
@@ -50,6 +50,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	static final String StateClassName       = NodeFormField + "state"; //$NON-NLS-1$
 	static final String ApplicableClassName  = NodeFormField + "applicable"; //$NON-NLS-1$
 	static final String PropertiesClassName  = NodeFormField + "properties"; //$NON-NLS-1$
+	static final String ExecuteClassName     = NodeFormField + "execute"; //$NON-NLS-1$
 
 	/** class name to mark combined fields */
 	public static final String CombinedClassName    = "node-form-field-combined"; //$NON-NLS-1$
@@ -66,6 +67,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected TextField stateField;	// stateField is calculated automatically - never entered!
 	protected Checkbox applicable;
 	protected TextArea properties;
+
+	// this is not yet added to the form to allow subclasses to include them at appropriate places:
+	protected Button execute;
 
 	protected VerticalLayout fields;
 
@@ -317,6 +321,20 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				}
 			});
 
+		this.execute = new Button(Messages.getString("NodeForm.Execute.Label")); //$NON-NLS-1$
+		this.execute.setClassName(ExecuteClassName);
+		this.execute.setThemeName(LabelPaddingTheme);
+		this.execute.addClickListener(event ->
+			{
+				log.info("execute clicked"); //$NON-NLS-1$
+				if (hasUiChanges()) validateAndSave();
+				try {
+					this.node.executeRequest();
+				} catch (Throwable t) {
+					NodeView.ExecutionError("manually triggered execution", t); //$NON-NLS-1$
+				}
+			});
+
 		this.fields = new VerticalLayout(this.name, this.description, stateAndApplicable, this.properties);
 		this.fields.setClassName(FieldsClassName);
 		this.fields.setSizeFull();
@@ -354,6 +372,17 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		boolean enable = hasUiChanges() && binderIsValid();
 		log.debug("binder status change -> [save] enabled:{}", enable); //$NON-NLS-1$
 		this.save.setEnabled(enable);
+
+		this.execute.setText(Messages.getString(this.uiChanges
+		                                        ? (this instanceof IntermediateNodeForm
+		                                          ? "IntermediateNodeForm.SaveAndExecute.Label" //$NON-NLS-1$
+		                                          : "LeafNodeForm.SaveAndExecute.Label") //$NON-NLS-1$
+		                                        : (this instanceof IntermediateNodeForm
+		                                          ? "IntermediateNodeForm.Execute.Label" //$NON-NLS-1$
+		                                          : "LeafNodeForm.Execute.Label"))); //$NON-NLS-1$
+		boolean isValid = binderIsValid();
+		log.debug("binder status change -> [execute] active:{}", isValid); //$NON-NLS-1$
+		this.execute.setEnabled(isValid);
 	}
 
 	protected void updateResolvableValues() {

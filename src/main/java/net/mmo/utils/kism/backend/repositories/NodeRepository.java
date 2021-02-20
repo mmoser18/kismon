@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * Repository class to access the database. Spring Boot makes this a painless process:
- * All you need to do is define an interface that describes the entity type and primary key type,
+ * All you need to do is define an interface that describes the entity nodeType and primary key nodeType,
  * and Spring Data will configure one for you.
  */
 public interface NodeRepository extends JpaRepository<Node, Long>

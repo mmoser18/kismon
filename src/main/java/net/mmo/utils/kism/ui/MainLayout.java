@@ -38,7 +38,7 @@ public class MainLayout extends AppLayout
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
 
 	public MainLayout() {
-		log.debug("MainLayout - c'tor"); //$NON-NLS-1$
+		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		createHeader();
 		createDrawer();
 		setDrawerOpened(false);
@@ -54,19 +54,21 @@ public class MainLayout extends AppLayout
 
 		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, logout);
 		header.addClassName(HeaderClassName);
-		// header.expand(appTitle);
-		// header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+//		header.expand(appTitle);
+//		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
 		addToNavbar(header);
 	}
 
 	private void createDrawer() {
 		log.debug("createDrawer"); //$NON-NLS-1$
-		RouterLink listLink = new RouterLink(Messages.getString("MainLayout.Tab.ListView.Label"), RequestInfoView.class); //$NON-NLS-1$
-		listLink.setHighlightCondition(HighlightConditions.sameLocation());
-		RouterLink treeLink = new RouterLink(Messages.getString("MainLayout.Tab.NodeView.Label"), NodeView.class); //$NON-NLS-1$
-		treeLink.setHighlightCondition(HighlightConditions.sameLocation());
+		RouterLink nodesLink = new RouterLink(Messages.getString("MainLayout.Tab.NodeView.Label"), NodeView.class); //$NON-NLS-1$
+		nodesLink.setHighlightCondition(HighlightConditions.sameLocation());
+		RouterLink resultsLink = new RouterLink(Messages.getString("MainLayout.Tab.RequestInfoView.Label"), RequestInfoView.class); //$NON-NLS-1$
+		resultsLink.setHighlightCondition(HighlightConditions.sameLocation());
 		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.DashBoard.Label"), DashboardView.class); //$NON-NLS-1$
-		addToDrawer(new VerticalLayout(listLink, treeLink, dashboardLink));
+		dashboardLink.setHighlightCondition(HighlightConditions.sameLocation());
+
+		addToDrawer(new VerticalLayout(nodesLink, resultsLink, dashboardLink));
 	}
 }

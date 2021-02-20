@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -22,8 +23,8 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
-import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
+import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
@@ -47,7 +48,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
 
 	protected TextField targetUid;
-	protected TextField targetPwd;
+	protected PasswordField targetPwd;
 	protected Checkbox includeBasicAuthHeader;
 
 	protected Select<HTTP_Method> method;
@@ -96,7 +97,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.targetUid.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.targetUid).withValidator(this.propertiesResolvableValidator);
 
-		this.targetPwd = new TextField(Messages.getString("HTTPConnectionForm.Pwd.Label")); //$NON-NLS-1$
+		this.targetPwd = new PasswordField(Messages.getString("HTTPConnectionForm.Pwd.Label")); //$NON-NLS-1$
 		this.targetPwd.setClassName(PwdClassName);
 		this.targetPwd.setThemeName(LabelPaddingTheme);
 		this.targetPwd.setClearButtonVisible(clearButtonsVisible);

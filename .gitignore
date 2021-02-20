@@ -8,7 +8,7 @@
 .DS_Store
 
 # The following files are generated/updated by vaadin-maven-plugin
-node_modules/
+*node_modules/
 
 # Browser drivers for local integration tests
 drivers/

@@ -11,6 +11,7 @@ import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
@@ -34,7 +35,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 	static final String DbResponseClassName = NodeFormField + "db-response"; //$NON-NLS-1$
 
 	protected TextField dbUid;
-	protected TextField dbPwd;
+	protected PasswordField dbPwd;
 
 	// original query (possibly containing properties):
 	protected TextField query;
@@ -80,7 +81,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.dbUid.setClearButtonVisible(clearButtonsVisible);
 		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableValidator);
 
-		this.dbPwd = new TextField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
+		this.dbPwd = new PasswordField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
 		this.dbPwd.setClassName(PwdClassName);
 		this.dbPwd.setThemeName(LabelPaddingTheme);
 		this.dbPwd.setClearButtonVisible(clearButtonsVisible);

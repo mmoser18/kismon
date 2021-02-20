@@ -95,7 +95,6 @@ abstract public class IPConnection extends LeafNode
 //			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
 			.append(", url:").append(this.url) //$NON-NLS-1$
 			.append(", resultingUrl:").append(this.resultingUrl) //$NON-NLS-1$
-			.append(", checkResults:").append(this.checkResults) //$NON-NLS-1$
 			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();

@@ -5,54 +5,37 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
-import net.mmo.utils.kism.entities.nodes.IntermediateNode;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.Node;
-import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
-import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
-import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.NodeType;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NodeFactory <N extends Node>
 {
-	public enum NodeType {
-		RootNode,
-		IntermediateNode,
-		RESTConnection,
-		SOAPConnection,
-		JDBCConnection
-		;
-
-		public String getName() {
-			return Messages.getString("NodeType." + this.getName()); //$NON-NLS-1$
-		}
-	}
-
 	private static int nodeCtr = 0;
 
-	@SuppressWarnings("unchecked")
-	public N createNode(NodeType type) {
-		N newNode;
-		switch (type) {
-		case IntermediateNode:
-			newNode = (N)new IntermediateNode(String.format(Messages.getString("IntermediateNode.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
-			                                  String.format(Messages.getString("IntermediateNode.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
-			break;
-		case RESTConnection:
-			newNode = (N)new RESTConnection(String.format(Messages.getString("RESTConnection.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
-			                                String.format(Messages.getString("RESTConnection.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
-			break;
-		case SOAPConnection:
-			newNode = (N)new SOAPConnection(String.format(Messages.getString("SOAPConnection.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
-			                                String.format(Messages.getString("SOAPConnection.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
-			break;
-		case JDBCConnection:
-			newNode = (N)new JDBCConnection(String.format(Messages.getString("JDBCConnection.Name"), NodeFactory.nodeCtr), //$NON-NLS-1$
-			                                String.format(Messages.getString("JDBCConnection.Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
-			break;
-		default: throw new IllegalArgumentException("Unexpected node type " + type + " in NodeFactory.createNode()"); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+	public N createNode(NodeType type)
+		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, NoSuchMethodException, SecurityException {
+		Class<? extends Node> nodeClass = type.getNodeClass();
+		@SuppressWarnings("unchecked")
+		N newNode = (N)nodeClass.getDeclaredConstructor().newInstance();
+		String simpleName = nodeClass.getSimpleName();
+		newNode.setName(String.format(Messages.getString(simpleName + ".Name"), NodeFactory.nodeCtr)); //$NON-NLS-1$
+		newNode.setDescription(String.format(Messages.getString(simpleName + ".Description"), NodeFactory.nodeCtr)); //$NON-NLS-1$
 		nodeCtr++;
 		return newNode;
+	}
+
+	public static List<NodeType> getLeafNodeTypes() {
+		ArrayList<NodeType> res = new ArrayList<>();
+		Arrays.asList(NodeType.values()).forEach(value -> { if (LeafNode.class.isAssignableFrom(value.getNodeClass())) res.add(value); });
+		return res;
 	}
 }

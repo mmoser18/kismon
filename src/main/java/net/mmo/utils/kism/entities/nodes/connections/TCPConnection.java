@@ -1,0 +1,77 @@
+/**
+ * @author Michael Moser (michael.moser@freesurf.ch)
+ * @since 06.12.2020
+ */
+
+package net.mmo.utils.kism.entities.nodes.connections;
+
+import javax.persistence.Entity;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
+import lombok.Getter;
+import lombok.Setter;
+import net.mmo.utils.kism.entities.nodes.LeafNode;
+
+/** Name should have been just "Connection" but that class name was already used by JDBC */
+@Entity
+@Setter
+@Getter
+// @Slf4j
+abstract public class TCPConnection extends LeafNode
+{
+	private static final long serialVersionUID = -2584969925210734417L;
+
+	@SuppressWarnings("nls")
+	@NotNull
+	@NotEmpty
+	@NotBlank
+	protected String hostAddress = "www.example.com";
+
+	@JsonIgnore
+	protected transient String resultingHostAddress;
+
+
+	protected TCPConnection() { // required for deserialization
+		super();
+	}
+
+	protected TCPConnection(String name, String description) {
+		super(name, description);
+	}
+
+	@Override
+	public void updateResolvableValues() {
+		super.updateResolvableValues();
+		updateResultingHostAddress();
+	}
+
+	public void setHostAddress(String hostAddress) {
+		if (!Objects.equal(this.hostAddress, hostAddress)) {
+			this.hostAddress = hostAddress;
+			updateResultingHostAddress();
+		}
+	}
+
+	private void updateResultingHostAddress() {
+		updateResultingValue(getHostAddress(), (str) -> setResultingHostAddress(str));
+	}
+
+	public String resultingUrlResolved() throws Exception {
+		return resultingFieldResolved(getHostAddress(), () -> getResultingHostAddress(), (str) -> setResultingHostAddress(str));
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder(super.toString());
+		buf.setLength(buf.length()-1);
+		return buf
+			.append(", hostAddress:").append(this.hostAddress) //$NON-NLS-1$
+			.append(", resultingHostAddress:").append(this.resultingHostAddress) //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
+			.toString();
+	}
+}

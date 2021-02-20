@@ -37,8 +37,6 @@ public class NodeService
 	public final static String CONFIG_FILE_TYPE  = "kmc"; //$NON-NLS-1$
 	public final static String DEFAULT_FILE_NAME = "default"; //$NON-NLS-1$
 
-//	private IntermediateNodeRepository intermediateNodeRepository;
-//	private LeafNodeRepository leafNodeRepository;
 	private NodeRepository nodeRepository;
 
 	private List<RootNode> roots = new ArrayList<>();
@@ -49,10 +47,8 @@ public class NodeService
 		this.commonRootProperties.putAll(System.getenv()); // per default all Environment variables
 	}
 
-	public NodeService(// IntermediateNodeRepository intermediateNodeRepository,
-	                   // LeafNodeRepository leafNodeRepository
-	                   NodeRepository nodeRepository
-	                  ) {
+	public NodeService(NodeRepository nodeRepository) {
+		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 //		this.intermediateNodeRepository = intermediateNodeRepository;
 //		this.leafNodeRepository = leafNodeRepository;

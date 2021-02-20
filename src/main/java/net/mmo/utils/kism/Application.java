@@ -22,7 +22,12 @@ public class Application extends SpringBootServletInitializer
 {
 	// constructor with autowired beans:
 	Application(RequestInfoService requestInfoService) {
+		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		LeafNode.requestInfoService = requestInfoService;
+	}
+
+	private static boolean nonBlank(String str) {
+		return str != null && !str.isBlank();
 	}
 
 	@SuppressWarnings("resource")
@@ -59,10 +64,10 @@ public class Application extends SpringBootServletInitializer
 				AppProperties.getProperties().getProperty("TrustStorePassword", //$NON-NLS-1$
 				                                          "changeit"); //$NON-NLS-1$
 
-			log.info("Truststore path: '{}' / type: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
-			if (trustStoreType != null) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
-			if (trustStorePath != null) System.setProperty("javax.net.ssl.trustStore", trustStorePath); //$NON-NLS-1$
-			if (trustStorePwd  != null) System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
+			log.info("Truststore path: '{}' / nodeType: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
+			if (nonBlank(trustStoreType)) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
+			if (nonBlank(trustStorePath)) System.setProperty("javax.net.ssl.trustStore", trustStorePath); //$NON-NLS-1$
+			if (nonBlank(trustStorePwd)) System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
 
 			// the keystore we use to connect to other systems:
 			// not yet supported:
@@ -76,12 +81,13 @@ public class Application extends SpringBootServletInitializer
 				AppProperties.getProperties().getProperty("KeyStorePassword", //$NON-NLS-1$
 				                                          "password"); //$NON-NLS-1$
 
-			log.info("Keystore path: '{}' / type: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
-			if (keyStoreType != null) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
-			if (keyStorePath != null) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
-			if (keyStorePwd  != null) System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
+			log.info("Keystore path: '{}' / nodeType: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
+			if (nonBlank(keyStoreType)) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
+			if (nonBlank(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
+			if (nonBlank(keyStorePwd)) System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
 			SpringApplication.run(Application.class, args);
+
 		} catch (Throwable e) {
 			if (e.getClass().getName().contains("SilentExitException")) { // SpringBoot devtools trying to replace the main thread //$NON-NLS-1$
 				log.debug("Spring is restarting the main thread - see spring-boot-devtools"); //$NON-NLS-1$

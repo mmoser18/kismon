@@ -203,7 +203,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 	private void adaptResultCheckerVisibility(boolean check, N n) {
 		if (n != null) {
 			if (n.getResultChecker() == null) {
-				log.info("creating new ResultChecker:"); //$NON-NLS-1$
+				log.info("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 				n.setResultChecker(new ResultChecker());
 // attempt to bind the ResultChecker in via a child-form:
 //				// if checkResults is active we need to add the validity of the resultChecker's binder to this one:

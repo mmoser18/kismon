@@ -1,0 +1,29 @@
+/**
+ * @author Michael Moser (michael.moser@freesurf.ch)
+ * @since 21 Feb 2021
+ */
+
+package net.mmo.utils.kism.entities.nodes;
+
+import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
+
+public enum NodeType { // make sure these values correspond to the class.getSimpleName of the respective node-classes!
+	RootNode(RootNode.class),
+	IntermediateNode(IntermediateNode.class),
+	RESTConnection(RESTConnection.class),
+	SOAPConnection(SOAPConnection.class),
+	JDBCConnection(JDBCConnection.class)
+	;
+
+	Class<? extends Node> nodeClass;
+
+	NodeType(Class<? extends Node> nodeClass) {
+		this.nodeClass = nodeClass;
+	}
+
+	public Class<? extends Node> getNodeClass() {
+		return this.nodeClass;
+	}
+}
