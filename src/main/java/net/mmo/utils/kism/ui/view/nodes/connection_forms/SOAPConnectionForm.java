@@ -5,14 +5,16 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
+import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
+import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 @Slf4j
 public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
@@ -36,7 +38,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 		this.soapAction = new TextField(Messages.getString("SOAPConnectionForm.SoapAction.Label")); //$NON-NLS-1$
 		this.soapAction.setClassName(SoapActionClassName);
 		this.soapAction.setThemeName(LabelPaddingTheme);
-		this.soapAction.setClearButtonVisible(clearButtonsVisible);
+		this.soapAction.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.soapAction)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator((value, context) ->

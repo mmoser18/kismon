@@ -28,7 +28,7 @@ public class RequestInfo extends AbstractEntity implements Serializable
 	protected NodeType nodeType;
 
 	/** duration of request (in nano-seconds) */
-	protected long duration;
+	protected Long duration;
 
 	/** timestamp of request(-start) */
 	//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -44,7 +44,7 @@ public class RequestInfo extends AbstractEntity implements Serializable
 		// empty
 	}
 
-	public RequestInfo(String name, String nodeType, long duration, LocalDateTime timestamp, String result) {
+	public RequestInfo(String name, String nodeType, Long duration, LocalDateTime timestamp, String result) {
 		setName(name);
 		setNodeType(NodeType.valueOf(nodeType));
 		setDuration(duration);

@@ -5,6 +5,7 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
@@ -30,7 +31,7 @@ public class RootNodeForm extends IntermediateNodeForm
 		this.filePath = new TextField(Messages.getString("RootNodeForm.FilePath.Label")); //$NON-NLS-1$
 		this.filePath.addClassName(NameClassName);
 		this.filePath.setThemeName(LabelPaddingTheme);
-		this.filePath.setClearButtonVisible(clearButtonsVisible);
+		this.filePath.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.filePath).bind(n -> ((RootNode)n).getFilePath(), null);
 
 		this.fields.addComponentAsFirst(this.filePath);

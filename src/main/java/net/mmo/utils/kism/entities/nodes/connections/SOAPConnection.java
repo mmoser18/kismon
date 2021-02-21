@@ -8,9 +8,6 @@ package net.mmo.utils.kism.entities.nodes.connections;
 import java.net.http.HttpRequest.Builder;
 
 import javax.persistence.Entity;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,11 +19,7 @@ public class SOAPConnection extends HTTPConnection
 {
 	private static final long serialVersionUID = -7524304663532085424L;
 
-	@NotNull
-	@NotEmpty
-	@NotBlank
 	protected String soapAction;
-
 
 	@SuppressWarnings("unused")
 	private SOAPConnection() { // required for deserialization

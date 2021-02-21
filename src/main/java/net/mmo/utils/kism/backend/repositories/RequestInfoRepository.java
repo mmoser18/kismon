@@ -5,6 +5,7 @@
 
 package net.mmo.utils.kism.backend.repositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import net.mmo.utils.kism.entities.nodes.NodeType;
@@ -20,33 +21,55 @@ import org.springframework.data.repository.query.Param;
  */
 public interface RequestInfoRepository extends JpaRepository<RequestInfo, Long>
 {
+	final static String basicWhereClause =
+		"where (concat('%', :nameFilter, '%') is null or lower(r.name) like lower(concat('%', :nameFilter, '%'))) " //$NON-NLS-1$
+		+ "and (:typeFilter is null or r.nodeType = :typeFilter) " //$NON-NLS-1$
+		;
+
+	final static String fullWhereClause =
+					basicWhereClause
+					+ "and (:lowerBoundDuration is null or r.duration >= :lowerBoundDuration) " //$NON-NLS-1$
+					+ "and (:upperBoundDuration is null or r.duration <= :upperBoundDuration) " //$NON-NLS-1$
+					+ "and (:lowerBoundTimeStamp is null or r.timestamp >= :lowerBoundTimeStamp) " //$NON-NLS-1$
+					+ "and (:upperBoundTimeStamp is null or r.timestamp <= :upperBoundTimeStamp) " //$NON-NLS-1$
+					;
+
 	// using Java Persistence Query Language (JPQL) to phrase the query:
-	@Query("select r from RequestInfo r "
-	      + "where (concat('%', :nameFilter, '%') is null or lower(r.name) like lower(concat('%', :nameFilter, '%')))"
-	      + "  and (concat('%', :typeFilter, '%') is null or r.nodeType = :typeFilter)"
-//	      + "  and (concat('%', :typeFilter, '%') is null or lower(r.nodeType) like lower(concat('%', :typeFilter, '%')))"
-//	      + "  and (concat('%', :lowerBoundDuration, '%') is null or r.duration >= concat('%', :lowerBoundDuration, '%')))"
-//	      + "  and (concat('%', :upperBoundDuration, '%') is null or r.duration <= concat('%', :upperBoundDuration, '%')))"
-//	      + "  and (concat('%', :lowerBoundTimeStamp, '%') is null or r.timestamp >= concat('%', :lowerBoundTimeStamp, '%')))"
-//	      + "  and (concat('%', :upperBoundTimeStamp, '%') is null or r.timestamp <= concat('%', :upperBoundTimeStamp, '%')))"
-	)
+	@Query("select r from RequestInfo r " + fullWhereClause)
 	List<RequestInfo> findByFilter(@Param("nameFilter") String nameFilter
 	                              ,@Param("typeFilter") NodeType typeFilter
-//	                              ,@Param("lowerBoundDuration") long lowerBoundDuration
-//	                              ,@Param("upperBoundDuration") long upperBoundDuration
-//	                              ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
-//	                              ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
+	                              ,@Param("lowerBoundDuration") Long lowerBoundDuration
+	                              ,@Param("upperBoundDuration") Long upperBoundDuration
+	                              ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
+	                              ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                              );
 
-//	@Query("select r from RequestInfo r"
-//	      + " where (concat('%', :lowerBound, '%') is null or r.duration >= concat('%', :lowerBound, '%'))"
-//	      + "   and (concat('%', :upperBound, '%') is null or r.duration <= concat('%', :upperBound, '%'))"
-//	)
-//	List<RequestInfo> findByDuration(@Param("lowerBound") long lowerBound, @Param("upperBound") long upperBound);
+
+	@Query("select min(r.duration) from RequestInfo r " + basicWhereClause)
+	Long findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
+	                                 ,@Param("typeFilter") NodeType typeFilter
+	                                 );
+
+	@Query("select max(r.duration) from RequestInfo r " + basicWhereClause)
+	Long findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
+	                                  ,@Param("typeFilter") NodeType typeFilter
+	                                  );
+
+//	@Query("select min(r.timestamp) from RequestInfo r " + whereClause)
+//	List<RequestInfo> findLowestTimestampWithFilter(@Param("nameFilter") String nameFilter
+//	                                               ,@Param("typeFilter") NodeType typeFilter
+//	                                               ,@Param("lowerBoundDuration") long lowerBoundDuration
+//	                                               ,@Param("upperBoundDuration") long upperBoundDuration
+//	                                               ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
+//	                                               ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
+//	                                               );
 //
-//	@Query("select r from RequestInfo r"
-//	      + " where (concat('%', :lowerBound, '%') is null or r.timestamp >= concat('%', :lowerBound, '%'))"
-//	      + "   and (concat('%', :upperBound, '%') is null or r.timestamp <= concat('%', :upperBound, '%'))"
-//	)
-//	List<RequestInfo> findByTimestamp(@Param("lowerBound") LocalDateTime lowerBound, @Param("upperBound") LocalDateTime upperBound);
+//	@Query("select max(r.timestamp) from RequestInfo r " + whereClause)
+//	List<RequestInfo> findHighstTimestampWithFilter(@Param("nameFilter") String nameFilter
+//	                                               ,@Param("typeFilter") NodeType typeFilter
+//	                                               ,@Param("lowerBoundDuration") long lowerBoundDuration
+//	                                               ,@Param("upperBoundDuration") long upperBoundDuration
+//	                                               ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
+//	                                               ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
+//	                                               );
 }

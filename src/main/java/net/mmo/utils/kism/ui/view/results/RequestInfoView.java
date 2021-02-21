@@ -1,24 +1,32 @@
 package net.mmo.utils.kism.ui.view.results;
 
+import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
+import static net.mmo.utils.kism.ui.UIConstants.ResultViewField;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.RequestInfoService;
+import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 import net.mmo.utils.kism.utils.AppProperties;
@@ -38,22 +46,38 @@ public class RequestInfoView extends VerticalLayout
 	private static final long serialVersionUID = -352635233754729967L;
 
 	// public to allow access by test classes
-	public static final String ViewClassName = "list-view";  //$NON-NLS-1$
-	public static final String ToolbarClassName     = "list-view-toolbar";  //$NON-NLS-1$
-	public static final String ViewContentClassName = "list-view-content";  //$NON-NLS-1$
-	public static final String NameFilterFieldClassName = "list-view-filter-name";  //$NON-NLS-1$
-	public static final String TypeFilterFieldClassName = "list-view-filter-type";  //$NON-NLS-1$
-	public static final String GridClassName        = "list-view-grid"; //$NON-NLS-1$
+	public static final String ViewClassName = "result-view";  //$NON-NLS-1$
+	public static final String ToolbarClassName     = "result-view-toolbar";  //$NON-NLS-1$
+	public static final String ViewContentClassName = "result-view-content";  //$NON-NLS-1$
+	public static final String GridClassName        = "result-view-grid"; //$NON-NLS-1$
 
-	private RequestInfoService resultService;
+	public static final String NameFilterFieldClassName = ResultViewField + "filter-name";  //$NON-NLS-1$
+	public static final String TypeFilterFieldClassName = ResultViewField + "filter-type";  //$NON-NLS-1$
 
-	private TextField nameFilter = new TextField();
-	private Select<String> typeFilter = new Select<>();
+	public static final String DurationMinimumFieldClassName = ResultViewField + "duration-minimum"; //$NON-NLS-1$
+	public static final String DurationMaximumFieldClassName = ResultViewField + "duration-maximum"; //$NON-NLS-1$
+	private static final String DurationExtremesFieldClassName = ResultViewField + "duration-extremes"; //$NON-NLS-1$
+	public static final String TimestampMinimumFieldClassName = ResultViewField + "timestamp-minimum"; //$NON-NLS-1$
+	public static final String TimestampMaximumFieldClassName = ResultViewField + "timestamp-maximum"; //$NON-NLS-1$
+	public static final String TimestampExtremesFieldClassName = ResultViewField + "timestamp-extremes"; //$NON-NLS-1$
 
-	Grid<RequestInfo> grid = new Grid<>(RequestInfo.class); // package visible for UTs - is there no other way?
-	Div content;
+	public static final double NanoToMilliFactor = 1000000.0;
 
-	NumberFormat numberFormat = DecimalFormat.getInstance();
+	protected RequestInfoService resultService;
+
+	protected TextField nameFilter = new TextField();
+	protected Select<String> typeFilter = new Select<>();
+
+	protected NumberField durationMinimum = new NumberField();
+	protected NumberField durationMaximum = new NumberField();
+
+	protected TextField timestampMinimum = new TextField();
+	protected TextField timestampMaximum = new TextField();
+
+	protected Grid<RequestInfo> grid = new Grid<>(RequestInfo.class); // package visible for UTs - is there no other way?
+	protected Div content;
+
+	protected NumberFormat numberFormat = DecimalFormat.getInstance();
 
 
 	// This gets autowired but still puzzled which annotation causes this...
@@ -79,31 +103,65 @@ public class RequestInfoView extends VerticalLayout
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
-	private HorizontalLayout getToolbar() {
+	protected HorizontalLayout getToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 		this.nameFilter.setClassName(NameFilterFieldClassName);
-		this.nameFilter.setPlaceholder(Messages.getString("RequestInfoView.TextField.NameFilter.Label")); //$NON-NLS-1$
+		this.nameFilter.setLabel(Messages.getString("RequestInfoView.TextField.NameFilter.Label")); //$NON-NLS-1$
+		this.nameFilter.setPlaceholder(Messages.getString("RequestInfoView.TextField.NameFilter.PlaceHolder")); //$NON-NLS-1$
 		this.nameFilter.setClearButtonVisible(true);
 		this.nameFilter.setValueChangeMode(ValueChangeMode.LAZY);
-		this.nameFilter.addValueChangeListener(e -> updateList());
+		this.nameFilter.setThemeName(LabelPaddingTheme);
+		this.nameFilter.addValueChangeListener(e -> { resetMinMaxValues(); updateList(); });
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
-//		this.typeFilter.setPlaceholder(Messages.getString("RequestInfoView.TextField.TypeFilter.Label")); //$NON-NLS-1$
-
+		this.typeFilter.setLabel(Messages.getString("RequestInfoView.TextField.TypeFilter.Label")); //$NON-NLS-1$
 		this.typeFilter.setItems(NodeFactory.getLeafNodeTypes().stream()
 		                        .map((type) -> NodeTypeLabelProvider.getNodeTypeLabel(type))
 		                        .collect(Collectors.toList()));
 		this.typeFilter.setEmptySelectionAllowed(true);
 		this.typeFilter.setEmptySelectionCaption(Messages.getString("RequestInfoView.TextField.TypeFilter.None")); //$NON-NLS-1$
-		this.typeFilter.addValueChangeListener(e -> updateList());
+		this.typeFilter.addValueChangeListener(e -> { resetMinMaxValues(); updateList(); });
 
-		HorizontalLayout toolbar = new HorizontalLayout(this.nameFilter, this.typeFilter);
+		this.durationMinimum.setLabel(Messages.getString("RequestInfoView.Duration.Minimum.Label")); //$NON-NLS-1$
+		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
+		this.durationMinimum.setThemeName(LabelPaddingTheme);
+		this.durationMinimum.setHasControls(true);
+		this.durationMinimum.addValueChangeListener(e -> updateList());
+
+		this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label")); //$NON-NLS-1$
+		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
+		this.durationMaximum.setThemeName(LabelPaddingTheme);
+		this.durationMaximum.setHasControls(true);
+		this.durationMaximum.addValueChangeListener(e -> updateList());
+
+		VerticalLayout durationExtremes = new VerticalLayout();
+		durationExtremes.setClassName(DurationExtremesFieldClassName);
+		durationExtremes.addClassName(CombinedClassName);
+		durationExtremes.add(this.durationMinimum, this.durationMaximum);
+
+		this.timestampMinimum.setLabel(Messages.getString("RequestInfoView.Timestamp.Minimum.Label")); //$NON-NLS-1$
+		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
+		this.timestampMinimum.setThemeName(LabelPaddingTheme);
+		this.timestampMinimum.addValueChangeListener(e -> updateList());
+
+		this.timestampMaximum.setLabel(Messages.getString("RequestInfoView.Timestamp.Maximum.Label")); //$NON-NLS-1$
+		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
+		this.timestampMaximum.setThemeName(LabelPaddingTheme);
+		this.timestampMaximum.addValueChangeListener(e -> updateList());
+
+		VerticalLayout timestampExtremes = new VerticalLayout();
+		timestampExtremes.setClassName(TimestampExtremesFieldClassName);
+		timestampExtremes.addClassName(CombinedClassName);
+		timestampExtremes.add(this.timestampMinimum, this.timestampMaximum);
+
+		HorizontalLayout toolbar = new HorizontalLayout(this.nameFilter, this.typeFilter,
+		                                                durationExtremes, timestampExtremes);
 
 		toolbar.addClassName(ToolbarClassName);
 		return toolbar;
 	}
 
-	private void configureGrid() {
+	protected void configureGrid() {
 		log.trace("Configuring Grid:"); //$NON-NLS-1$
 		this.grid.addClassName(GridClassName);
 		this.grid.setSizeFull();
@@ -111,39 +169,94 @@ public class RequestInfoView extends VerticalLayout
 
 		this.grid.addColumn("name") //$NON-NLS-1$
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Name")) //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0);
+			;
 		this.grid.addColumn((info) -> NodeTypeLabelProvider.getNodeTypeLabel(info.getNodeType()))
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
-			.setAutoWidth(true)
-			.setFlexGrow(0);
-		this.grid.addColumn((info) -> this.numberFormat.format(info.getDuration() / 1000000.0))
+			;
+		this.grid.addColumn((info) -> info.getDuration() / NanoToMilliFactor /*this.numberFormat.format(info.getDuration() / NanoToMilliFactor)*/)
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Duration")) //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0);
-		this.grid.addColumn("timestamp") //$NON-NLS-1$
+			;
+		this.grid.addColumn((info) -> info.getTimestamp() != null ? info.getTimestamp().format(UIConstants.dateTimeFormatter) : UIConstants.EMPTY_STRING)
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0);
+			.setTextAlign(ColumnTextAlign.END)
+			;
 		this.grid.addColumn("result") //$NON-NLS-1$
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Result")) //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0);
+			.setTextAlign(ColumnTextAlign.END)
+			;
 
-		this.grid.asSingleSelect()
-		         .addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
+		this.grid.getColumns().forEach(column ->
+		{	column
+				.setSortable(true)
+				.setAutoWidth(true)
+				.setFlexGrow(0);
+		});
+
+		this.grid.asSingleSelect().addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
+
+		this.grid.addAttachListener(e -> updateList());
 	}
 
-	private void updateList() {
-		this.grid.setItems(this.resultService.findAll((this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null),
-		                                              NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue()),
-		                                              0, 0,
-		                                              null, null));
+	private void resetMinMaxValues() {
+		this.durationMinimum.setValue(null);
+		this.durationMaximum.setValue(null);
+		this.timestampMinimum.setValue(null);
+		this.timestampMaximum.setValue(null);
+	}
+
+	protected void updateList() {
+		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
+		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
+
+		// adjust min/maxDuration:
+		Long minDurationValue = (this.durationMinimum.getValue() != null ? Math.round(this.durationMinimum.getValue() * NanoToMilliFactor) : null);
+		Long maxDurationValue = (this.durationMaximum.getValue() != null ? Math.round(this.durationMaximum.getValue() * NanoToMilliFactor) : null);
+
+		Long minDuration = this.resultService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
+		Long maxDuration = this.resultService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
+
+		if (minDuration != null) {
+			double minDurationConverted = minDuration / NanoToMilliFactor;
+			this.durationMinimum.setLabel(Messages.getString("RequestInfoView.Duration.Minimum.Label") + " (>" + minDurationConverted + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			this.durationMinimum.setMin(minDurationConverted);
+		}
+		if (maxDuration != null) {
+			double maxDurationConverted = maxDuration / NanoToMilliFactor;
+			this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label") + " (<" + maxDurationConverted + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			this.durationMaximum.setMax(maxDurationConverted);
+		}
+
+		// limit the values to [min..max] (if available):
+		if (minDuration != null && (minDurationValue == null || minDurationValue < minDuration)) {
+			minDurationValue = minDuration;
+		}
+		if (maxDuration != null && (maxDurationValue == null || maxDurationValue > maxDuration)) {
+			maxDurationValue = maxDuration;
+		}
+
+		if (minDurationValue != null) {
+			this.durationMinimum.setValue(minDurationValue / NanoToMilliFactor);
+			// set the max/min to the respective other value: (is this a clever idea?)
+			this.durationMaximum.setMin(minDurationValue / NanoToMilliFactor);
+		}
+		if (maxDurationValue != null) {
+			this.durationMaximum.setValue(maxDurationValue / NanoToMilliFactor);
+			// set the max/min to the respective other value: (is this a clever idea?)
+			this.durationMinimum.setMax(maxDurationValue / NanoToMilliFactor);
+		}
+
+		// adjust min/maxTimestamp:
+		// TODO: add timestamp processing here...
+
+		// TODO: replace by call-back data provider to minimize GUI loading when there are LOTs of data:
+		this.grid.setItems(this.resultService.findByFilter(nameFilterValue, nodeTypeFilterValue,
+		                                                   minDurationValue, maxDurationValue,
+		                                                   null, null));
 	}
 
 	// for some stupid reason Java does not take over the OS' number digit grouping and separator
 	// settings (at least not on Windows 10) - so I tried to work around that:
-	private void fixJavaGroupingSeparatorBug() {
+	protected void fixJavaGroupingSeparatorBug() {
 		DecimalFormatSymbols customSymbol = DecimalFormatSymbols.getInstance();
 		boolean adjustNumberFormat = false;
 		String groupingSeparator = AppProperties.getProperties().getProperty("DigitGroupingSeparator"); //$NON-NLS-1$
@@ -161,7 +274,7 @@ public class RequestInfoView extends VerticalLayout
 			this.numberFormat.setGroupingUsed(true);
 		}
 	}
-	private static boolean nonBlank(String str) {
+	protected static boolean nonBlank(String str) {
 		return str != null && !str.isBlank();
 	}
 }

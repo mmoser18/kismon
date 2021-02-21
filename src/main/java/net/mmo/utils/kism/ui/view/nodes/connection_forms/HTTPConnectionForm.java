@@ -5,6 +5,9 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
+import static net.mmo.utils.kism.ui.UIConstants.MonospaceTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.accordion.Accordion;
@@ -25,6 +28,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
@@ -94,13 +98,13 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.targetUid = new TextField(Messages.getString("HTTPConnectionForm.Uid.Label")); //$NON-NLS-1$
 		this.targetUid.setClassName(UidClassName);
 		this.targetUid.setThemeName(LabelPaddingTheme);
-		this.targetUid.setClearButtonVisible(clearButtonsVisible);
+		this.targetUid.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.targetUid).withValidator(this.propertiesResolvableValidator);
 
 		this.targetPwd = new PasswordField(Messages.getString("HTTPConnectionForm.Pwd.Label")); //$NON-NLS-1$
 		this.targetPwd.setClassName(PwdClassName);
 		this.targetPwd.setThemeName(LabelPaddingTheme);
-		this.targetPwd.setClearButtonVisible(clearButtonsVisible);
+		this.targetPwd.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
 
 		this.includeBasicAuthHeader= new Checkbox(Messages.getString("HTTPConnectionForm.IncludeBasicAuthHeader.Label")); //$NON-NLS-1$
@@ -143,7 +147,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
 		this.headers.addThemeName(MonospaceTheme);
-		this.headers.setClearButtonVisible(clearButtonsVisible);
+		this.headers.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.headers.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
@@ -169,7 +173,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.payload.setClassName(RequestBodyClassName);
 		this.payload.setThemeName(LabelPaddingTheme);
 		this.payload.addThemeName(MonospaceTheme);
-		this.payload.setClearButtonVisible(clearButtonsVisible);
+		this.payload.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.payload.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
@@ -221,7 +225,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
 		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
-		this.acceptableReturnCodes.setClearButtonVisible(clearButtonsVisible);
+		this.acceptableReturnCodes.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
 		// we cross-link the validators of the checkResults-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it

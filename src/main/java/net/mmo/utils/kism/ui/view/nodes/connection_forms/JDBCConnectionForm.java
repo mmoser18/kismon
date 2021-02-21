@@ -5,6 +5,9 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
+import static net.mmo.utils.kism.ui.UIConstants.MonospaceTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.accordion.Accordion;
@@ -19,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 @Slf4j
 @PreserveOnRefresh
@@ -72,25 +76,25 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);
 		this.driverName.setThemeName(LabelPaddingTheme);
-		this.driverName.setClearButtonVisible(clearButtonsVisible);
+		this.driverName.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.driverName).withValidator(this.propertiesResolvableValidator);
 
 		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
 		this.dbUid.setClassName(UidClassName);
 		this.dbUid.setThemeName(LabelPaddingTheme);
-		this.dbUid.setClearButtonVisible(clearButtonsVisible);
+		this.dbUid.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableValidator);
 
 		this.dbPwd = new PasswordField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
 		this.dbPwd.setClassName(PwdClassName);
 		this.dbPwd.setThemeName(LabelPaddingTheme);
-		this.dbPwd.setClearButtonVisible(clearButtonsVisible);
+		this.dbPwd.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableValidator);
 
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
 		this.query.setThemeName(LabelPaddingTheme);
-		this.query.setClearButtonVisible(clearButtonsVisible);
+		this.query.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.query.addValueChangeListener(event ->
 			{
 				log.info("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$

@@ -31,8 +31,10 @@ public class NodeTypeLabelProvider
 
 	// this is the inverse of the above to determine the node type from the UI-Label
 	public static NodeType getNodeType(String label) {
-		for (NodeType value: NodeType.values()) {
-			if (getNodeTypeLabel(value).equals(label)) return value;
+		if (label != null && !label.isBlank()) {
+			for (NodeType value: NodeType.values()) {
+				if (getNodeTypeLabel(value).equals(label)) return value;
+			}
 		}
 		return null;
 	}

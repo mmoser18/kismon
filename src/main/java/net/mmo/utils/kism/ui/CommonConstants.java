@@ -20,7 +20,6 @@ public class CommonConstants
 	public static final String LoginURLSuffix = "login"; //$NON-NLS-1$
 	public static final String LogoutURLSuffix = "logout"; //$NON-NLS-1$
 
-
 	public enum LayoutDirection {
 		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$
 		Vertical  (Messages.getString("CommonConstants.LayoutDirection.Vertical")); //$NON-NLS-1$

@@ -158,7 +158,7 @@ abstract public class LeafNode extends Node
 				@Override
 				public void run() {
 					if (LeafNode.haltAllRequests) {
-						log.debug("Requests halted for '{}':", getName()); //$NON-NLS-1$
+						log.trace("Requests halted for '{}':", getName()); //$NON-NLS-1$
 					} else {
 						log.trace("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
 						try {

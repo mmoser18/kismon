@@ -5,10 +5,11 @@
 
 package net.mmo.utils.kism.ui.view.nodes;
 
+import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -24,7 +25,6 @@ import com.vaadin.flow.data.converter.Converter;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
-import net.mmo.utils.kism.utils.AppProperties;
 
 public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 {
@@ -61,9 +61,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 	protected Accordion validationDetails;
 	protected VerticalLayout validationDetailsPanel;
 
-	protected DateTimeFormatter dateTimeFormatter =
-		DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("LocalDateTimeStamp.Format", //$NON-NLS-1$
-		                                                                      "yyyy-MM-dd HH:mm:ss.SSS")); //$NON-NLS-1$
 
 	protected Checkbox checkResults;
 
@@ -83,13 +80,13 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 		this.period.setSuffixComponent(new Span(Messages.getString("LeafNodeForm.Period.Suffix"))); //$NON-NLS-1$
 		this.period.addClassName(PeriodClassName);
 		this.period.setThemeName(LabelPaddingTheme);
-		this.period.setClearButtonVisible(clearButtonsVisible);
+		this.period.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
 		this.timeout = new IntegerField(Messages.getString("LeafNodeForm.Timeout.Label")); //$NON-NLS-1$
 		this.timeout.setSuffixComponent(new Span(Messages.getString("LeafNodeForm.Timeout.Suffix"))); //$NON-NLS-1$
 		this.timeout.addClassName(TimeoutClassName);
 		this.timeout.setThemeName(LabelPaddingTheme);
-		this.timeout.setClearButtonVisible(clearButtonsVisible);
+		this.timeout.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
 		this.duration = new NumberField(Messages.getString("LeafNodeForm.Duration.Label")); //$NON-NLS-1$
 		this.duration.setSuffixComponent(new Span(Messages.getString("LeafNodeForm.Duration.Suffix"))); //$NON-NLS-1$
@@ -109,14 +106,14 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 					@Override
 					public Result<LocalDateTime> convertToModel(String value, ValueContext context) {
 						try {
-							return Result.ok(value == UIConstants.UNDEFINED_STRING ? null : LocalDateTime.parse(value, LeafNodeForm.this.dateTimeFormatter)); // == is OK because it's a constant!
+							return Result.ok(value == UIConstants.UNDEFINED_STRING ? null : LocalDateTime.parse(value, UIConstants.dateTimeFormatter)); // == is OK because it's a constant!
 						} catch (Exception ex) {
 							return Result.error("Illegal timestamp: '" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					}
 					@Override
 					public String convertToPresentation(LocalDateTime value, ValueContext context) {
-						return value != null ? value.format(LeafNodeForm.this.dateTimeFormatter) : UIConstants.UNDEFINED_STRING;
+						return value != null ? value.format(UIConstants.dateTimeFormatter) : UIConstants.UNDEFINED_STRING;
 					}
 				})
 			.bind(LeafNode::getTimestamp, null); // nsec's --> msec's (rounded to micro-seconds)

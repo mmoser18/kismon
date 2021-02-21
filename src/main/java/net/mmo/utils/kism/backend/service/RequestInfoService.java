@@ -29,20 +29,30 @@ public class RequestInfoService
 		return this.requestInfoRepository.findAll();
 	}
 
-	public List<RequestInfo> findAll(String nameFilter, NodeType typeFilter,
-	                     			long durationLowerBound, long durationUpperBound,
-	                     			LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
+	public List<RequestInfo> findByFilter(String nameFilter, NodeType typeFilter,
+	                                      Long durationLowerBound, Long durationUpperBound,
+	                                      LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
 		if ((nameFilter == null || nameFilter.isEmpty()) &&
 			typeFilter == null &&
-			durationLowerBound == 0 && durationUpperBound == 0 &&
+			durationLowerBound == null && durationUpperBound == null &&
 			timestampLowerBound == null && timestampUpperBound == null) {
 			return this.requestInfoRepository.findAll();
 		} else {
-			return this.requestInfoRepository.findByFilter(nameFilter, typeFilter/*, 0, 0, null, null*/);
+			return this.requestInfoRepository.findByFilter(nameFilter, typeFilter,
+			                                               durationLowerBound, durationUpperBound,
+			                                               timestampLowerBound, timestampUpperBound);
 		}
 	}
 
-	public long count() {
+	public Long findLowestDurationWithFilter(String nameFilter, NodeType typeFilter) {
+		return this.requestInfoRepository.findLowestDurationWithFilter(nameFilter, typeFilter);
+	}
+
+	public Long findHighestDurationWithFilter(String nameFilter, NodeType typeFilter) {
+		return this.requestInfoRepository.findHighestDurationWithFilter(nameFilter, typeFilter);
+	}
+
+	public Long count() {
 		return this.requestInfoRepository.count();
 	}
 

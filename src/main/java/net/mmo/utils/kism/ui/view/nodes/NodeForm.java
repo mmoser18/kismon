@@ -31,6 +31,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.utils.AppProperties;
@@ -51,14 +52,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	static final String ApplicableClassName  = NodeFormField + "applicable"; //$NON-NLS-1$
 	static final String PropertiesClassName  = NodeFormField + "properties"; //$NON-NLS-1$
 	static final String ExecuteClassName     = NodeFormField + "execute"; //$NON-NLS-1$
-
-	/** class name to mark combined fields */
-	public static final String CombinedClassName    = "node-form-field-combined"; //$NON-NLS-1$
-
-	/** theme use for fields that should have its label closer to the value field than default */
-	public static final String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
-	/** theme use for fields that should be displayed in monospaced font */
-	public static final String MonospaceTheme   = "monospace"; //$NON-NLS-1$
 
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
@@ -87,7 +80,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 */
 	protected boolean uiChanges = false;
 
-	protected static boolean clearButtonsVisible = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeForm.ClearButtonsVisible", "true")); //$NON-NLS-1$ //$NON-NLS-2$
+	protected static boolean clearButtonsVisible =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("NodeForm.ClearButtonsVisible", //$NON-NLS-1$
+		                                                               "true")); //$NON-NLS-1$
 
 
 	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
@@ -260,8 +255,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected void createFormFields(NodeService nodeService) {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
-		this.name.setThemeName(LabelPaddingTheme);
-		this.name.setClearButtonVisible(clearButtonsVisible);
+		this.name.setThemeName(UIConstants.LabelPaddingTheme);
+		this.name.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.name)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator(value ->
@@ -276,8 +271,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
-		this.description.setThemeName(LabelPaddingTheme);
-		this.description.setClearButtonVisible(clearButtonsVisible);
+		this.description.setThemeName(UIConstants.LabelPaddingTheme);
+		this.description.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
 		this.stateField = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.stateField.addClassName(StateClassName);
@@ -288,13 +283,13 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.applicable.addClassName(ApplicableClassName);
 
 		HorizontalLayout stateAndApplicable = new HorizontalLayout(this.applicable, this.stateField);
-		stateAndApplicable.addClassName(CombinedClassName);
+		stateAndApplicable.addClassName(UIConstants.CombinedClassName);
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
-		this.properties.setThemeName(LabelPaddingTheme);
-		this.properties.addThemeName(MonospaceTheme);
-		this.properties.setClearButtonVisible(clearButtonsVisible);
+		this.properties.setThemeName(UIConstants.LabelPaddingTheme);
+		this.properties.addThemeName(UIConstants.MonospaceTheme);
+		this.properties.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.properties)
 			.withValidator((value, context) ->
 				{ // Explicit validator instance:
@@ -323,7 +318,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		this.execute = new Button(Messages.getString("NodeForm.Execute.Label")); //$NON-NLS-1$
 		this.execute.setClassName(ExecuteClassName);
-		this.execute.setThemeName(LabelPaddingTheme);
+		this.execute.setThemeName(UIConstants.LabelPaddingTheme);
 		this.execute.addClickListener(event ->
 			{
 				log.info("execute clicked"); //$NON-NLS-1$

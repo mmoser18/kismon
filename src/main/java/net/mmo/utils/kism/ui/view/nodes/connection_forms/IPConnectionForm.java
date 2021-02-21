@@ -5,6 +5,7 @@
 
 package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.select.Select;
@@ -16,8 +17,8 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
-import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.LeafNodeForm;
+import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 @Slf4j
 @PreserveOnRefresh
@@ -54,7 +55,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 		this.url = new TextField(Messages.getString("IPConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
 		this.url.setThemeName(LabelPaddingTheme);
-		this.url.setClearButtonVisible(clearButtonsVisible);
+		this.url.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.url.addValueChangeListener(event ->
 			{
 				log.info("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -95,8 +96,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 
 		this.operand = new TextArea(Messages.getString("ResultChecker.Operand.Label")); //$NON-NLS-1$
 		this.operand.addClassName(OperandClassName);
-		this.operand.setThemeName(UIConstants.LabelPaddingTheme);
-		this.operand.setClearButtonVisible(clearButtonsVisible);
+		this.operand.setThemeName(LabelPaddingTheme);
+		this.operand.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
 		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
 		this.binder.forField(this.operand)
