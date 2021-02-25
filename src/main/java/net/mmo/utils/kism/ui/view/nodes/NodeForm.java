@@ -4,6 +4,7 @@ package net.mmo.utils.kism.ui.view.nodes;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import java.net.URI;
+import java.util.Hashtable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -197,8 +198,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = newNode;
-		this.uiChanges = false; // when we have a new node this is always the case!
-		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "<null>")); //$NON-NLS-1$ //$NON-NLS-2$
+		this.uiChanges = false; // when we have a new node this is initially always the case!
+		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		// this.binder.setBean(node);
 		if (newNode != null) {
 			this.setHeader(Messages.getString(newNode instanceof RootNode || newNode.getParent() != null
@@ -359,7 +360,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
 	protected boolean binderIsValid() {
 		boolean res = (this.binder.getBean() != null ? this.binder.isValid() : true);
-		log.debug("binderIsValid(): {} (bean:{})", res, this.binder.getBean()); //$NON-NLS-1$
+		log.debug("binderIsValid(): {})", res); //$NON-NLS-1$
 		return res;
 	}
 
@@ -462,7 +463,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected void validateAndSave() {
 		if (this.node != null) {
-			log.info("validateAndSave {}", this.node.getName()); //$NON-NLS-1$
+			log.info("validateAndSave '{}'", this.node.getName()); //$NON-NLS-1$
 			try {
 				validate(); // throws ValidationException if data not valid
 				writeBean(this.node);
@@ -472,6 +473,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				log.warn("Validation failed: ", e); //$NON-NLS-1$
 				new Notification(e.getMessage(), 0).open();
 			}
+		} else {
+			setUiChanges(false);
 		}
 	}
 
@@ -535,11 +538,23 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		}
 	}
 
+
+	private Hashtable<Class<?>, Registration> registrations = new Hashtable<>();
+
 	@Override
 	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
 	                                                              ComponentEventListener<T> listener) {
-		return (!getEventBus().hasListener(eventType) // note the NOT!
-		        ? getEventBus().addListener(eventType, listener)
-		        : null);
+		removeListener(eventType); // remove potential listener for same event type
+		Registration reg = getEventBus().addListener(eventType, listener);
+		this.registrations.put(eventType, reg);
+		return reg;
+	}
+	public <T extends ComponentEvent<?>> void removeListener(Class<T> eventType) {
+		Registration reg = this.registrations.get(eventType);
+		if (reg != null) reg.remove();
+	}
+	@SuppressWarnings("unchecked")
+	public <T extends ComponentEvent<?>> void clearListeners() {
+		this.registrations.keySet().forEach((key) -> removeListener((Class<T>)key));
 	}
 }

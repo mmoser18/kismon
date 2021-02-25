@@ -218,20 +218,25 @@ public class NodeView <N extends Node> extends VerticalLayout
 		MemoryBuffer buffer = new MemoryBuffer(); // alternative: new FileBuffer();
 		Upload uploadFile = new Upload(buffer);
 		// uploadFile.setI18n(new UploadI18N());
-		uploadFile.addSucceededListener(event -> {
-			String fileName = event.getFileName();
-			try (InputStream is = buffer.getInputStream();
-			     BufferedInputStream bis = new BufferedInputStream(is)) {
-				RootNode rootNode = this.nodeService.readStream(is, fileName);
-				reportResult(rootNode, fileName);
-			} catch (Throwable t) {
-				reportException(fileName, t);
-			}
-		});
+		uploadFile.addSucceededListener(event ->
+			{
+				String fileName = event.getFileName();
+				try (InputStream is = buffer.getInputStream();
+				     BufferedInputStream bis = new BufferedInputStream(is)) {
+					RootNode rootNode = this.nodeService.readStream(is, fileName);
+					reportResult(rootNode, fileName);
+				} catch (Throwable t) {
+					reportException(fileName, t);
+				}
+			});
 
 		this.haltRequests = new Checkbox(Messages.getString("NodeView.HaltAllRequests.Label")); //$NON-NLS-1$
-		this.haltRequests.addValueChangeListener(event -> adjustHaltRequest(event.getValue()));
-		adjustHaltRequest(LeafNode.haltAllRequests);
+		this.haltRequests.addValueChangeListener(event ->
+			{
+				LeafNode.setHaltAllRequests(event.getValue());
+				adjustHaltRequest();
+			});
+		adjustHaltRequest();
 
 		HorizontalLayout toolbar = new HorizontalLayout(nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
 		                                                moveUp, moveDown,
@@ -240,13 +245,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 		return toolbar;
 	}
 
-	protected void adjustHaltRequest(boolean newValue) {
-		LeafNode.haltAllRequests = newValue;
-		log.info("Requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	protected void adjustHaltRequest() {
+		boolean halted = LeafNode.isHaltAllRequests();
+		log.info("Requests are now " + (halted ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		// make sure the checkbox (and its coloring) and the actual value are in sync:
-		if (this.haltRequests.getValue() != LeafNode.haltAllRequests) this.haltRequests.setValue(LeafNode.haltAllRequests);
-		this.haltRequests.setLabel(Messages.getString(LeafNode.haltAllRequests ? "NodeView.HaltAllRequests.Halted" : "NodeView.HaltAllRequests.Enabled")); //$NON-NLS-1$ //$NON-NLS-2$
-		this.haltRequests.setClassName(LeafNode.haltAllRequests ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
+		if (this.haltRequests.getValue() != halted) this.haltRequests.setValue(halted);
+		this.haltRequests.setLabel(Messages.getString(halted ? "NodeView.HaltAllRequests.Halted" : "NodeView.HaltAllRequests.Enabled")); //$NON-NLS-1$ //$NON-NLS-2$
+		this.haltRequests.setClassName(halted ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 
@@ -302,10 +307,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// connect view and model:
 		this.tree.asSingleSelect().addValueChangeListener(event ->
 			{
-				if (event.isFromClient()) {
+//				if (event.isFromClient()) { // can also be triggered programmatically!
 					@SuppressWarnings("unchecked")
 					N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
-					log.info("Selection changed: node='{}'.", node); //$NON-NLS-1$
+					log.info("Selection changed: node='{}'.", (node != null ? node.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 					if (this.form != null && this.form.isVisible()) {
 						if (node != null) {
 							editNode(node, null);
@@ -313,20 +318,20 @@ public class NodeView <N extends Node> extends VerticalLayout
 							closeEditor();
 						}
 					}
-				}
+//				}
 			});
 
 		this.tree.addItemClickListener(event ->
 			{
 				Node node = event.getItem();
-				log.info("Clicked node '{}'.", node); //$NON-NLS-1$
+				log.info("Clicked node '{}'.", (node != null ? node.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 				// any action? / already done in asSingleSelect
 			});
 
 		this.tree.addItemDoubleClickListener(event -> {
 			@SuppressWarnings("unchecked")
 			N node = (N)event.getItem(); // returns the selected Node or null if none is selected /
-			log.info("DoubleClicked node '{}'.", node); //$NON-NLS-1$
+			log.info("DoubleClicked node '{}'.", (node != null ? node.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 			// action:
 			editNode(node, null);
 		});
@@ -426,7 +431,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void saveNodeAfterEditing(NodeForm.SaveEvent event, IntermediateNode parentNode) {
 		Node node = event.getNode();
-		log.debug("NodeView.saveNode[SaveEvent] {}", node); //$NON-NLS-1$
+		log.debug("NodeView.saveNode[SaveEvent] '{}'", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
 			addNewNode(node, parentNode);
 		} else { // updating an existing node:
@@ -437,7 +442,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
-		log.debug("NodeView.deleteNode[DeleteEvent] {}", node); //$NON-NLS-1$
+		log.debug("NodeView.deleteNode[DeleteEvent] '{}'", node.getName()); //$NON-NLS-1$
+		if (!this.form.setNode(null)) { // signal that we want to leave that node:
+			return; // if there are unsaved changes remain on form's current node
+		}
 		deleteNodes(Collections.singletonList(node));
 		closeEditor();
 	}
@@ -453,7 +461,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void addNewNode(Node newNode, IntermediateNode parentNode) {
-		log.info("addNewNode '{}' to parent '{}'", newNode, parentNode); //$NON-NLS-1$
+		log.info("addNewNode '{}' to parent '{}'", newNode.getName(), parentNode.getName()); //$NON-NLS-1$
 		this.nodeService.addChild(parentNode, newNode);
 		parentNode.expanded = true; // make sure the newly added child gets visible
 		if (NodeView.alwaysSave) saveNode(newNode);
@@ -485,7 +493,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	void createNewChildNode(NodeType nodeType, IntermediateNode parentNode) {
-		log.info("createNewChildNode"); //$NON-NLS-1$
+		log.info("createNewChildNode(type={}, parentNode='{}')", nodeType, parentNode.getName()); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
 		N newNode;
 		try {
@@ -503,7 +511,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void updateNode(Node node) {
-		log.info("updateNode {}", node); //$NON-NLS-1$
+		log.info("updateNode '{}'", node.getName()); //$NON-NLS-1$
 //		HierarchicalDataProvider<Node, SerializablePredicate<Node>> dataProvider = this.tree.getDataProvider();
 // not necessary
 //		node.bubbleUp(n ->
@@ -519,20 +527,22 @@ public class NodeView <N extends Node> extends VerticalLayout
 		NodeView.this.tree.getDataProvider().refreshItem(node, refreshChildren);
 		// workaround since refreshChildren==true in the above call has no effect:
 		if (refreshChildren && node instanceof IntermediateNode) {
+			// does not work :-(
 			((IntermediateNode)node).getChildren().forEach(n -> refreshNode(n, refreshChildren));
-			// NodeView.this.tree.getDataProvider().refreshAll();
+			NodeView.this.tree.getDataProvider().refreshAll();
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public void editNode(N node, IntermediateNode parentNode) {
-		log.info("editNode {}", node); //$NON-NLS-1$
+		log.info("editNode {} (parent='{}')", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (this.form != null) {
 			N currentNode = this.form.getNode();
 			if (!this.form.setNode(null)) { // signal that we want to leave that node:
-				select(currentNode); // if there are unsaved changes remain on current node
+				select(currentNode); // if there are unsaved changes remain on form's current node
 				return;
 			}
+			this.form.clearListeners();
 		}
 		try {
 			NodeForm<N> newForm;
@@ -548,14 +558,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 			if (newForm != this.form) { // different form assigned:
 				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
 				this.form = newForm;
-				// add listeners (if not already present):
-				this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
-				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-				this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
 				this.formWrapper.removeAll();
 				this.formWrapper.add(this.form);
 			}
+			this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
+			this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
+			this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
+			this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
 			this.form.setNode(node);
 
 			this.form.setVisible(true);
@@ -610,7 +619,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void moveUp(Node node) {
-		log.info("moveUp '{}'", node); //$NON-NLS-1$
+		log.info("moveUp '{}'", node.getName()); //$NON-NLS-1$
 		if (node instanceof RootNode) {
 			UsageError("Moving Root-Nodes is NOT YET IMPLEMENTED!"); //$NON-NLS-1$
 		} else {
@@ -632,7 +641,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void moveDown(Node node) {
-		log.info("moveDown '{}'", node); //$NON-NLS-1$
+		log.info("moveDown '{}'", node.getName()); //$NON-NLS-1$
 		if (node instanceof RootNode) {
 			UsageError("Moving Root-Nodes is NOT YET IMPLEMENTED!"); //$NON-NLS-1$
 		} else {

@@ -21,8 +21,8 @@ public class SOAPConnection extends HTTPConnection
 
 	protected String soapAction;
 
-	@SuppressWarnings("unused")
-	private SOAPConnection() { // required for deserialization
+
+	public SOAPConnection() { // required for deserialization & node-factory
 		super();
 	}
 

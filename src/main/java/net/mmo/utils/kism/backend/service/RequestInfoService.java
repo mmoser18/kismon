@@ -30,31 +30,44 @@ public class RequestInfoService
 	}
 
 	public List<RequestInfo> findByFilter(String nameFilter, NodeType typeFilter,
-	                                      Long durationLowerBound, Long durationUpperBound,
+	                                      Double minDurationValue, Double maxDurationValue,
 	                                      LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
 		if ((nameFilter == null || nameFilter.isEmpty()) &&
 			typeFilter == null &&
-			durationLowerBound == null && durationUpperBound == null &&
+			minDurationValue == null && maxDurationValue == null &&
 			timestampLowerBound == null && timestampUpperBound == null) {
 			return this.requestInfoRepository.findAll();
 		} else {
 			return this.requestInfoRepository.findByFilter(nameFilter, typeFilter,
-			                                               durationLowerBound, durationUpperBound,
+			                                               minDurationValue, maxDurationValue,
 			                                               timestampLowerBound, timestampUpperBound);
 		}
 	}
 
-	public Long findLowestDurationWithFilter(String nameFilter, NodeType typeFilter) {
+	public Double findLowestDurationWithFilter(String nameFilter, NodeType typeFilter) {
 		return this.requestInfoRepository.findLowestDurationWithFilter(nameFilter, typeFilter);
 	}
 
-	public Long findHighestDurationWithFilter(String nameFilter, NodeType typeFilter) {
+	public Double findHighestDurationWithFilter(String nameFilter, NodeType typeFilter) {
 		return this.requestInfoRepository.findHighestDurationWithFilter(nameFilter, typeFilter);
+	}
+
+	public LocalDateTime findLowestTimestampWithFilter(String nameFilter, NodeType typeFilter) {
+		return this.requestInfoRepository.findLowestTimestampWithFilter(nameFilter, typeFilter);
+	}
+
+	public LocalDateTime findHighestTimestampWithFilter(String nameFilter, NodeType typeFilter) {
+		return this.requestInfoRepository.findHighestTimestampWithFilter(nameFilter, typeFilter);
 	}
 
 	public Long count() {
 		return this.requestInfoRepository.count();
 	}
+
+	public Long countWithFilter(String nameFilter, NodeType typeFilter) {
+		return this.requestInfoRepository.countWithFilter(nameFilter, typeFilter);
+	}
+
 
 	public void delete(RequestInfo requestInfo) {
 		this.requestInfoRepository.delete(requestInfo);
@@ -67,7 +80,7 @@ public class RequestInfoService
 			return null;
 		}
 		RequestInfo saved = this.requestInfoRepository.save(requestInfo);
-		log.info("saved {}:", saved); //$NON-NLS-1$
+		log.trace("saved {}:", saved); //$NON-NLS-1$
 		return saved;
 	}
 

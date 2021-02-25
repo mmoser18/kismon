@@ -32,9 +32,7 @@ public class RootNode extends IntermediateNode
 	public transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
 
 
-	/** required for deserialization only */
-	@SuppressWarnings("unused")
-	private RootNode() {
+	public RootNode() { // required for deserialization & node-factory
 		super();
 	}
 

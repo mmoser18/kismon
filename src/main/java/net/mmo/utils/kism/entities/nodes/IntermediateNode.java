@@ -50,8 +50,7 @@ public class IntermediateNode extends Node
 	public boolean expanded = false;
 
 
-	// required for deserialization only
-	protected IntermediateNode() {
+	public IntermediateNode() { // required for deserialization & node-factory
 		super();
 	}
 

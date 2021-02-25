@@ -1327,7 +1327,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RWT DMZ DP-query",
+					"name" : "RWT DMZ DB-query",
 					"description" : "send specific query to RWT DMZ DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1407,7 +1407,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RWT Test DP-query",
+					"name" : "RWT Test DB-query",
 					"description" : "send specific query to RWT Test DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1453,7 +1453,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	} ],
 	"expanded" : true
 }

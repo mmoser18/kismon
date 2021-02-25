@@ -21,14 +21,16 @@ public class RequestInfo extends AbstractEntity implements Serializable
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 
+	public static final double NanoToMilliFactor = 1000000.0;
+
 	/** name of node that generated this result */
 	protected String name;
 
 	/** simple name of node class that generated this result */
 	protected NodeType nodeType;
 
-	/** duration of request (in nano-seconds) */
-	protected Long duration;
+	/** duration of request (in milli-seconds) */
+	protected double duration;
 
 	/** timestamp of request(-start) */
 	//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -44,7 +46,11 @@ public class RequestInfo extends AbstractEntity implements Serializable
 		// empty
 	}
 
-	public RequestInfo(String name, String nodeType, Long duration, LocalDateTime timestamp, String result) {
+	public RequestInfo(String name, Class<?> nodeClass, Long duration, LocalDateTime timestamp, String result) {
+		this(name, nodeClass.getSimpleName(), (duration / NanoToMilliFactor), timestamp, result);
+	}
+
+	public RequestInfo(String name, String nodeType, double duration, LocalDateTime timestamp, String result) {
 		setName(name);
 		setNodeType(NodeType.valueOf(nodeType));
 		setDuration(duration);

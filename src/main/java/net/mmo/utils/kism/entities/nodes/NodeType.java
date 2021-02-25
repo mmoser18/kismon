@@ -9,7 +9,7 @@ import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 
-public enum NodeType { // make sure these values correspond to the class.getSimpleName of the respective node-classes!
+public enum NodeType {
 	RootNode(RootNode.class),
 	IntermediateNode(IntermediateNode.class),
 	RESTConnection(RESTConnection.class),

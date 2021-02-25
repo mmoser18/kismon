@@ -5,10 +5,11 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.ResultViewField;
 
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -26,10 +27,8 @@ import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
-import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
-import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -61,8 +60,6 @@ public class RequestInfoView extends VerticalLayout
 	public static final String TimestampMaximumFieldClassName = ResultViewField + "timestamp-maximum"; //$NON-NLS-1$
 	public static final String TimestampExtremesFieldClassName = ResultViewField + "timestamp-extremes"; //$NON-NLS-1$
 
-	public static final double NanoToMilliFactor = 1000000.0;
-
 	protected RequestInfoService resultService;
 
 	protected TextField nameFilter = new TextField();
@@ -71,8 +68,8 @@ public class RequestInfoView extends VerticalLayout
 	protected NumberField durationMinimum = new NumberField();
 	protected NumberField durationMaximum = new NumberField();
 
-	protected TextField timestampMinimum = new TextField();
-	protected TextField timestampMaximum = new TextField();
+	protected DateTimePicker timestampMinimum = new DateTimePicker();
+	protected DateTimePicker timestampMaximum = new DateTimePicker();
 
 	protected Grid<RequestInfo> grid = new Grid<>(RequestInfo.class); // package visible for UTs - is there no other way?
 	protected Div content;
@@ -88,7 +85,7 @@ public class RequestInfoView extends VerticalLayout
 		addClassName(ViewClassName);
 		setSizeFull(); // use entire browser window
 
-		fixJavaGroupingSeparatorBug();
+//		fixJavaGroupingSeparatorBug();
 
 		configureGrid();
 
@@ -103,6 +100,7 @@ public class RequestInfoView extends VerticalLayout
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
+	@SuppressWarnings("deprecation")
 	protected HorizontalLayout getToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 		this.nameFilter.setClassName(NameFilterFieldClassName);
@@ -126,12 +124,16 @@ public class RequestInfoView extends VerticalLayout
 		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
 		this.durationMinimum.setHasControls(true);
+		this.durationMinimum.setMinLength(10);
+		this.durationMinimum.setMaxLength(15);
 		this.durationMinimum.addValueChangeListener(e -> updateList());
 
 		this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label")); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
 		this.durationMaximum.setHasControls(true);
+		this.durationMaximum.setMinLength(10);
+		this.durationMaximum.setMaxLength(15);
 		this.durationMaximum.addValueChangeListener(e -> updateList());
 
 		VerticalLayout durationExtremes = new VerticalLayout();
@@ -173,10 +175,10 @@ public class RequestInfoView extends VerticalLayout
 		this.grid.addColumn((info) -> NodeTypeLabelProvider.getNodeTypeLabel(info.getNodeType()))
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
 			;
-		this.grid.addColumn((info) -> info.getDuration() / NanoToMilliFactor /*this.numberFormat.format(info.getDuration() / NanoToMilliFactor)*/)
+		this.grid.addColumn((info) -> info.getDuration())
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Duration")) //$NON-NLS-1$
 			;
-		this.grid.addColumn((info) -> info.getTimestamp() != null ? info.getTimestamp().format(UIConstants.dateTimeFormatter) : UIConstants.EMPTY_STRING)
+		this.grid.addColumn((info) -> info.getTimestamp())
 			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
 			.setTextAlign(ColumnTextAlign.END)
 			;
@@ -197,31 +199,35 @@ public class RequestInfoView extends VerticalLayout
 		this.grid.addAttachListener(e -> updateList());
 	}
 
-	private void resetMinMaxValues() {
+	protected void resetMinMaxValues() {
 		this.durationMinimum.setValue(null);
 		this.durationMaximum.setValue(null);
 		this.timestampMinimum.setValue(null);
 		this.timestampMaximum.setValue(null);
 	}
 
+//	protected static String timestampFormatted(LocalDateTime timestamp) {
+//		return (timestamp != null ?timestamp.format(UIConstants.dateTimeFormatter) : UIConstants.EMPTY_STRING);
+//	}
+
 	protected void updateList() {
 		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
 		// adjust min/maxDuration:
-		Long minDurationValue = (this.durationMinimum.getValue() != null ? Math.round(this.durationMinimum.getValue() * NanoToMilliFactor) : null);
-		Long maxDurationValue = (this.durationMaximum.getValue() != null ? Math.round(this.durationMaximum.getValue() * NanoToMilliFactor) : null);
+		Double minDurationValue = this.durationMinimum.getValue();
+		Double maxDurationValue = this.durationMaximum.getValue();
 
-		Long minDuration = this.resultService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
-		Long maxDuration = this.resultService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
+		Double minDuration = this.resultService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
+		Double maxDuration = this.resultService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
 
 		if (minDuration != null) {
-			double minDurationConverted = minDuration / NanoToMilliFactor;
+			double minDurationConverted = minDuration;
 			this.durationMinimum.setLabel(Messages.getString("RequestInfoView.Duration.Minimum.Label") + " (>" + minDurationConverted + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			this.durationMinimum.setMin(minDurationConverted);
 		}
 		if (maxDuration != null) {
-			double maxDurationConverted = maxDuration / NanoToMilliFactor;
+			double maxDurationConverted = maxDuration;
 			this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label") + " (<" + maxDurationConverted + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			this.durationMaximum.setMax(maxDurationConverted);
 		}
@@ -235,18 +241,41 @@ public class RequestInfoView extends VerticalLayout
 		}
 
 		if (minDurationValue != null) {
-			this.durationMinimum.setValue(minDurationValue / NanoToMilliFactor);
+			this.durationMinimum.setValue(minDurationValue);
 			// set the max/min to the respective other value: (is this a clever idea?)
-			this.durationMaximum.setMin(minDurationValue / NanoToMilliFactor);
+			this.durationMaximum.setMin(minDurationValue);
 		}
 		if (maxDurationValue != null) {
-			this.durationMaximum.setValue(maxDurationValue / NanoToMilliFactor);
+			this.durationMaximum.setValue(maxDurationValue);
 			// set the max/min to the respective other value: (is this a clever idea?)
-			this.durationMinimum.setMax(maxDurationValue / NanoToMilliFactor);
+			this.durationMinimum.setMax(maxDurationValue);
 		}
 
 		// adjust min/maxTimestamp:
-		// TODO: add timestamp processing here...
+		LocalDateTime minTimestampValue = this.timestampMinimum.getValue();
+		LocalDateTime maxTimestampValue = this.timestampMaximum.getValue();
+
+		LocalDateTime minTimestamp = this.resultService.findLowestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
+		LocalDateTime maxTimestamp = this.resultService.findHighestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
+
+		// limit the values to [min..max] (if available):
+		if (minTimestamp != null && (minTimestampValue == null || minTimestampValue.compareTo(minTimestamp) < 0)) {
+			minTimestampValue = minTimestamp;
+		}
+		if (maxTimestamp != null && (maxTimestampValue == null || maxTimestampValue.compareTo(maxTimestamp) > 0)) {
+			maxTimestampValue = maxTimestamp;
+		}
+
+		if (minTimestampValue != null) {
+			this.timestampMinimum.setValue(minTimestampValue);
+			// set the max/min to the respective other value: (is this a clever idea?)
+			// this.timestampMaximum.setMin(minTimestampValue);
+		}
+		if (maxTimestampValue != null) {
+			this.timestampMaximum.setValue(maxTimestampValue);
+			// set the max/min to the respective other value: (is this a clever idea?)
+			// this.timestampMinimum.setMax(maxTimestampValue);
+		}
 
 		// TODO: replace by call-back data provider to minimize GUI loading when there are LOTs of data:
 		this.grid.setItems(this.resultService.findByFilter(nameFilterValue, nodeTypeFilterValue,
@@ -254,27 +283,27 @@ public class RequestInfoView extends VerticalLayout
 		                                                   null, null));
 	}
 
-	// for some stupid reason Java does not take over the OS' number digit grouping and separator
-	// settings (at least not on Windows 10) - so I tried to work around that:
-	protected void fixJavaGroupingSeparatorBug() {
-		DecimalFormatSymbols customSymbol = DecimalFormatSymbols.getInstance();
-		boolean adjustNumberFormat = false;
-		String groupingSeparator = AppProperties.getProperties().getProperty("DigitGroupingSeparator"); //$NON-NLS-1$
-		if (nonBlank(groupingSeparator)) {
-			customSymbol.setGroupingSeparator(groupingSeparator.charAt(0));
-			adjustNumberFormat = true;
-		}
-		String decimalSeparator = AppProperties.getProperties().getProperty("DecimalSeparator"); //$NON-NLS-1$
-		if (nonBlank(decimalSeparator)) {
-			customSymbol.setDecimalSeparator(decimalSeparator.charAt(0));
-			adjustNumberFormat = true;
-		}
-		if (adjustNumberFormat) {
-			((DecimalFormat)this.numberFormat).setDecimalFormatSymbols(customSymbol);
-			this.numberFormat.setGroupingUsed(true);
-		}
-	}
-	protected static boolean nonBlank(String str) {
-		return str != null && !str.isBlank();
-	}
+//	// for some stupid reason Java does not take over the OS' number digit grouping and separator
+//	// settings (at least not on Windows 10) - so I tried to work around that:
+//	protected void fixJavaGroupingSeparatorBug() {
+//		DecimalFormatSymbols customSymbol = DecimalFormatSymbols.getInstance();
+//		boolean adjustNumberFormat = false;
+//		String groupingSeparator = AppProperties.getProperties().getProperty("DigitGroupingSeparator"); //$NON-NLS-1$
+//		if (nonBlank(groupingSeparator)) {
+//			customSymbol.setGroupingSeparator(groupingSeparator.charAt(0));
+//			adjustNumberFormat = true;
+//		}
+//		String decimalSeparator = AppProperties.getProperties().getProperty("DecimalSeparator"); //$NON-NLS-1$
+//		if (nonBlank(decimalSeparator)) {
+//			customSymbol.setDecimalSeparator(decimalSeparator.charAt(0));
+//			adjustNumberFormat = true;
+//		}
+//		if (adjustNumberFormat) {
+//			((DecimalFormat)this.numberFormat).setDecimalFormatSymbols(customSymbol);
+//			this.numberFormat.setGroupingUsed(true);
+//		}
+//	}
+//	protected static boolean nonBlank(String str) {
+//		return str != null && !str.isBlank();
+//	}
 }

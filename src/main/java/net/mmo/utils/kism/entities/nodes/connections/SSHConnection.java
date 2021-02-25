@@ -19,8 +19,7 @@ public class SSHConnection extends IPConnection
 	private static final long serialVersionUID = 643208328101928988L;
 
 
-	@SuppressWarnings("unused")
-	private SSHConnection() { // required for deserialization
+	public SSHConnection() { // required for deserialization & node-factory
 		super();
 	}
 	public SSHConnection(String name, String description) {

@@ -17,8 +17,7 @@ public class RESTConnection extends HTTPConnection
 {
 	private static final long serialVersionUID = -2228821478937714703L;
 
-	@SuppressWarnings("unused")
-	private RESTConnection() { // required for deserialization
+	public RESTConnection() { // required for deserialization & node-factory
 		super();
 	}
 	public RESTConnection(String name, String description) {

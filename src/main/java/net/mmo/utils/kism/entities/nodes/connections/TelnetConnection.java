@@ -18,8 +18,8 @@ public class TelnetConnection extends IPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
 
-	@SuppressWarnings("unused")
-	private TelnetConnection() { // required for deserialization
+
+	public TelnetConnection() { // required for deserialization & node-factory
 		super();
 	}
 	public TelnetConnection(String name, String description) {

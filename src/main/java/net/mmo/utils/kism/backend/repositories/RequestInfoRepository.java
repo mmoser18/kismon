@@ -38,38 +38,32 @@ public interface RequestInfoRepository extends JpaRepository<RequestInfo, Long>
 	@Query("select r from RequestInfo r " + fullWhereClause)
 	List<RequestInfo> findByFilter(@Param("nameFilter") String nameFilter
 	                              ,@Param("typeFilter") NodeType typeFilter
-	                              ,@Param("lowerBoundDuration") Long lowerBoundDuration
-	                              ,@Param("upperBoundDuration") Long upperBoundDuration
+	                              ,@Param("lowerBoundDuration") Double minDurationValue
+	                              ,@Param("upperBoundDuration") Double maxDurationValue
 	                              ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                              ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                              );
 
-
 	@Query("select min(r.duration) from RequestInfo r " + basicWhereClause)
-	Long findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
-	                                 ,@Param("typeFilter") NodeType typeFilter
-	                                 );
+	Double findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
+	                                   ,@Param("typeFilter") NodeType typeFilter
+	                                   );
 
 	@Query("select max(r.duration) from RequestInfo r " + basicWhereClause)
-	Long findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
-	                                  ,@Param("typeFilter") NodeType typeFilter
-	                                  );
+	Double findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
+	                                    ,@Param("typeFilter") NodeType typeFilter
+	                                    );
 
-//	@Query("select min(r.timestamp) from RequestInfo r " + whereClause)
-//	List<RequestInfo> findLowestTimestampWithFilter(@Param("nameFilter") String nameFilter
-//	                                               ,@Param("typeFilter") NodeType typeFilter
-//	                                               ,@Param("lowerBoundDuration") long lowerBoundDuration
-//	                                               ,@Param("upperBoundDuration") long upperBoundDuration
-//	                                               ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
-//	                                               ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
-//	                                               );
-//
-//	@Query("select max(r.timestamp) from RequestInfo r " + whereClause)
-//	List<RequestInfo> findHighstTimestampWithFilter(@Param("nameFilter") String nameFilter
-//	                                               ,@Param("typeFilter") NodeType typeFilter
-//	                                               ,@Param("lowerBoundDuration") long lowerBoundDuration
-//	                                               ,@Param("upperBoundDuration") long upperBoundDuration
-//	                                               ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
-//	                                               ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
-//	                                               );
+	@Query("select min(r.timestamp) from RequestInfo r " + basicWhereClause)
+	LocalDateTime findLowestTimestampWithFilter(@Param("nameFilter") String nameFilter
+	                                           ,@Param("typeFilter") NodeType typeFilter
+	                                           );
+
+	@Query("select max(r.timestamp) from RequestInfo r " + basicWhereClause)
+	LocalDateTime findHighestTimestampWithFilter(@Param("nameFilter") String nameFilter
+	                                            ,@Param("typeFilter") NodeType typeFilter
+	                                            );
+
+	@Query("select count(r.id) from RequestInfo r " + basicWhereClause)
+	Long countWithFilter(String nameFilter, NodeType typeFilter);
 }

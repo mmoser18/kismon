@@ -59,6 +59,10 @@ vaadin-form-layout {
 }
 */
 
+.result-view-toolbar {
+	align-items: center;
+}
+
 vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-select[class^='node-form-field-'],vaadin-date-time-picker[class^='node-form-field-'],vaadin-upload,vaadin-horizontal-layout[class^='node-form-field-'],vaadin-accordion[class^='node-form-field-'] {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -140,7 +144,7 @@ vaadin-upload {
 	flex-direction: column;
 }
 
-vaadin-text-field[class^='result-view-field-'],vaadin-number-field[class^='result-view-field-'],vaadin-integer-field[class^='result-view-field-'],vaadin-combo-box[class^='result-view-field-'],vaadin-date-time-picker[class^='result-view-field-'],vaadin-horizontal-layout[class^='result-view-field-'],vaadin-vertical-layout[class^='result-view-field-'] {
+vaadin-text-field[class^='result-view-field-'],vaadin-number-field[class^='result-view-field-'],vaadin-integer-field[class^='result-view-field-'],vaadin-combo-box[class^='result-view-field-'],vaadin-date-time-picker-custom-field[class^='result-view-field-'],vaadin-date-time-picker[class^='result-view-field-'],vaadin-time-picker[class^='result-view-field-'],vaadin-horizontal-layout[class^='result-view-field-'],vaadin-vertical-layout[class^='result-view-field-'] {
 	margin-top: 0px;
 	margin-bottom: 0px;
 	padding-top: 0px;
@@ -157,6 +161,10 @@ vaadin-text-field[class^='result-view-field-'],vaadin-number-field[class^='resul
 	padding: 0px;
 	margin: 3px; 
 	align-items: stretch;
+}
+
+.result-view-field-duration-minimum .result-view-field-duration-maximum {
+	width: 20em;
 }
 
 @media all and (max-width: 1100px) {
