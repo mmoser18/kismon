@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
@@ -17,8 +18,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,7 @@ import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
@@ -62,7 +62,7 @@ public class RequestInfoView extends VerticalLayout
 
 	protected RequestInfoService resultService;
 
-	protected TextField nameFilter = new TextField();
+	protected ComboBox<String> nameFilter = new ComboBox<>();
 	protected Select<String> typeFilter = new Select<>();
 
 	protected NumberField durationMinimum = new NumberField();
@@ -107,8 +107,9 @@ public class RequestInfoView extends VerticalLayout
 		this.nameFilter.setLabel(Messages.getString("RequestInfoView.TextField.NameFilter.Label")); //$NON-NLS-1$
 		this.nameFilter.setPlaceholder(Messages.getString("RequestInfoView.TextField.NameFilter.PlaceHolder")); //$NON-NLS-1$
 		this.nameFilter.setClearButtonVisible(true);
-		this.nameFilter.setValueChangeMode(ValueChangeMode.LAZY);
-		this.nameFilter.setThemeName(LabelPaddingTheme);
+//		this.nameFilter.setValueChangeMode(ValueChangeMode.LAZY);
+//		this.nameFilter.setThemeName(LabelPaddingTheme);
+
 		this.nameFilter.addValueChangeListener(e -> { resetMinMaxValues(); updateList(); });
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
@@ -120,20 +121,20 @@ public class RequestInfoView extends VerticalLayout
 		this.typeFilter.setEmptySelectionCaption(Messages.getString("RequestInfoView.TextField.TypeFilter.None")); //$NON-NLS-1$
 		this.typeFilter.addValueChangeListener(e -> { resetMinMaxValues(); updateList(); });
 
-		this.durationMinimum.setLabel(Messages.getString("RequestInfoView.Duration.Minimum.Label")); //$NON-NLS-1$
+		this.durationMinimum.setLabel(String.format(Messages.getString("RequestInfoView.Duration.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
 		this.durationMinimum.setHasControls(true);
-		this.durationMinimum.setMinLength(10);
-		this.durationMinimum.setMaxLength(15);
+		this.durationMinimum.setMinLength(15);
+		this.durationMinimum.setMaxLength(20);
 		this.durationMinimum.addValueChangeListener(e -> updateList());
 
-		this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label")); //$NON-NLS-1$
+		this.durationMaximum.setLabel(String.format(Messages.getString("RequestInfoView.Duration.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
 		this.durationMaximum.setHasControls(true);
-		this.durationMaximum.setMinLength(10);
-		this.durationMaximum.setMaxLength(15);
+		this.durationMaximum.setMinLength(15);
+		this.durationMaximum.setMaxLength(20);
 		this.durationMaximum.addValueChangeListener(e -> updateList());
 
 		VerticalLayout durationExtremes = new VerticalLayout();
@@ -141,12 +142,12 @@ public class RequestInfoView extends VerticalLayout
 		durationExtremes.addClassName(CombinedClassName);
 		durationExtremes.add(this.durationMinimum, this.durationMaximum);
 
-		this.timestampMinimum.setLabel(Messages.getString("RequestInfoView.Timestamp.Minimum.Label")); //$NON-NLS-1$
+		this.timestampMinimum.setLabel(String.format(Messages.getString("RequestInfoView.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
 		this.timestampMinimum.setThemeName(LabelPaddingTheme);
 		this.timestampMinimum.addValueChangeListener(e -> updateList());
 
-		this.timestampMaximum.setLabel(Messages.getString("RequestInfoView.Timestamp.Maximum.Label")); //$NON-NLS-1$
+		this.timestampMaximum.setLabel(String.format(Messages.getString("RequestInfoView.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
 		this.timestampMaximum.setThemeName(LabelPaddingTheme);
 		this.timestampMaximum.addValueChangeListener(e -> updateList());
@@ -223,12 +224,12 @@ public class RequestInfoView extends VerticalLayout
 
 		if (minDuration != null) {
 			double minDurationConverted = minDuration;
-			this.durationMinimum.setLabel(Messages.getString("RequestInfoView.Duration.Minimum.Label") + " (>" + minDurationConverted + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			this.durationMinimum.setLabel(String.format(Messages.getString("RequestInfoView.Duration.Minimum.Label"), "(>" + minDurationConverted + ")")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			this.durationMinimum.setMin(minDurationConverted);
 		}
 		if (maxDuration != null) {
 			double maxDurationConverted = maxDuration;
-			this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label") + " (<" + maxDurationConverted + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			this.durationMaximum.setLabel(String.format(Messages.getString("RequestInfoView.Duration.Maximum.Label"), " (<" + maxDurationConverted + ")")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			this.durationMaximum.setMax(maxDurationConverted);
 		}
 

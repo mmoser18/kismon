@@ -84,6 +84,21 @@ public class RequestInfoService
 		return saved;
 	}
 
+	public List<String> getNodeNames() {
+		return this.requestInfoRepository.getNodeNames();
+	}
+
+	List<RequestInfo> getTimingDataForNode(String name,
+	                                       LocalDateTime lowerBoundTimeStamp,
+	                                       LocalDateTime upperBoundTimeStamp) {
+		return  this.requestInfoRepository.findByFilter(name, null,
+		                                                null, null,
+		                                                lowerBoundTimeStamp, upperBoundTimeStamp);
+	}
+	List<RequestInfo> getTimingDataForNode(String name) {
+		return getTimingDataForNode(name, null, null);
+	}
+
 //	public Map<String, Integer> getStats() {
 //		HashMap<String, Integer> stats = new HashMap<>();
 //		findAll().forEach(result -> stats.put(result.getName(), result.getEmployees().size()));

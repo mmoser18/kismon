@@ -45,7 +45,6 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
@@ -420,11 +419,6 @@ abstract public class HTTPConnection extends IPConnection
 	@Override
 	public void sendRequest() throws Exception {
 		log.info("sendRequest '{}':", getName()); //$NON-NLS-1$
-		if (LeafNode.isHaltAllRequests()) {
-			Exception ex = new Exception("Should never be called!"); //$NON-NLS-1$
-			log.error("Illegal call!", ex); //$NON-NLS-1$
-			throw ex;
-		}
 		HttpClient client = null;
 		HttpRequest request = null;
 		HttpResponse<byte[]> response = null;

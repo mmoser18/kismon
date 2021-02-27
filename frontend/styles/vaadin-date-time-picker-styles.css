@@ -11,3 +11,7 @@
 [part="value"] {
 	height: 0.8em;
 }
+
+vaadin-date-time-picker-custom-field {
+	padding: 0px;
+}

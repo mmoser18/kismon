@@ -144,11 +144,16 @@ vaadin-upload {
 	flex-direction: column;
 }
 
-vaadin-text-field[class^='result-view-field-'],vaadin-number-field[class^='result-view-field-'],vaadin-integer-field[class^='result-view-field-'],vaadin-combo-box[class^='result-view-field-'],vaadin-date-time-picker-custom-field[class^='result-view-field-'],vaadin-date-time-picker[class^='result-view-field-'],vaadin-time-picker[class^='result-view-field-'],vaadin-horizontal-layout[class^='result-view-field-'],vaadin-vertical-layout[class^='result-view-field-'] {
+vaadin-horizontal-layout[class^='result-view-field-'],vaadin-vertical-layout[class^='result-view-field-'],vaadin-text-field[class^='result-view-field-'],vaadin-number-field[class^='result-view-field-'],vaadin-integer-field[class^='result-view-field-'],vaadin-combo-box[class^='result-view-field-'],vaadin-date-time-picker-custom-field[class^='result-view-field-'],vaadin-date-time-picker[class^='result-view-field-'],vaadin-time-picker[class^='result-view-field-'],vaadin-date-time-picker-custom-field {
 	margin-top: 0px;
 	margin-bottom: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
+}
+
+vaadin-date-time-picker-custom-field {
+	margin: 0px;
+	padding: 0px;
 }
 
 .result-view .result-view-duration-extremes {
