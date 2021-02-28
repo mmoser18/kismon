@@ -27,7 +27,7 @@
 			"properties" : {
 				"xxx" : "yyy"
 			},
-			"active" : false,
+			"active" : true,
 			"period" : 30,
 			"timeout" : 15,
 			"checkResults" : true,
@@ -53,7 +53,7 @@
 			"properties" : {
 				"x" : "Operation"
 			},
-			"active" : false,
+			"active" : true,
 			"period" : 60,
 			"timeout" : 10,
 			"checkResults" : true,
@@ -81,7 +81,7 @@
 				"bar" : "zzz",
 				"foo" : "*"
 			},
-			"active" : false,
+			"active" : true,
 			"period" : 60,
 			"timeout" : 10,
 			"checkResults" : true,
@@ -121,7 +121,7 @@
 						"description" : "REST Connection 3",
 						"applicable" : true,
 						"properties" : { },
-						"active" : false,
+						"active" : true,
 						"period" : 60,
 						"timeout" : 45,
 						"checkResults" : false,
@@ -147,7 +147,7 @@
 					"description" : "REST Connection 4",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 45,
 					"checkResults" : false,
@@ -201,7 +201,7 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : false
+			"expanded" : true
 		} ],
 		"expanded" : true
 	}, {

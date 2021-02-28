@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RequestInfoService
 {
-	private RequestInfoRepository requestInfoRepository;
+	protected RequestInfoRepository requestInfoRepository;
 
 	public RequestInfoService(RequestInfoRepository requestInfoRepository) {
 		log.debug("RequestInfoService c'tor"); //$NON-NLS-1$
@@ -87,6 +87,11 @@ public class RequestInfoService
 	public List<String> getNodeNames() {
 		return this.requestInfoRepository.getNodeNames();
 	}
+
+	public List<String> getNodeNames(String nameFilter, NodeType typeFilter) {
+		return this.requestInfoRepository.getNodeNames(nameFilter, typeFilter);
+	}
+
 
 	List<RequestInfo> getTimingDataForNode(String name,
 	                                       LocalDateTime lowerBoundTimeStamp,

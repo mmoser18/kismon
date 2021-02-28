@@ -15,7 +15,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.ui.view.dashboard.DashboardView;
+import net.mmo.utils.kism.ui.view.dashboard.RequestInfoGraph;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
 import net.mmo.utils.kism.ui.view.results.RequestInfoView;
 
@@ -66,7 +66,7 @@ public class MainLayout extends AppLayout
 		nodesLink.setHighlightCondition(HighlightConditions.sameLocation());
 		RouterLink resultsLink = new RouterLink(Messages.getString("MainLayout.Tab.RequestInfoView.Label"), RequestInfoView.class); //$NON-NLS-1$
 		resultsLink.setHighlightCondition(HighlightConditions.sameLocation());
-		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.DashBoard.Label"), DashboardView.class); //$NON-NLS-1$
+		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.DashBoard.Label"), RequestInfoGraph.class); //$NON-NLS-1$
 		dashboardLink.setHighlightCondition(HighlightConditions.sameLocation());
 
 		addToDrawer(new VerticalLayout(nodesLink, resultsLink, dashboardLink));

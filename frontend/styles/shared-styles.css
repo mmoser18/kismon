@@ -186,6 +186,11 @@ vaadin-date-time-picker-custom-field {
 	margin: 1em 0;
 }
 
+vaadin-chart {
+	width: 100%;
+	height: 100%;
+}
+
 .main-title {
 	width: 85%;
 }
