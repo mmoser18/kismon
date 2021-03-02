@@ -71,17 +71,17 @@ abstract public class AbstractRequestInfoView extends VerticalLayout
 	protected HorizontalLayout getToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 		this.nameFilter.setClassName(NameFilterFieldClassName);
-		this.nameFilter.setLabel(Messages.getString("RequestInfoView.TextField.NameFilter.Label")); //$NON-NLS-1$
-		this.nameFilter.setPlaceholder(Messages.getString("RequestInfoView.TextField.NameFilter.PlaceHolder")); //$NON-NLS-1$
+		this.nameFilter.setLabel(Messages.getString("RequestInfoTable.TextField.NameFilter.Label")); //$NON-NLS-1$
+		this.nameFilter.setPlaceholder(Messages.getString("RequestInfoTable.TextField.NameFilter.PlaceHolder")); //$NON-NLS-1$
 		this.nameFilter.setClearButtonVisible(true);
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
-		this.typeFilter.setLabel(Messages.getString("RequestInfoView.TextField.TypeFilter.Label")); //$NON-NLS-1$
+		this.typeFilter.setLabel(Messages.getString("RequestInfoTable.TextField.TypeFilter.Label")); //$NON-NLS-1$
 		this.typeFilter.setItems(NodeFactory.getLeafNodeTypes().stream()
 		                        .map((type) -> NodeTypeLabelProvider.getNodeTypeLabel(type))
 		                        .collect(Collectors.toList()));
 		this.typeFilter.setEmptySelectionAllowed(true);
-		this.typeFilter.setEmptySelectionCaption(Messages.getString("RequestInfoView.TextField.TypeFilter.None")); //$NON-NLS-1$
+		this.typeFilter.setEmptySelectionCaption(Messages.getString("RequestInfoTable.TextField.TypeFilter.None")); //$NON-NLS-1$
 
 		HorizontalLayout toolbar = new HorizontalLayout(this.nameFilter, this.typeFilter);
 

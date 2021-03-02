@@ -235,6 +235,7 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		
 		<!-- required when using Vaadin BeanValidators: -->
 		<!-- Hibernate validator - Bean validation API Implementation -->
 		<dependency>

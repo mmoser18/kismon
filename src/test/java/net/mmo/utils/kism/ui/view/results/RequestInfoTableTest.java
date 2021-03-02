@@ -22,10 +22,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 // before the tests are run and allow you to use @Autowired in the test.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest // makes sure that the Spring Boot application is initialized before the tests are run and allows you to use @Autowire in the test.
-public class RequestInfoViewTest
+public class RequestInfoTableTest
 {
 	@Autowired
-	private RequestInfoView listView;
+	private RequestInfoTable listView;
 
 	// @Test
 	public void formShownWhenContactSelected() {

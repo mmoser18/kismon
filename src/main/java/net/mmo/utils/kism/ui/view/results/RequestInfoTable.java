@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
-public class RequestInfoView extends AbstractRequestInfoView
+public class RequestInfoTable extends AbstractRequestInfoView
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
@@ -55,7 +55,7 @@ public class RequestInfoView extends AbstractRequestInfoView
 
 
 	// This gets autowired but still puzzled which annotation causes this...
-	public RequestInfoView(RequestInfoService requestInfoService) {
+	public RequestInfoTable(RequestInfoService requestInfoService) {
 		super(requestInfoService);
 
 		updateList();
@@ -72,14 +72,14 @@ public class RequestInfoView extends AbstractRequestInfoView
 		this.durationMinimum = new NumberField();
 		this.durationMaximum = new NumberField();
 
-		this.durationMinimum.setLabel(Messages.getString("RequestInfoView.Duration.Minimum.Label")); //$NON-NLS-1$
+		this.durationMinimum.setLabel(Messages.getString("ResultTable.Duration.Minimum.Label")); //$NON-NLS-1$
 		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
 		this.durationMinimum.setHasControls(true);
 		this.durationMinimum.setWidth("15em"); //$NON-NLS-1$
 		this.durationMinimum.addValueChangeListener(e -> updateList());
 
-		this.durationMaximum.setLabel(Messages.getString("RequestInfoView.Duration.Maximum.Label")); //$NON-NLS-1$
+		this.durationMaximum.setLabel(Messages.getString("ResultTable.Duration.Maximum.Label")); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
 		this.durationMaximum.setHasControls(true);
@@ -94,12 +94,12 @@ public class RequestInfoView extends AbstractRequestInfoView
 		this.timestampMinimum = new DateTimePicker();
 		this.timestampMaximum = new DateTimePicker();
 
-		this.timestampMinimum.setLabel(String.format(Messages.getString("RequestInfoView.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
+		this.timestampMinimum.setLabel(String.format(Messages.getString("ResultTable.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
 		this.timestampMinimum.setThemeName(LabelPaddingTheme);
 		this.timestampMinimum.addValueChangeListener(e -> updateList());
 
-		this.timestampMaximum.setLabel(String.format(Messages.getString("RequestInfoView.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
+		this.timestampMaximum.setLabel(String.format(Messages.getString("ResultTable.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
 		this.timestampMaximum.setThemeName(LabelPaddingTheme);
 		this.timestampMaximum.addValueChangeListener(e -> updateList());
@@ -172,12 +172,12 @@ public class RequestInfoView extends AbstractRequestInfoView
 
 		if (minDuration != null) {
 			double minDurationConverted = minDuration;
-			this.durationMinimum.setLabel(String.format(Messages.getString("RequestInfoView.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
+			this.durationMinimum.setLabel(String.format(Messages.getString("ResultTable.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
 			this.durationMinimum.setMin(minDurationConverted);
 		}
 		if (maxDuration != null) {
 			double maxDurationConverted = maxDuration;
-			this.durationMaximum.setLabel(String.format(Messages.getString("RequestInfoView.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
+			this.durationMaximum.setLabel(String.format(Messages.getString("ResultTable.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
 			this.durationMaximum.setMax(maxDurationConverted);
 		}
 

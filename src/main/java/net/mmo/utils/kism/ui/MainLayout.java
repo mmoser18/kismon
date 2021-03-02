@@ -15,9 +15,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.ui.view.dashboard.RequestInfoGraph;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
-import net.mmo.utils.kism.ui.view.results.RequestInfoView;
+import net.mmo.utils.kism.ui.view.results.RequestInfoGraph;
+import net.mmo.utils.kism.ui.view.results.RequestInfoTable;
 
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-combo-box-styles.css", themeFor = "vaadin-combo-box")
@@ -64,9 +64,9 @@ public class MainLayout extends AppLayout
 		log.debug("createDrawer"); //$NON-NLS-1$
 		RouterLink nodesLink = new RouterLink(Messages.getString("MainLayout.Tab.NodeView.Label"), NodeView.class); //$NON-NLS-1$
 		nodesLink.setHighlightCondition(HighlightConditions.sameLocation());
-		RouterLink resultsLink = new RouterLink(Messages.getString("MainLayout.Tab.RequestInfoView.Label"), RequestInfoView.class); //$NON-NLS-1$
+		RouterLink resultsLink = new RouterLink(Messages.getString("MainLayout.Tab.RequestInfoTable.Label"), RequestInfoTable.class); //$NON-NLS-1$
 		resultsLink.setHighlightCondition(HighlightConditions.sameLocation());
-		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.DashBoard.Label"), RequestInfoGraph.class); //$NON-NLS-1$
+		RouterLink dashboardLink = new RouterLink(Messages.getString("MainLayout.Tab.RequestInfoGraph.Label"), RequestInfoGraph.class); //$NON-NLS-1$
 		dashboardLink.setHighlightCondition(HighlightConditions.sameLocation());
 
 		addToDrawer(new VerticalLayout(nodesLink, resultsLink, dashboardLink));
