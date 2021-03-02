@@ -40,7 +40,7 @@ public class RequestInfoTable extends AbstractRequestInfoView
 	// public to allow access by test classes
 	public static final String DurationMinimumFieldClassName = ResultViewField + "duration-minimum"; //$NON-NLS-1$
 	public static final String DurationMaximumFieldClassName = ResultViewField + "duration-maximum"; //$NON-NLS-1$
-	private static final String DurationExtremesFieldClassName = ResultViewField + "duration-extremes"; //$NON-NLS-1$
+	public static final String DurationExtremesFieldClassName = ResultViewField + "duration-extremes"; //$NON-NLS-1$
 	public static final String TimestampMinimumFieldClassName = ResultViewField + "timestamp-minimum"; //$NON-NLS-1$
 	public static final String TimestampMaximumFieldClassName = ResultViewField + "timestamp-maximum"; //$NON-NLS-1$
 	public static final String TimestampExtremesFieldClassName = ResultViewField + "timestamp-extremes"; //$NON-NLS-1$
