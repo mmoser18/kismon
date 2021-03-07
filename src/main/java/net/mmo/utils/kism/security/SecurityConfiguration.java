@@ -5,6 +5,10 @@
 
 package net.mmo.utils.kism.security;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -44,11 +48,30 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 	@Bean
 	@Override
 	public UserDetailsService userDetailsService() {
-		UserDetails user = User.withUsername("user")
-		                       .password("{noop}password")
-		                       .roles("USER")
-		                       .build();
-		return new InMemoryUserDetailsManager(user);
+		String userNames = AppProperties.getProperties().getProperty("user.names");
+		if (userNames == null || userNames.isBlank()) {
+			throw new IllegalArgumentException("user.names entry not found in application.properties");
+		}
+		List<UserDetails> userDetails = new ArrayList<>();
+		for (String userNameEntry: userNames.split(",")) {
+			String[] uidAndRole = userNameEntry.split(":");
+			if (uidAndRole == null || uidAndRole.length != 2) {
+				throw new IllegalArgumentException("User-entry '" + userNameEntry + "' does not contain user:role");
+			}
+			String uid  = uidAndRole[0];
+			String role = uidAndRole[1];
+			String pwdPropertyName = "user.pwd." + uid;
+			String pwd  = AppProperties.getProperties().getProperty(pwdPropertyName);
+			if (pwd == null || pwd.isBlank()) {
+				throw new IllegalArgumentException("No entry for '" + pwdPropertyName + "' found in application.properties");
+			}
+			userDetails.add(User
+			                .withUsername(uid)
+			                .password("{noop}" + pwd)
+			                .roles(role)
+			                .build());
+		}
+		return new InMemoryUserDetailsManager(userDetails);
 	}
 
 	/* exclude Vaadin-framework communication and static assets from Spring Security. */

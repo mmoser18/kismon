@@ -14,6 +14,7 @@ import com.vaadin.flow.component.select.Select;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.view.nodes.NodeFactory;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
@@ -40,10 +41,7 @@ abstract public class AbstractHistoryInfoView extends VerticalLayout
 	public static final String NameFilterFieldClassName = HistoryViewField + "filter-name";  //$NON-NLS-1$
 	public static final String TypeFilterFieldClassName = HistoryViewField + "filter-type";  //$NON-NLS-1$
 
-	protected final boolean DO_SYNC = true;
-
 	protected HistoryInfoService historyInfoService;
-	protected UIHandlerSupport uiHandlerSupport;
 
 	protected ComboBox<String> nameFilter = new ComboBox<>();
 	protected Select<String> typeFilter = new Select<>();
@@ -52,10 +50,9 @@ abstract public class AbstractHistoryInfoView extends VerticalLayout
 	protected Div content;
 
 	// This gets autowired but still puzzled which annotation causes this...
-	public AbstractHistoryInfoView(HistoryInfoService historyInfoService, UIHandlerSupport uiHandlerSupport) {
+	public AbstractHistoryInfoView(HistoryInfoService historyInfoService) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		this.historyInfoService = historyInfoService;
-		this.uiHandlerSupport = uiHandlerSupport;
 		addClassName(ViewClassName);
 		setSizeFull(); // use entire browser window
 
@@ -68,6 +65,8 @@ abstract public class AbstractHistoryInfoView extends VerticalLayout
 		configureContent();
 		add(getToolbar(), this.content);
 
+		refreshData();
+		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
 	abstract protected void configureContent();
@@ -88,12 +87,7 @@ abstract public class AbstractHistoryInfoView extends VerticalLayout
 				refreshData();
 			}
 		});
-		if (this.DO_SYNC) {
-			List<String> allNodeNames = getAllNodeNames();
-			this.nameFilter.setItems(allNodeNames);
-		} else {
-			UIHandlerSupport.executeLater(this::getAllNodeNames, (res) -> this.nameFilter.setItems(res));
-		}
+		UIHandlerSupport.executeLater(this::getAllNodeNames, (res) -> this.nameFilter.setItems(res));
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
 		this.typeFilter.setLabel(Messages.getString("HistoryView.TextField.TypeFilter.Label")); //$NON-NLS-1$
@@ -103,10 +97,16 @@ abstract public class AbstractHistoryInfoView extends VerticalLayout
 		this.typeFilter.setEmptySelectionAllowed(true);
 		this.typeFilter.setEmptySelectionCaption(Messages.getString("HistoryView.TextField.TypeFilter.None")); //$NON-NLS-1$
 
-		this.refreshData = new Button(Messages.getString("HistoryView.Button.RefreshData.Label")); //$NON-NLS-1$
-		this.refreshData.addClickListener(e -> refreshData());
+		VerticalLayout filters = new VerticalLayout(this.nameFilter, this.typeFilter);
+		filters.addClassName(UIConstants.CombinedClassName);
 
-		HorizontalLayout toolbar = new HorizontalLayout(this.nameFilter, this.typeFilter);
+		this.refreshData = new Button(Messages.getString("HistoryView.Button.RefreshData.Label")); //$NON-NLS-1$
+		this.refreshData.addClickListener(e -> {
+			log.info("refreshData clicked"); //$NON-NLS-1$
+			refreshData();
+		});
+
+		HorizontalLayout toolbar = new HorizontalLayout(filters);
 
 		toolbar.addClassName(ToolbarClassName);
 		return toolbar;

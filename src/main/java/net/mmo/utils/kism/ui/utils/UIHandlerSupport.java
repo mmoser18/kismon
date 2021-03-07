@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UIHandlerSupport
 {
-	static ExecutorService executorService = Executors.newFixedThreadPool(10);
+	private static ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+	private final static boolean DO_SYNC = true;
+	private final static boolean RESERVE_UI_BEFORE_UPDATE = true;
 
 	private UIHandlerSupport() {
 		// should bever be called...
@@ -27,30 +30,41 @@ public class UIHandlerSupport
 
 	public static <T extends Object> void executeLater(Command longRunningActivity) {
 		log.info("executeLater({})", longRunningActivity); //$NON-NLS-1$
-		executorService.submit(new Runnable()
-			{
-				@Override
-				public void run () {
-					longRunningActivity.execute();
-				}
-			});
+		executeLater(() -> longRunningActivity, null);
 	}
 
 	public static <T extends Object> void executeLater(Supplier<T> longRunningActivity,
 	                                                   Consumer<T> uiActivity) {
 		log.info("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
-		executorService.submit(new Runnable()
-			{
-				@Override
-				public void run () {
-					T result = (longRunningActivity != null ? longRunningActivity.get() : null);
-					if (uiActivity != null) doUIOperation(() -> uiActivity.accept(result));
-				}
-			});
+		if (DO_SYNC) {
+			executeLaterInternal(longRunningActivity, uiActivity);
+		} else { // offload the heavy lifting to a different thread:
+			executorService.submit(new Runnable()
+				{
+					@Override
+					public void run () {
+						executeLaterInternal(longRunningActivity, uiActivity);
+					}
+				});
+		}
 	}
 
-	public static void doUIOperation(Command cmd) {
-		log.info("doUIOperation"); //$NON-NLS-1$
-		UI.getCurrent().access(cmd);
+	public static <T extends Object> void executeLaterInternal(Supplier<T> longRunningActivity,
+	                                                           Consumer<T> uiActivity) {
+		final T result; // final to make the lambda happy...
+		if (longRunningActivity != null) {
+			log.info("longRunningActivity:"); //$NON-NLS-1$
+			result = longRunningActivity.get();
+		} else {
+			result = null;
+		}
+		if (uiActivity != null) {
+			log.info("uiActivity:"); //$NON-NLS-1$
+			if (RESERVE_UI_BEFORE_UPDATE) {
+				UI.getCurrent().access(() -> uiActivity.accept(result));
+			} else {
+				uiActivity.accept(result);
+			}
+		}
 	}
 }

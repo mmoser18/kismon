@@ -5,6 +5,7 @@ import static net.mmo.utils.kism.ui.UIConstants.HistoryViewField;
 import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -56,19 +57,16 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 
 
 	// This gets autowired but still puzzled which annotation causes this...
-	public HistoryInfoTable(HistoryInfoService historyInfoService, UIHandlerSupport uiHandlerSupport) {
-		super(historyInfoService, uiHandlerSupport);
-
-		refreshData();
-		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
+	public HistoryInfoTable(HistoryInfoService historyInfoService) {
+		super(historyInfoService);
 	}
 
 	@Override
 	protected HorizontalLayout getToolbar() {
 		HorizontalLayout toolbar = super.getToolbar();
 
-		this.nameFilter.addValueChangeListener(e -> { resetMinMaxValues(); refreshData(); });
-		this.typeFilter.addValueChangeListener(e -> { resetMinMaxValues(); refreshData(); });
+		this.nameFilter.addValueChangeListener(e -> { if (e.isFromClient()) { resetMinMaxValues(); refreshData(); }});
+		this.typeFilter.addValueChangeListener(e -> { if (e.isFromClient()) { resetMinMaxValues(); refreshData(); }});
 
 		this.durationMinimum = new NumberField();
 		this.durationMaximum = new NumberField();
@@ -77,15 +75,15 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
 		this.durationMinimum.setHasControls(true);
-		this.durationMinimum.setWidth("15em"); //$NON-NLS-1$
-		this.durationMinimum.addValueChangeListener(e -> refreshData());
+		this.durationMinimum.setWidth("12em"); //$NON-NLS-1$
+		this.durationMinimum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
 
 		this.durationMaximum.setLabel(Messages.getString("HistoryTable.Duration.Maximum.Label")); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
 		this.durationMaximum.setHasControls(true);
-		this.durationMaximum.setWidth("15em"); //$NON-NLS-1$
-		this.durationMaximum.addValueChangeListener(e -> refreshData());
+		this.durationMaximum.setWidth("12em"); //$NON-NLS-1$
+		this.durationMaximum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
 
 		VerticalLayout durationExtremes = new VerticalLayout();
 		durationExtremes.setClassName(DurationExtremesFieldClassName);
@@ -98,12 +96,12 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 		this.timestampMinimum.setLabel(String.format(Messages.getString("HistoryTable.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
 		this.timestampMinimum.setThemeName(LabelPaddingTheme);
-		this.timestampMinimum.addValueChangeListener(e -> refreshData());
+		this.timestampMinimum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
 
 		this.timestampMaximum.setLabel(String.format(Messages.getString("HistoryTable.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
 		this.timestampMaximum.setThemeName(LabelPaddingTheme);
-		this.timestampMaximum.addValueChangeListener(e -> refreshData());
+		this.timestampMaximum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
 
 		VerticalLayout timestampExtremes = new VerticalLayout();
 		timestampExtremes.setClassName(TimestampExtremesFieldClassName);
@@ -137,7 +135,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 			.setTextAlign(ColumnTextAlign.END)
 			;
 		this.grid.addColumn("result") //$NON-NLS-1$
-			.setHeader(Messages.getString("Table.Grid.ColumnName.Result")) //$NON-NLS-1$
+			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Result")) //$NON-NLS-1$
 			;
 
 		this.grid.getColumns().forEach(column ->
@@ -148,7 +146,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 		});
 
 		this.grid.asSingleSelect().addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
-		this.grid.addAttachListener(e -> refreshData());
+		this.grid.addAttachListener(e -> { if (e.isFromClient()) { refreshData(); }});
 
 		this.content.add(this.grid);
 	}
@@ -162,6 +160,12 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 
 	@Override
 	protected void refreshData() {
+		log.info("refreshData"); //$NON-NLS-1$
+		UIHandlerSupport.executeLater(this::fetchData, this::updateTable);
+	}
+
+	protected List<HistoryInfo> fetchData() {
+		log.info("fetchData"); //$NON-NLS-1$
 		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
@@ -174,12 +178,12 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 
 		if (minDuration != null) {
 			double minDurationConverted = minDuration;
-			this.durationMinimum.setLabel(String.format(Messages.getString("Table.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
+			this.durationMinimum.setLabel(String.format(Messages.getString("HistoryTable.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
 			this.durationMinimum.setMin(minDurationConverted);
 		}
 		if (maxDuration != null) {
 			double maxDurationConverted = maxDuration;
-			this.durationMaximum.setLabel(String.format(Messages.getString("Table.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
+			this.durationMaximum.setLabel(String.format(Messages.getString("HistoryTable.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
 			this.durationMaximum.setMax(maxDurationConverted);
 		}
 
@@ -228,10 +232,13 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 			// this.timestampMinimum.setMax(maxTimestampValue);
 		}
 
-		// TODO: replace by call-back data provider to minimize GUI loading when there are LOTs of data:
-		this.grid.setItems(this.historyInfoService.findByFilter(nameFilterValue, nodeTypeFilterValue,
-		                                                        minDurationValue, maxDurationValue,
-		                                                        null, null));
+		return this.historyInfoService.findByFilter(nameFilterValue, nodeTypeFilterValue,
+		                                            minDurationValue, maxDurationValue,
+		                                            null, null);
 	}
 
+	protected void updateTable(List<HistoryInfo> data) {
+		log.info("updateTable"); //$NON-NLS-1$
+		this.grid.setItems(data);
+	}
 }

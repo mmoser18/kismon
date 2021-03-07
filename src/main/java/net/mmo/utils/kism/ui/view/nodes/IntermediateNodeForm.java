@@ -47,7 +47,7 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 		this.activateAllChildren.setThemeName(UIConstants.LabelPaddingTheme);
 		this.activateAllChildren.addClickListener(event ->
 			{
-				log.info("activateAllChildren clicked"); //$NON-NLS-1$
+				log.info("activateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					this.node.trickleDown(n -> {
 						if (n instanceof LeafNode) {
@@ -62,7 +62,7 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 		this.deactivateAllChildren.setThemeName(UIConstants.LabelPaddingTheme);
 		this.deactivateAllChildren.addClickListener(event ->
 			{
-				log.info("deactivateAllChildren clicked"); //$NON-NLS-1$
+				log.info("deactivateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					this.node.trickleDown(n -> {
 						if (n instanceof LeafNode) {

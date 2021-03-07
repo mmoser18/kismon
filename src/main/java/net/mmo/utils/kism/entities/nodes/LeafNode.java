@@ -173,19 +173,7 @@ abstract public class LeafNode extends Node
 						log.trace("Requests halted for '{}':", getName()); //$NON-NLS-1$
 					} else {
 						log.debug("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
-						try {
-							sendRequest();
-						} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
-							setDuration(NO_RESPONSE_DURATION); // signals an exception
-							if (shortRequestLogEntries) {
-								if (log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
-									log.info("Error calling '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
-								}
-							} else {
-								log.info("Error calling '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
-							}
-						}
-						requestInfoService.save(new HistoryInfo(getName(), LeafNode.this.getClass(), getDuration(), getTimestamp(), getRequestResult()));
+						executeRequestInternal("calling"); //$NON-NLS-1$
 					}
 				}
 			});
@@ -204,22 +192,32 @@ abstract public class LeafNode extends Node
 		if (asyncRequests) {
 			this.interactiveExecutor.execute(() -> {
 				log.info("executing sendRequest-async: '{}'", getName()); //$NON-NLS-1$
-				executeRequestInternal();
+				executeRequestInternal("executing"); //$NON-NLS-1$
 			});
 		} else {
 			log.info("executing sendRequest-sync:  '{}'", getName()); //$NON-NLS-1$
-			executeRequestInternal();
+			executeRequestInternal("executing"); //$NON-NLS-1$
 		}
 	}
 
-	public void executeRequestInternal() {
+	public void executeRequestInternal(String logFragment) {
+		String resultMsg;
 		try {
 			sendRequest();
+			resultMsg = getRequestResult();
 		} catch (Exception ex) {
-			log.error("Exception calling '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+			if (shortRequestLogEntries) {
+				if (log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
+					log.info("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+				}
+			} else {
+				log.info("Error " + logFragment + " '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			}
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
+			resultMsg = getRequestResult();
+			if (resultMsg == null) resultMsg = ex.getMessage();
 		}
-		requestInfoService.save(new HistoryInfo(getName(), getClass(), getDuration(), getTimestamp(), getRequestResult()));
+		requestInfoService.save(new HistoryInfo(getName(), getClass(), getDuration(), getTimestamp(), resultMsg));
 	}
 
 	protected void adjustExecutor() {

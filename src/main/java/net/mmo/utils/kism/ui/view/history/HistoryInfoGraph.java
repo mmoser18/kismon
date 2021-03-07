@@ -53,11 +53,8 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 	LocalDateTime lastUpdate;
 
 
-	public HistoryInfoGraph(HistoryInfoService historyInfoService, UIHandlerSupport uiHandlerSupport) {
-		super(historyInfoService, uiHandlerSupport);
-
-		refreshData();
-		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
+	public HistoryInfoGraph(HistoryInfoService historyInfoService) {
+		super(historyInfoService);
 	}
 
 	@Override
@@ -118,11 +115,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 	@Override
 	protected void refreshData() {
 		log.info("refreshData"); //$NON-NLS-1$
-		if (this.DO_SYNC) {
-			updateGraph(fetchData());
-		} else { // offload the refresh to a different thread:
-			UIHandlerSupport.executeLater(this::fetchData, this::updateGraph);
-		}
+		UIHandlerSupport.executeLater(this::fetchData, this::updateGraph);
 	}
 
 	/** This method fetches all data to be displayed from the DB and converts it to the DataSeries
@@ -175,11 +168,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 
 	protected void adjustVisibility() {
 		log.info("adjustVisibility"); //$NON-NLS-1$
-		if (this.DO_SYNC) {
-			updateVisibility(getFilteredNodeNames());
-		} else {
-			UIHandlerSupport.executeLater(this::getFilteredNodeNames, this::updateVisibility);
-		}
+		UIHandlerSupport.executeLater(this::getFilteredNodeNames, this::updateVisibility);
 	}
 
 	protected void updateVisibility(List<String> filteredNodeNames) {
@@ -187,6 +176,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 	}
 
 	private void forAllSeriesDo(Consumer<DataSeries> func) {
+		log.debug("forAllSeriesDo"); //$NON-NLS-1$
 		Configuration conf = this.chart.getConfiguration();
 		conf.getSeries().forEach(series -> func.accept((DataSeries)series));
 		this.chart.drawChart();
@@ -194,19 +184,11 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 
 	private void selectNone() {
 		log.info("selectNone"); //$NON-NLS-1$
-		if (this.DO_SYNC) {
-			forAllSeriesDo(ds -> ds.setVisible(false, true));
-		} else {
-			UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
-		}
+		UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
 	}
 
 	private void selectAll() {
 		log.info("selectAll"); //$NON-NLS-1$
-		if (this.DO_SYNC) {
-			forAllSeriesDo(ds -> ds.setVisible(true, true));
-		} else {
-			UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
-		}
+		UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
 	}
 }
