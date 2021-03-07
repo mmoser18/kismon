@@ -22,6 +22,8 @@ import com.vaadin.flow.component.charts.model.DataSeries;
 import com.vaadin.flow.component.charts.model.HorizontalAlign;
 import com.vaadin.flow.component.charts.model.LayoutDirection;
 import com.vaadin.flow.component.charts.model.Legend;
+import com.vaadin.flow.component.charts.model.Series;
+import com.vaadin.flow.component.charts.model.Tooltip;
 import com.vaadin.flow.component.charts.model.VerticalAlign;
 import com.vaadin.flow.component.charts.model.XAxis;
 import com.vaadin.flow.component.charts.model.YAxis;
@@ -30,13 +32,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.RequestInfoService;
-import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
-import net.mmo.utils.kism.ui.view.dashboard.Messages;
-import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
-import org.springframework.util.comparator.Comparators;
+import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
+
 
 @Route(value = "graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
 @PageTitle("Graph | " + CommonConstants.ApplicationFullName)
@@ -48,14 +48,16 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 
 	protected Button selectAll;
 	protected Button selectNone;
-	protected Button refreshData;
 
 	protected Chart chart;
-	LocalDateTime lastUpate;
+	LocalDateTime lastUpdate;
 
-	public RequestInfoGraph(RequestInfoService requestInfoService) {
-		super(requestInfoService);
-		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+
+	public RequestInfoGraph(RequestInfoService requestInfoService, UIHandlerSupport uiHandlerSupport) {
+		super(requestInfoService, uiHandlerSupport);
+
+		refreshData();
+		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
 	@Override
@@ -71,22 +73,25 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		this.selectNone = new Button(Messages.getString("ResultGraph.Button.SelectNone.Label")); //$NON-NLS-1$
 		this.selectNone.addClickListener(e -> selectNone());
 
-		this.refreshData = new Button(Messages.getString("ResultGraph.Button.RefreshData.Label")); //$NON-NLS-1$
-		this.refreshData.addClickListener(e -> populateData());
-
 		toolbar.add(this.selectAll, this.selectNone, this.refreshData);
 		return toolbar;
 	}
 
 	@Override
 	protected void configureContent() {
-		log.info("getTimingChart:"); //$NON-NLS-1$
+		log.info("configureContent:"); //$NON-NLS-1$
+		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+
 		this.chart = new Chart(ChartType.LINE);
 		this.chart.setTimeline(true);
 
 		Configuration conf = this.chart.getConfiguration();
 		conf.setTitle(Messages.getString("ResultGraph.Title")); //$NON-NLS-1$
-		conf.setSubTitle(String.format(Messages.getString("ResultGraph.SubTitle"), this.nameFilter.getValue())); //$NON-NLS-1$
+
+		Tooltip tooltip = new Tooltip();
+		tooltip.setShared(true);
+		tooltip.setValueSuffix("[msec]"); //$NON-NLS-1$
+		conf.setTooltip(tooltip);
 
 		Legend legend = conf.getLegend();
 		legend.setEnabled(true);
@@ -105,37 +110,42 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 
 		YAxis yAxis = conf.getyAxis();
 		yAxis.setTitle(new AxisTitle(Messages.getString("ResultGraph.YAxis.Label"))); //$NON-NLS-1$
-		yAxis.setMin(0);
+		yAxis.setMin(0); // duration 0 signals an error
 
 		this.content.add(this.chart);
-
-		populateData();
 	}
 
-	protected void populateData() {
+	@Override
+	protected void refreshData() {
+		log.info("refreshData"); //$NON-NLS-1$
+		if (this.DO_SYNC) {
+			updateGraph(fetchData());
+		} else { // offload the refresh to a different thread:
+			this.uiHandlerSupport.executeLater(this::fetchData, this::updateGraph);
+		}
+	}
+
+	/** This method fetches all data to be displayed from the DB and converts it to the DataSeries
+	 * format expected by the chart */
+	protected List<Series> fetchData() {
+		log.debug("fetchData"); //$NON-NLS-1$
 		ZoneId myZoneId = ZoneId.systemDefault();
-		this.lastUpate = LocalDateTime.now();
+		this.lastUpdate = LocalDateTime.now();
 
-		Configuration conf = this.chart.getConfiguration();
-		conf.setSeries(new ArrayList<>()); // clear old series
+		List<String> nodeNames = getFilteredNodeNames();
+		List<Series> timingData = new ArrayList<>(nodeNames.size());
 
-		List<String> allNodeNames = getAllNodeNames();
-
-		String oldSelection = this.nameFilter.getValue();
-		this.nameFilter.setItems(allNodeNames); // need to update this - it could change over time
-		if (oldSelection != null && !oldSelection.isBlank()) this.nameFilter.setValue(oldSelection);
-
-		allNodeNames.forEach(name ->
+		nodeNames.forEach(name ->
 			{
-				log.info("fetching and converting data for node '{}'", name); //$NON-NLS-1$
+				log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
 				List<RequestInfo> values = this.requestInfoService.findByFilter(name, null, null, null, null, null);
 
-				DataSeries timingData = new DataSeries();
-				timingData.setId(name);
-				timingData.setName(name);
+				DataSeries timingSeries = new DataSeries();
+				timingSeries.setId(name);
+				timingSeries.setName(name);
 
 				int nrDataPoints = values.size();
-				log.info("got {} points for node '{}'", nrDataPoints, name); //$NON-NLS-1$
+				log.info("got {} data points for '{}'", nrDataPoints, name); //$NON-NLS-1$
 				Number[][] numberTuples = new Number[nrDataPoints][2];
 				for (int idx = 0; idx < nrDataPoints; idx++) {
 					RequestInfo value = values.get(idx);
@@ -144,60 +154,59 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 					numberTuples[idx][0] = Date.from(timestamp.atZone(myZoneId).toInstant()).getTime();
 					numberTuples[idx][1] = duration;
 				}
-				log.info("addSeries():"); //$NON-NLS-1$
-				timingData.addData(numberTuples);
-				conf.addSeries(timingData);
+				log.trace("addSeries():"); //$NON-NLS-1$
+				timingSeries.addData(numberTuples);
+				timingData.add(timingSeries);
 			});
+		log.info("got timingData for {} series", timingData.size()); //$NON-NLS-1$
+		return timingData;
+	}
 
-		adjustVisibility();
-
-//		runWhileAttached(chart, () -> {
-//			List<RequestInfo> values = this.requestInfoService.findByFilter(name, null, null, null, this.lastUpate, null);
-//			final long x = System.currentTimeMillis();
-//			final double y = random.nextDouble();
-//			series.add(new DataSeriesItem(x, y), true, true);
-//		}, 1000, 1000);
+	/**
+	 * This method takes the DataSeies data and assigns it to the chart
+	 * @param timingData
+	 */
+	protected void updateGraph(List<Series> timingData) {
+		log.debug("updateGraph"); //$NON-NLS-1$
+		Configuration conf = this.chart.getConfiguration();
+		conf.setSeries(timingData);
+		this.chart.drawChart();
 	}
 
 	protected void adjustVisibility() {
 		log.info("adjustVisibility"); //$NON-NLS-1$
-		List<String> filteredNodeNames = getFilteredNodeNames();
+		if (this.DO_SYNC) {
+			updateVisibility(getFilteredNodeNames());
+		} else {
+			this.uiHandlerSupport.executeLater(this::getFilteredNodeNames, this::updateVisibility);
+		}
+	}
+
+	protected void updateVisibility(List<String> filteredNodeNames) {
 		forAllSeriesDo(ds -> ds.setVisible(filteredNodeNames.contains(ds.getName()), true));
-	}
-
-	List<String> getAllNodeNames() {
-		List<String> allNodeNames = this.requestInfoService.getNodeNames(null, null);
-		allNodeNames.sort(Comparators.comparable());
-		log.info("nr of allNodeNames: {}", allNodeNames.size()); //$NON-NLS-1$
-		return allNodeNames;
-	}
-
-	List<String> getFilteredNodeNames() {
-		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
-		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
-		return getFilteredNodeNames(nameFilterValue, nodeTypeFilterValue);
-	}
-
-	List<String> getFilteredNodeNames(String nameFilterValue, NodeType nodeTypeFilterValue) {
-		List<String> filteredNodeNames = this.requestInfoService.getNodeNames(nameFilterValue, nodeTypeFilterValue);
-		filteredNodeNames.sort(Comparators.comparable());
-		log.info("nr of filteredNodeNames: {}", filteredNodeNames.size()); //$NON-NLS-1$
-		return filteredNodeNames;
-	}
-
-	private void selectNone() {
-		log.info("selectNone"); //$NON-NLS-1$
-		forAllSeriesDo(ds -> ds.setVisible(false, true));
-	}
-
-	private void selectAll() {
-		log.info("selectAll"); //$NON-NLS-1$
-		forAllSeriesDo(ds -> ds.setVisible(true, true));
 	}
 
 	private void forAllSeriesDo(Consumer<DataSeries> func) {
 		Configuration conf = this.chart.getConfiguration();
 		conf.getSeries().forEach(series -> func.accept((DataSeries)series));
+		this.chart.drawChart();
 	}
 
+	private void selectNone() {
+		log.info("selectNone"); //$NON-NLS-1$
+		if (this.DO_SYNC) {
+			forAllSeriesDo(ds -> ds.setVisible(false, true));
+		} else {
+			this.uiHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
+		}
+	}
+
+	private void selectAll() {
+		log.info("selectAll"); //$NON-NLS-1$
+		if (this.DO_SYNC) {
+			forAllSeriesDo(ds -> ds.setVisible(true, true));
+		} else {
+			this.uiHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
+		}
+	}
 }

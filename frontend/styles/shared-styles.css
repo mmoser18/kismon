@@ -159,18 +159,20 @@ vaadin-date-time-picker-custom-field {
 .result-view .result-view-duration-extremes {
 	padding: 0px;
 	margin: 3px; 
-	align-items: stretch;
+/*	align-items: stretch; */
 }
 
 .result-view .result-view-timestamp-extremes {
 	padding: 0px;
 	margin: 3px; 
-	align-items: stretch;
+/*	align-items: stretch; */
 }
 
+/*
 .result-view-field-duration-minimum .result-view-field-duration-maximum {
 	width: 20em;
 }
+*/
 
 @media all and (max-width: 1100px) {
 	.list-view.editing .list-view-toolbar, .list-view.editing .contact-grid 
@@ -212,8 +214,7 @@ vaadin-chart {
 	text-decoration: underline;
 }
 
-/*
+/* to get rid of this stupid message box: */
 vaadin-license-box {
 	visibility: hidden;
 }
-*/

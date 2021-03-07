@@ -166,7 +166,7 @@ public class JDBCConnection extends IPConnection
 	@SuppressWarnings("resource")
 	@Override
 	public void sendRequest() throws Exception {
-		log.info("sendRequest {}:", getName()); //$NON-NLS-1$
+		log.debug("sendRequest {}:", getName()); //$NON-NLS-1$
 		Statement statement = null;
 		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
 		String resQuery = resultingQueryResolved();
@@ -180,18 +180,20 @@ public class JDBCConnection extends IPConnection
 			statement.setQueryTimeout(this.timeout);
 			setResponseStatus("<waiting>"); //$NON-NLS-1$
 			setResponsePayload("<no response received (yet>"); //$NON-NLS-1$
-			log.debug("statement.execute():", resQuery); //$NON-NLS-1$
+			log.trace("statement.execute():", resQuery); //$NON-NLS-1$
 			long startTime = System.nanoTime();
 			boolean isRS = statement.execute(resQuery);
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
-			log.info("responseReceived for '{}' after {} µsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(statement, isRS);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		} catch (Exception ex) {
+			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
 			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
 			setResponsePayload(String.format("Exception executing '%s' (query '%s'): %s", //$NON-NLS-1$
 			                                 getName(), resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
+			setDuration(NO_RESPONSE_DURATION); // signals an exception
 			setState(State.FAILED);
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (reqConnection != null) {

@@ -40,6 +40,7 @@ abstract public class LeafNode extends Node
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
+	public final static int NO_RESPONSE_DURATION = 0; // used as duration if there was no response (timeout or other error)
 
 	/**
 	 * Should this node be included in the parent condition evaluation?
@@ -164,24 +165,27 @@ abstract public class LeafNode extends Node
 		setRequestSender(new Runnable()
 			{ // this is the code being executed by the automatic executors
 				{
-					log.info("Runnable for '{}' - c'tor:", getName()); //$NON-NLS-1$
+					log.debug("Runnable for '{}' - c'tor:", getName()); //$NON-NLS-1$
 				}
 				@Override
 				public void run() {
 					if (isHaltAllRequests()) {
 						log.trace("Requests halted for '{}':", getName()); //$NON-NLS-1$
 					} else {
-						log.info("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
+						log.debug("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
 						try {
 							sendRequest();
-							requestInfoService.save(new RequestInfo(getName(), LeafNode.this.getClass(), getDuration(), getTimestamp(), getRequestResult()));
 						} catch (Exception ex) { // Exceptions are normal here - so we try to minimize the log load:
+							setDuration(NO_RESPONSE_DURATION); // signals an exception
 							if (shortRequestLogEntries) {
-								log.info("Error calling '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+								if (log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
+									log.info("Error calling '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+								}
 							} else {
-								log.error("Error calling '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
+								log.info("Error calling '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
 							}
 						}
+						requestInfoService.save(new RequestInfo(getName(), LeafNode.this.getClass(), getDuration(), getTimestamp(), getRequestResult()));
 					}
 				}
 			});
@@ -200,23 +204,27 @@ abstract public class LeafNode extends Node
 		if (asyncRequests) {
 			this.interactiveExecutor.execute(() -> {
 				log.info("executing sendRequest-async: '{}'", getName()); //$NON-NLS-1$
-				try {
-					sendRequest();
-					requestInfoService.save(new RequestInfo(getName(), getClass(), getDuration(), getTimestamp(), getRequestResult()));
-				} catch (Exception ex) {
-					log.error("Exception executing sendRequest", ex); //$NON-NLS-1$
-				}
+				executeRequestInternal();
 			});
 		} else {
 			log.info("executing sendRequest-sync:  '{}'", getName()); //$NON-NLS-1$
-			sendRequest();
-			requestInfoService.save(new RequestInfo(getName(), getClass(), getDuration(), getTimestamp(), getRequestResult()));
+			executeRequestInternal();
 		}
+	}
+
+	public void executeRequestInternal() {
+		try {
+			sendRequest();
+		} catch (Exception ex) {
+			log.error("Exception calling '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+			setDuration(NO_RESPONSE_DURATION); // signals an exception
+		}
+		requestInfoService.save(new RequestInfo(getName(), getClass(), getDuration(), getTimestamp(), getRequestResult()));
 	}
 
 	protected void adjustExecutor() {
 		if (getPeriodicExecutor() != null) {
-			log.info("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
+			log.debug("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
 			if (!getPeriodicExecutor().isTerminated()) {
 				getPeriodicExecutor().shutdown();
 				try {
@@ -233,7 +241,7 @@ abstract public class LeafNode extends Node
 		}
 
 		if (isActive()) { // we (re)start - possibly with a different period and/or timeout:
-			log.info("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
+			log.debug("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
 			setPeriodicExecutor(Executors.newScheduledThreadPool(1));
 			setFuture(getPeriodicExecutor().scheduleAtFixedRate(getRequestSender(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
 		}

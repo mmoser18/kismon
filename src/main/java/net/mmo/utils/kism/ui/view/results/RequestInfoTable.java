@@ -21,6 +21,7 @@ import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.UIConstants;
+import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -55,10 +56,10 @@ public class RequestInfoTable extends AbstractRequestInfoView
 
 
 	// This gets autowired but still puzzled which annotation causes this...
-	public RequestInfoTable(RequestInfoService requestInfoService) {
-		super(requestInfoService);
+	public RequestInfoTable(RequestInfoService requestInfoService, UIHandlerSupport uiHandlerSupport) {
+		super(requestInfoService, uiHandlerSupport);
 
-		updateList();
+		refreshData();
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -66,8 +67,8 @@ public class RequestInfoTable extends AbstractRequestInfoView
 	protected HorizontalLayout getToolbar() {
 		HorizontalLayout toolbar = super.getToolbar();
 
-		this.nameFilter.addValueChangeListener(e -> { resetMinMaxValues(); updateList(); });
-		this.typeFilter.addValueChangeListener(e -> { resetMinMaxValues(); updateList(); });
+		this.nameFilter.addValueChangeListener(e -> { resetMinMaxValues(); refreshData(); });
+		this.typeFilter.addValueChangeListener(e -> { resetMinMaxValues(); refreshData(); });
 
 		this.durationMinimum = new NumberField();
 		this.durationMaximum = new NumberField();
@@ -77,14 +78,14 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
 		this.durationMinimum.setHasControls(true);
 		this.durationMinimum.setWidth("15em"); //$NON-NLS-1$
-		this.durationMinimum.addValueChangeListener(e -> updateList());
+		this.durationMinimum.addValueChangeListener(e -> refreshData());
 
 		this.durationMaximum.setLabel(Messages.getString("ResultTable.Duration.Maximum.Label")); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
 		this.durationMaximum.setHasControls(true);
 		this.durationMaximum.setWidth("15em"); //$NON-NLS-1$
-		this.durationMaximum.addValueChangeListener(e -> updateList());
+		this.durationMaximum.addValueChangeListener(e -> refreshData());
 
 		VerticalLayout durationExtremes = new VerticalLayout();
 		durationExtremes.setClassName(DurationExtremesFieldClassName);
@@ -97,19 +98,19 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		this.timestampMinimum.setLabel(String.format(Messages.getString("ResultTable.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
 		this.timestampMinimum.setThemeName(LabelPaddingTheme);
-		this.timestampMinimum.addValueChangeListener(e -> updateList());
+		this.timestampMinimum.addValueChangeListener(e -> refreshData());
 
 		this.timestampMaximum.setLabel(String.format(Messages.getString("ResultTable.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
 		this.timestampMaximum.setThemeName(LabelPaddingTheme);
-		this.timestampMaximum.addValueChangeListener(e -> updateList());
+		this.timestampMaximum.addValueChangeListener(e -> refreshData());
 
 		VerticalLayout timestampExtremes = new VerticalLayout();
 		timestampExtremes.setClassName(TimestampExtremesFieldClassName);
 		timestampExtremes.addClassName(CombinedClassName);
 		timestampExtremes.add(this.timestampMinimum, this.timestampMaximum);
 
-		toolbar.add(durationExtremes, timestampExtremes);
+		toolbar.add(durationExtremes, timestampExtremes, this.refreshData);
 		return toolbar;
 	}
 
@@ -122,21 +123,21 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		this.grid.removeAllColumns();
 
 		this.grid.addColumn("name") //$NON-NLS-1$
-			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Name")) //$NON-NLS-1$
+			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Name")) //$NON-NLS-1$
 			;
 		this.grid.addColumn((info) -> NodeTypeLabelProvider.getNodeTypeLabel(info.getNodeType()))
-			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
+			.setHeader(Messages.getString("ResultTable.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
 			;
 		this.grid.addColumn((info) -> info.getDuration())
-			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Duration")) //$NON-NLS-1$
+			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Duration")) //$NON-NLS-1$
 			.setTextAlign(ColumnTextAlign.END)
 			;
 		this.grid.addColumn((info) -> info.getTimestamp())
-			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
+			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
 			.setTextAlign(ColumnTextAlign.END)
 			;
 		this.grid.addColumn("result") //$NON-NLS-1$
-			.setHeader(Messages.getString("ResultInfoView.Grid.ColumnName.Result")) //$NON-NLS-1$
+			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Result")) //$NON-NLS-1$
 			;
 
 		this.grid.getColumns().forEach(column ->
@@ -147,8 +148,8 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		});
 
 		this.grid.asSingleSelect().addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
+		this.grid.addAttachListener(e -> refreshData());
 
-		this.grid.addAttachListener(e -> updateList());
 		this.content.add(this.grid);
 	}
 
@@ -159,7 +160,8 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		this.timestampMaximum.setValue(null);
 	}
 
-	protected void updateList() {
+	@Override
+	protected void refreshData() {
 		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
@@ -228,7 +230,8 @@ public class RequestInfoTable extends AbstractRequestInfoView
 
 		// TODO: replace by call-back data provider to minimize GUI loading when there are LOTs of data:
 		this.grid.setItems(this.requestInfoService.findByFilter(nameFilterValue, nodeTypeFilterValue,
-		                                                   minDurationValue, maxDurationValue,
-		                                                   null, null));
+		                                                        minDurationValue, maxDurationValue,
+		                                                        null, null));
 	}
+
 }

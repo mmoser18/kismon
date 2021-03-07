@@ -58,7 +58,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 		this.url.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.url.addValueChangeListener(event ->
 			{
-				log.info("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				log.debug("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
 						updateResultingUrl(event.getValue());

@@ -27,7 +27,7 @@
 			"properties" : {
 				"xxx" : "yyy"
 			},
-			"active" : false,
+			"active" : true,
 			"period" : 30,
 			"timeout" : 15,
 			"checkResults" : true,
@@ -53,7 +53,7 @@
 			"properties" : {
 				"x" : "Operation"
 			},
-			"active" : false,
+			"active" : true,
 			"period" : 60,
 			"timeout" : 10,
 			"checkResults" : true,
@@ -81,7 +81,7 @@
 				"bar" : "zzz",
 				"foo" : "*"
 			},
-			"active" : false,
+			"active" : true,
 			"period" : 60,
 			"timeout" : 10,
 			"checkResults" : true,
@@ -121,7 +121,7 @@
 						"description" : "REST Connection 3",
 						"applicable" : true,
 						"properties" : { },
-						"active" : false,
+						"active" : true,
 						"period" : 60,
 						"timeout" : 45,
 						"checkResults" : false,
@@ -147,7 +147,7 @@
 					"description" : "REST Connection 4",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 45,
 					"checkResults" : false,
@@ -203,7 +203,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -218,14 +218,14 @@
 			"applicable" : true,
 			"properties" : {
 				"app_uid" : "mms",
+				"app_host" : "---",
 				"mock_port" : "8090",
 				"app_url" : "https://${app_host}/zhquest/",
+				"db_uid" : "---",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "zhquest",
 				"mock_host" : "${app_host}",
-				"mock_url" : "http://${mock_host}:${mock_port}/zhquest-mock-external-services/",
-				"app_host" : "---",
-				"db_uid" : "---"
+				"mock_url" : "http://${mock_host}:${mock_port}/zhquest-mock-external-services/"
 			},
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
@@ -677,9 +677,9 @@
 				} ],
 				"expanded" : true
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -1275,7 +1275,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
@@ -1327,7 +1327,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RWT DMZ DP-query",
+					"name" : "RWT DMZ DB-query",
 					"description" : "send specific query to RWT DMZ DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1407,7 +1407,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RWT Test DP-query",
+					"name" : "RWT Test DB-query",
 					"description" : "send specific query to RWT Test DB",
 					"applicable" : true,
 					"properties" : { },

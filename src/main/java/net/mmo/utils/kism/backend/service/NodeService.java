@@ -25,6 +25,8 @@ import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PrettyPrint;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,6 +38,11 @@ public class NodeService
 {
 	public final static String CONFIG_FILE_TYPE  = "kmc"; //$NON-NLS-1$
 	public final static String DEFAULT_FILE_NAME = "default"; //$NON-NLS-1$
+
+	public static ApplicationArguments applicationArguments;
+
+	@Value("${config.file:null}") // allow specification via application.properties
+	protected String configFile;
 
 	private NodeRepository nodeRepository;
 
@@ -54,9 +61,10 @@ public class NodeService
 //		this.leafNodeRepository = leafNodeRepository;
 		this.nodeRepository = nodeRepository;
 		if (getRootNodes().isEmpty()) {
-			init(); // load from file
+			List<String> args = (applicationArguments != null ? applicationArguments.getNonOptionArgs() : null);
+			String fileName = (args == null || args.isEmpty() ? this.configFile : args.get(0)); // cmd-line beats properties
+			init(fileName);
 		}
-
 	}
 
 	public List<RootNode> getRootNodes() {
@@ -112,8 +120,8 @@ public class NodeService
 	}
 
 	/* create a new empty RootNode, if none exists */
-	public void init() {
-		File file = new File(DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
+	public void init(String fileName) {
+		File file = new File(fileName != null ? fileName : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		try {
 			readFile(file);
 		} catch (IOException t) {

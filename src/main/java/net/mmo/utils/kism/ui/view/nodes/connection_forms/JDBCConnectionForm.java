@@ -97,7 +97,7 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		this.query.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.query.addValueChangeListener(event ->
 			{
-				log.info("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				log.debug("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
 						updateResultingQuery(event.getValue());

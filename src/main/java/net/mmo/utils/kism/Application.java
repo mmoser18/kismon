@@ -1,10 +1,12 @@
 package net.mmo.utils.kism;
 
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.backend.service.RequestInfoService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.utils.AppProperties;
+import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
@@ -26,9 +28,18 @@ public class Application extends SpringBootServletInitializer
 		LeafNode.requestInfoService = requestInfoService;
 	}
 
-	private static boolean nonBlank(String str) {
-		return str != null && !str.isBlank();
-	}
+
+//	// requires implements ApplicationRunner
+//	@Override
+//	public void run(ApplicationArguments args) throws Exception {
+//		log.info("Application started with command-line arguments: {}", Arrays.toString(args.getSourceArgs())); //$NON-NLS-1$
+//		log.info("NonOptionArgs: {}", args.getNonOptionArgs()); //$NON-NLS-1$
+//		log.info("OptionNames: {}", args.getOptionNames()); //$NON-NLS-1$
+//
+//		for (String name: args.getOptionNames()) {
+//			log.info("Argument '" + name + "'='" + args.getOptionValues(name) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//		}
+//	}
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
@@ -86,6 +97,9 @@ public class Application extends SpringBootServletInitializer
 			if (nonBlank(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
 			if (nonBlank(keyStorePwd)) System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
+			// we need to set this BEFORE the NodeService is created. If we do this in the Application-c'tor we come to late.
+			NodeService.applicationArguments = new DefaultApplicationArguments(args);
+
 			SpringApplication.run(Application.class, args);
 
 		} catch (Throwable e) {
@@ -95,5 +109,9 @@ public class Application extends SpringBootServletInitializer
 				log.error("Application crashed!", e); //$NON-NLS-1$
 			}
 		}
+	}
+
+	private static boolean nonBlank(String str) {
+		return str != null && !str.isBlank();
 	}
 }

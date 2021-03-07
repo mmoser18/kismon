@@ -53,8 +53,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 	protected Accordion connnectionDetails;
 	protected VerticalLayout connnectionDetailsPanel;
 
-
-
 	protected TextField timestamp;
 	protected NumberField duration;
 

@@ -418,7 +418,7 @@ abstract public class HTTPConnection extends IPConnection
 	@SuppressWarnings("null") // the program flow guarantees that request is != null if response is <> null!
 	@Override
 	public void sendRequest() throws Exception {
-		log.info("sendRequest '{}':", getName()); //$NON-NLS-1$
+		log.debug("sendRequest '{}':", getName()); //$NON-NLS-1$
 		HttpClient client = null;
 		HttpRequest request = null;
 		HttpResponse<byte[]> response = null;
@@ -444,14 +444,14 @@ abstract public class HTTPConnection extends IPConnection
 			response = client.send(request, BodyHandlers.ofByteArray());
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
-			log.info("responseReceived for '{}' after {} µsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(response);
 		} catch (Exception ex) {
-			log.info("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
-			setDuration(-1);
+			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
 			setResponseStatusCode(-1);
 			setResponseHeaders(null);
 			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
+			setDuration(NO_RESPONSE_DURATION); // signals an exception
 			setState(State.FAILED);
 			if (response != null) {
 				throw new Exception(String.format("Error for '%s' processing response from '%s': ", //$NON-NLS-1$
@@ -501,7 +501,7 @@ abstract public class HTTPConnection extends IPConnection
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}
 		}
-		log.info("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
+		log.debug("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
 		setState(res);
 	}
 

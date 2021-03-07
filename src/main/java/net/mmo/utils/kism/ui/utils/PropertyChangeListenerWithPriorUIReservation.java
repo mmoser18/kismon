@@ -10,13 +10,14 @@ import java.beans.PropertyChangeListener;
 
 import com.vaadin.flow.component.Component;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.nodes.Node;
 
 /**
  * A PropertyChangeListener that first acquires access to the UI so that the calling thread can then do
  * UI updates.
  */
 @Slf4j
-public abstract class PropertyChangeListenerWithPriorUIReservation<N> implements PropertyChangeListener
+public abstract class PropertyChangeListenerWithPriorUIReservation<N extends Node> implements PropertyChangeListener
 {
 	Component component;
 
@@ -32,9 +33,10 @@ public abstract class PropertyChangeListenerWithPriorUIReservation<N> implements
 		Object oldValue = event.getOldValue();
 		Object newValue = event.getNewValue();
 		log.trace("changeListener called for '{}': '{}' -> '{}' for '{}'", propertyName, oldValue, newValue, source); //$NON-NLS-1$
-		if (predicate(source, propertyName, oldValue, newValue)) {
+		if (this.component.isVisible() && predicate(source, propertyName, oldValue, newValue)) {
 			this.component.getUI().ifPresentOrElse((ui) -> ui.access(() -> handlePropertyChangeEvent(source, propertyName, oldValue, newValue)),
-			                                       () -> log.warn("UI not present for changeListener for {}", source)); //$NON-NLS-1$
+			                                       () -> log.trace("UI not present for {} - '{}' - ignoring PropertyChangeEvent '{}': '{}' -> '{}'.", //$NON-NLS-1$
+			                                                       this.component, source.getName(), propertyName, oldValue, newValue));
 		}
 	}
 
