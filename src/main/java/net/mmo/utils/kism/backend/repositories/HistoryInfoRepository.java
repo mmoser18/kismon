@@ -8,8 +8,8 @@ package net.mmo.utils.kism.backend.repositories;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.NodeType;
-import net.mmo.utils.kism.entities.results.RequestInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,7 +19,7 @@ import org.springframework.data.repository.query.Param;
  * All you need to do is define an interface that describes the entity nodeType and primary key
  * nodeType, and Spring Data will configure one for you.
  */
-public interface RequestInfoRepository extends JpaRepository<RequestInfo, Long>
+public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>
 {
 //	// using Java Persistence Query Language (JPQL) to phrase the query:
 
@@ -47,8 +47,8 @@ public interface RequestInfoRepository extends JpaRepository<RequestInfo, Long>
 					+ timestampWhereClause
 					;
 
-	@Query("select r from RequestInfo r " + fullWhereClause)
-	List<RequestInfo> findByFilter(@Param("nameFilter") String nameFilter
+	@Query("select r from HistoryInfo r " + fullWhereClause)
+	List<HistoryInfo> findByFilter(@Param("nameFilter") String nameFilter
 	                              ,@Param("typeFilter") NodeType typeFilter
 	                              ,@Param("lowerBoundDuration") Double minDurationValue
 	                              ,@Param("upperBoundDuration") Double maxDurationValue
@@ -56,8 +56,8 @@ public interface RequestInfoRepository extends JpaRepository<RequestInfo, Long>
 	                              ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                              );
 
-//	@Query("select r from RequestInfo r " + fullWhereClause + limitAndOffset)
-//	List<RequestInfo> findByFilter(@Param("nameFilter") String nameFilter
+//	@Query("select r from HistoryInfo r " + fullWhereClause + limitAndOffset)
+//	List<HistoryInfo> findByFilter(@Param("nameFilter") String nameFilter
 //	                              ,@Param("typeFilter") NodeType typeFilter
 //	                              ,@Param("lowerBoundDuration") Double minDurationValue
 //	                              ,@Param("upperBoundDuration") Double maxDurationValue
@@ -67,54 +67,54 @@ public interface RequestInfoRepository extends JpaRepository<RequestInfo, Long>
 //	                              ,@Param("limit") int limit
 //	                              );
 
-	@Query("select min(r.duration) from RequestInfo r" + basicWhereClause)
+	@Query("select min(r.duration) from HistoryInfo r" + basicWhereClause)
 	Double findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
 	                                   ,@Param("typeFilter") NodeType typeFilter
 	                                   );
 
-	@Query("select max(r.duration) from RequestInfo r" + basicWhereClause)
+	@Query("select max(r.duration) from HistoryInfo r" + basicWhereClause)
 	Double findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
 	                                    ,@Param("typeFilter") NodeType typeFilter
 	                                    );
 
-	@Query("select min(r.duration) from RequestInfo r" + basicWhereClause + timestampWhereClause)
+	@Query("select min(r.duration) from HistoryInfo r" + basicWhereClause + timestampWhereClause)
 	Double findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
 	                                   ,@Param("typeFilter") NodeType typeFilter
 	                                   ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                                   ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                                   );
 
-	@Query("select max(r.duration) from RequestInfo r" + basicWhereClause + timestampWhereClause)
+	@Query("select max(r.duration) from HistoryInfo r" + basicWhereClause + timestampWhereClause)
 	Double findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
 	                                    ,@Param("typeFilter") NodeType typeFilter
 	                                    ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                                    ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                                    );
 
-	@Query("select min(r.timestamp) from RequestInfo r" + basicWhereClause)
+	@Query("select min(r.timestamp) from HistoryInfo r" + basicWhereClause)
 	LocalDateTime findLowestTimestampWithFilter(@Param("nameFilter") String nameFilter
 	                                           ,@Param("typeFilter") NodeType typeFilter
 	                                           );
 
-	@Query("select max(r.timestamp) from RequestInfo r" + basicWhereClause)
+	@Query("select max(r.timestamp) from HistoryInfo r" + basicWhereClause)
 	LocalDateTime findHighestTimestampWithFilter(@Param("nameFilter") String nameFilter
 	                                            ,@Param("typeFilter") NodeType typeFilter
 	                                            );
 
-	@Query("select distinct r.name from RequestInfo r")
+	@Query("select distinct r.name from HistoryInfo r")
 	List<String> getNodeNames();
 
-	@Query("select distinct r.name from RequestInfo r" + basicWhereClause)
+	@Query("select distinct r.name from HistoryInfo r" + basicWhereClause)
 	List<String> getNodeNames(@Param("nameFilter") String nameFilter
 	                         ,@Param("typeFilter") NodeType typeFilter
 	                         );
 
-	@Query("select count(r.id) from RequestInfo r" + basicWhereClause)
+	@Query("select count(r.id) from HistoryInfo r" + basicWhereClause)
 	Long countWithFilter(@Param("nameFilter") String nameFilter
                         ,@Param("typeFilter") NodeType typeFilter
                         );
 
-	@Query("select count(r.id) from RequestInfo r" + basicWhereClause + timestampWhereClause)
+	@Query("select count(r.id) from HistoryInfo r" + basicWhereClause + timestampWhereClause)
 	Long countWithFilter(@Param("nameFilter") String nameFilter
 	                    ,@Param("typeFilter") NodeType typeFilter
 	                    ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp

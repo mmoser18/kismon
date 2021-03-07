@@ -1,5 +1,5 @@
 
-package net.mmo.utils.kism.entities.results;
+package net.mmo.utils.kism.entities.history;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import net.mmo.utils.kism.entities.nodes.NodeType;
 @Entity
 @Setter
 @Getter
-public class RequestInfo extends AbstractEntity implements Serializable
+public class HistoryInfo extends AbstractEntity implements Serializable
 {
 	private static final long serialVersionUID = -974098342485642213L;
 
@@ -42,15 +42,15 @@ public class RequestInfo extends AbstractEntity implements Serializable
 	protected String result;
 
 
-	protected RequestInfo() { // required for deserialization
+	protected HistoryInfo() { // required for deserialization
 		// empty
 	}
 
-	public RequestInfo(String name, Class<?> nodeClass, Long duration, LocalDateTime timestamp, String result) {
+	public HistoryInfo(String name, Class<?> nodeClass, Long duration, LocalDateTime timestamp, String result) {
 		this(name, nodeClass.getSimpleName(), (duration / NanoToMilliFactor), timestamp, result);
 	}
 
-	public RequestInfo(String name, String nodeType, double duration, LocalDateTime timestamp, String result) {
+	public HistoryInfo(String name, String nodeType, double duration, LocalDateTime timestamp, String result) {
 		setName(name);
 		setNodeType(NodeType.valueOf(nodeType));
 		setDuration(duration);

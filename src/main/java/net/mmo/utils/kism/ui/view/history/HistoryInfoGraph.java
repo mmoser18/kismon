@@ -3,7 +3,7 @@
  * @since 05.10.2020
  */
 
-package net.mmo.utils.kism.ui.view.results;
+package net.mmo.utils.kism.ui.view.history;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -31,17 +31,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.RequestInfoService;
-import net.mmo.utils.kism.entities.results.RequestInfo;
+import net.mmo.utils.kism.backend.service.HistoryInfoService;
+import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 
 
-@Route(value = "graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
-@PageTitle("Graph | " + CommonConstants.ApplicationFullName)
+@Route(value = "history-graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
+@PageTitle("History Graph | " + CommonConstants.ApplicationFullName)
 @Slf4j
-public class RequestInfoGraph extends AbstractRequestInfoView
+public class HistoryInfoGraph extends AbstractHistoryInfoView
 {
 	private static final long serialVersionUID = -1954281705187898725L;
 	private static final boolean LEGENDS_AT_LEFT = false;
@@ -53,8 +53,8 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 	LocalDateTime lastUpdate;
 
 
-	public RequestInfoGraph(RequestInfoService requestInfoService, UIHandlerSupport uiHandlerSupport) {
-		super(requestInfoService, uiHandlerSupport);
+	public HistoryInfoGraph(HistoryInfoService historyInfoService, UIHandlerSupport uiHandlerSupport) {
+		super(historyInfoService, uiHandlerSupport);
 
 		refreshData();
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
@@ -67,10 +67,10 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		this.nameFilter.addValueChangeListener(e -> { if (e.isFromClient()) adjustVisibility(); });
 		this.typeFilter.addValueChangeListener(e -> { if (e.isFromClient()) adjustVisibility(); });
 
-		this.selectAll = new Button(Messages.getString("ResultGraph.Button.SelectAll.Label")); //$NON-NLS-1$
+		this.selectAll = new Button(Messages.getString("HistoryGraph.Button.SelectAll.Label")); //$NON-NLS-1$
 		this.selectAll.addClickListener(e -> selectAll());
 
-		this.selectNone = new Button(Messages.getString("ResultGraph.Button.SelectNone.Label")); //$NON-NLS-1$
+		this.selectNone = new Button(Messages.getString("HistoryGraph.Button.SelectNone.Label")); //$NON-NLS-1$
 		this.selectNone.addClickListener(e -> selectNone());
 
 		toolbar.add(this.selectAll, this.selectNone, this.refreshData);
@@ -86,7 +86,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		this.chart.setTimeline(true);
 
 		Configuration conf = this.chart.getConfiguration();
-		conf.setTitle(Messages.getString("ResultGraph.Title")); //$NON-NLS-1$
+		conf.setTitle(Messages.getString("HistoryGraph.Title")); //$NON-NLS-1$
 
 		Tooltip tooltip = new Tooltip();
 		tooltip.setShared(true);
@@ -105,11 +105,11 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 			legend.setVerticalAlign(VerticalAlign.BOTTOM);
 		}
 		XAxis xAxis = conf.getxAxis();
-		xAxis.setTitle(new AxisTitle(Messages.getString("ResultGraph.XAxis.Label"))); //$NON-NLS-1$
+		xAxis.setTitle(new AxisTitle(Messages.getString("HistoryGraph.XAxis.Label"))); //$NON-NLS-1$
 		xAxis.setType(AxisType.DATETIME);
 
 		YAxis yAxis = conf.getyAxis();
-		yAxis.setTitle(new AxisTitle(Messages.getString("ResultGraph.YAxis.Label"))); //$NON-NLS-1$
+		yAxis.setTitle(new AxisTitle(Messages.getString("HistoryGraph.YAxis.Label"))); //$NON-NLS-1$
 		yAxis.setMin(0); // duration 0 signals an error
 
 		this.content.add(this.chart);
@@ -121,7 +121,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		if (this.DO_SYNC) {
 			updateGraph(fetchData());
 		} else { // offload the refresh to a different thread:
-			this.uiHandlerSupport.executeLater(this::fetchData, this::updateGraph);
+			UIHandlerSupport.executeLater(this::fetchData, this::updateGraph);
 		}
 	}
 
@@ -138,7 +138,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		nodeNames.forEach(name ->
 			{
 				log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
-				List<RequestInfo> values = this.requestInfoService.findByFilter(name, null, null, null, null, null);
+				List<HistoryInfo> values = this.historyInfoService.findByFilter(name, null, null, null, null, null);
 
 				DataSeries timingSeries = new DataSeries();
 				timingSeries.setId(name);
@@ -148,7 +148,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 				log.info("got {} data points for '{}'", nrDataPoints, name); //$NON-NLS-1$
 				Number[][] numberTuples = new Number[nrDataPoints][2];
 				for (int idx = 0; idx < nrDataPoints; idx++) {
-					RequestInfo value = values.get(idx);
+					HistoryInfo value = values.get(idx);
 					LocalDateTime timestamp = value.getTimestamp();
 					Double duration = value.getDuration();
 					numberTuples[idx][0] = Date.from(timestamp.atZone(myZoneId).toInstant()).getTime();
@@ -178,7 +178,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		if (this.DO_SYNC) {
 			updateVisibility(getFilteredNodeNames());
 		} else {
-			this.uiHandlerSupport.executeLater(this::getFilteredNodeNames, this::updateVisibility);
+			UIHandlerSupport.executeLater(this::getFilteredNodeNames, this::updateVisibility);
 		}
 	}
 
@@ -197,7 +197,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		if (this.DO_SYNC) {
 			forAllSeriesDo(ds -> ds.setVisible(false, true));
 		} else {
-			this.uiHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
+			UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
 		}
 	}
 
@@ -206,7 +206,7 @@ public class RequestInfoGraph extends AbstractRequestInfoView
 		if (this.DO_SYNC) {
 			forAllSeriesDo(ds -> ds.setVisible(true, true));
 		} else {
-			this.uiHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
+			UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
 		}
 	}
 }

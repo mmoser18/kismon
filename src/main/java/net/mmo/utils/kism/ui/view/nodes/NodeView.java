@@ -129,6 +129,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		}
 		this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		this.tree.getDataProvider().refreshAll();
+
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -676,8 +677,21 @@ public class NodeView <N extends Node> extends VerticalLayout
 		if (node instanceof RootNode) {
 			UsageError(Messages.getString("NodeView.ErrorMsg.NoPromoteForRootNodes")); //$NON-NLS-1$
 		} else {
-			select(node);
+			IntermediateNode parent = node.getParent();
+			IntermediateNode grandParent = parent.getParent();
+			if (grandParent == null) {
+				UsageError(Messages.getString("NodeView.ErrorMsg.NoPromoteForFirstLevelNodes")); //$NON-NLS-1$
+			} else {
+				List<Node> newSiblings = grandParent.getChildren();
+				int parentPos = newSiblings.indexOf(parent);
+				log.info("promote '{}' old parent '{}' -> new parent: '{}'", //$NON-NLS-1$
+				         node.getName(), parent.getName(), grandParent.getName());
+				grandParent.addChildAtPos(parentPos+1, node);
+				if (NodeView.alwaysSave) saveNode(node);
+				updateTree();
+			}
 		}
+		select(node);
 	}
 
 	private void demote(Node node) {
@@ -685,8 +699,26 @@ public class NodeView <N extends Node> extends VerticalLayout
 		if (node instanceof RootNode) {
 			UsageError(Messages.getString("NodeView.ErrorMsg.NoDemoteForRootNodes")); //$NON-NLS-1$
 		} else {
-			select(node);
+			IntermediateNode parent = node.getParent();
+			List<Node> siblings = parent.getChildren();
+			int myPos = siblings.indexOf(node);
+			int pos = myPos-1;
+			for (; pos >= 0; pos--) {
+				Node sibling = siblings.get(pos);
+				if (sibling instanceof IntermediateNode) {
+					IntermediateNode newParent = (IntermediateNode)sibling;
+					newParent.addChild(node);
+					// node.setParent(newParent);
+					if (NodeView.alwaysSave) saveNode(node);
+					updateTree();
+					break;
+				}
+			}
+			if (pos < 0) {
+				UsageError(Messages.getString("NodeView.ErrorMsg.NoParentForDemotion")); //$NON-NLS-1$
+			}
 		}
+		select(node);
 	}
 
 

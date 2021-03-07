@@ -59,7 +59,7 @@ vaadin-form-layout {
 }
 */
 
-.result-view-toolbar {
+.history-view-toolbar {
 	align-items: center;
 }
 
@@ -144,7 +144,7 @@ vaadin-upload {
 	flex-direction: column;
 }
 
-vaadin-horizontal-layout[class^='result-view-field-'],vaadin-vertical-layout[class^='result-view-field-'],vaadin-text-field[class^='result-view-field-'],vaadin-number-field[class^='result-view-field-'],vaadin-integer-field[class^='result-view-field-'],vaadin-combo-box[class^='result-view-field-'],vaadin-date-time-picker-custom-field[class^='result-view-field-'],vaadin-date-time-picker[class^='result-view-field-'],vaadin-time-picker[class^='result-view-field-'],vaadin-date-time-picker-custom-field {
+vaadin-horizontal-layout[class^='history-view-field-'],vaadin-vertical-layout[class^='history-view-field-'],vaadin-text-field[class^='history-view-field-'],vaadin-number-field[class^='history-view-field-'],vaadin-integer-field[class^='history-view-field-'],vaadin-combo-box[class^='history-view-field-'],vaadin-date-time-picker-custom-field[class^='history-view-field-'],vaadin-date-time-picker[class^='history-view-field-'],vaadin-time-picker[class^='history-view-field-'],vaadin-date-time-picker-custom-field {
 	margin-top: 0px;
 	margin-bottom: 0px;
 	padding-top: 0px;
@@ -156,20 +156,20 @@ vaadin-date-time-picker-custom-field {
 	padding: 0px;
 }
 
-.result-view .result-view-duration-extremes {
+.history-view .history-view-duration-extremes {
 	padding: 0px;
 	margin: 3px; 
 /*	align-items: stretch; */
 }
 
-.result-view .result-view-timestamp-extremes {
+.history-view .history-view-timestamp-extremes {
 	padding: 0px;
 	margin: 3px; 
 /*	align-items: stretch; */
 }
 
 /*
-.result-view-field-duration-minimum .result-view-field-duration-maximum {
+.history-view-field-duration-minimum .history-view-field-duration-maximum {
 	width: 20em;
 }
 */

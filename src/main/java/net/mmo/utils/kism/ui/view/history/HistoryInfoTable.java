@@ -1,8 +1,8 @@
-package net.mmo.utils.kism.ui.view.results;
+package net.mmo.utils.kism.ui.view.history;
 
 import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
+import static net.mmo.utils.kism.ui.UIConstants.HistoryViewField;
 import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
-import static net.mmo.utils.kism.ui.UIConstants.ResultViewField;
 
 import java.time.LocalDateTime;
 
@@ -15,9 +15,9 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.RequestInfoService;
+import net.mmo.utils.kism.backend.service.HistoryInfoService;
+import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.NodeType;
-import net.mmo.utils.kism.entities.results.RequestInfo;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.UIConstants;
@@ -29,22 +29,22 @@ import org.springframework.stereotype.Component;
 /**
  * Defines the application's main view, routed to via the base URL
  */
-@Route(value="results", layout = MainLayout.class)
-@PageTitle("Results | " + CommonConstants.ApplicationFullName)
+@Route(value="history-table", layout = MainLayout.class)
+@PageTitle("History Table | " + CommonConstants.ApplicationFullName)
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
-public class RequestInfoTable extends AbstractRequestInfoView
+public class HistoryInfoTable extends AbstractHistoryInfoView
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
 	// public to allow access by test classes
-	public static final String DurationMinimumFieldClassName = ResultViewField + "duration-minimum"; //$NON-NLS-1$
-	public static final String DurationMaximumFieldClassName = ResultViewField + "duration-maximum"; //$NON-NLS-1$
-	public static final String DurationExtremesFieldClassName = ResultViewField + "duration-extremes"; //$NON-NLS-1$
-	public static final String TimestampMinimumFieldClassName = ResultViewField + "timestamp-minimum"; //$NON-NLS-1$
-	public static final String TimestampMaximumFieldClassName = ResultViewField + "timestamp-maximum"; //$NON-NLS-1$
-	public static final String TimestampExtremesFieldClassName = ResultViewField + "timestamp-extremes"; //$NON-NLS-1$
+	public static final String DurationMinimumFieldClassName = HistoryViewField + "duration-minimum"; //$NON-NLS-1$
+	public static final String DurationMaximumFieldClassName = HistoryViewField + "duration-maximum"; //$NON-NLS-1$
+	public static final String DurationExtremesFieldClassName = HistoryViewField + "duration-extremes"; //$NON-NLS-1$
+	public static final String TimestampMinimumFieldClassName = HistoryViewField + "timestamp-minimum"; //$NON-NLS-1$
+	public static final String TimestampMaximumFieldClassName = HistoryViewField + "timestamp-maximum"; //$NON-NLS-1$
+	public static final String TimestampExtremesFieldClassName = HistoryViewField + "timestamp-extremes"; //$NON-NLS-1$
 
 	protected NumberField durationMinimum;
 	protected NumberField durationMaximum;
@@ -52,12 +52,12 @@ public class RequestInfoTable extends AbstractRequestInfoView
 	protected DateTimePicker timestampMinimum;
 	protected DateTimePicker timestampMaximum;
 
-	protected Grid<RequestInfo> grid;
+	protected Grid<HistoryInfo> grid;
 
 
 	// This gets autowired but still puzzled which annotation causes this...
-	public RequestInfoTable(RequestInfoService requestInfoService, UIHandlerSupport uiHandlerSupport) {
-		super(requestInfoService, uiHandlerSupport);
+	public HistoryInfoTable(HistoryInfoService historyInfoService, UIHandlerSupport uiHandlerSupport) {
+		super(historyInfoService, uiHandlerSupport);
 
 		refreshData();
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
@@ -73,14 +73,14 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		this.durationMinimum = new NumberField();
 		this.durationMaximum = new NumberField();
 
-		this.durationMinimum.setLabel(Messages.getString("ResultTable.Duration.Minimum.Label")); //$NON-NLS-1$
+		this.durationMinimum.setLabel(Messages.getString("HistoryTable.Duration.Minimum.Label")); //$NON-NLS-1$
 		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
 		this.durationMinimum.setHasControls(true);
 		this.durationMinimum.setWidth("15em"); //$NON-NLS-1$
 		this.durationMinimum.addValueChangeListener(e -> refreshData());
 
-		this.durationMaximum.setLabel(Messages.getString("ResultTable.Duration.Maximum.Label")); //$NON-NLS-1$
+		this.durationMaximum.setLabel(Messages.getString("HistoryTable.Duration.Maximum.Label")); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
 		this.durationMaximum.setHasControls(true);
@@ -95,12 +95,12 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		this.timestampMinimum = new DateTimePicker();
 		this.timestampMaximum = new DateTimePicker();
 
-		this.timestampMinimum.setLabel(String.format(Messages.getString("ResultTable.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
+		this.timestampMinimum.setLabel(String.format(Messages.getString("HistoryTable.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
 		this.timestampMinimum.setThemeName(LabelPaddingTheme);
 		this.timestampMinimum.addValueChangeListener(e -> refreshData());
 
-		this.timestampMaximum.setLabel(String.format(Messages.getString("ResultTable.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
+		this.timestampMaximum.setLabel(String.format(Messages.getString("HistoryTable.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
 		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
 		this.timestampMaximum.setThemeName(LabelPaddingTheme);
 		this.timestampMaximum.addValueChangeListener(e -> refreshData());
@@ -117,27 +117,27 @@ public class RequestInfoTable extends AbstractRequestInfoView
 	@Override
 	protected void configureContent() {
 		log.trace("Configuring Grid:"); //$NON-NLS-1$
-		this.grid = new Grid<>(RequestInfo.class); // package visible for UTs - is there no other way?
+		this.grid = new Grid<>(HistoryInfo.class); // package visible for UTs - is there no other way?
 		this.grid.addClassName(GridClassName);
 		this.grid.setSizeFull();
 		this.grid.removeAllColumns();
 
 		this.grid.addColumn("name") //$NON-NLS-1$
-			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Name")) //$NON-NLS-1$
+			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Name")) //$NON-NLS-1$
 			;
 		this.grid.addColumn((info) -> NodeTypeLabelProvider.getNodeTypeLabel(info.getNodeType()))
-			.setHeader(Messages.getString("ResultTable.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
+			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
 			;
 		this.grid.addColumn((info) -> info.getDuration())
-			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Duration")) //$NON-NLS-1$
+			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Duration")) //$NON-NLS-1$
 			.setTextAlign(ColumnTextAlign.END)
 			;
 		this.grid.addColumn((info) -> info.getTimestamp())
-			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
+			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
 			.setTextAlign(ColumnTextAlign.END)
 			;
 		this.grid.addColumn("result") //$NON-NLS-1$
-			.setHeader(Messages.getString("ResultTable.Grid.ColumnName.Result")) //$NON-NLS-1$
+			.setHeader(Messages.getString("Table.Grid.ColumnName.Result")) //$NON-NLS-1$
 			;
 
 		this.grid.getColumns().forEach(column ->
@@ -169,17 +169,17 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		Double minDurationValue = this.durationMinimum.getValue();
 		Double maxDurationValue = this.durationMaximum.getValue();
 
-		Double minDuration = this.requestInfoService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
-		Double maxDuration = this.requestInfoService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
+		Double minDuration = this.historyInfoService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
+		Double maxDuration = this.historyInfoService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
 
 		if (minDuration != null) {
 			double minDurationConverted = minDuration;
-			this.durationMinimum.setLabel(String.format(Messages.getString("ResultTable.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
+			this.durationMinimum.setLabel(String.format(Messages.getString("Table.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
 			this.durationMinimum.setMin(minDurationConverted);
 		}
 		if (maxDuration != null) {
 			double maxDurationConverted = maxDuration;
-			this.durationMaximum.setLabel(String.format(Messages.getString("ResultTable.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
+			this.durationMaximum.setLabel(String.format(Messages.getString("Table.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
 			this.durationMaximum.setMax(maxDurationConverted);
 		}
 
@@ -206,8 +206,8 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		LocalDateTime minTimestampValue = this.timestampMinimum.getValue();
 		LocalDateTime maxTimestampValue = this.timestampMaximum.getValue();
 
-		LocalDateTime minTimestamp = this.requestInfoService.findLowestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
-		LocalDateTime maxTimestamp = this.requestInfoService.findHighestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
+		LocalDateTime minTimestamp = this.historyInfoService.findLowestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
+		LocalDateTime maxTimestamp = this.historyInfoService.findHighestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
 
 		// limit the values to [min..max] (if available):
 		if (minTimestamp != null && (minTimestampValue == null || minTimestampValue.compareTo(minTimestamp) < 0)) {
@@ -229,7 +229,7 @@ public class RequestInfoTable extends AbstractRequestInfoView
 		}
 
 		// TODO: replace by call-back data provider to minimize GUI loading when there are LOTs of data:
-		this.grid.setItems(this.requestInfoService.findByFilter(nameFilterValue, nodeTypeFilterValue,
+		this.grid.setItems(this.historyInfoService.findByFilter(nameFilterValue, nodeTypeFilterValue,
 		                                                        minDurationValue, maxDurationValue,
 		                                                        null, null));
 	}

@@ -71,15 +71,22 @@ public class IntermediateNode extends Node
 	}
 
 	public Node addChild(Node child) {
+		return addChildAtPos(-1, child); // -1 means: add to end
+	}
+
+	public Node addChildAtPos(int pos, Node child) {
 		if (child == null) throw new IllegalArgumentException("child must not be null for addChild"); //$NON-NLS-1$
 		Node oldParent = child.getParent();
 		if ((oldParent != null) && (oldParent instanceof IntermediateNode)) {
 			((IntermediateNode)oldParent).removeChild(child);
-			((IntermediateNode)oldParent).deriveNewState();
 		}
 		synchronized(this) {
 			child.setParent(this);
-			getChildren().add(child);
+			if (pos >= 0) {
+				this.children.add(pos, child);
+			} else {
+				this.children.add(child);
+			}
 			deriveNewState();
 		}
 		return child;

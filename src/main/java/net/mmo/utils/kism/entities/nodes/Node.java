@@ -130,6 +130,13 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		trickleDown((node) -> node.updateResolvableValues());
 	}
 
+	/**`Caution: This method is ONLY setting the node's parent!
+	 * It is NOT doing any additional arithmetic required for consistency like removing the node from
+	 * its previous parent and/or triggering the respective state-updates of the old and new parent!
+	 * For that use the "prospectiveParent.addChild(node)" - method!
+	 * This method shouldn't even be visible but the NodeService requires it when reconstructing the
+	 * tree while reading it in from JSON. :-(
+	 **/
 	public void setParent(IntermediateNode parent) {
 		if (this.parent != parent) {
 			IntermediateNode oldParent = this.parent;

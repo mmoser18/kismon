@@ -19,23 +19,27 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UIHandlerSupport
 {
-	ExecutorService executorService;
+	static ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public void finalize() {
-		if (this.executorService != null) {
-			this.executorService.shutdown();
-		}
+	private UIHandlerSupport() {
+		// should bever be called...
 	}
 
-	public <T extends Object> void executeLater(Supplier<T> longRunningActivity,
-	                                            Consumer<T> uiActivity) {
-		log.info("executeLater"); //$NON-NLS-1$
-		if (this.executorService == null) {
-			this.executorService = Executors.newFixedThreadPool(5);
-		}
-		this.executorService.submit(new Runnable()
+	public static <T extends Object> void executeLater(Command longRunningActivity) {
+		log.info("executeLater({})", longRunningActivity); //$NON-NLS-1$
+		executorService.submit(new Runnable()
+			{
+				@Override
+				public void run () {
+					longRunningActivity.execute();
+				}
+			});
+	}
+
+	public static <T extends Object> void executeLater(Supplier<T> longRunningActivity,
+	                                                   Consumer<T> uiActivity) {
+		log.info("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
+		executorService.submit(new Runnable()
 			{
 				@Override
 				public void run () {
@@ -46,6 +50,7 @@ public class UIHandlerSupport
 	}
 
 	public static void doUIOperation(Command cmd) {
+		log.info("doUIOperation"); //$NON-NLS-1$
 		UI.getCurrent().access(cmd);
 	}
 }

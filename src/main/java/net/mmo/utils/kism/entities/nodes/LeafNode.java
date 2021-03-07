@@ -21,8 +21,8 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.RequestInfoService;
-import net.mmo.utils.kism.entities.results.RequestInfo;
+import net.mmo.utils.kism.backend.service.HistoryInfoService;
+import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 
@@ -110,7 +110,7 @@ abstract public class LeafNode extends Node
 		Boolean.parseBoolean(AppProperties.getProperties().getProperty("LeafNode.ShortRequestLogEntries", //$NON-NLS-1$
 		                                                               "true")); //$NON-NLS-1$
 
-	public transient static RequestInfoService requestInfoService;
+	public transient static HistoryInfoService requestInfoService;
 
 
 	public static boolean isHaltAllRequests() {
@@ -185,7 +185,7 @@ abstract public class LeafNode extends Node
 								log.info("Error calling '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$
 							}
 						}
-						requestInfoService.save(new RequestInfo(getName(), LeafNode.this.getClass(), getDuration(), getTimestamp(), getRequestResult()));
+						requestInfoService.save(new HistoryInfo(getName(), LeafNode.this.getClass(), getDuration(), getTimestamp(), getRequestResult()));
 					}
 				}
 			});
@@ -219,10 +219,16 @@ abstract public class LeafNode extends Node
 			log.error("Exception calling '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
 		}
-		requestInfoService.save(new RequestInfo(getName(), getClass(), getDuration(), getTimestamp(), getRequestResult()));
+		requestInfoService.save(new HistoryInfo(getName(), getClass(), getDuration(), getTimestamp(), getRequestResult()));
 	}
 
 	protected void adjustExecutor() {
+//		// Because this method gets called from the UI and it may take a while we need to offload
+//		// that to another thread to complete it in the background: / didn't work... :-(
+//		UIHandlerSupport.executeLater(this::adjustExecutorInternal);
+//	}
+//
+//	protected void adjustExecutorInternal() {
 		if (getPeriodicExecutor() != null) {
 			log.debug("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
 			if (!getPeriodicExecutor().isTerminated()) {

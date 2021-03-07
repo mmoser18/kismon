@@ -9,98 +9,98 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.repositories.RequestInfoRepository;
+import net.mmo.utils.kism.backend.repositories.HistoryInfoRepository;
+import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.NodeType;
-import net.mmo.utils.kism.entities.results.RequestInfo;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class RequestInfoService
+public class HistoryInfoService
 {
-	protected RequestInfoRepository requestInfoRepository;
+	protected HistoryInfoRepository historyInfoRepository;
 
-	public RequestInfoService(RequestInfoRepository requestInfoRepository) {
-		log.debug("RequestInfoService c'tor"); //$NON-NLS-1$
-		this.requestInfoRepository = requestInfoRepository;
+	public HistoryInfoService(HistoryInfoRepository historyInfoRepository) {
+		log.debug("HistoryInfoService c'tor"); //$NON-NLS-1$
+		this.historyInfoRepository = historyInfoRepository;
 	}
 
-	public List<RequestInfo> findAll() {
-		return this.requestInfoRepository.findAll();
+	public List<HistoryInfo> findAll() {
+		return this.historyInfoRepository.findAll();
 	}
 
-	public List<RequestInfo> findByFilter(String nameFilter, NodeType typeFilter,
+	public List<HistoryInfo> findByFilter(String nameFilter, NodeType typeFilter,
 	                                      Double minDurationValue, Double maxDurationValue,
 	                                      LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
 		if ((nameFilter == null || nameFilter.isEmpty()) &&
 			typeFilter == null &&
 			minDurationValue == null && maxDurationValue == null &&
 			timestampLowerBound == null && timestampUpperBound == null) {
-			return this.requestInfoRepository.findAll();
+			return this.historyInfoRepository.findAll();
 		} else {
-			return this.requestInfoRepository.findByFilter(nameFilter, typeFilter,
+			return this.historyInfoRepository.findByFilter(nameFilter, typeFilter,
 			                                               minDurationValue, maxDurationValue,
 			                                               timestampLowerBound, timestampUpperBound);
 		}
 	}
 
 	public Double findLowestDurationWithFilter(String nameFilter, NodeType typeFilter) {
-		return this.requestInfoRepository.findLowestDurationWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findLowestDurationWithFilter(nameFilter, typeFilter);
 	}
 
 	public Double findHighestDurationWithFilter(String nameFilter, NodeType typeFilter) {
-		return this.requestInfoRepository.findHighestDurationWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findHighestDurationWithFilter(nameFilter, typeFilter);
 	}
 
 	public LocalDateTime findLowestTimestampWithFilter(String nameFilter, NodeType typeFilter) {
-		return this.requestInfoRepository.findLowestTimestampWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findLowestTimestampWithFilter(nameFilter, typeFilter);
 	}
 
 	public LocalDateTime findHighestTimestampWithFilter(String nameFilter, NodeType typeFilter) {
-		return this.requestInfoRepository.findHighestTimestampWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findHighestTimestampWithFilter(nameFilter, typeFilter);
 	}
 
 	public Long count() {
-		return this.requestInfoRepository.count();
+		return this.historyInfoRepository.count();
 	}
 
 	public Long countWithFilter(String nameFilter, NodeType typeFilter) {
-		return this.requestInfoRepository.countWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.countWithFilter(nameFilter, typeFilter);
 	}
 
 
-	public void delete(RequestInfo requestInfo) {
-		this.requestInfoRepository.delete(requestInfo);
+	public void delete(HistoryInfo historyInfo) {
+		this.historyInfoRepository.delete(historyInfo);
 	}
 
-	public RequestInfo save(RequestInfo requestInfo) {
-		log.debug("saving {}:", requestInfo); //$NON-NLS-1$
-		if (requestInfo == null) {
-			log.error("requestInfo is null"); //$NON-NLS-1$
+	public HistoryInfo save(HistoryInfo historyInfo) {
+		log.debug("saving {}:", historyInfo); //$NON-NLS-1$
+		if (historyInfo == null) {
+			log.error("historyInfo is null"); //$NON-NLS-1$
 			return null;
 		}
-		RequestInfo saved = this.requestInfoRepository.save(requestInfo);
+		HistoryInfo saved = this.historyInfoRepository.save(historyInfo);
 		log.trace("saved {}:", saved); //$NON-NLS-1$
 		return saved;
 	}
 
 	public List<String> getNodeNames() {
-		return this.requestInfoRepository.getNodeNames();
+		return this.historyInfoRepository.getNodeNames();
 	}
 
 	public List<String> getNodeNames(String nameFilter, NodeType typeFilter) {
-		return this.requestInfoRepository.getNodeNames(nameFilter, typeFilter);
+		return this.historyInfoRepository.getNodeNames(nameFilter, typeFilter);
 	}
 
 
-	List<RequestInfo> getTimingDataForNode(String name,
+	List<HistoryInfo> getTimingDataForNode(String name,
 	                                       LocalDateTime lowerBoundTimeStamp,
 	                                       LocalDateTime upperBoundTimeStamp) {
-		return  this.requestInfoRepository.findByFilter(name, null,
+		return  this.historyInfoRepository.findByFilter(name, null,
 		                                                null, null,
 		                                                lowerBoundTimeStamp, upperBoundTimeStamp);
 	}
-	List<RequestInfo> getTimingDataForNode(String name) {
+	List<HistoryInfo> getTimingDataForNode(String name) {
 		return getTimingDataForNode(name, null, null);
 	}
 

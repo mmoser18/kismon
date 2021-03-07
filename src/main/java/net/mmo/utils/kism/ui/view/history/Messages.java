@@ -3,14 +3,14 @@
  * @since 13.11.2020
  */
 
-package net.mmo.utils.kism.ui.view.results;
+package net.mmo.utils.kism.ui.view.history;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 public class Messages
 {
-	private static final String BUNDLE_NAME = "net.mmo.utils.kism.ui.view.results.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "net.mmo.utils.kism.ui.view.history.messages"; //$NON-NLS-1$
 
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 

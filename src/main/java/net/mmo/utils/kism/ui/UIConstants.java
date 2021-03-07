@@ -15,7 +15,7 @@ public class UIConstants
 	public final static String UNDEFINED_STRING = Messages.getString("FieldValue.Undefined"); //$NON-NLS-1$
 
 	public final static String NodeFormField = "node-form-field-"; //$NON-NLS-1$
-	public final static String ResultViewField = "result-view-field-"; //$NON-NLS-1$
+	public final static String HistoryViewField = "result-view-field-"; //$NON-NLS-1$
 
 	/** class name to mark combined fields */
 	public static final String CombinedClassName = "node-form-field-combined"; //$NON-NLS-1$

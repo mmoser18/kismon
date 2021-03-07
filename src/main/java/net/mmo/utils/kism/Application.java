@@ -2,7 +2,7 @@ package net.mmo.utils.kism;
 
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.backend.service.RequestInfoService;
+import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.utils.AppProperties;
@@ -23,7 +23,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 public class Application extends SpringBootServletInitializer
 {
 	// constructor with autowired beans:
-	Application(RequestInfoService requestInfoService) {
+	Application(HistoryInfoService requestInfoService) {
 		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		LeafNode.requestInfoService = requestInfoService;
 	}
