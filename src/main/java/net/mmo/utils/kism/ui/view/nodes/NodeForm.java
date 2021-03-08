@@ -226,7 +226,13 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 			@Override
 			protected void handlePropertyChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
-				NodeForm.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+				try {
+					NodeForm.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+				} catch (Exception ex) {
+					log.error("exception handling change-event for '" + sourceNode.getName() //$NON-NLS-1$
+					        + "' [property: " + propertyName + "] "  //$NON-NLS-1$ //$NON-NLS-2$
+					        + oldValue + " --> " + newValue, ex); //$NON-NLS-1$
+				}
 			}
 			// for better log-messages:
 			@Override

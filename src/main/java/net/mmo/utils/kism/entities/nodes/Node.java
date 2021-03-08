@@ -165,7 +165,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.applicable != applicable) {
 			boolean oldApplicable = this.applicable;
 			this.applicable = applicable;
-			informOnPropertyChange(PROPERTYNAME_STATE, oldApplicable, applicable);
+			informOnPropertyChange(PROPERTYNAME_APPLICABLE, oldApplicable, applicable);
 			if (this.parent != null) this.parent.deriveNewState();
 		}
 	}

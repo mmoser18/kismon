@@ -553,6 +553,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				return;
 			}
 			this.form.clearListeners();
+			this.formWrapper.remove(this.form);
 		}
 		try {
 			NodeForm<N> newForm;
