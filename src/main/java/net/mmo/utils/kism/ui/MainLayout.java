@@ -20,10 +20,15 @@ import net.mmo.utils.kism.ui.view.history.HistoryInfoTable;
 import net.mmo.utils.kism.ui.view.nodes.NodeView;
 
 @CssImport("./styles/shared-styles.css")
+@CssImport(value = "./styles/vaadin-checkbox-styles.css", themeFor = "vaadin-checkbox")
 @CssImport(value = "./styles/vaadin-combo-box-styles.css", themeFor = "vaadin-combo-box")
+@CssImport(value = "./styles/vaadin-form-layout-styles.css", themeFor = "vaadin-form-layout")
+@CssImport(value = "./styles/vaadin-date-time-picker-styles.css", themeFor = "vaadin-date-time-picker")
+@CssImport(value = "./styles/vaadin-date-time-picker-custom-field-styles.css", themeFor = "vaadin-date-time-picker-custom-field")
 @CssImport(value = "./styles/vaadin-form-layout-styles.css", themeFor = "vaadin-form-layout")
 @CssImport(value = "./styles/vaadin-integer-field-styles.css", themeFor = "vaadin-integer-field")
 @CssImport(value = "./styles/vaadin-number-field-styles.css", themeFor = "vaadin-number-field")
+@CssImport(value = "./styles/vaadin-select-styles.css", themeFor = "vaadin-select")
 @CssImport(value = "./styles/vaadin-text-area-styles.css", themeFor = "vaadin-text-area")
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./styles/vaadin-upload-styles.css", themeFor = "vaadin-upload")

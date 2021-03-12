@@ -229,13 +229,28 @@
 		</dependency>
 		-->
 
-		<!-- Using in-memory H2 Database -->
+		<!-- Using in-memory database H2 -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		
+		<!--  -->
+		<!-- Using PostGres DB ->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-   -->
+		<!-- Using PostGres DB ->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-  -->
+
 		<!-- required when using Vaadin BeanValidators: -->
 		<!-- Hibernate validator - Bean validation API Implementation -->
 		<dependency>

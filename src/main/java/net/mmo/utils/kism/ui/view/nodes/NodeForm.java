@@ -181,10 +181,21 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.header.setText(String.format(header, Messages.getString("NodeForm.Header.Type." + this.getClass().getSimpleName()))); //$NON-NLS-1$
 	}
 
-	public boolean setNode(N newNode) {
+
+	/**
+	 * Sets form to new node.
+	 *
+	 * @param newNode If newNode == null this signals that we want to leave the
+	 *            current node. If there are pending/unsaved changes the user
+	 *            will be asked, unless abandonChanges is true.
+	 * @param abandonChanges
+	 * @return whether we actually switched to the new form. False if there were
+	 *         changes and the user responded with "cancel/stayOnNode"
+	 */
+	public boolean setNode(N newNode, boolean abandonChanges) {
 		log.debug("NodeForm.setNode({})", newNode); //$NON-NLS-1$
 		if (this.node != null) {
-			if (hasUiChanges()) {
+			if (hasUiChanges() && !abandonChanges) {
 				log.debug("we have unsaved UI changes!"); //$NON-NLS-1$
 				new ConfirmDialog(Messages.getString("NodeForm.UnsavedChanges.Label"), //$NON-NLS-1$
 				                  Messages.getString("NodeForm.UnsavedChanges.Question"), //$NON-NLS-1$
@@ -351,13 +362,13 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	// the following were introduced to be able to "extend" the binder with "sub-binders"
 
 	protected void readBean(N n) {
-		log.info("readBean node={}", n); //$NON-NLS-1$
+		log.debug("readBean node={}", n); //$NON-NLS-1$
 		this.binder.readBean(n);
 		setUiChanges(false);
 	}
 
 	protected void writeBean(N n) throws ValidationException {
-		log.info("writeBean node={}", n); //$NON-NLS-1$
+		log.debug("writeBean node={}", n); //$NON-NLS-1$
 		this.binder.writeBean(n);
 	}
 

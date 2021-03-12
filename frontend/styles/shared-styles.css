@@ -49,23 +49,6 @@
 	width: 100%;
 }
 
-vaadin-form-layout {
-	align-items: flex-start;
-}
-
-vaadin-vertical-layout vaadin-horizontal-layout {
-	/* margin-top: 10px; */
-	margin-top: 0px;
-	margin-bottom: 0px;
-	padding-top: 0px;
-	padding-bottom: 0px;
-	align-items: stretch;
-}
-
-.history-view-toolbar {
-	align-items: center;
-}
-
 vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-field-'],vaadin-number-field[class^='node-form-field-'],vaadin-integer-field[class^='node-form-field-'],vaadin-checkbox[class^='node-form-field-'],vaadin-combo-box[class^='node-form-field-'],vaadin-select[class^='node-form-field-'],vaadin-date-time-picker[class^='node-form-field-'],vaadin-upload,vaadin-horizontal-layout[class^='node-form-field-'],vaadin-accordion[class^='node-form-field-'] {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -73,16 +56,8 @@ vaadin-text-field[class^='node-form-field-'],vaadin-text-area[class^='node-form-
 	padding-bottom: 0px;
 }
 
-vaadin-vertical-layout.label-padding {
-	/* margin-top: 10px; */
-	margin-top: 0px;
-	margin-bottom: 0px;
-	padding-top: 0px;
-	padding-bottom: 0px;
-	align-items: stretch;
-}
-
-.node-form-field-combined {
+.fields-combined {
+	margin-left: 12px;
 	align-items: baseline;
 }
 
@@ -90,9 +65,48 @@ vaadin-vertical-layout.label-padding {
 	margin-left: 20px	
 }
 
+vaadin-form-layout {
+	align-items: flex-start;
+}
+
+.history-view-toolbar {
+	margin-top: 25px;
+	margin-bottom: 0px;
+	margin-left: 25px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	display: flex;
+	justify-content: flex-center; /* space-evenly; */
+	align-items: center;
+	/* width: 100%; */
+}
+
+.history-view-field-filters {
+	margin: 0px;
+	padding: 0px;
+	width: 10em;
+}
+
+.history-view-field-filter-name {
+	margin-top: 15px;
+	padding: 0px;
+}
+.history-view-field-filter-type {
+	margin-top: 0px;
+	padding: 0px;
+}
+
+.history-view-field-filter-type vaadin-select-text-field {
+	margin: 0px;
+	padding: 0px;
+}
+
 vaadin-button {
-	margin-left: 5px;
-	margin-right: 5px;
+	margin: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;	
+	padding-left: 2px;
+	padding-right: 2px;
 }
 
 vaadin-combo-box {
@@ -147,6 +161,18 @@ vaadin-upload {
 	flex-direction: column;
 }
 
+.history-view-field-duration-extremes {
+	padding: 0px;
+	margin: 3px; 
+	width: 12em; /* for some reason this does not work while the other values are applied! ||-( */
+}
+
+.history-view-field-timestamp-extremes {
+	padding: 0px;
+	margin: 3px; 
+	width: 26em; /* for some reason this does not work while the other values are applied! ||-( */
+}
+
 vaadin-horizontal-layout[class^='history-view-field-'],vaadin-vertical-layout[class^='history-view-field-'],vaadin-text-field[class^='history-view-field-'],vaadin-number-field[class^='history-view-field-'],vaadin-integer-field[class^='history-view-field-'],vaadin-combo-box[class^='history-view-field-'],vaadin-date-time-picker-custom-field[class^='history-view-field-'],vaadin-date-time-picker[class^='history-view-field-'],vaadin-time-picker[class^='history-view-field-'],vaadin-date-time-picker-custom-field {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -158,24 +184,6 @@ vaadin-date-time-picker-custom-field {
 	margin: 0px;
 	padding: 0px;
 }
-
-.history-view .history-view-duration-extremes {
-	padding: 0px;
-	margin: 3px; 
-/*	align-items: stretch; */
-}
-
-.history-view .history-view-timestamp-extremes {
-	padding: 0px;
-	margin: 3px; 
-/*	align-items: stretch; */
-}
-
-/*
-.history-view-field-duration-minimum .history-view-field-duration-maximum {
-	width: 20em;
-}
-*/
 
 @media all and (max-width: 1100px) {
 	.list-view.editing .list-view-toolbar, .list-view.editing .contact-grid 

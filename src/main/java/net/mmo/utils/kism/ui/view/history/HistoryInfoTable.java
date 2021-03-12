@@ -1,18 +1,11 @@
 package net.mmo.utils.kism.ui.view.history;
 
-import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
-import static net.mmo.utils.kism.ui.UIConstants.HistoryViewField;
-import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +14,6 @@ import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
-import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
@@ -39,20 +31,6 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
-	// public to allow access by test classes
-	public static final String DurationMinimumFieldClassName = HistoryViewField + "duration-minimum"; //$NON-NLS-1$
-	public static final String DurationMaximumFieldClassName = HistoryViewField + "duration-maximum"; //$NON-NLS-1$
-	public static final String DurationExtremesFieldClassName = HistoryViewField + "duration-extremes"; //$NON-NLS-1$
-	public static final String TimestampMinimumFieldClassName = HistoryViewField + "timestamp-minimum"; //$NON-NLS-1$
-	public static final String TimestampMaximumFieldClassName = HistoryViewField + "timestamp-maximum"; //$NON-NLS-1$
-	public static final String TimestampExtremesFieldClassName = HistoryViewField + "timestamp-extremes"; //$NON-NLS-1$
-
-	protected NumberField durationMinimum;
-	protected NumberField durationMaximum;
-
-	protected DateTimePicker timestampMinimum;
-	protected DateTimePicker timestampMaximum;
-
 	protected Grid<HistoryInfo> grid;
 
 
@@ -68,47 +46,6 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 		this.nameFilter.addValueChangeListener(e -> { if (e.isFromClient()) { resetMinMaxValues(); refreshData(); }});
 		this.typeFilter.addValueChangeListener(e -> { if (e.isFromClient()) { resetMinMaxValues(); refreshData(); }});
 
-		this.durationMinimum = new NumberField();
-		this.durationMaximum = new NumberField();
-
-		this.durationMinimum.setLabel(Messages.getString("HistoryTable.Duration.Minimum.Label")); //$NON-NLS-1$
-		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
-		this.durationMinimum.setThemeName(LabelPaddingTheme);
-		this.durationMinimum.setHasControls(true);
-		this.durationMinimum.setWidth("12em"); //$NON-NLS-1$
-		this.durationMinimum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
-
-		this.durationMaximum.setLabel(Messages.getString("HistoryTable.Duration.Maximum.Label")); //$NON-NLS-1$
-		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
-		this.durationMaximum.setThemeName(LabelPaddingTheme);
-		this.durationMaximum.setHasControls(true);
-		this.durationMaximum.setWidth("12em"); //$NON-NLS-1$
-		this.durationMaximum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
-
-		VerticalLayout durationExtremes = new VerticalLayout();
-		durationExtremes.setClassName(DurationExtremesFieldClassName);
-		durationExtremes.addClassName(CombinedClassName);
-		durationExtremes.add(this.durationMinimum, this.durationMaximum);
-
-		this.timestampMinimum = new DateTimePicker();
-		this.timestampMaximum = new DateTimePicker();
-
-		this.timestampMinimum.setLabel(String.format(Messages.getString("HistoryTable.Timestamp.Minimum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
-		this.timestampMinimum.setClassName(TimestampMinimumFieldClassName);
-		this.timestampMinimum.setThemeName(LabelPaddingTheme);
-		this.timestampMinimum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
-
-		this.timestampMaximum.setLabel(String.format(Messages.getString("HistoryTable.Timestamp.Maximum.Label"), UIConstants.EMPTY_STRING)); //$NON-NLS-1$
-		this.timestampMaximum.setClassName(TimestampMaximumFieldClassName);
-		this.timestampMaximum.setThemeName(LabelPaddingTheme);
-		this.timestampMaximum.addValueChangeListener(e -> { if (e.isFromClient()) { refreshData(); }});
-
-		VerticalLayout timestampExtremes = new VerticalLayout();
-		timestampExtremes.setClassName(TimestampExtremesFieldClassName);
-		timestampExtremes.addClassName(CombinedClassName);
-		timestampExtremes.add(this.timestampMinimum, this.timestampMaximum);
-
-		toolbar.add(durationExtremes, timestampExtremes, this.refreshData);
 		return toolbar;
 	}
 
@@ -161,7 +98,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 	@Override
 	protected void refreshData() {
 		log.info("refreshData"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this::fetchData, this::updateTable);
+		UIHandlerSupport.executeLater(this, this::fetchData, this::updateTable);
 	}
 
 	protected List<HistoryInfo> fetchData() {

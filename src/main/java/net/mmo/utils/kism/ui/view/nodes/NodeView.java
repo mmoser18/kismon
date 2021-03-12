@@ -453,7 +453,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
 		log.debug("NodeView.deleteNode[DeleteEvent] '{}'", node.getName()); //$NON-NLS-1$
-		if (!this.form.setNode(null)) { // signal that we want to leave that node:
+		if (!this.form.setNode(null, true)) { // signal that we want to leave that node:
 			return; // if there are unsaved changes remain on form's current node
 		}
 		deleteNodes(Collections.singletonList(node));
@@ -548,12 +548,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.info("editNode {} (parent='{}')", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (this.form != null) {
 			N currentNode = this.form.getNode();
-			if (!this.form.setNode(null)) { // signal that we want to leave that node:
+			if (!this.form.setNode(null, false)) { // signal that we want to leave that node:
 				select(currentNode); // if there are unsaved changes remain on form's current node
 				return;
 			}
 			this.form.clearListeners();
-			this.formWrapper.remove(this.form);
 		}
 		try {
 			NodeForm<N> newForm;
@@ -576,20 +575,20 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 			this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
 			this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
-			this.form.setNode(node);
+			this.form.setNode(node, false);
 
 			this.form.setVisible(true);
 			addClassName("editing"); //$NON-NLS-1$
 		} catch (java.lang.IllegalStateException ex) {
 			log.error("WTF?", ex); //$NON-NLS-1$
-			this.content.removeAll(); // remove old form
+			this.formWrapper.removeAll(); // remove old form
 			this.form = null;
 		}
 	}
 
 	private void closeEditor() {
 		log.debug("NodeView.closeEditor"); //$NON-NLS-1$
-		this.form.setNode(null);
+		this.form.setNode(null, false);
 		this.form.setVisible(false);
 		removeClassName("editing"); //$NON-NLS-1$
 	}

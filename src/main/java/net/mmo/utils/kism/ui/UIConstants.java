@@ -15,10 +15,10 @@ public class UIConstants
 	public final static String UNDEFINED_STRING = Messages.getString("FieldValue.Undefined"); //$NON-NLS-1$
 
 	public final static String NodeFormField = "node-form-field-"; //$NON-NLS-1$
-	public final static String HistoryViewField = "result-view-field-"; //$NON-NLS-1$
+	public final static String HistoryViewField = "history-view-field-"; //$NON-NLS-1$
 
 	/** class name to mark combined fields */
-	public static final String CombinedClassName = "node-form-field-combined"; //$NON-NLS-1$
+	public static final String CombinedClassName = "fields-combined"; //$NON-NLS-1$
 	/** theme use for fields that should have its label closer to the value field than default */
 	public final static String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
 	/** theme use for fields that should be displayed in monospaced font */

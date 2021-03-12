@@ -16,7 +16,7 @@
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "test-nodes",
 		"description" : "Just an example list of all possible nodes types",
-		"applicable" : true,
+		"applicable" : false,
 		"properties" : { },
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
@@ -203,7 +203,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -456,7 +456,7 @@
 					"description" : "ZHQuest Application Server QA services WSDL",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -675,7 +675,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],
@@ -1233,40 +1233,16 @@
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
-					"checkResults" : false,
+					"checkResults" : true,
 					"url" : "${mock_url}",
 					"resultChecker" : {
-						"condition" : null,
-						"operand" : ""
+						"condition" : "Contains",
+						"operand" : "<title>KStA Mocker</title>"
 					},
 					"method" : "GET",
 					"targetUid" : "${mock_uid}",
 					"targetPwd" : "${mock_pwd}",
 					"includeBasicAuthHeader" : true,
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
-					"headers" : "",
-					"payload" : "",
-					"acceptableReturnCodes" : "200"
-				}, {
-					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "WPS DMZ Application server",
-					"description" : "WPS DMZ Application server connection",
-					"applicable" : true,
-					"properties" : { },
-					"active" : true,
-					"period" : 60,
-					"timeout" : 15,
-					"checkResults" : true,
-					"url" : "${app_prot}${app_host}${app_port}",
-					"resultChecker" : {
-						"condition" : "Contains",
-						"operand" : "Apache Tomcat"
-					},
-					"method" : "GET",
-					"targetUid" : "",
-					"targetPwd" : "",
-					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1285,7 +1261,7 @@
 					"url" : "${app_url}",
 					"resultChecker" : {
 						"condition" : "Contains",
-						"operand" : ""
+						"operand" : "Steueramt - WPS"
 					},
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
@@ -1301,7 +1277,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
@@ -1335,7 +1311,7 @@
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RWT DMZ DB-ping",
-					"description" : "ping RWT DMZ DB\n",
+					"description" : "ping RWT DMZ DB",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
@@ -1379,11 +1355,11 @@
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
-					"checkResults" : false,
+					"checkResults" : true,
 					"url" : "${app_url}",
 					"resultChecker" : {
-						"condition" : null,
-						"operand" : ""
+						"condition" : "Contains",
+						"operand" : "<title>Regelwerk-Tool</title>"
 					},
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
@@ -1418,7 +1394,7 @@
 					"description" : "ping RWT DMZ DB\n",
 					"applicable" : true,
 					"properties" : { },
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1437,7 +1413,7 @@
 					"description" : "send specific query to RWT Test DB",
 					"applicable" : true,
 					"properties" : { },
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1456,7 +1432,7 @@
 					"description" : "RWT Application server Test",
 					"applicable" : true,
 					"properties" : { },
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,

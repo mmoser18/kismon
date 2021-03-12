@@ -276,8 +276,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 	}
 
 	@Override
-	public boolean setNode(N n) {
-		boolean res = super.setNode(n);
+	public boolean setNode(N n, boolean abandonChanges) {
+		boolean res = super.setNode(n, abandonChanges);
 		adaptAcceptableReturnCodesVisibility(n != null ? n.isCheckResults() : false);
 		updateRequestInfo();
 		return res;

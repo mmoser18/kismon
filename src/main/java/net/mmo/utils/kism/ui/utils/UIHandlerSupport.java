@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.Command;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,49 +21,60 @@ public class UIHandlerSupport
 {
 	private static ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-	private final static boolean DO_SYNC = true;
+	private final static boolean DO_ASYNC = true;
 	private final static boolean RESERVE_UI_BEFORE_UPDATE = true;
 
 	private UIHandlerSupport() {
-		// should bever be called...
+		// should never be called...
 	}
 
-	public static <T extends Object> void executeLater(Command longRunningActivity) {
+	public static <T extends Object> void executeLater(Component comp,
+                                                       Command longRunningActivity) {
 		log.info("executeLater({})", longRunningActivity); //$NON-NLS-1$
-		executeLater(() -> longRunningActivity, null);
+		executeLater(comp, () -> longRunningActivity, null);
 	}
 
-	public static <T extends Object> void executeLater(Supplier<T> longRunningActivity,
+	public static <T extends Object> void executeLater(Component comp,
+                                                       Supplier<T> longRunningActivity,
 	                                                   Consumer<T> uiActivity) {
 		log.info("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
-		if (DO_SYNC) {
-			executeLaterInternal(longRunningActivity, uiActivity);
-		} else { // offload the heavy lifting to a different thread:
+		if (DO_ASYNC) { // offload the heavy lifting to a different thread:
 			executorService.submit(new Runnable()
 				{
 					@Override
 					public void run () {
-						executeLaterInternal(longRunningActivity, uiActivity);
+						executeLaterInternal(comp, longRunningActivity, uiActivity);
 					}
 				});
+		} else {
+			executeLaterInternal(comp, longRunningActivity, uiActivity);
 		}
 	}
 
-	public static <T extends Object> void executeLaterInternal(Supplier<T> longRunningActivity,
+	public static <T extends Object> void executeLaterInternal(Component comp,
+	                                                           Supplier<T> longRunningActivity,
 	                                                           Consumer<T> uiActivity) {
 		final T result; // final to make the lambda happy...
 		if (longRunningActivity != null) {
-			log.info("longRunningActivity:"); //$NON-NLS-1$
+			log.info("longRunningActivity start:"); //$NON-NLS-1$
 			result = longRunningActivity.get();
+			log.info("longRunningActivity done."); //$NON-NLS-1$
 		} else {
 			result = null;
 		}
 		if (uiActivity != null) {
-			log.info("uiActivity:"); //$NON-NLS-1$
 			if (RESERVE_UI_BEFORE_UPDATE) {
-				UI.getCurrent().access(() -> uiActivity.accept(result));
+				log.info("obtaining GUI access:"); //$NON-NLS-1$
+				comp.getUI().ifPresentOrElse((ui) -> ui.access(() -> {
+				                            	log.info("uiActivity start:"); //$NON-NLS-1$
+				                            	uiActivity.accept(result);
+				                            	log.info("uiActivity done."); //$NON-NLS-1$
+				                             }),
+				                             () -> log.info("no UI obtained.")); //$NON-NLS-1$
 			} else {
+				log.info("uiActivity start:"); //$NON-NLS-1$
 				uiActivity.accept(result);
+				log.info("uiActivity done."); //$NON-NLS-1$
 			}
 		}
 	}

@@ -215,7 +215,7 @@ abstract public class LeafNode extends Node
 			}
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
 			resultMsg = getRequestResult();
-			if (resultMsg == null) resultMsg = ex.getMessage();
+			if (resultMsg == null) resultMsg = ExceptionUtils.exceptionRootCauseMsg(ex);
 		}
 		requestInfoService.save(new HistoryInfo(getName(), getClass(), getDuration(), getTimestamp(), resultMsg));
 	}

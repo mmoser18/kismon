@@ -52,7 +52,6 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 	protected Chart chart;
 	LocalDateTime lastUpdate;
 
-
 	public HistoryInfoGraph(HistoryInfoService historyInfoService) {
 		super(historyInfoService);
 	}
@@ -70,7 +69,8 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 		this.selectNone = new Button(Messages.getString("HistoryGraph.Button.SelectNone.Label")); //$NON-NLS-1$
 		this.selectNone.addClickListener(e -> selectNone());
 
-		toolbar.add(this.selectAll, this.selectNone, this.refreshData);
+		toolbar.addComponentAtIndex(toolbar.getComponentCount()-1, this.selectAll);
+		toolbar.addComponentAtIndex(toolbar.getComponentCount()-1, this.selectNone);
 		return toolbar;
 	}
 
@@ -115,13 +115,14 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 	@Override
 	protected void refreshData() {
 		log.info("refreshData"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this::fetchData, this::updateGraph);
+		UIHandlerSupport.executeLater(this, this::fetchData, this::updateGraph);
 	}
 
 	/** This method fetches all data to be displayed from the DB and converts it to the DataSeries
 	 * format expected by the chart */
 	protected List<Series> fetchData() {
-		log.debug("fetchData"); //$NON-NLS-1$
+		log.info("fetchData"); //$NON-NLS-1$
+
 		ZoneId myZoneId = ZoneId.systemDefault();
 		this.lastUpdate = LocalDateTime.now();
 
@@ -160,15 +161,15 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 	 * @param timingData
 	 */
 	protected void updateGraph(List<Series> timingData) {
-		log.debug("updateGraph"); //$NON-NLS-1$
+		log.info("updateGraph"); //$NON-NLS-1$
 		Configuration conf = this.chart.getConfiguration();
 		conf.setSeries(timingData);
-		this.chart.drawChart();
+		this.chart.drawChart(true);
 	}
 
 	protected void adjustVisibility() {
 		log.info("adjustVisibility"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this::getFilteredNodeNames, this::updateVisibility);
+		UIHandlerSupport.executeLater(this, this::getFilteredNodeNames, this::updateVisibility);
 	}
 
 	protected void updateVisibility(List<String> filteredNodeNames) {
@@ -179,16 +180,16 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 		log.debug("forAllSeriesDo"); //$NON-NLS-1$
 		Configuration conf = this.chart.getConfiguration();
 		conf.getSeries().forEach(series -> func.accept((DataSeries)series));
-		this.chart.drawChart();
+		this.chart.drawChart(true);
 	}
 
 	private void selectNone() {
 		log.info("selectNone"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
+		UIHandlerSupport.executeLater(this, null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
 	}
 
 	private void selectAll() {
 		log.info("selectAll"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
+		UIHandlerSupport.executeLater(this, null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
 	}
 }

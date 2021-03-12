@@ -20,4 +20,11 @@ public class ExceptionUtils
 		}
 		return buf.toString();
 	}
+	public static String exceptionRootCauseMsg(Throwable start) {
+		String msg = null;
+		for (Throwable t = start; t != null; t = t.getCause()) {
+			msg = t.getMessage();
+		}
+		return msg;
+	}
 }
