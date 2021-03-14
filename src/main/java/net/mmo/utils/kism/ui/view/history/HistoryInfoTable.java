@@ -1,11 +1,11 @@
 package net.mmo.utils.kism.ui.view.history;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,6 @@ import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
-import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -27,7 +26,7 @@ import org.springframework.stereotype.Component;
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
-public class HistoryInfoTable extends AbstractHistoryInfoView
+public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Object>>
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
@@ -37,16 +36,6 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 	// This gets autowired but still puzzled which annotation causes this...
 	public HistoryInfoTable(HistoryInfoService historyInfoService) {
 		super(historyInfoService);
-	}
-
-	@Override
-	protected HorizontalLayout getToolbar() {
-		HorizontalLayout toolbar = super.getToolbar();
-
-		this.nameFilter.addValueChangeListener(e -> { if (e.isFromClient()) { resetMinMaxValues(); refreshData(); }});
-		this.typeFilter.addValueChangeListener(e -> { if (e.isFromClient()) { resetMinMaxValues(); refreshData(); }});
-
-		return toolbar;
 	}
 
 	@Override
@@ -63,12 +52,12 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 		this.grid.addColumn((info) -> NodeTypeLabelProvider.getNodeTypeLabel(info.getNodeType()))
 			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName." + "Type")) //$NON-NLS-1$ //$NON-NLS-2$
 			;
-		this.grid.addColumn((info) -> info.getDuration())
-			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Duration")) //$NON-NLS-1$
-			.setTextAlign(ColumnTextAlign.END)
-			;
 		this.grid.addColumn((info) -> info.getTimestamp())
 			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Timestamp")) //$NON-NLS-1$
+			.setTextAlign(ColumnTextAlign.END)
+			;
+		this.grid.addColumn((info) -> info.getDuration())
+			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Duration")) //$NON-NLS-1$
 			.setTextAlign(ColumnTextAlign.END)
 			;
 		this.grid.addColumn("result") //$NON-NLS-1$
@@ -88,94 +77,33 @@ public class HistoryInfoTable extends AbstractHistoryInfoView
 		this.content.add(this.grid);
 	}
 
-	protected void resetMinMaxValues() {
-		this.durationMinimum.setValue(null);
-		this.durationMaximum.setValue(null);
-		this.timestampMinimum.setValue(null);
-		this.timestampMaximum.setValue(null);
+	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
+	@Override
+	protected HashMap<String, Object> fetchData() {
+		log.info("HistoryInfoTable.fetchData"); //$NON-NLS-1$
+
+		HashMap <String, Object> res = super.getMinMaxInfo();
+
+		List<HistoryInfo> data = this.historyInfoService.findByFilter((String)res.get("nameFilterValue"), (NodeType)res.get("nodeTypeFilterValue"), //$NON-NLS-1$ //$NON-NLS-2$
+		                                                              (Double)res.get("minDurationValue"), (Double)res.get("maxDurationValue"), //$NON-NLS-1$ //$NON-NLS-2$
+		                                                              (LocalDateTime)res.get("minTimestampValue"), (LocalDateTime)res.get("maxTimestampValue")); //$NON-NLS-1$ //$NON-NLS-2$
+
+		log.info("fetchData-result: ", data != null ? "found "+ data.size() + " entries": "null"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+
+		res.put("data", data); //$NON-NLS-1$
+		return res;
 	}
 
 	@Override
-	protected void refreshData() {
-		log.info("refreshData"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this, this::fetchData, this::updateTable);
-	}
+	protected void updateView(HashMap <String, Object> res) {
+		log.info("HistoryInfoTable.updateTable"); //$NON-NLS-1$
+		super.updateMinMaxFields(res);
 
-	protected List<HistoryInfo> fetchData() {
-		log.info("fetchData"); //$NON-NLS-1$
-		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
-		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
+		// update grid data:
+		@SuppressWarnings("unchecked")
+		List<HistoryInfo> data = (List<HistoryInfo>)res.get("data"); //$NON-NLS-1$
 
-		// adjust min/maxDuration:
-		Double minDurationValue = this.durationMinimum.getValue();
-		Double maxDurationValue = this.durationMaximum.getValue();
-
-		Double minDuration = this.historyInfoService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
-		Double maxDuration = this.historyInfoService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
-
-		if (minDuration != null) {
-			double minDurationConverted = minDuration;
-			this.durationMinimum.setLabel(String.format(Messages.getString("HistoryTable.Duration.Minimum.LblWithMin"), minDurationConverted)); //$NON-NLS-1$
-			this.durationMinimum.setMin(minDurationConverted);
-		}
-		if (maxDuration != null) {
-			double maxDurationConverted = maxDuration;
-			this.durationMaximum.setLabel(String.format(Messages.getString("HistoryTable.Duration.Maximum.LblWithMax"), maxDurationConverted)); //$NON-NLS-1$
-			this.durationMaximum.setMax(maxDurationConverted);
-		}
-
-		// limit the values to [min..max] (if available):
-		if (minDuration != null && (minDurationValue == null || minDurationValue < minDuration)) {
-			minDurationValue = minDuration;
-		}
-		if (maxDuration != null && (maxDurationValue == null || maxDurationValue > maxDuration)) {
-			maxDurationValue = maxDuration;
-		}
-
-		if (minDurationValue != null) {
-			this.durationMinimum.setValue(minDurationValue);
-			// set the max/min to the respective other value: (is this a clever idea?)
-			this.durationMaximum.setMin(minDurationValue);
-		}
-		if (maxDurationValue != null) {
-			this.durationMaximum.setValue(maxDurationValue);
-			// set the max/min to the respective other value: (is this a clever idea?)
-			this.durationMinimum.setMax(maxDurationValue);
-		}
-
-		// adjust min/maxTimestamp:
-		LocalDateTime minTimestampValue = this.timestampMinimum.getValue();
-		LocalDateTime maxTimestampValue = this.timestampMaximum.getValue();
-
-		LocalDateTime minTimestamp = this.historyInfoService.findLowestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
-		LocalDateTime maxTimestamp = this.historyInfoService.findHighestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
-
-		// limit the values to [min..max] (if available):
-		if (minTimestamp != null && (minTimestampValue == null || minTimestampValue.compareTo(minTimestamp) < 0)) {
-			minTimestampValue = minTimestamp;
-		}
-		if (maxTimestamp != null && (maxTimestampValue == null || maxTimestampValue.compareTo(maxTimestamp) > 0)) {
-			maxTimestampValue = maxTimestamp;
-		}
-
-		if (minTimestampValue != null) {
-			this.timestampMinimum.setValue(minTimestampValue);
-			// set the max/min to the respective other value: (is this a clever idea?)
-			// this.timestampMaximum.setMin(minTimestampValue);
-		}
-		if (maxTimestampValue != null) {
-			this.timestampMaximum.setValue(maxTimestampValue);
-			// set the max/min to the respective other value: (is this a clever idea?)
-			// this.timestampMinimum.setMax(maxTimestampValue);
-		}
-
-		return this.historyInfoService.findByFilter(nameFilterValue, nodeTypeFilterValue,
-		                                            minDurationValue, maxDurationValue,
-		                                            null, null);
-	}
-
-	protected void updateTable(List<HistoryInfo> data) {
-		log.info("updateTable"); //$NON-NLS-1$
+		log.info("setting grid data:"); //$NON-NLS-1$
 		this.grid.setItems(data);
 	}
 }

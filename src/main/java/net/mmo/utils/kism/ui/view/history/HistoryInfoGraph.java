@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -33,15 +34,17 @@ import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
+import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
+import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 
 
 @Route(value = "history-graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
 @PageTitle("History Graph | " + CommonConstants.ApplicationFullName)
 @Slf4j
-public class HistoryInfoGraph extends AbstractHistoryInfoView
+public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Object>>
 {
 	private static final long serialVersionUID = -1954281705187898725L;
 	private static final boolean LEGENDS_AT_LEFT = false;
@@ -112,19 +115,19 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 		this.content.add(this.chart);
 	}
 
+	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
 	@Override
-	protected void refreshData() {
-		log.info("refreshData"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this, this::fetchData, this::updateGraph);
-	}
+	protected HashMap<String, Object> fetchData() {
+		log.info("HistoryInfoGraph.fetchData"); //$NON-NLS-1$
 
-	/** This method fetches all data to be displayed from the DB and converts it to the DataSeries
-	 * format expected by the chart */
-	protected List<Series> fetchData() {
-		log.info("fetchData"); //$NON-NLS-1$
+		HashMap <String, Object> res = super.getMinMaxInfo();
 
 		ZoneId myZoneId = ZoneId.systemDefault();
 		this.lastUpdate = LocalDateTime.now();
+
+		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
+		LocalDateTime minTimestampValue = (LocalDateTime)res.get("minTimestampValue"); //$NON-NLS-1$
+		LocalDateTime maxTimestampValue = (LocalDateTime)res.get("maxTimestampValue"); //$NON-NLS-1$
 
 		List<String> nodeNames = getFilteredNodeNames();
 		List<Series> timingData = new ArrayList<>(nodeNames.size());
@@ -132,7 +135,9 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 		nodeNames.forEach(name ->
 			{
 				log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
-				List<HistoryInfo> values = this.historyInfoService.findByFilter(name, null, null, null, null, null);
+				List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue,
+				                                                                null, null, // min-duration doesn't make sense for graphs
+				                                                                minTimestampValue, maxTimestampValue);
 
 				DataSeries timingSeries = new DataSeries();
 				timingSeries.setId(name);
@@ -153,15 +158,26 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView
 				timingData.add(timingSeries);
 			});
 		log.info("got timingData for {} series", timingData.size()); //$NON-NLS-1$
-		return timingData;
+
+		res.put("timingData", timingData); //$NON-NLS-1$
+
+		return res;
 	}
 
 	/**
 	 * This method takes the DataSeies data and assigns it to the chart
 	 * @param timingData
 	 */
-	protected void updateGraph(List<Series> timingData) {
-		log.info("updateGraph"); //$NON-NLS-1$
+	@Override
+	protected void updateView(HashMap <String, Object> res) {
+		log.info("HistoryInfoTable.updateTable"); //$NON-NLS-1$
+		super.updateMinMaxFields(res);
+
+		// update graph data:
+		@SuppressWarnings("unchecked")
+		List<Series> timingData = (List<Series>)res.get("timingData"); //$NON-NLS-1$
+
+		log.info("setting chart data:"); //$NON-NLS-1$
 		Configuration conf = this.chart.getConfiguration();
 		conf.setSeries(timingData);
 		this.chart.drawChart(true);
