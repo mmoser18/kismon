@@ -20,13 +20,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
 @Slf4j
 @PreserveOnRefresh
-public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
+public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 {
 	private static final long serialVersionUID = 5726368043436831511L;
 
@@ -67,11 +67,11 @@ public class JDBCConnectionForm extends IPConnectionForm<JDBCConnection>
 		// didn't pass the conventional URI check!
 		this.binder.forField(this.url)
 			// .withValidator(this.urlValidator) // the default validator can't cope with the JDBC-URLs
-			.bind(IPConnection::getUrl, IPConnection::setUrl);
+			.bind(TCPConnection::getUrl, TCPConnection::setUrl);
 
 		this.binder.forField(this.resultingURL)
 			// .withValidator(this.urlValidator) // the default validator can't cope with the JDBC-URLs
-			.bind(IPConnection::getResultingUrl, null);
+			.bind(TCPConnection::getResultingUrl, null);
 
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);

@@ -141,12 +141,18 @@
 			<groupId>javax.websocket</groupId>
 			<artifactId>javax.websocket-api</artifactId>
 		</dependency>
-		<!-- -->
+		<!-- contains a replacement for the DateTimePicker  -->
+		<dependency>
+			<groupId>org.vaadin.miki</groupId>
+			<artifactId>superfields</artifactId>
+			<version>0.10.0</version>
+		</dependency>
+		<!-- -->		
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-testbench</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency>		
 		<!-- -->
 
 		<!-- SpringBoot security (for login screen) -->
@@ -213,7 +219,7 @@
 			</exclusions>
 		</dependency>
 
-		<!--database dependencies -->
+		<!--database dependencies - this also enables autoconfiguration for the h2 database -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>

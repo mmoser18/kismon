@@ -6,8 +6,6 @@
 package net.mmo.utils.kism.entities.nodes.connections;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -17,7 +15,6 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
-import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
 @Entity
@@ -26,36 +23,19 @@ import net.mmo.utils.kism.entities.nodes.ResultChecker;
 // @Slf4j
 abstract public class IPConnection extends LeafNode
 {
-	private static final long serialVersionUID = -2584969925210734417L;
-
-//	protected String proxyHost;
-//	protected int    proxyPort;
-//	protected String proxyUid;
-//	protected String proxyPwd;
+	private static final long serialVersionUID = 120134114096068701L;
 
 	@SuppressWarnings("nls")
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	protected String url = "https://www.example.com:443";
+	protected String hostAddress = "www.example.com";
 
 	@JsonIgnore
-	protected transient String resultingUrl;
-
-	@OneToOne
-	@JoinColumn(name = "result_checker_id")
-	protected ResultChecker resultChecker;
+	protected transient String resultingHostAddress;
 
 
-	@JsonIgnore
-	public transient static String sslVersions;
-	@JsonIgnore
-	public transient static boolean disableHostNameVerification;
-	@JsonIgnore
-	public transient static boolean trustAllCertificates;
-
-
-	protected IPConnection() {
+	protected IPConnection() { // required for deserialization
 		super();
 	}
 
@@ -66,22 +46,22 @@ abstract public class IPConnection extends LeafNode
 	@Override
 	public void updateResolvableValues() {
 		super.updateResolvableValues();
-		updateResultingUrl();
+		updateResultingHostAddress();
 	}
 
-	public void setUrl(String url) {
-		if (!Objects.equal(this.url, url)) {
-			this.url = url;
-			updateResultingUrl();
+	public void setHostAddress(String hostAddress) {
+		if (!Objects.equal(this.hostAddress, hostAddress)) {
+			this.hostAddress = hostAddress;
+			updateResultingHostAddress();
 		}
 	}
 
-	private void updateResultingUrl() {
-		updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
+	private void updateResultingHostAddress() {
+		updateResultingValue(getHostAddress(), (str) -> setResultingHostAddress(str));
 	}
 
 	public String resultingUrlResolved() throws Exception {
-		return resultingFieldResolved(getUrl(), () -> getResultingUrl(), (str) -> setResultingUrl(str));
+		return resultingFieldResolved(getHostAddress(), () -> getResultingHostAddress(), (str) -> setResultingHostAddress(str));
 	}
 
 	@Override
@@ -89,13 +69,8 @@ abstract public class IPConnection extends LeafNode
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-//			.append(", proxyHost:").append(this.proxyHost) //$NON-NLS-1$
-//			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
-//			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
-//			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
-			.append(", url:").append(this.url) //$NON-NLS-1$
-			.append(", resultingUrl:").append(this.resultingUrl) //$NON-NLS-1$
-			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
+			.append(", hostAddress:").append(this.hostAddress) //$NON-NLS-1$
+			.append(", resultingHostAddress:").append(this.resultingHostAddress) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

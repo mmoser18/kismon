@@ -277,13 +277,22 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.name)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator(value ->
+			.withValidator((value, context) ->
 				{ // Explicit validator instance
-					return nodeService.getRootNodes().stream()
-						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
-						.filter(rootNode -> rootNode.getName().equals(value)) // same name as any other rootnode?
-						.findAny().isEmpty();
-				}, Messages.getString("NodeForm.Validator.RootName.MustBeUnique")) //$NON-NLS-1$
+					try {
+						this.getNode().onRootNodeDo((rootnode) -> rootnode.trickleDown((n) -> {
+							if (Objects.equals(n.getName(), value)) {
+								throw new RuntimeException(Messages.getString("NodeForm.Validator.NodeName.MustBeUnique")); //$NON-NLS-1$
+							}
+						}));
+						return nodeService.getRootNodes().stream()
+							.filter(rootNode -> rootNode != this.node) // not the same rootnode?
+							.filter(rootNode -> rootNode.getName().equals(value)) // same name as any other rootnode?
+							.findAny().isEmpty() ? ValidationResult.ok() : ValidationResult.error("xxx"); //$NON-NLS-1$
+					} catch (Throwable ex) {
+						return ValidationResult.error(Messages.getString("NodeForm.Validator.RootName.MustBeUnique")); //$NON-NLS-1$
+					}
+				})
 			.bind(Node::getName, Node::setName)
 		;
 

@@ -6,6 +6,8 @@
 package net.mmo.utils.kism.entities.nodes.connections;
 
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -15,27 +17,44 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
+import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
-/** Name should have been just "Connection" but that class name was already used by JDBC */
 @Entity
 @Setter
 @Getter
 // @Slf4j
 abstract public class TCPConnection extends LeafNode
 {
-	private static final long serialVersionUID = -2584969925210734417L;
+	private static final long serialVersionUID = 6679464784537111431L;
+
+//	protected String proxyHost;
+//	protected int    proxyPort;
+//	protected String proxyUid;
+//	protected String proxyPwd;
 
 	@SuppressWarnings("nls")
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	protected String hostAddress = "www.example.com";
+	protected String url = "https://www.example.com:443";
 
 	@JsonIgnore
-	protected transient String resultingHostAddress;
+	protected transient String resultingUrl;
+
+	@OneToOne
+	@JoinColumn(name = "result_checker_id")
+	protected ResultChecker resultChecker;
 
 
-	protected TCPConnection() { // required for deserialization
+	@JsonIgnore
+	public transient static String sslVersions;
+	@JsonIgnore
+	public transient static boolean disableHostNameVerification;
+	@JsonIgnore
+	public transient static boolean trustAllCertificates;
+
+
+	protected TCPConnection() {
 		super();
 	}
 
@@ -46,22 +65,22 @@ abstract public class TCPConnection extends LeafNode
 	@Override
 	public void updateResolvableValues() {
 		super.updateResolvableValues();
-		updateResultingHostAddress();
+		updateResultingUrl();
 	}
 
-	public void setHostAddress(String hostAddress) {
-		if (!Objects.equal(this.hostAddress, hostAddress)) {
-			this.hostAddress = hostAddress;
-			updateResultingHostAddress();
+	public void setUrl(String url) {
+		if (!Objects.equal(this.url, url)) {
+			this.url = url;
+			updateResultingUrl();
 		}
 	}
 
-	private void updateResultingHostAddress() {
-		updateResultingValue(getHostAddress(), (str) -> setResultingHostAddress(str));
+	private void updateResultingUrl() {
+		updateResultingValue(getUrl(), (str) -> setResultingUrl(str));
 	}
 
 	public String resultingUrlResolved() throws Exception {
-		return resultingFieldResolved(getHostAddress(), () -> getResultingHostAddress(), (str) -> setResultingHostAddress(str));
+		return resultingFieldResolved(getUrl(), () -> getResultingUrl(), (str) -> setResultingUrl(str));
 	}
 
 	@Override
@@ -69,8 +88,13 @@ abstract public class TCPConnection extends LeafNode
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-			.append(", hostAddress:").append(this.hostAddress) //$NON-NLS-1$
-			.append(", resultingHostAddress:").append(this.resultingHostAddress) //$NON-NLS-1$
+//			.append(", proxyHost:").append(this.proxyHost) //$NON-NLS-1$
+//			.append(", proxyPort:").append(this.proxyPort) //$NON-NLS-1$
+//			.append(", proxyUid:").append(this.proxyUid) //$NON-NLS-1$
+//			.append(", proxyPwd:").append(this.proxyPwd) //$NON-NLS-1$
+			.append(", url:").append(this.url) //$NON-NLS-1$
+			.append(", resultingUrl:").append(this.resultingUrl) //$NON-NLS-1$
+			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

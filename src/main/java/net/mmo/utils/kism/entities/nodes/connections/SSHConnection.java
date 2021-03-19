@@ -14,7 +14,7 @@ import org.hibernate.cfg.NotYetImplementedException;
 @Entity
 @Setter
 @Getter
-public class SSHConnection extends IPConnection
+public class SSHConnection extends TCPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
 
@@ -32,7 +32,7 @@ public class SSHConnection extends IPConnection
 	}
 
 	@Override
-	protected String getRequestResult() {
+	public String getRequestResult() {
 		return "tbd"; //$NON-NLS-1$
 	}
 }

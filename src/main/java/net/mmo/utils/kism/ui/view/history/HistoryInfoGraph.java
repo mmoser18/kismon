@@ -49,11 +49,12 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	private static final long serialVersionUID = -1954281705187898725L;
 	private static final boolean LEGENDS_AT_LEFT = false;
 
+	protected final static String TimingDataKey = "timingData"; //$NON-NLS-1$
+
 	protected Button selectAll;
 	protected Button selectNone;
 
 	protected Chart chart;
-	LocalDateTime lastUpdate;
 
 	public HistoryInfoGraph(HistoryInfoService historyInfoService) {
 		super(historyInfoService);
@@ -74,6 +75,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 		toolbar.addComponentAtIndex(toolbar.getComponentCount()-1, this.selectAll);
 		toolbar.addComponentAtIndex(toolbar.getComponentCount()-1, this.selectNone);
+
 		return toolbar;
 	}
 
@@ -120,14 +122,13 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	protected HashMap<String, Object> fetchData() {
 		log.info("HistoryInfoGraph.fetchData"); //$NON-NLS-1$
 
-		HashMap <String, Object> res = super.getMinMaxInfo();
+		HashMap <String, Object> res = getMinMaxInfo();
 
 		ZoneId myZoneId = ZoneId.systemDefault();
-		this.lastUpdate = LocalDateTime.now();
 
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
-		LocalDateTime minTimestampValue = (LocalDateTime)res.get("minTimestampValue"); //$NON-NLS-1$
-		LocalDateTime maxTimestampValue = (LocalDateTime)res.get("maxTimestampValue"); //$NON-NLS-1$
+		LocalDateTime minTimestampValue = (LocalDateTime)res.get(MinTimestampValueKey);
+		LocalDateTime maxTimestampValue = (LocalDateTime)res.get(MaxTimestampValueKey);
 
 		List<String> nodeNames = getFilteredNodeNames();
 		List<Series> timingData = new ArrayList<>(nodeNames.size());
@@ -136,7 +137,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 			{
 				log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
 				List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue,
-				                                                                null, null, // min-duration doesn't make sense for graphs
+				                                                                null, null, // min-/max-duration doesn't make sense for graphs
 				                                                                minTimestampValue, maxTimestampValue);
 
 				DataSeries timingSeries = new DataSeries();
@@ -159,7 +160,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 			});
 		log.info("got timingData for {} series", timingData.size()); //$NON-NLS-1$
 
-		res.put("timingData", timingData); //$NON-NLS-1$
+		res.put(TimingDataKey, timingData);
 
 		return res;
 	}
@@ -170,8 +171,8 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	 */
 	@Override
 	protected void updateView(HashMap <String, Object> res) {
-		log.info("HistoryInfoTable.updateTable"); //$NON-NLS-1$
-		super.updateMinMaxFields(res);
+		log.info("HistoryInfoGraph.updateTable"); //$NON-NLS-1$
+		updateMinMaxFields(res);
 
 		// update graph data:
 		@SuppressWarnings("unchecked")

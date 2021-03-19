@@ -6,19 +6,19 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.NumberField;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.nodes.NodeType;
@@ -28,6 +28,7 @@ import net.mmo.utils.kism.ui.view.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.comparator.Comparators;
+import org.vaadin.miki.superfields.dates.SuperDateTimePicker;
 
 /**
  * Defines the application's main view, routed to via the base URL
@@ -56,15 +57,21 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	public static final String TimestampMaximumFieldClassName = HistoryViewField + "timestamp-maximum"; //$NON-NLS-1$
 	public static final String TimestampExtremesFieldClassName = HistoryViewField + "timestamp-extremes"; //$NON-NLS-1$
 
-	protected DateTimePicker timestampMinimum;
-	protected DateTimePicker timestampMaximum;
+	protected static final String NameFilterValueKey = "nameFilterValue"; //$NON-NLS-1$
+	protected static final String TypeFilterValueKey = "typeFilterValue"; //$NON-NLS-1$
 
-	protected NumberField durationMinimum;
-	protected NumberField durationMaximum;
+	protected static final String MinTimestampValueKey = "minTimestampValue"; //$NON-NLS-1$
+	protected static final String MaxTimestampValueKey = "maxTimestampValue"; //$NON-NLS-1$
+	protected static final String MinTimestampFoundKey = "minTimestampFound"; //$NON-NLS-1$
+	protected static final String MaxTimestampFoundKey = "maxTimestampFound"; //$NON-NLS-1$
+
+	protected MyDateTimePicker timestampMinimum;
+	protected MyDateTimePicker timestampMaximum;
 
 	protected ComboBox<String> nameFilter = new ComboBox<>();
 	protected Select<String> typeFilter = new Select<>();
 	protected Button refreshData;
+	LocalDateTime lastUpdate;
 
 	protected Div content;
 
@@ -149,7 +156,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.timestampMinimum.setThemeName(LabelPaddingTheme);
 		this.timestampMinimum.addValueChangeListener(e -> {
 			log.info("timestampMinimum changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
-			if (e.isFromClient()) {
+			if (e.isFromClient() && e.getValue() != null) {
 				refreshData();
 			}
 		});
@@ -159,37 +166,11 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.timestampMaximum.setThemeName(LabelPaddingTheme);
 		this.timestampMaximum.addValueChangeListener(e -> {
 			log.info("timestampMaximum changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
-			if (e.isFromClient()) {
+			if (e.isFromClient() && e.getValue() != null) {
 				refreshData();
 			}
 		});
 
-		this.durationMinimum = new NumberField();
-		this.durationMaximum = new NumberField();
-
-		this.durationMinimum.setLabel(Messages.getString("HistoryView.Duration.Minimum.Label")); //$NON-NLS-1$
-		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
-		this.durationMinimum.setThemeName(LabelPaddingTheme);
-		this.durationMinimum.setHasControls(true);
-		this.durationMinimum.setWidth("12em"); //$NON-NLS-1$
-		this.durationMinimum.addValueChangeListener(e -> {
-			log.info("durationMinimum changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
-			if (e.isFromClient()) {
-				refreshData();
-			}
-		});
-
-		this.durationMaximum.setLabel(Messages.getString("HistoryView.Duration.Maximum.Label")); //$NON-NLS-1$
-		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
-		this.durationMaximum.setThemeName(LabelPaddingTheme);
-		this.durationMaximum.setHasControls(true);
-		this.durationMaximum.setWidth("12em"); //$NON-NLS-1$
-		this.durationMaximum.addValueChangeListener(e -> {
-			log.info("durationMaximum changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
-			if (e.isFromClient()) {
-				refreshData();
-			}
-		});
 
 		VerticalLayout timestampExtremes = new VerticalLayout();
 		timestampExtremes.setClassName(TimestampExtremesFieldClassName);
@@ -197,13 +178,8 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		timestampExtremes.add(this.timestampMinimum, this.timestampMaximum);
 		timestampExtremes.setWidth("25em");  // seems impossible to assign that via styling ||-(  //$NON-NLS-1$
 
-		VerticalLayout durationExtremes = new VerticalLayout();
-		durationExtremes.setClassName(DurationExtremesFieldClassName);
-		durationExtremes.addClassName(CombinedClassName);
-		durationExtremes.add(this.durationMinimum, this.durationMaximum);
-		durationExtremes.setWidth("13em"); // seems impossible to assign that via styling ||-(  //$NON-NLS-1$
 
-		HorizontalLayout toolbar = new HorizontalLayout(filters, timestampExtremes, durationExtremes, this.refreshData);
+		HorizontalLayout toolbar = new HorizontalLayout(filters, timestampExtremes, this.refreshData);
 		toolbar.addClassName(ToolbarClassName);
 		toolbar.setWidthFull();
 		return toolbar;
@@ -213,12 +189,11 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected void resetMinMaxValues() {
 		this.timestampMinimum.setValue(null);
 		this.timestampMaximum.setValue(null);
-		this.durationMinimum.setValue(null);
-		this.durationMaximum.setValue(null);
 	}
 
 	protected void refreshData() {
 		log.info("AbstractHistoryInfoView.refreshData"); //$NON-NLS-1$
+		this.lastUpdate = LocalDateTime.now();
 		UIHandlerSupport.executeLater(this, this::fetchData, this::updateView);
 	}
 
@@ -232,9 +207,10 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
 	abstract protected T fetchData();
 
-	/* this is supposed to update the view */
+	/* NOTE: this is supposed to update the view */
 	abstract protected void updateView(T res);
 
+	// this fetches the minimum/maximum timestamp
 	protected HashMap <String, Object> getMinMaxInfo() {
 
 		HashMap <String, Object> res = new HashMap<>();
@@ -242,18 +218,26 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
-		res.put("nameFilterValue", nameFilterValue); //$NON-NLS-1$
-		res.put("nodeTypeFilterValue", nodeTypeFilterValue); //$NON-NLS-1$
+		res.put(NameFilterValueKey, nameFilterValue);
+		res.put(TypeFilterValueKey, nodeTypeFilterValue);
 
-		log.info("fetchData-filter: name {} / type: {}", this.nameFilter.getValue(), this.typeFilter.getValue()); //$NON-NLS-1$
+		log.info("getMinMaxInfo-filter: name {} / type: {}", this.nameFilter.getValue(), this.typeFilter.getValue()); //$NON-NLS-1$
 
 		// adjust min/maxTimestamp:
 		LocalDateTime minTimestampValue = this.timestampMinimum.getValue();
 		LocalDateTime maxTimestampValue = this.timestampMaximum.getValue();
+		if (minTimestampValue == null) {
+			log.info("getMinMaxInfo: minTimestampValue is null"); //$NON-NLS-1$
+			minTimestampValue = this.lastUpdate.minus(1, ChronoUnit.HOURS); // set minimum to 1 hr. before now
+		}
+		if (maxTimestampValue == null) {
+			log.info("getMinMaxInfo: maxTimestampValue is null"); //$NON-NLS-1$
+			maxTimestampValue = this.lastUpdate; // set maximum to now
+		}
 
 		LocalDateTime minTimestampFound = this.historyInfoService.findLowestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
 		LocalDateTime maxTimestampFound = this.historyInfoService.findHighestTimestampWithFilter(nameFilterValue, nodeTypeFilterValue);
-		log.info("fetchData-timestamp: min: {}, max: {}", minTimestampFound, maxTimestampFound); //$NON-NLS-1$
+		log.info("getMinMaxInfo-timestamp: min: {}, max: {}", minTimestampFound, maxTimestampFound); //$NON-NLS-1$
 
 		// limit the values to [min..max] (if available):
 		if (minTimestampFound != null) {
@@ -266,96 +250,48 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 				maxTimestampValue = maxTimestampFound;
 			}
 		}
-		log.info("fetchData-timestamp: range: [{} - {}]", minTimestampValue, maxTimestampValue); //$NON-NLS-1$
+		log.info("getMinMaxInfo-timestamp: range: [{} - {}]", minTimestampValue, maxTimestampValue); //$NON-NLS-1$
 
-		// adjust min/maxDuration:
-		Double minDurationValue = this.durationMinimum.getValue();
-		Double maxDurationValue = this.durationMaximum.getValue();
-
-		Double minDurationFound = this.historyInfoService.findLowestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
-		Double maxDurationFound = this.historyInfoService.findHighestDurationWithFilter(nameFilterValue, nodeTypeFilterValue);
-		log.info("fetchData-duration: min: {}, max: {}", minDurationFound, maxDurationValue); //$NON-NLS-1$
-
-		if (minDurationFound != null) {
-			if ((minDurationValue == null || minDurationValue < minDurationFound)) {
-				minDurationValue = minDurationFound;
-			}
-		}
-		if (maxDurationFound != null) {
-			if ((maxDurationValue == null || maxDurationValue > maxDurationFound)) {
-				maxDurationValue = maxDurationFound;
-			}
-		}
-		log.info("fetchData-duration: range: [{} - {}]", minDurationValue, maxDurationValue); //$NON-NLS-1$
-
-		res.put("minTimestampValue", minTimestampValue); //$NON-NLS-1$
-		res.put("maxTimestampValue", maxTimestampValue); //$NON-NLS-1$
-		res.put("minTimestampFound", minTimestampFound); //$NON-NLS-1$
-		res.put("maxTimestampFound", maxTimestampFound); //$NON-NLS-1$
-
-		res.put("minDurationValue", minDurationValue); //$NON-NLS-1$
-		res.put("maxDurationValue", maxDurationValue); //$NON-NLS-1$
-		res.put("minDurationFound", minDurationFound); //$NON-NLS-1$
-		res.put("maxDurationFound", maxDurationFound); //$NON-NLS-1$
+		res.put(MinTimestampValueKey, minTimestampValue);
+		res.put(MaxTimestampValueKey, maxTimestampValue);
+		res.put(MinTimestampFoundKey, minTimestampFound);
+		res.put(MaxTimestampFoundKey, maxTimestampFound);
 
 		return res;
 	}
 
 	protected void updateMinMaxFields(HashMap <String, Object> res) {
-		log.info("AbstractHistoryInfoView.updateMinMaxFields"); //$NON-NLS-1$
-		LocalDateTime minTimestampFound = (LocalDateTime)res.get("minTimestampFound"); //$NON-NLS-1$
-		LocalDateTime maxTimestampFound = (LocalDateTime)res.get("maxTimestampFound"); //$NON-NLS-1$
-		LocalDateTime minTimestampValue = (LocalDateTime)res.get("minTimestampValue"); //$NON-NLS-1$
-		LocalDateTime maxTimestampValue = (LocalDateTime)res.get("maxTimestampValue"); //$NON-NLS-1$
 
-		Double minDurationFound = (Double)res.get("minDurationFound"); //$NON-NLS-1$
-		Double maxDurationFound = (Double)res.get("maxDurationFound"); //$NON-NLS-1$
-		Double minDurationValue = (Double)res.get("minDurationValue"); //$NON-NLS-1$
-		Double maxDurationValue = (Double)res.get("maxDurationValue"); //$NON-NLS-1$
+		this.nameFilter.setValue((String)res.get(NameFilterValueKey));
 
-		this.nameFilter.setValue((String)res.get("nameFilterValue")); //$NON-NLS-1$
+		LocalDateTime minTimestampValue = (LocalDateTime)res.get(MinTimestampValueKey);
+		LocalDateTime maxTimestampValue = (LocalDateTime)res.get(MaxTimestampValueKey);
+		LocalDateTime minTimestampFound = (LocalDateTime)res.get(MinTimestampFoundKey);
+		LocalDateTime maxTimestampFound = (LocalDateTime)res.get(MaxTimestampFoundKey);
 
 		// update Timestamp-fields:
 		if (minTimestampFound != null) {
 			LocalDateTime minTimestampFoundTruncated = truncatedToMinutes(minTimestampFound);
 			this.timestampMinimum.setMin(minTimestampFoundTruncated);
-			this.timestampMinimum.setLabel(String.format(Messages.getString("HistoryView.Timestamp.Minimum.LblWithMin"), minTimestampFoundTruncated)); //$NON-NLS-1$
+			this.timestampMinimum.setLabel(String.format(Messages.getString("HistoryView.Timestamp.Minimum.LblWithMin"), //$NON-NLS-1$
+			                                             minTimestampFoundTruncated, minTimestampFoundTruncated));
 		}
 		if (maxTimestampFound != null) {
 			LocalDateTime maxTimestampFoundTruncated = truncatedToMinutes(maxTimestampFound);
 			this.timestampMaximum.setMax(truncatedToMinutes(maxTimestampFoundTruncated));
-			this.timestampMaximum.setLabel(String.format(Messages.getString("HistoryView.Timestamp.Maximum.LblWithMax"), maxTimestampFoundTruncated)); //$NON-NLS-1$
+			this.timestampMaximum.setLabel(String.format(Messages.getString("HistoryView.Timestamp.Maximum.LblWithMax"), //$NON-NLS-1$
+			                                             maxTimestampFoundTruncated, maxTimestampFoundTruncated));
+
 		}
 		if (minTimestampValue != null) {
 			this.timestampMinimum.setValue(truncatedToMinutes(minTimestampValue));
-			// set the max/min to the respective other value: (is this a clever idea?)
-			// this.durationMaximum.setMin(minDurationValue);
+			this.timestampMinimum.setMax(truncatedToMinutes(maxTimestampFound)); // the maximum minimal level is the maximum value found
 		}
 		if (maxTimestampValue != null) {
 			this.timestampMaximum.setValue(truncatedToMinutes(maxTimestampValue));
-			// set the max/min to the respective other value: (is this a clever idea?)
-			// this.durationMinimum.setMax(maxDurationValue);
+			this.timestampMaximum.setMin(truncatedToMinutes(minTimestampFound)); // the minimal maximum value is the minimum value found
 		}
 
-		// update Duration-fields:
-		if (minDurationFound != null) {
-			this.durationMinimum.setMin(minDurationFound);
-			this.durationMinimum.setLabel(String.format(Messages.getString("HistoryView.Duration.Minimum.LblWithMin"), minDurationFound)); //$NON-NLS-1$
-		}
-		if (maxDurationFound != null) {
-			this.durationMaximum.setMax(maxDurationFound);
-			this.durationMaximum.setLabel(String.format(Messages.getString("HistoryView.Duration.Maximum.LblWithMax"), maxDurationFound)); //$NON-NLS-1$
-		}
-		if (minDurationValue != null) {
-			this.durationMinimum.setValue(minDurationValue);
-			// set the max/min to the respective other value: (is this a clever idea?)
-			// this.durationMaximum.setMin(minDurationValue);
-		}
-		if (maxDurationValue != null) {
-			this.durationMaximum.setValue(maxDurationValue);
-			// set the max/min to the respective other value: (is this a clever idea?)
-			// this.durationMinimum.setMax(maxDurationValue);
-		}
 	}
 
 	protected List<String> getAllNodeNames() {
@@ -379,16 +315,17 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	}
 
 	protected LocalDateTime truncatedToMinutes(LocalDateTime timestamp) {
-		return timestamp.minusSeconds(timestamp.getSecond()).minusNanos(timestamp.getNano());
+		return (timestamp != null ? timestamp.minusSeconds(timestamp.getSecond()).minusNanos(timestamp.getNano()) : null);
 	}
 
-	protected class MyDateTimePicker extends DateTimePicker
+	protected class MyDateTimePicker extends SuperDateTimePicker
 	{
 		private static final long serialVersionUID = 7607754515556993999L;
 
 		MyDateTimePicker() {
 			super();
 			setStep(Duration.ofMinutes(1));
+			setLocale(Locale.getDefault());
 		}
 	}
 

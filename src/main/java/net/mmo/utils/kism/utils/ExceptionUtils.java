@@ -21,9 +21,9 @@ public class ExceptionUtils
 		return buf.toString();
 	}
 	public static String exceptionRootCauseMsg(Throwable start) {
-		String msg = null;
+		String msg = "undefined"; //$NON-NLS-1$
 		for (Throwable t = start; t != null; t = t.getCause()) {
-			msg = t.getMessage();
+			if (t.getMessage() != null) msg = t.getMessage();
 		}
 		return msg;
 	}

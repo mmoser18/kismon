@@ -14,7 +14,7 @@ import org.hibernate.cfg.NotYetImplementedException;
 @Entity
 @Setter
 @Getter
-public class TelnetConnection extends IPConnection
+public class TelnetConnection extends TCPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
 
@@ -29,10 +29,5 @@ public class TelnetConnection extends IPConnection
 	@Override
 	public void sendRequest() throws Exception {
 		throw new NotYetImplementedException("Telnet not yet implemented"); //$NON-NLS-1$
-	}
-
-	@Override
-	protected String getRequestResult() {
-		return "tbd"; //$NON-NLS-1$
 	}
 }

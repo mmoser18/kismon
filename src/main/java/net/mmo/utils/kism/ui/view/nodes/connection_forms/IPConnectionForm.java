@@ -8,15 +8,13 @@ package net.mmo.utils.kism.ui.view.nodes.connection_forms;
 import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
-import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
-import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.ui.view.nodes.LeafNodeForm;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
@@ -27,22 +25,11 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 	private static final long serialVersionUID = 5772018540738340331L;
 
 	// these are package visible so that unit-tests can access them:
-	static final String URLClassName           = NodeFormField + "url"; //$NON-NLS-1$
-	static final String ResultingURLClassName  = NodeFormField + "resulting-url"; //$NON-NLS-1$
+	static final String HostAddressClassName           = NodeFormField + "hostAddress"; //$NON-NLS-1$
+	static final String ResultingHostAddressClassName  = NodeFormField + "resulting-hostAddress"; //$NON-NLS-1$
 
-	static final String RequestDetailsClassName = NodeFormField + "request-details"; //$NON-NLS-1$
-
-	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
-	static final String ConditionClassName = NodeFormField + "condition"; //$NON-NLS-1$
-	static final String OperandClassName = NodeFormField + "operand"; //$NON-NLS-1$
-
-	protected TextField url;
-	protected TextField resultingURL;
-
-	// protected ResultCheckerForm resultChecker;
-	protected Select<ResultChecker.Condition> condition;
-	protected TextArea operand;
-
+	protected TextField hostAddress;
+	protected TextField resultingHostAddress;
 
 	public IPConnectionForm(Class<N> clazz, NodeService nodeService) {
 		super(clazz, nodeService);
@@ -52,16 +39,16 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
 
-		this.url = new TextField(Messages.getString("IPConnectionForm.URL.Label")); //$NON-NLS-1$
-		this.url.setClassName(URLClassName);
-		this.url.setThemeName(LabelPaddingTheme);
-		this.url.setClearButtonVisible(NodeForm.clearButtonsVisible);
-		this.url.addValueChangeListener(event ->
+		this.hostAddress = new TextField(Messages.getString("TCPConnectionForm.HostAddress.Label")); //$NON-NLS-1$
+		this.hostAddress.setClassName(HostAddressClassName);
+		this.hostAddress.setThemeName(LabelPaddingTheme);
+		this.hostAddress.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.hostAddress.addValueChangeListener(event ->
 			{
-				log.debug("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				log.debug("hostAddress value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
-						updateResultingUrl(event.getValue());
+						updateResultingHostAddress(event.getValue());
 					} catch (Exception ex) {
 						log.error("Error updating URL", ex); //$NON-NLS-1$
 					}
@@ -71,13 +58,13 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 		// since JDBC-URLs look completely differently and didn't pass the conventional URI check!
 		// this.binder.forField(this.url)
 		//	.withValidator(this.urlValidator)
-		//	.bind(IPConnection::getUrl, IPConnection::setUrl);
+		//	.bind(TCPConnection::getUrl, TCPConnection::setUrl);
 
-		this.resultingURL = new TextField(Messages.getString("IPConnectionForm.ResultingUrl.Value")); //$NON-NLS-1$
-		this.resultingURL.setClassName(ResultingURLClassName);
-		this.resultingURL.setThemeName(LabelPaddingTheme);
+		this.resultingHostAddress = new TextField(Messages.getString("TCPConnectionForm.ResultingHostAddress.Value")); //$NON-NLS-1$
+		this.resultingHostAddress.setClassName(ResultingHostAddressClassName);
+		this.resultingHostAddress.setThemeName(LabelPaddingTheme);
 		// same here:
-		// this.binder.forField(this.resultingURL).bind(IPConnection::getResultingUrl, null);
+		// this.binder.forField(this.resultingURL).bind(TCPConnection::getResultingUrl, null);
 
 		this.checkResults.addValueChangeListener(event ->
 		{
@@ -89,23 +76,23 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 
 //		this.resultChecker = new ResultCheckerForm();
 //		this.resultChecker.setClassName(ResultCheckerClassName);
-		this.condition = new Select<Condition>(Condition.values());
-		this.condition.setLabel(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
-		this.condition.setItemLabelGenerator(cond -> Messages.getString("ResultChecker.Condition.Value." + cond.name())); //$NON-NLS-1$
-		this.condition.addClassName(ConditionClassName);
+//		this.condition = new Select<Condition>(Condition.values());
+//		this.condition.setLabel(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
+//		this.condition.setItemLabelGenerator(cond -> Messages.getString("ResultChecker.Condition.Value." + cond.name())); //$NON-NLS-1$
+//		this.condition.addClassName(ConditionClassName);
+//
+//		this.operand = new TextArea(Messages.getString("ResultChecker.Operand.Label")); //$NON-NLS-1$
+//		this.operand.addClassName(OperandClassName);
+//		this.operand.setThemeName(LabelPaddingTheme);
+//		this.operand.setClearButtonVisible(NodeForm.clearButtonsVisible);
+//
+//		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
+//		this.binder.forField(this.operand)
+//			.withValidator(this.propertiesResolvableValidator)
+//			.bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
 
-		this.operand = new TextArea(Messages.getString("ResultChecker.Operand.Label")); //$NON-NLS-1$
-		this.operand.addClassName(OperandClassName);
-		this.operand.setThemeName(LabelPaddingTheme);
-		this.operand.setClearButtonVisible(NodeForm.clearButtonsVisible);
-
-		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
-		this.binder.forField(this.operand)
-			.withValidator(this.propertiesResolvableValidator)
-			.bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
-
-		this.connnectionDetailsPanel.add(this.url, this.resultingURL);
-		this.validationDetailsPanel.add(this.condition, this.operand);
+		this.connnectionDetailsPanel.add(this.hostAddress, this.resultingHostAddress);
+//		this.validationDetailsPanel.add(this.condition, this.operand);
 	}
 
 	@Override
@@ -176,25 +163,25 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 //		return super.binderIsValid();
 //	}
 
-	static <N extends IPConnection> ResultChecker.Condition getCondition(N n) {
+	static <N extends TCPConnection> ResultChecker.Condition getCondition(N n) {
 		return (n != null && n.getResultChecker() != null
 				? n.getResultChecker().getCondition()
 				: null);
 	}
 
-	static <N extends IPConnection> void setCondition(N n, ResultChecker.Condition condition) {
+	static <N extends TCPConnection> void setCondition(N n, ResultChecker.Condition condition) {
 		if (n != null && n.getResultChecker() != null) {
 			n.getResultChecker().setCondition(condition);
 		}
 	}
 
-	static <N extends IPConnection> String getOperand(N n) {
+	static <N extends TCPConnection> String getOperand(N n) {
 		return (n != null && n.getResultChecker() != null
 				? n.getResultChecker().getOperand()
 				: null);
 	}
 
-	static <N extends IPConnection> void setOperand(N n, String operand) {
+	static <N extends TCPConnection> void setOperand(N n, String operand) {
 		if (n != null && n.getResultChecker() != null) {
 			n.getResultChecker().setOperand(operand);
 		}
@@ -202,44 +189,44 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 
 
 	private void adaptResultCheckerVisibility(boolean check, N n) {
-		if (n != null) {
-			if (n.getResultChecker() == null) {
-				log.info("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
-				n.setResultChecker(new ResultChecker());
-// attempt to bind the ResultChecker in via a child-form:
-//				// if checkResults is active we need to add the validity of the resultChecker's binder to this one:
-//				this.binder.withValidator(nn -> (checkResults ? this.resultChecker.getBinder().isValid() : true),
-//				                          "ResultCheck not valid"); //$NON-NLS-1$
-			}
-//			this.resultChecker.setResultChecker(n.getResultChecker());
-//			this.resultChecker.setVisible(check);
-			this.condition.setVisible(check);
-			this.operand.setVisible(check);
-		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
-			log.info("removing ResultChecker from view:"); //$NON-NLS-1$
-//			this.resultChecker.setResultChecker(null);
-//			this.resultChecker.setVisible(false);
-			this.condition.setVisible(false);
-			this.operand.setVisible(false);
-		}
+//		if (n != null) {
+//			if (n.getResultChecker() == null) {
+//				log.info("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
+//				n.setResultChecker(new ResultChecker());
+//// attempt to bind the ResultChecker in via a child-form:
+////				// if checkResults is active we need to add the validity of the resultChecker's binder to this one:
+////				this.binder.withValidator(nn -> (checkResults ? this.resultChecker.getBinder().isValid() : true),
+////				                          "ResultCheck not valid"); //$NON-NLS-1$
+//			}
+////			this.resultChecker.setResultChecker(n.getResultChecker());
+////			this.resultChecker.setVisible(check);
+//			this.condition.setVisible(check);
+//			this.operand.setVisible(check);
+//		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
+//			log.info("removing ResultChecker from view:"); //$NON-NLS-1$
+////			this.resultChecker.setResultChecker(null);
+////			this.resultChecker.setVisible(false);
+//			this.condition.setVisible(false);
+//			this.operand.setVisible(false);
+//		}
 	}
 
 	@Override
 	protected void updateResolvableValues() {
 		super.updateResolvableValues();
-		updateResultingUrl(this.node != null ? this.node.getUrl() : null);
+		updateResultingHostAddress(this.node != null ? this.node.getHostAddress() : null);
 	}
 
-	protected void updateResultingUrl(String newValue) {
-		updateResultingField("updateResultingURL", //$NON-NLS-1$
+	protected void updateResultingHostAddress(String newValue) {
+		updateResultingField("updateResultingHostAddress", //$NON-NLS-1$
 		                     this.node,
 		                     newValue,
-		                     IPConnection::setResultingUrl,
-		                     this.resultingURL
+		                     IPConnection::setResultingHostAddress,
+		                     this.resultingHostAddress
 		                    );
 	}
 
-	public static Double getDurationInMillis(IPConnection n) {
+	public static Double getDurationInMillis(TCPConnection n) {
 		return convertDurationToMillis(n.getDuration());
 	}
 }

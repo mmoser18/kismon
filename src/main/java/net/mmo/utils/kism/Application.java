@@ -1,10 +1,12 @@
 package net.mmo.utils.kism;
 
+import java.util.Locale;
+
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
+import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
-import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.SpringApplication;
@@ -49,17 +51,17 @@ public class Application extends SpringBootServletInitializer
 
 			String JavaHome = System.getProperty("$JAVA HOME"); //$NON-NLS-1$
 
-			IPConnection.sslVersions =
+			TCPConnection.sslVersions =
 				AppProperties.getProperties().getProperty("SupportedSslVersions", //$NON-NLS-1$
 				                                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3"); //$NON-NLS-1$
 
-			IPConnection.disableHostNameVerification = // we parse this into a boolean as syntax validation:
+			TCPConnection.disableHostNameVerification = // we parse this into a boolean as syntax validation:
 				Boolean.parseBoolean(AppProperties.getProperties().getProperty("DisableHostNameVerification", //$NON-NLS-1$
 				                                                               "true")); //$NON-NLS-1$
 			System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", //$NON-NLS-1$
-			                                   Boolean.toString(IPConnection.disableHostNameVerification));
+			                                   Boolean.toString(TCPConnection.disableHostNameVerification));
 
-			IPConnection.trustAllCertificates =
+			TCPConnection.trustAllCertificates =
 				Boolean.parseBoolean(AppProperties.getProperties().getProperty("TrustAllCertificates", //$NON-NLS-1$
 				                                                               "true")); //$NON-NLS-1$
 
@@ -97,11 +99,23 @@ public class Application extends SpringBootServletInitializer
 			if (nonBlank(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
 			if (nonBlank(keyStorePwd)) System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
+			String localeStr = AppProperties.getProperties().getProperty("Locale"); //$NON-NLS-1$
+			if (nonBlank(localeStr)) {
+				Locale locale = Locale.forLanguageTag(localeStr);
+			log.info("Setting Locale: given '{}' -> found: '{}' / language: '{}'", //$NON-NLS-1$
+			         localeStr, locale, (locale != null ? locale.getLanguage() : null));
+				Locale.setDefault(locale);
+			}
+
 			// we need to set this BEFORE the NodeService is created. If we do this in the Application-c'tor we come to late.
 			NodeService.applicationArguments = new DefaultApplicationArguments(args);
 
-			SpringApplication.run(Application.class, args);
+		} catch (Throwable e) {
+			log.error("Error initializing application! Check your settings in application.properties", e); //$NON-NLS-1$
+		}
 
+		try {
+			SpringApplication.run(Application.class, args);
 		} catch (Throwable e) {
 			if (e.getClass().getName().contains("SilentExitException")) { // SpringBoot devtools trying to replace the main thread //$NON-NLS-1$
 				log.debug("Spring is restarting the main thread - see spring-boot-devtools"); //$NON-NLS-1$
@@ -114,4 +128,11 @@ public class Application extends SpringBootServletInitializer
 	private static boolean nonBlank(String str) {
 		return str != null && !str.isBlank();
 	}
+
+// Code snippet that I found that should start the DB server if it is not already running,
+// but I couldn't figure out where that "Server" class is supposed to come from...
+//	@Bean(initMethod = "start", destroyMethod = "stop")
+//	public Server h2Server() throws SQLException {
+//		return Server.createTcpServer("-tcp", "-ifNotExists" , "-tcpPort", "8082"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+//	}
 }

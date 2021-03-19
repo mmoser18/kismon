@@ -27,7 +27,7 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 @Setter
 @Getter
 @Slf4j
-public class JDBCConnection extends IPConnection
+public class JDBCConnection extends TCPConnection
 {
 	private static final long serialVersionUID = -2228821478937714703L;
 
@@ -187,6 +187,7 @@ public class JDBCConnection extends IPConnection
 			setDuration(callDuration);
 			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(statement, isRS);
+			setRequestResult(getState().name() + '/' + getResponseStatus());
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		} catch (Exception ex) {
 			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
@@ -195,6 +196,7 @@ public class JDBCConnection extends IPConnection
 			                                 getName(), resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
 			setState(State.FAILED);
+			setRequestResult(getState().name() + '/' + getResponseStatus());
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 			if (reqConnection != null) {
 				if (ex instanceof SQLException) setConnection(null); // delete old connection so that a new connection is attempted. Otherwise, if a connection had been terminate no new one will ever be attempted
@@ -289,11 +291,6 @@ public class JDBCConnection extends IPConnection
 			}
 		}
 		setState(State.OK); // if there is no check defined we consider any successful query-response as OK
-	}
-
-	@Override
-	protected String getRequestResult() {
-		return getState().name() + '/' + getResponseStatus();
 	}
 
 	@Override

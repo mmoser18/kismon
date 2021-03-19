@@ -40,7 +40,7 @@ public class RootNode extends IntermediateNode
 		super(name, description);
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({"deprecation"})
 	@Override
 	protected void finalize() {
 		this.changeListeners.clear();

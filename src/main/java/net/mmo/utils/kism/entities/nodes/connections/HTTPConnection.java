@@ -52,7 +52,7 @@ import net.mmo.utils.kism.utils.KeyValuesConverter;
 @Setter
 @Getter
 @Slf4j
-abstract public class HTTPConnection extends IPConnection
+abstract public class HTTPConnection extends TCPConnection
 {
 	private static final long serialVersionUID = -1288268291213672552L;
 
@@ -453,6 +453,7 @@ abstract public class HTTPConnection extends IPConnection
 			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
 			setState(State.FAILED);
+			setRequestResult(getState().name() + '/' + ExceptionUtils.exceptionRootCauseMsg(ex));
 			if (response != null) {
 				throw new Exception(String.format("Error for '%s' processing response from '%s': ", //$NON-NLS-1$
 				                                  getName(), request.uri()), ex);
@@ -473,6 +474,7 @@ abstract public class HTTPConnection extends IPConnection
 		setResponseBody(response.body());
 		logResponseValues();
 		deriveState();
+		setRequestResult(getState().name() + '/' + response.statusCode());
 	}
 
 	private void deriveState() throws Exception {
@@ -518,11 +520,6 @@ abstract public class HTTPConnection extends IPConnection
 		log.debug("response: status={} / payload-length={} / headers:{} / body: {} bytes", //$NON-NLS-1$
 		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), getResponseBody().length);
 		log.trace("response: body: \"{}\"", responseBodyAsString()); //$NON-NLS-1$
-	}
-
-	@Override
-	protected String getRequestResult() {
-		return getState().name() + '/' + getResponseStatusCode();
 	}
 
 	// utility methods:

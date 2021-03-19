@@ -27,14 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
 @Slf4j
 @PreserveOnRefresh
-public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPConnectionForm<N>
+public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPConnectionForm<N>
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
@@ -89,11 +89,11 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends IPCon
 		// didn't pass the conventional URI check!
 		this.binder.forField(this.url)
 			.withValidator(this.urlValidator)
-			.bind(IPConnection::getUrl, IPConnection::setUrl);
+			.bind(TCPConnection::getUrl, TCPConnection::setUrl);
 
 		this.binder.forField(this.resultingURL)
 			.withValidator(this.urlValidator)
-			.bind(IPConnection::getResultingUrl, null);
+			.bind(TCPConnection::getResultingUrl, null);
 
 		this.targetUid = new TextField(Messages.getString("HTTPConnectionForm.Uid.Label")); //$NON-NLS-1$
 		this.targetUid.setClassName(UidClassName);

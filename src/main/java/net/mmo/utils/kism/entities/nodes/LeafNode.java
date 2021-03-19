@@ -72,14 +72,15 @@ abstract public class LeafNode extends Node
 	@JsonIgnore
 	protected transient LocalDateTime timestamp;
 
-	// result stuff:
+	// result stuff:`
 	protected boolean checkResults = false;
 
 	// TODO: the below should be kept into some kind of "history"-list:
 	//	transient protected history = new ArrayList();
 
 	// transient stuff:
-
+	@JsonIgnore
+	transient protected String requestResult;  // used for history entry
 
 	/**
 	 * This allows to halt ALL automatic requests. This can be useful e.g. while doing changes to avoid
@@ -181,9 +182,6 @@ abstract public class LeafNode extends Node
 			setInteractiveExecutor(Executors.newSingleThreadExecutor());
 		}
 	}
-
-	@JsonIgnore
-	abstract protected String getRequestResult();
 
 	abstract public void sendRequest() throws Exception;
 

@@ -6,6 +6,7 @@
 package net.mmo.utils.kism.entities.nodes;
 
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 
@@ -14,7 +15,8 @@ public enum NodeType {
 	IntermediateNode(IntermediateNode.class),
 	RESTConnection(RESTConnection.class),
 	SOAPConnection(SOAPConnection.class),
-	JDBCConnection(JDBCConnection.class)
+	JDBCConnection(JDBCConnection.class),
+	PingConnection(PingConnection.class),
 	;
 
 	Class<? extends Node> nodeClass;
