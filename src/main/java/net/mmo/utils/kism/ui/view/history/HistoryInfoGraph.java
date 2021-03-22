@@ -146,17 +146,19 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 				int nrDataPoints = values.size();
 				log.info("got {} data points for '{}'", nrDataPoints, name); //$NON-NLS-1$
-				Number[][] numberTuples = new Number[nrDataPoints][2];
-				for (int idx = 0; idx < nrDataPoints; idx++) {
-					HistoryInfo value = values.get(idx);
-					LocalDateTime timestamp = value.getTimestamp();
-					Double duration = value.getDuration();
-					numberTuples[idx][0] = Date.from(timestamp.atZone(myZoneId).toInstant()).getTime();
-					numberTuples[idx][1] = duration;
+				if (nrDataPoints > 0) {
+					Number[][] numberTuples = new Number[nrDataPoints][2];
+					for (int idx = 0; idx < nrDataPoints; idx++) {
+						HistoryInfo value = values.get(idx);
+						LocalDateTime timestamp = value.getTimestamp();
+						Double duration = value.getDuration();
+						numberTuples[idx][0] = Date.from(timestamp.atZone(myZoneId).toInstant()).getTime();
+						numberTuples[idx][1] = duration;
+					}
+					log.trace("addSeries():"); //$NON-NLS-1$
+					timingSeries.addData(numberTuples);
+					timingData.add(timingSeries);
 				}
-				log.trace("addSeries():"); //$NON-NLS-1$
-				timingSeries.addData(numberTuples);
-				timingData.add(timingSeries);
 			});
 		log.info("got timingData for {} series", timingData.size()); //$NON-NLS-1$
 

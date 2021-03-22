@@ -148,8 +148,8 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 
 		HashMap <String, Object> res = super.getMinMaxInfo();
 
-		String nameFilterValue = (String)res.get("nameFilterValue"); //$NON-NLS-1$
-		NodeType nodeTypeFilterValue = (NodeType)res.get("nodeTypeFilterValue"); //$NON-NLS-1$
+		String nameFilterValue = (String)res.get(NameFilterValueKey);
+		NodeType nodeTypeFilterValue = (NodeType)res.get(TypeFilterValueKey);
 
 		// adjust min/maxDuration:
 		Double minDurationValue = this.durationMinimum.getValue();
@@ -223,7 +223,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 			                                     (Double)res.get(MinDurationValueKey), (Double)res.get(MaxDurationValueKey),
 			                                     (LocalDateTime)res.get(MinTimestampValueKey), (LocalDateTime)res.get(MaxTimestampValueKey));
 
-		log.info("fetchData-result: ", data != null ? "found "+ data.size() + " entries": "null"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		log.info("fetchData-result: {} found.", data != null ? data.size() + " entries" : "no data"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		res.put(timingDataKey, data);
 		return res;

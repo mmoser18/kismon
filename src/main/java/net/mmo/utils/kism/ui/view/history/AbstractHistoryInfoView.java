@@ -69,6 +69,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected MyDateTimePicker timestampMaximum;
 
 	protected ComboBox<String> nameFilter = new ComboBox<>();
+	protected String nameFilterValueStr;
 	protected Select<String> typeFilter = new Select<>();
 	protected Button refreshData;
 	LocalDateTime lastUpdate;
@@ -110,17 +111,23 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.nameFilter.addCustomValueSetListener((e) -> {
 			if (e.isFromClient()) {
 				log.info("custom value: '{}'", e.getDetail()); //$NON-NLS-1$
-				this.nameFilter.setValue(e.getDetail());
-				refreshData();
-			}
-		});
-		this.nameFilter.addValueChangeListener(e -> {
-			log.info("nameFilter changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
-			if (e.isFromClient()) {
+				this.nameFilterValueStr = e.getDetail();
+				try {
+					this.nameFilter.setValue(this.nameFilterValueStr);
+				} catch (Exception ex) {
+					// ignore - even if setAllowCustomValue is set to true the ComboBox only accepts values from its predefined list ||-(
+				}
 				resetMinMaxValues();
 				refreshData();
 			}
 		});
+//		this.nameFilter.addValueChangeListener(e -> {
+//			log.info("nameFilter changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
+//			if (e.isFromClient()) {
+//				resetMinMaxValues();
+//				refreshData();
+//			}
+//		});
 		UIHandlerSupport.executeLater(this, this::getAllNodeNames, (res) -> this.nameFilter.setItems(res));
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
@@ -215,7 +222,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 
 		HashMap <String, Object> res = new HashMap<>();
 
-		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
+		String nameFilterValue = (this.nameFilterValueStr != null ? this.nameFilterValueStr.replace('*', '%') : null);
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
 		res.put(NameFilterValueKey, nameFilterValue);
@@ -262,7 +269,11 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 
 	protected void updateMinMaxFields(HashMap <String, Object> res) {
 
-		this.nameFilter.setValue((String)res.get(NameFilterValueKey));
+//		try {
+//			this.nameFilter.setValue((String)res.get(NameFilterValueKey));
+//		} catch (Exception ex) {
+//			// ignore - even if setAllowCustomValue is set to true the ComboBox only accepts values from its predefined list ||-(
+//		}
 
 		LocalDateTime minTimestampValue = (LocalDateTime)res.get(MinTimestampValueKey);
 		LocalDateTime maxTimestampValue = (LocalDateTime)res.get(MaxTimestampValueKey);
@@ -277,7 +288,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 			                                             minTimestampFoundTruncated, minTimestampFoundTruncated));
 		}
 		if (maxTimestampFound != null) {
-			LocalDateTime maxTimestampFoundTruncated = truncatedToMinutes(maxTimestampFound);
+			LocalDateTime maxTimestampFoundTruncated = truncatedToMinutes(maxTimestampFound.plusSeconds(59)); // rounding up
 			this.timestampMaximum.setMax(truncatedToMinutes(maxTimestampFoundTruncated));
 			this.timestampMaximum.setLabel(String.format(Messages.getString("HistoryView.Timestamp.Maximum.LblWithMax"), //$NON-NLS-1$
 			                                             maxTimestampFoundTruncated, maxTimestampFoundTruncated));
@@ -288,7 +299,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 			this.timestampMinimum.setMax(truncatedToMinutes(maxTimestampFound)); // the maximum minimal level is the maximum value found
 		}
 		if (maxTimestampValue != null) {
-			this.timestampMaximum.setValue(truncatedToMinutes(maxTimestampValue));
+			this.timestampMaximum.setValue(truncatedToMinutes(maxTimestampValue.plusSeconds(59))); // rounding up
 			this.timestampMaximum.setMin(truncatedToMinutes(minTimestampFound)); // the minimal maximum value is the minimum value found
 		}
 
