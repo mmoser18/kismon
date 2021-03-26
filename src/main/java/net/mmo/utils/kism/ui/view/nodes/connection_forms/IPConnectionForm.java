@@ -39,7 +39,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
 
-		this.hostAddress = new TextField(Messages.getString("TCPConnectionForm.HostAddress.Label")); //$NON-NLS-1$
+		this.hostAddress = new TextField(Messages.getString("IPConnectionForm.HostAddress.Label")); //$NON-NLS-1$
 		this.hostAddress.setClassName(HostAddressClassName);
 		this.hostAddress.setThemeName(LabelPaddingTheme);
 		this.hostAddress.setClearButtonVisible(NodeForm.clearButtonsVisible);
@@ -54,17 +54,10 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 					}
 				}
 			});
-		// had to disable the URL validation here (and moved it to HTTPConnectionForm and JDBCConnectionForm)
-		// since JDBC-URLs look completely differently and didn't pass the conventional URI check!
-		// this.binder.forField(this.url)
-		//	.withValidator(this.urlValidator)
-		//	.bind(TCPConnection::getUrl, TCPConnection::setUrl);
 
-		this.resultingHostAddress = new TextField(Messages.getString("TCPConnectionForm.ResultingHostAddress.Value")); //$NON-NLS-1$
+		this.resultingHostAddress = new TextField(Messages.getString("IPConnectionForm.ResultingHostAddress.Value")); //$NON-NLS-1$
 		this.resultingHostAddress.setClassName(ResultingHostAddressClassName);
 		this.resultingHostAddress.setThemeName(LabelPaddingTheme);
-		// same here:
-		// this.binder.forField(this.resultingURL).bind(TCPConnection::getResultingUrl, null);
 
 		this.checkResults.addValueChangeListener(event ->
 		{
@@ -74,25 +67,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 			}
 		});
 
-//		this.resultChecker = new ResultCheckerForm();
-//		this.resultChecker.setClassName(ResultCheckerClassName);
-//		this.condition = new Select<Condition>(Condition.values());
-//		this.condition.setLabel(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
-//		this.condition.setItemLabelGenerator(cond -> Messages.getString("ResultChecker.Condition.Value." + cond.name())); //$NON-NLS-1$
-//		this.condition.addClassName(ConditionClassName);
-//
-//		this.operand = new TextArea(Messages.getString("ResultChecker.Operand.Label")); //$NON-NLS-1$
-//		this.operand.addClassName(OperandClassName);
-//		this.operand.setThemeName(LabelPaddingTheme);
-//		this.operand.setClearButtonVisible(NodeForm.clearButtonsVisible);
-//
-//		this.binder.forField(this.condition).bind(IPConnectionForm::getCondition, IPConnectionForm::setCondition);
-//		this.binder.forField(this.operand)
-//			.withValidator(this.propertiesResolvableValidator)
-//			.bind(IPConnectionForm::getOperand, IPConnectionForm::setOperand);
-
 		this.connnectionDetailsPanel.add(this.hostAddress, this.resultingHostAddress);
-//		this.validationDetailsPanel.add(this.condition, this.operand);
 	}
 
 	@Override
@@ -102,66 +77,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 		adaptResultCheckerVisibility((node != null ? node.isCheckResults() : false), node);
 		return res;
 	}
-
-//	// when the main-form's bean is read we also need to read the ResultChecker's data (if set):
-//	@Override
-//	protected void readBean(N n) {
-//		log.info("readBean node={}", n); //$NON-NLS-1$
-//		super.readBean(n);
-//		if (n != null) {
-//			ResultChecker rc = n.getResultChecker();
-//			if (rc != null) {
-//				Binder<ResultChecker> rcBinder = this.resultChecker.getBinder();
-//				rcBinder.readBean(rc);
-//			}
-//		}
-//	}
-//
-//	// when the main-form's bean is to be written we also first need to write the ResultChecker's data (if set):
-//	@Override
-//	protected void writeBean(N n) throws ValidationException {
-//		log.info("writeBean node={}", n); //$NON-NLS-1$
-//		if (n != null) {
-//			ResultChecker rc = n.getResultChecker();
-//			if (rc != null) {
-//				Binder<ResultChecker> rcBinder = this.resultChecker.getBinder();
-//				rcBinder.writeBean(rc);
-//			}
-//		}
-//		super.writeBean(n);
-//	}
-//
-//	@Override
-//	protected boolean binderHasChanges() {
-//		if (this.node != null) {
-//			ResultChecker rc = this.node.getResultChecker();
-//			if (rc != null) {
-//				Binder<ResultChecker> rcBinder = this.resultChecker.getBinder();
-//				if (rcBinder.hasChanges()) {
-//					log.debug("binderHasChanges{}: true"); //$NON-NLS-1$
-//					return true;
-//				}
-//			}
-//		}
-//		return super.binderHasChanges();
-//	}
-//
-//	// We need to prevent bean validation when there is currently no bean set or else we get
-//	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
-//	@Override
-//	protected boolean binderIsValid() {
-//		if (this.node != null) {
-//			ResultChecker rc = this.node.getResultChecker();
-//			if (rc != null) {
-//				Binder<ResultChecker> rcBinder = this.resultChecker.getBinder();
-//				if (rcBinder.getBean() != null && !rcBinder.isValid()) {
-//					log.debug("binderIsValid{}: false"); //$NON-NLS-1$
-//					return false;
-//				}
-//			}
-//		}
-//		return super.binderIsValid();
-//	}
 
 	static <N extends TCPConnection> ResultChecker.Condition getCondition(N n) {
 		return (n != null && n.getResultChecker() != null

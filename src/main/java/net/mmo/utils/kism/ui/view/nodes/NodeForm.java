@@ -170,7 +170,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected boolean hasUiChanges() {
 		if (!this.isVisible()) this.uiChanges = false; // if we are not visible (any more) we can't have changes (work-around for some buggy conditions).
 		return this.uiChanges
-			   || ((this.node != null) && (!(this.node instanceof RootNode) && (this.node.getParent() == null))); // a non-root node without parent is a free floating node which has changes by definition (since it was just created)
+			|| ((this.node != null) && (!(this.node instanceof RootNode) && (this.node.getParent() == null))); // a non-root node without parent is a free floating node which has changes by definition (since it was just created)
 	}
 
 	public void setState(Node.State state) {
@@ -193,14 +193,14 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 *         changes and the user responded with "cancel/stayOnNode"
 	 */
 	public boolean setNode(N newNode, boolean abandonChanges) {
-		log.debug("NodeForm.setNode({})", newNode); //$NON-NLS-1$
+		log.info("NodeForm.setNode({}) - UI has changes: {}", newNode, hasUiChanges()); //$NON-NLS-1$
 		if (this.node != null) {
 			if (hasUiChanges() && !abandonChanges) {
-				log.debug("we have unsaved UI changes!"); //$NON-NLS-1$
+				log.info("we have unsaved UI changes!"); //$NON-NLS-1$
 				new ConfirmDialog(Messages.getString("NodeForm.UnsavedChanges.Label"), //$NON-NLS-1$
 				                  Messages.getString("NodeForm.UnsavedChanges.Question"), //$NON-NLS-1$
-				                  Messages.getString("NodeForm.UnsavedChanges.Confirm"), (confirmEvent) -> { validateAndSave(); }, //$NON-NLS-1$
-				                  Messages.getString("NodeForm.UnsavedChanges.Reject"), (rejectEvent) -> { readBean(this.node); }, //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Confirm"), (confirmEvent) -> { validateAndSave(); this.uiChanges = false; }, //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Reject"), (rejectEvent) -> { readBean(this.node); this.uiChanges = false; }, //$NON-NLS-1$
 				                  Messages.getString("NodeForm.UnsavedChanges.Cancel"), (cancelEvent)  -> { /*nothing to do*/ } //$NON-NLS-1$
 				                  ).open();
 				return false;
@@ -281,17 +281,17 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				{ // Explicit validator instance
 					try {
 						this.getNode().onRootNodeDo((rootnode) -> rootnode.trickleDown((n) -> {
-							if (Objects.equals(n.getName(), value)) {
-								throw new RuntimeException(Messages.getString("NodeForm.Validator.NodeName.MustBeUnique")); //$NON-NLS-1$
+							if ((n != this.node) && Objects.equals(n.getName(), value)) {
+								throw new RuntimeException("dummy"); //$NON-NLS-1$ // we need to abort the trickleDown-method
 							}
 						}));
-						return nodeService.getRootNodes().stream()
-							.filter(rootNode -> rootNode != this.node) // not the same rootnode?
-							.filter(rootNode -> rootNode.getName().equals(value)) // same name as any other rootnode?
-							.findAny().isEmpty() ? ValidationResult.ok() : ValidationResult.error("xxx"); //$NON-NLS-1$
 					} catch (Throwable ex) {
-						return ValidationResult.error(Messages.getString("NodeForm.Validator.RootName.MustBeUnique")); //$NON-NLS-1$
+						return ValidationResult.error(Messages.getString("NodeForm.Validator.NodeName.MustBeUnique")); //$NON-NLS-1$
 					}
+					return nodeService.getRootNodes().stream()
+						.filter(rootNode -> rootNode != this.node) // not the same rootnode?
+						.filter(rootNode -> rootNode.getName().equals(value)) // same name as any other rootnode?
+						.findAny().isEmpty() ? ValidationResult.ok() : ValidationResult.error(Messages.getString("NodeForm.Validator.RootName.MustBeUnique")); //$NON-NLS-1$
 				})
 			.bind(Node::getName, Node::setName)
 		;

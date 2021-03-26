@@ -13,9 +13,11 @@ import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.JDBCConnectionForm;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.PingConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.RESTConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.SOAPConnectionForm;
 import org.springframework.stereotype.Component;
@@ -34,21 +36,28 @@ public class FormFactory <N extends Node>
 		NodeForm<N> form = this.forms.get(clazz);
 		if (form == null) {
 			log.info("creating new form for node-class {}:", clazz); //$NON-NLS-1$
-			if (clazz == RootNode.class) {
-				form = (NodeForm<N>)new RootNodeForm(nodeService);
-			} else if (clazz == IntermediateNode.class) {
-				form = (NodeForm<N>)new IntermediateNodeForm(nodeService);
-			} else if (clazz == RESTConnection.class) {
-				form = (NodeForm<N>)new RESTConnectionForm(nodeService);
-			} else if (clazz == SOAPConnection.class) {
-				form = (NodeForm<N>)new SOAPConnectionForm(nodeService);
-			} else if (clazz == JDBCConnection.class) {
-				form = (NodeForm<N>)new JDBCConnectionForm(nodeService);
-			} else {
-				throw new IllegalArgumentException("No form defined (yet) for node class " + clazz); //$NON-NLS-1$
+			try {
+				if (clazz == RootNode.class) {
+					form = (NodeForm<N>)new RootNodeForm(nodeService);
+				} else if (clazz == IntermediateNode.class) {
+					form = (NodeForm<N>)new IntermediateNodeForm(nodeService);
+				} else if (clazz == RESTConnection.class) {
+					form = (NodeForm<N>)new RESTConnectionForm(nodeService);
+				} else if (clazz == SOAPConnection.class) {
+					form = (NodeForm<N>)new SOAPConnectionForm(nodeService);
+				} else if (clazz == JDBCConnection.class) {
+					form = (NodeForm<N>)new JDBCConnectionForm(nodeService);
+				} else if (clazz == PingConnection.class) {
+					form = (NodeForm<N>)new PingConnectionForm(nodeService);
+				} else {
+					throw new IllegalArgumentException("No form defined (yet) for node class " + clazz); //$NON-NLS-1$
+				}
+				this.forms.put(clazz, form); // cache it
+				log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
+			} catch (Throwable t) { // also covers class not found and all such issues...
+				log.error("Error creating form for node class " + clazz, t); //$NON-NLS-1$
+				return null;
 			}
-			this.forms.put(clazz, form); // cache it
-			log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
 		} else {
 			log.info("found existing form for class {}: {}", clazz, form); //$NON-NLS-1$
 		}

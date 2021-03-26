@@ -56,11 +56,11 @@ abstract public class IPConnection extends LeafNode
 		}
 	}
 
-	private void updateResultingHostAddress() {
+	protected void updateResultingHostAddress() {
 		updateResultingValue(getHostAddress(), (str) -> setResultingHostAddress(str));
 	}
 
-	public String resultingUrlResolved() throws Exception {
+	public String resultingHostAddressResolved() throws Exception {
 		return resultingFieldResolved(getHostAddress(), () -> getResultingHostAddress(), (str) -> setResultingHostAddress(str));
 	}
 

@@ -202,8 +202,20 @@
 				"acceptableReturnCodes" : "200"
 			} ],
 			"expanded" : true
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping localhost",
+			"description" : "Ping localhost",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 5,
+			"checkResults" : false,
+			"hostAddress" : "localhost",
+			"windows" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -679,7 +691,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -694,8 +706,8 @@
 			"applicable" : true,
 			"properties" : {
 				"app_uid" : "nsw",
-				"app_host" : "---",
-				"mock_port" : "8090",
+				"app_host" : "<defined-in-lower-node>",
+				"mock_port" : ":8090",
 				"app_url" : "https://${app_host}/registerjp/",
 				"db_query" : "select TEXT from REF_ANREDE_TYP",
 				"db_url" : "${db_url_old}",
@@ -703,7 +715,7 @@
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "register",
 				"mock_host" : "zhstregisterjp-dev.elcadev.local",
-				"mock_url" : "http://${mock_host}:${mock_port}/zhstregisterjp-mock-external-services/"
+				"mock_url" : "http://${mock_host}${mock_port}/zhstregisterjp-mock-external-services/"
 			},
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
@@ -1148,9 +1160,9 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
@@ -1163,32 +1175,35 @@
 			"name" : "WPS Dev-Environments",
 			"description" : "WPS Development Environments",
 			"applicable" : true,
-			"properties" : { },
+			"properties" : {
+				"app_uid" : "power",
+				"mock_port" : ":8080",
+				"app_url" : "${app_prot}${app_host}${app_port}/wps/home.seam",
+				"app_port" : ":80",
+				"app_pwd" : "",
+				"mock_host" : "${app_host}",
+				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
+				"mock_uid" : "admin",
+				"app_host" : "<defined_in_lower_node>",
+				"db_url" : "${db_url_dmz}",
+				"mock_pwd" : "47rjUX8P109Qmvj",
+				"app_prot" : "http://"
+			},
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "WPS DMZ",
+				"name" : "WPS DMZ (old)",
 				"description" : "WPS DMZ environment (server: kstazh-wps.elca.ch)",
 				"applicable" : true,
 				"properties" : {
-					"app_uid" : "power",
-					"mock_port" : "8080",
-					"app_url" : "${app_prot}${app_host}${app_port}/wps/home.seam",
-					"app_port" : ":80",
-					"db_pwd" : "JENKINSWPS",
-					"app_pwd" : "",
-					"mock_url" : "http://${app_host}:${mock_port}/#mainInfo",
-					"mock_uid" : "admin",
 					"app_host" : "kstazh-wps.elca.ch",
-					"db_url" : "${db_url_dmz}",
 					"db_uid" : "WPSJENKINS",
-					"mock_pwd" : "47rjUX8P109Qmvj",
-					"app_prot" : "http://"
+					"db_pwd" : "JENKINSWPS"
 				},
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "WPS DMZ DB-ping",
+					"name" : "WPS DMZ (old) DB-ping",
 					"description" : "ping WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1207,7 +1222,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "WPS DMZ DB query",
+					"name" : "WPS DMZ (old) DB query",
 					"description" : "send specific query to WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1226,7 +1241,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "WPS DMZ Mock",
+					"name" : "WPS DMZ (old) Mock",
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
@@ -1250,11 +1265,110 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "WPS DMZ Application basic connection",
+					"name" : "WPS DMZ (old) Application basic connection",
 					"description" : "WPS Application server DMZ",
 					"applicable" : true,
 					"properties" : { },
 					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${app_url}",
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operand" : "Steueramt - WPS"
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				} ],
+				"expanded" : true
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "WPS DMZ (new)",
+				"description" : "WPS DMZ environment (server: ksta-zh-wps-dmz.elcadev.local)",
+				"applicable" : true,
+				"properties" : {
+					"app_host" : "ksta-zh-wps-dmz.elcadev.local",
+					"db_uid" : "WPSJENKINS",
+					"db_pwd" : "JENKINSWPS"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "WPS DMZ DB-ping",
+					"description" : "ping WPS DMZ DB",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operand" : "DUMMY"
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db+pwd}",
+					"query" : "select * from DUAL",
+					"driverName" : "oracle.jdbc.driver.OracleDriver"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "WPS DMZ DB query",
+					"description" : "send specific query to WPS DMZ DB",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${db_url}",
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operand" : "WV-Aktie"
+					},
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from PSTA_NOTIFICATION_TYPE",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "WPS DMZ Mock",
+					"description" : "Mocker for WPS DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${mock_url}",
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operand" : "<title>KStA Mocker</title>"
+					},
+					"method" : "GET",
+					"targetUid" : "${mock_uid}",
+					"targetPwd" : "${mock_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "PS DMZ Application basic connection",
+					"description" : "REST Connection 1",
+					"applicable" : true,
+					"properties" : { },
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1300,8 +1414,8 @@
 				"properties" : {
 					"app_uid" : "THOMAS",
 					"app_host" : "ksta-zh-rwtool.elcadev.local",
-					"app_url" : "http://${app_host}:${app_port}/rwtool/",
-					"app_port" : "8080",
+					"app_url" : "http://${app_host}${app_port}/rwtool/",
+					"app_port" : ":8080",
 					"db_url" : "${db_url_dmz}",
 					"db_uid" : "ZHRWTTEST",
 					"db_pwd" : "ZHRWTTEST",

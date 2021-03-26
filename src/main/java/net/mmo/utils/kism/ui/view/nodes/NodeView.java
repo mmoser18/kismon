@@ -314,18 +314,21 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// connect view and model:
 		this.tree.asSingleSelect().addValueChangeListener(event ->
 			{
-//				if (event.isFromClient()) { // can also be triggered programmatically!
+				if (event.isFromClient()) { // can also be triggered programmatically!
 					@SuppressWarnings("unchecked")
 					N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
 					log.info("Selection changed: node='{}'.", (node != null ? node.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
-					if (this.form != null && this.form.isVisible()) {
-						if (node != null) {
-							editNode(node, null);
-						} else {
-							closeEditor();
+					if (this.form != null) {
+						if (this.form.isVisible()) {
+							if (node != null) {
+								editNode(node, null);
+							} else {
+								closeEditor();
+							}
 						}
+						this.form.setUiChanges(false);
 					}
-//				}
+				}
 			});
 
 		this.tree.addItemClickListener(event ->
@@ -477,6 +480,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		if (NodeView.alwaysSave) saveNode(newNode);
 		updateTree();
 		select(newNode); // and select it
+		this.form.setUiChanges(false);
 	}
 
 	private void ifSingleNodeSelectedDo(Consumer<Node> action) {
@@ -545,8 +549,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	@SuppressWarnings("unchecked")
 	public void editNode(N node, IntermediateNode parentNode) {
-		log.info("editNode {} (parent='{}')", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
-		if (this.form != null) {
+		log.info("editNode '{}' (parent='{}')", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
+		if (this.form != null) { // form displayed?
+			log.info("form for '{}' has changes: {}", node.getName(), this.form.hasUiChanges()); //$NON-NLS-1$
 			N currentNode = this.form.getNode();
 			if (!this.form.setNode(null, false)) { // signal that we want to leave that node:
 				select(currentNode); // if there are unsaved changes remain on form's current node
@@ -565,18 +570,18 @@ public class NodeView <N extends Node> extends VerticalLayout
 				return;
 			}
 
-			if (newForm != this.form) { // different form assigned:
-				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
-				this.form = newForm;
+			if (newForm != this.form) { // new or different form assigned:
 				this.formWrapper.removeAll();
-				this.formWrapper.add(this.form);
+				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
+				this.formWrapper.add(newForm);
+				this.form = newForm;
 			}
 			this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
 			this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 			this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
 			this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
-			this.form.setNode(node, false);
 
+			this.form.setNode(node, true);
 			this.form.setVisible(true);
 			addClassName("editing"); //$NON-NLS-1$
 		} catch (java.lang.IllegalStateException ex) {
@@ -587,10 +592,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void closeEditor() {
-		log.debug("NodeView.closeEditor"); //$NON-NLS-1$
-		this.form.setNode(null, false);
-		this.form.setVisible(false);
-		removeClassName("editing"); //$NON-NLS-1$
+		log.info("NodeView.closeEditor"); //$NON-NLS-1$
+		if (this.form.setNode(null, false)) {
+			this.form.setVisible(false);
+			removeClassName("editing"); //$NON-NLS-1$
+		}
 	}
 
 	private void removeNodes(Collection<Node> nodes) {

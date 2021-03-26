@@ -67,8 +67,8 @@ public abstract class TCPConnectionForm <N extends TCPConnection> extends LeafNo
 					}
 				}
 			});
-		// had to disable the URL validation here (and moved it to HTTPConnectionForm and JDBCConnectionForm)
-		// since JDBC-URLs look completely differently and didn't pass the conventional URI check!
+		// Had to disable the URL validation here (and moved it to HTTPConnectionForm and JDBCConnectionForm)
+		// since JDBC-URLs look completely differently and didn't pass Vaadin's conventional URI check!
 		// this.binder.forField(this.url)
 		//	.withValidator(this.urlValidator)
 		//	.bind(TCPConnection::getUrl, TCPConnection::setUrl);
