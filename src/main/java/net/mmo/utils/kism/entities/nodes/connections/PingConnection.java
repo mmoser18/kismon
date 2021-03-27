@@ -74,12 +74,12 @@ public class PingConnection extends IPConnection
 		Process proc = this.processBuilder.start();
 		if (proc.waitFor(getTimeout()+3, TimeUnit.SECONDS)) {
 			long callDuration = System.nanoTime() - startTime;
-			log.info("ping to '{}' responded in {} msecs", getResultingHostAddress(), callDuration / 1e6); //$NON-NLS-1$
+			log.debug("ping to '{}' responded in {} msecs", getResultingHostAddress(), callDuration / 1e6); //$NON-NLS-1$
 			setState(State.OK);
 			setDuration(callDuration);
 			setRequestResult(getState().name() + '/' + (callDuration / 1e6)/*=nano-secs to milli-secs*/);
 		} else {
-			log.info("ping to '{}' timed out.", getResultingHostAddress()); //$NON-NLS-1$
+			log.debug("ping to '{}' timed out.", getResultingHostAddress()); //$NON-NLS-1$
 			setState(State.FAILED);
 			setDuration(-1);
 			setRequestResult(getState().name() + "/timed out"); //$NON-NLS-1$
