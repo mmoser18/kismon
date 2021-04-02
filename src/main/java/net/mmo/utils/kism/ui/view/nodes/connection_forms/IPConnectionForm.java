@@ -55,7 +55,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 				}
 			});
 
-		this.resultingHostAddress = new TextField(Messages.getString("IPConnectionForm.ResultingHostAddress.Value")); //$NON-NLS-1$
+		this.resultingHostAddress = new TextField(Messages.getString("IPConnectionForm.ResultingHostAddress.Label")); //$NON-NLS-1$
 		this.resultingHostAddress.setClassName(ResultingHostAddressClassName);
 		this.resultingHostAddress.setThemeName(LabelPaddingTheme);
 
@@ -78,25 +78,25 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 		return res;
 	}
 
-	static <N extends TCPConnection> ResultChecker.Condition getCondition(N n) {
+	static <N extends IPConnection> ResultChecker.Condition getCondition(N n) {
 		return (n != null && n.getResultChecker() != null
 				? n.getResultChecker().getCondition()
 				: null);
 	}
 
-	static <N extends TCPConnection> void setCondition(N n, ResultChecker.Condition condition) {
+	static <N extends IPConnection> void setCondition(N n, ResultChecker.Condition condition) {
 		if (n != null && n.getResultChecker() != null) {
 			n.getResultChecker().setCondition(condition);
 		}
 	}
 
-	static <N extends TCPConnection> String getOperand(N n) {
+	static <N extends IPConnection> String getOperand(N n) {
 		return (n != null && n.getResultChecker() != null
 				? n.getResultChecker().getOperand()
 				: null);
 	}
 
-	static <N extends TCPConnection> void setOperand(N n, String operand) {
+	static <N extends IPConnection> void setOperand(N n, String operand) {
 		if (n != null && n.getResultChecker() != null) {
 			n.getResultChecker().setOperand(operand);
 		}

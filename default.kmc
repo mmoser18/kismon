@@ -201,7 +201,7 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping localhost",
@@ -213,7 +213,26 @@
 			"timeout" : 5,
 			"checkResults" : false,
 			"hostAddress" : "localhost",
-			"windows" : true
+			"resultChecker" : null
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+			"name" : "SSH Connection 0",
+			"description" : "SSH Connection 0",
+			"applicable" : true,
+			"properties" : { },
+			"active" : false,
+			"period" : 60,
+			"timeout" : 5,
+			"checkResults" : false,
+			"hostAddress" : "localhost",
+			"resultChecker" : {
+				"condition" : null,
+				"operand" : ""
+			},
+			"hostPort" : 22,
+			"username" : "",
+			"password" : "",
+			"command" : "echo hello"
 		} ],
 		"expanded" : true
 	}, {

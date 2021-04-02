@@ -45,7 +45,6 @@ abstract public class TCPConnection extends LeafNode
 	@JoinColumn(name = "result_checker_id")
 	protected ResultChecker resultChecker;
 
-
 	@JsonIgnore
 	public transient static String sslVersions;
 	@JsonIgnore

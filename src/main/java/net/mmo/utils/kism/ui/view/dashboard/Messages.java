@@ -10,8 +10,7 @@ import java.util.ResourceBundle;
 
 public class Messages
 {
-	private static final String BUNDLE_NAME =
-	                                        "net.mmo.utils.kism.ui.view.dashboard.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = Messages.class.getPackageName() + ".messages"; //$NON-NLS-1$
 
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 

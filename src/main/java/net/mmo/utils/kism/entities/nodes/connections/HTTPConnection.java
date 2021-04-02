@@ -177,33 +177,34 @@ abstract public class HTTPConnection extends TCPConnection
 //	@Override
 //	public void setProxyHost(String proxyHost) {
 //		super.setProxyHost(proxyHost);
-//		setHttpClient(null); // trigger a recreation of the connection if the proxyHost changes
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyHost changed
 //	}
 //	@Override
 //	public void setProxyPort(int proxyPort) {
 //		super.setProxyHost(proxyPort);
-//		setHttpClient(null); // trigger a recreation of the connection if the proxyPort changes
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyPort changed
 //	}
 //	@Override
 //	public void setProxyUid(String proxyUid) {
 //		super.setProxyHost(proxyUid);
-//		setHttpClient(null); // trigger a recreation of the connection if the proxyUid changes
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyUid changed
 //	}
 //	@Override
 //	public void setProxyPwd(String proxyPwd) {
 //		super.setProxyPwd(proxyPwd);
-//		setHttpClient(null); // trigger a recreation of the connection if the proxyPwd changes
+//		setHttpClient(null); // trigger a recreation of the connection if the proxyPwd changed
 //	}
 
 	@Override
 	public void setResultingUrl(String resultingUrl) {
 		super.setResultingUrl(resultingUrl);
-		setHttpRequest(null); // trigger a recreation of the request if the proxyPwd changes
+		setHttpRequest(null); // trigger a recreation of the request if the URL changed
 	}
+
 	@Override
 	public void setTimeout(int timeout) {
 		super.setTimeout(timeout);
-		setHttpClient(null); // trigger a recreation of the connection if the proxyPwd changes
+		setHttpClient(null); // trigger a recreation of the connection if the timeout changes
 	}
 
 	public void setMethod(HTTP_Method method) {

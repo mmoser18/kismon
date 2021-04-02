@@ -3,16 +3,13 @@
  * @since 10.12.2020
  */
 
-package net.mmo.utils.kism.ui.view.nodes;
+package net.mmo.utils.kism.entities.nodes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.mmo.utils.kism.entities.nodes.LeafNode;
-import net.mmo.utils.kism.entities.nodes.Node;
-import net.mmo.utils.kism.entities.nodes.NodeType;
 import org.springframework.stereotype.Component;
 
 @Component

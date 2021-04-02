@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.persistence.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +23,12 @@ public class PingConnection extends IPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
 
-	boolean isWindows;
-	{
-		this.isWindows = System.getProperty("os.name").toLowerCase().contains("win"); //$NON-NLS-1$ //$NON-NLS-2$
+	@JsonIgnore
+	final static boolean isWindows;
+	static {
+		isWindows = System.getProperty("os.name").toLowerCase().contains("win"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
+	@JsonIgnore
 	transient ProcessBuilder processBuilder;
 
 
@@ -63,7 +66,7 @@ public class PingConnection extends IPConnection
 		if (this.processBuilder == null) {
 			this.processBuilder =
 				new ProcessBuilder("ping", //$NON-NLS-1$
-				                   (this.isWindows ? "-n" : "-c"), "1", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				                   (isWindows ? "-n" : "-c"), "1", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				                   "-w", Integer.toString(getTimeout() * 1000), // timeout in milliseconds //$NON-NLS-1$
 				                   resultingHostAddressResolved());
 		}

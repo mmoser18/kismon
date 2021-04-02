@@ -119,7 +119,6 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 		this.checkResults = new Checkbox(Messages.getString("LeafNodeForm.CheckResult.Label")); //$NON-NLS-1$
 		this.checkResults.setClassName(ActiveClassName);
 
-
 		HorizontalLayout activeAndPeriod = new HorizontalLayout(this.active, this.period, this.timeout);
 		activeAndPeriod.addClassName(CombinedClassName);
 

@@ -16,10 +16,12 @@ import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.JDBCConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.PingConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.RESTConnectionForm;
 import net.mmo.utils.kism.ui.view.nodes.connection_forms.SOAPConnectionForm;
+import net.mmo.utils.kism.ui.view.nodes.connection_forms.SSHConnectionForm;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -49,6 +51,8 @@ public class FormFactory <N extends Node>
 					form = (NodeForm<N>)new JDBCConnectionForm(nodeService);
 				} else if (clazz == PingConnection.class) {
 					form = (NodeForm<N>)new PingConnectionForm(nodeService);
+				} else if (clazz == SSHConnection.class) {
+					form = (NodeForm<N>)new SSHConnectionForm(nodeService);
 				} else {
 					throw new IllegalArgumentException("No form defined (yet) for node class " + clazz); //$NON-NLS-1$
 				}

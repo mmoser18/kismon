@@ -29,13 +29,27 @@ public class UIHandlerSupport
 	}
 
 	public static <T extends Object> void executeLater(Component comp,
-                                                       Command longRunningActivity) {
+	                                                   Command longRunningActivity) {
 		log.info("executeLater({})", longRunningActivity); //$NON-NLS-1$
 		executeLater(comp, () -> longRunningActivity, null);
 	}
 
 	public static <T extends Object> void executeLater(Component comp,
-                                                       Supplier<T> longRunningActivity,
+	                                                   long delay,  // in milliseconds
+	                                                   Command uiActivity) {
+		executeLater(comp, () -> {
+				try {
+					Thread.sleep(delay);
+				} catch (InterruptedException ex) {
+					log.warn("thread was interrupted"); //$NON-NLS-1$
+				}
+				return null;
+			},
+			(dummy) -> uiActivity.execute());
+	}
+
+	public static <T extends Object> void executeLater(Component comp,
+	                                                   Supplier<T> longRunningActivity,
 	                                                   Consumer<T> uiActivity) {
 		log.info("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
 		if (DO_ASYNC) { // offload the heavy lifting to a different thread:

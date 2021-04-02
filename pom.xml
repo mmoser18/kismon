@@ -254,13 +254,13 @@
 			<scope>runtime</scope>
 		</dependency>
 		<!-  -->
-		<!-- for Oracle JDBC: ->
+		<!-- Oracle JDBC / included for JDBC driver : -->
 		<dependency>
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<version>11.2.0.3</version>
 		</dependency>
-		<!- -->
+		<!-- -->
 
 		<!-- required when using Vaadin BeanValidators: -->
 		<!-- Hibernate validator - Bean validation API Implementation -->

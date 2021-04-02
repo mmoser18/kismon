@@ -9,6 +9,7 @@ import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 
 public enum NodeType {
 	RootNode(RootNode.class),
@@ -17,6 +18,7 @@ public enum NodeType {
 	SOAPConnection(SOAPConnection.class),
 	JDBCConnection(JDBCConnection.class),
 	PingConnection(PingConnection.class),
+	SSHConnection(SSHConnection.class),
 	;
 
 	Class<? extends Node> nodeClass;
