@@ -46,7 +46,7 @@ abstract public class TCPConnection extends LeafNode
 	protected ResultChecker resultChecker;
 
 	@JsonIgnore
-	public transient static String sslVersions;
+	public transient static String acceptableSSLVersions;
 	@JsonIgnore
 	public transient static boolean disableHostNameVerification;
 	@JsonIgnore

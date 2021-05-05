@@ -51,7 +51,7 @@ public class Application extends SpringBootServletInitializer
 
 			String JavaHome = System.getProperty("$JAVA HOME"); //$NON-NLS-1$
 
-			TCPConnection.sslVersions =
+			TCPConnection.acceptableSSLVersions =
 				AppProperties.getProperties().getProperty("SupportedSslVersions", //$NON-NLS-1$
 				                                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3"); //$NON-NLS-1$
 
