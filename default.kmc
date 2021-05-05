@@ -201,14 +201,14 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : false
+			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping localhost",
 			"description" : "Ping localhost",
 			"applicable" : true,
 			"properties" : { },
-			"active" : true,
+			"active" : false,
 			"period" : 60,
 			"timeout" : 5,
 			"checkResults" : false,
@@ -234,7 +234,7 @@
 			"password" : "",
 			"command" : "echo hello"
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -369,8 +369,8 @@
 					"checkResults" : true,
 					"url" : "${app_url}services/EQuestService",
 					"resultChecker" : {
-						"condition" : null,
-						"operand" : ""
+						"condition" : "Contains",
+						"operand" : "<aktuelleZeit>"
 					},
 					"method" : "POST",
 					"targetUid" : "",
@@ -517,8 +517,8 @@
 					"checkResults" : true,
 					"url" : "${app_url}services/EQuestService",
 					"resultChecker" : {
-						"condition" : null,
-						"operand" : ""
+						"condition" : "Contains",
+						"operand" : "<aktuelleZeit>"
 					},
 					"method" : "POST",
 					"targetUid" : "",
@@ -556,12 +556,12 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DMZ",
 				"description" : "ZHQuest DMZ Environment (server: ksta-zh-zhquest-dmz.elca.ch)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"app_host" : "ksta-zh-zhquest-dmz.elca.ch",
 					"db_url" : "${db_url_dmz}",
@@ -706,11 +706,11 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -883,7 +883,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RJP QA",
@@ -1030,7 +1030,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RegisterJP PROD",
@@ -1179,9 +1179,9 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : false
+			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
@@ -1196,17 +1196,29 @@
 			"applicable" : true,
 			"properties" : {
 				"app_uid" : "power",
-				"mock_port" : ":8080",
 				"app_url" : "${app_prot}${app_host}${app_port}/wps/home.seam",
+				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/wps/home.seam",
+				"app_url_ext" : "${app_prot_ext}${app_host}${app_port_ext}/wps/home.seam",
 				"app_port" : ":80",
+				"app_port_int" : ":80",
+				"app_port_ext" : ":80",
+				"app_prot" : "http://"
+				"app_prot_int" : "http://"
+				"app_prot_ext" : "https://"
 				"app_pwd" : "",
 				"mock_host" : "${app_host}",
+				"mock_port" : ":8080",
+				"mock_port_int" : ":8080",
+				"mock_port_ext" : ":444",
+				"mock_prot_int" : "http://",
+				"mock_prot_ext" : "https://",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
+				"mock_url_int" : "${mock_prot_int}${mock_host}${mock_port_int}/#mainInfo",
+				"mock_url_ext" : "${mock_prot_ext}${mock_host}${mock_port_ext}/#mainInfo",
 				"mock_uid" : "admin",
 				"app_host" : "<defined_in_lower_node>",
 				"db_url" : "${db_url_dmz}",
 				"mock_pwd" : "47rjUX8P109Qmvj",
-				"app_prot" : "http://"
 			},
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
@@ -1359,15 +1371,15 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "WPS DMZ Mock",
+					"name" : "WPS DMZ Mock (internal/HTTP)",
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
-					"url" : "${mock_url}",
+					"url" : "${mock_url_int}",
 					"resultChecker" : {
 						"condition" : "Contains",
 						"operand" : "<title>KStA Mocker</title>"
@@ -1383,15 +1395,63 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "PS DMZ Application basic connection",
-					"description" : "REST Connection 1",
+					"name" : "WPS DMZ Mock (external/HTTPS)",
+					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
-					"active" : false,
+					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
-					"url" : "${app_url}",
+					"url" : "${mock_url_ext}",
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operand" : "<title>KStA Mocker</title>"
+					},
+					"method" : "GET",
+					"targetUid" : "${mock_uid}",
+					"targetPwd" : "${mock_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "PS DMZ Application basic connection (internal/HTTP)",
+					"description" : "WPS Application server DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${app_url_int}",
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operand" : "Steueramt - WPS"
+					},
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "PS DMZ Application basic connection (external/HTTPS)",
+					"description" : "WPS Application server DMZ",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"url" : "${app_url_ext}",
 					"resultChecker" : {
 						"condition" : "Contains",
 						"operand" : "Steueramt - WPS"
@@ -1410,14 +1470,14 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
 		"description" : "All RW-Tool-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
-		"condition" : "ALL_MUST_BE_OK",
+		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RW-Tool Dev-Environments",
