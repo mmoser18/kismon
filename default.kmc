@@ -1196,29 +1196,29 @@
 			"applicable" : true,
 			"properties" : {
 				"app_uid" : "power",
-				"app_url" : "${app_prot}${app_host}${app_port}/wps/home.seam",
-				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/wps/home.seam",
-				"app_url_ext" : "${app_prot_ext}${app_host}${app_port_ext}/wps/home.seam",
-				"app_port" : ":80",
-				"app_port_int" : ":80",
-				"app_port_ext" : ":80",
-				"app_prot" : "http://"
-				"app_prot_int" : "http://"
-				"app_prot_ext" : "https://"
-				"app_pwd" : "",
-				"mock_host" : "${app_host}",
-				"mock_port" : ":8080",
-				"mock_port_int" : ":8080",
-				"mock_port_ext" : ":444",
-				"mock_prot_int" : "http://",
 				"mock_prot_ext" : "https://",
+				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
-				"mock_url_int" : "${mock_prot_int}${mock_host}${mock_port_int}/#mainInfo",
-				"mock_url_ext" : "${mock_prot_ext}${mock_host}${mock_port_ext}/#mainInfo",
-				"mock_uid" : "admin",
 				"app_host" : "<defined_in_lower_node>",
+				"app_port_ext" : ":443",
+				"app_prot_int" : "http://",
 				"db_url" : "${db_url_dmz}",
+				"app_url_ext" : "${app_prot_ext}${app_host}${app_port_ext}/wps/home.seam",
+				"mock_url_ext" : "${mock_prot_ext}${mock_host}${mock_port_ext}/#mainInfo",
+				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/wps/home.seam",
+				"app_pwd" : "",
+				"mock_uid" : "admin",
+				"mock_port_ext" : ":444",
 				"mock_pwd" : "47rjUX8P109Qmvj",
+				"app_prot_ext" : "https://",
+				"mock_port" : ":8080",
+				"app_port" : ":80",
+				"mock_url_int" : "${mock_prot_int}${mock_host}${mock_port_int}/#mainInfo",
+				"app_port_int" : ":80",
+				"app_prot" : "http://",
+				"app_url" : "${app_prot}${app_host}${app_port}/wps/home.seam",
+				"mock_host" : "${app_host}",
+				"mock_prot_int" : "http://"
 			},
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
@@ -1470,7 +1470,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
