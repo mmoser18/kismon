@@ -322,9 +322,9 @@ abstract public class HTTPConnection extends TCPConnection
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
-		if (sslVersions != null && !sslVersions.isBlank()) {
+		if (acceptableSSLVersions != null && !acceptableSSLVersions.isBlank()) {
 			SSLParameters sslParameters = new SSLParameters();
-			sslParameters.setProtocols(sslVersions.split(",|\\s")); //$NON-NLS-1$
+			sslParameters.setProtocols(acceptableSSLVersions.split(",|\\s")); //$NON-NLS-1$
 			builder.sslParameters(sslParameters);
 		}
 
