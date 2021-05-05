@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.vaadin.flow.component.notification.Notification;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.backend.repositories.NodeRepository;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
@@ -44,8 +43,6 @@ public class NodeService
 	@Value("${config.file:null}") // allow specification via application.properties
 	protected String configFile;
 
-	private NodeRepository nodeRepository;
-
 	private List<RootNode> roots = new ArrayList<>();
 	private ObjectMapper mapper;
 
@@ -54,12 +51,9 @@ public class NodeService
 		this.commonRootProperties.putAll(System.getenv()); // per default all Environment variables
 	}
 
-	public NodeService(NodeRepository nodeRepository) {
+	public NodeService() {
 		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-//		this.intermediateNodeRepository = intermediateNodeRepository;
-//		this.leafNodeRepository = leafNodeRepository;
-		this.nodeRepository = nodeRepository;
 		if (getRootNodes().isEmpty()) {
 			List<String> args = (applicationArguments != null ? applicationArguments.getNonOptionArgs() : null);
 			String fileName = (args == null || args.isEmpty() ? this.configFile : args.get(0)); // cmd-line beats properties
@@ -71,33 +65,12 @@ public class NodeService
 		return this.roots;
 	}
 
-//	public List<Node> findAll() {
-//		return this.nodeRepository.findAll();
-//	}
-//
-//	public List<Node> findAll(String stringFilter) {
-//		if (stringFilter == null || stringFilter.isEmpty()) {
-//			return this.nodeRepository.findAll();
-//		} else {
-//			return this.nodeRepository.search(stringFilter);
-//		}
-//	}
-//
-//	public long count() {
-//		return this.nodeRepository.count();
-//	}
-
-	public void delete(Node node) {
-		this.nodeRepository.delete(node);
-	}
-
 	public void save(Node node) {
 		//save to repo:
 		if (node == null) {
 			log.error("Node is null. Are you sure you have connected your form to the application?"); //$NON-NLS-1$
 			return;
 		}
-		this.nodeRepository.save(node);
 		// save to file:
 		RootNode rootNode = getCorrespondingRootNode(node);
 		saveRootNodeToFile(rootNode);
@@ -259,7 +232,6 @@ public class NodeService
 	public Node removeChild(IntermediateNode parent, Node child) {
 		if (parent == null) throw new IllegalArgumentException("parent must not be null for removeChild"); //$NON-NLS-1$
 		parent.removeChild(child);
-		this.nodeRepository.delete(child);
 		if (log.isTraceEnabled()) log.trace("removed child '{}': \n{}", child.getName(), PrettyPrint.prettyPrinted(parent)); //$NON-NLS-1$
 		return child;
 	}
@@ -309,16 +281,4 @@ public class NodeService
 				});
 		}
 	}
-
-//	public List<Node> findAll() {
-//		return this.nodeRepository.findAll();
-//	}
-//
-//	public List<Node> findAll(String stringFilter) {
-//		if (stringFilter == null || stringFilter.isEmpty()) {
-//			return this.nodeRepository.findAll();
-//		} else {
-//			return this.nodeRepository.search(stringFilter);
-//		}
-//	}
 }
