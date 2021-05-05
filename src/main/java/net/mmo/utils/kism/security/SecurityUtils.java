@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.security;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,13 +32,35 @@ public final class SecurityUtils
 			&& Stream.of(HandlerHelper.RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
 	}
 
-	static boolean isUserLoggedIn() {
+	static Authentication isAuthenticated() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		boolean userIsLoggedIn =
-		       authentication != null
-		       && !(authentication instanceof AnonymousAuthenticationToken)
-			   && authentication.isAuthenticated();
-		log.info("user successfully logged-in.");
-		return userIsLoggedIn;
+			authentication != null
+			&& !(authentication instanceof AnonymousAuthenticationToken)
+			&& authentication.isAuthenticated();
+
+//		if (userIsLoggedIn) {
+//			log.info("user successfully logged-in");
+//		} else {
+//			log.info("user not logged-in.");
+//		}
+		return (userIsLoggedIn ? authentication : null);
+	}
+
+	static boolean isUserLoggedIn() {
+		return isAuthenticated() != null;
+	}
+
+	static boolean isAsminUser() {
+		Authentication authentication = isAuthenticated();
+		if (authentication != null) {
+			Object obj = authentication.getDetails();
+			Collection<String> auths = authentication.getAuthorities().stream()
+				.map((auth) -> auth.getAuthority())
+				.collect(Collectors.toList());
+			log.info("user details: {} / authorities: {}", obj, auths);
+			return auths.contains("ADMIN");
+		}
+		return false;
 	}
 }

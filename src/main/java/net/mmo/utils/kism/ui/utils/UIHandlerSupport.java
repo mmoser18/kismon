@@ -70,10 +70,10 @@ public class UIHandlerSupport
 	                                                           Consumer<T> uiActivity) {
 		final T result; // final to make the lambda happy...
 		if (longRunningActivity != null) {
-			log.info("longRunningActivity start:"); //$NON-NLS-1$
+			log.debug("longRunningActivity start:"); //$NON-NLS-1$
 			try {
 				result = longRunningActivity.get();
-				log.info("longRunningActivity done."); //$NON-NLS-1$
+				log.debug("longRunningActivity done."); //$NON-NLS-1$
 			} catch (Exception ex) {
 				log.error("longRunningActivity failed.", ex); //$NON-NLS-1$
 				return;
@@ -85,16 +85,16 @@ public class UIHandlerSupport
 			if (RESERVE_UI_BEFORE_UPDATE) {
 				log.info("obtaining GUI access:"); //$NON-NLS-1$
 				comp.getUI().ifPresentOrElse((ui) -> ui.access(() -> {
-				                            	log.info("uiActivity start:"); //$NON-NLS-1$
+				                            	log.debug("uiActivity start:"); //$NON-NLS-1$
 				                            	uiActivity.accept(result);
-				                            	log.info("uiActivity done."); //$NON-NLS-1$
+				                            	log.debug("uiActivity done."); //$NON-NLS-1$
 				                             }),
-				                             () -> log.info("no UI obtained.")); //$NON-NLS-1$
+				                             () -> log.warn("no UI obtained.")); //$NON-NLS-1$
 			} else {
-				log.info("uiActivity start:"); //$NON-NLS-1$
+				log.debug("uiActivity start:"); //$NON-NLS-1$
 				try {
 					uiActivity.accept(result);
-					log.info("uiActivity done."); //$NON-NLS-1$
+					log.debug("uiActivity done."); //$NON-NLS-1$
 				} catch (Exception ex) {
 					log.error("uiActivity failed.", ex); //$NON-NLS-1$
 				}
