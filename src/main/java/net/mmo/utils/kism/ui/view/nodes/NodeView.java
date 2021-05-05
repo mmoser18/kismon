@@ -41,6 +41,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.Node;
+import net.mmo.utils.kism.entities.nodes.NodeFactory;
 import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.ui.CommonConstants;
@@ -48,6 +49,7 @@ import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
+import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import org.springframework.context.annotation.Scope;
@@ -117,7 +119,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.content = new SplitLayout(this.tree, this.formWrapper);
 			this.content.addClassName(ViewContentClassName);
 			this.content.setSizeFull();
-			this.content.setSplitterPosition(200); // initial position
+			// this.content.setSplitterPosition(200); // initial position
+			this.content.setSplitterPosition(100); // initial position
 
 			// this.content.setOrientation(this.contentDirection.getOrientation());
 			CommonConstants.setClassName(this.content, this.contentDirection);
@@ -127,8 +130,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
 		}
-		this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
 		this.tree.getDataProvider().refreshAll();
+		recalculateColumnWidths(1000); // make sure the column widths are adjusted
 
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
@@ -350,13 +353,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.trace("Expanded {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			nodes.forEach(node -> ((IntermediateNode)node).expanded = true);
-			this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
+			if (event.isFromClient()) recalculateColumnWidths(); // make sure the column widths are adjusted
 		});
 		this.tree.addCollapseListener(event -> {
 			Collection<Node> nodes = event.getItems(); // getValue() returns the selected Node or null if none is selected /
 			log.trace("Collapsed {} node(s): '{}'.", nodes.size(), nodes); //$NON-NLS-1$
 			nodes.forEach(node -> ((IntermediateNode)node).expanded = false);
-			this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
+			if (event.isFromClient()) recalculateColumnWidths(); // make sure the column widths are adjusted
 		});
 
 		// this.tree.getColumns().forEach(col -> col.setAutoWidth(true));
@@ -571,10 +574,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 			}
 
 			if (newForm != this.form) { // new or different form assigned:
-				this.formWrapper.removeAll();
 				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
-				this.formWrapper.add(newForm);
 				this.form = newForm;
+				this.formWrapper.removeAll();
+				this.formWrapper.add(newForm);
+				this.formWrapper.setSizeFull();
+				this.content.setSplitterPosition(50);
 			}
 			this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
 			this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
@@ -583,6 +588,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 			this.form.setNode(node, true);
 			this.form.setVisible(true);
+
 			addClassName("editing"); //$NON-NLS-1$
 		} catch (java.lang.IllegalStateException ex) {
 			log.error("WTF?", ex); //$NON-NLS-1$
@@ -594,8 +600,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void closeEditor() {
 		log.info("NodeView.closeEditor"); //$NON-NLS-1$
 		if (this.form.setNode(null, false)) {
-			this.form.setVisible(false);
 			removeClassName("editing"); //$NON-NLS-1$
+			this.form.setVisible(false);
+			this.formWrapper.setSizeUndefined();
+			this.content.setSplitterPosition(100);
 		}
 	}
 
@@ -727,7 +735,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		select(node);
 	}
 
-
 //	@SuppressWarnings("null")
 //	private void readLocalFile() {
 //		String fileName = null; // TODO : provide some file selection box...
@@ -766,7 +773,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 //		}
 		// expand/collapse tree to previously saved state:
 		getRootNodesAsBareNodes().forEach(node -> adjustCollapseExpanded(node));
-		this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
+		recalculateColumnWidths(); // make sure the column widths are adjusted
+	}
+
+	private void recalculateColumnWidths() {
+		recalculateColumnWidths(250);
+	}
+	private void recalculateColumnWidths(long delay) {
+		// original
+		// this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
+		// with 1/4 sec delay we finally saw some improvement:
+		UIHandlerSupport.executeLater(this, delay, () -> this.tree.recalculateColumnWidths());
 	}
 
 	private void updateSubTree(IntermediateNode parent) {
