@@ -284,7 +284,7 @@ public class JDBCConnection extends TCPConnection
 	private void deriveState() throws Exception {
 		if (isCheckResults()) {
 			if (getResultChecker() != null) {
-				setState(getResultChecker().checkResult(this,getResponsePayload()) ? State.OK : State.FAILED);
+				setState(getResultChecker().checkResult(this, getResponsePayload()) ? State.OK : State.FAILED);
 				return;
 			} else {
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
