@@ -19,6 +19,7 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
@@ -45,16 +46,19 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 //	static final String KeyClassName = NodeFormField + "privkey"; //$NON-NLS-1$
 	static final String AuthArgClassName = NodeFormField + "authArg"; //$NON-NLS-1$
 
+	static final String FingerprintClassName  = NodeFormField + "fingerprint"; //$NON-NLS-1$
+
 	static final String CommandClassName  = NodeFormField + "command"; //$NON-NLS-1$
 	static final String ResponseClassName = NodeFormField + "response"; //$NON-NLS-1$
 
 	static final String RequestDetailsClassName = NodeFormField + "request-details"; //$NON-NLS-1$
-
 	static final String ResponseDetailsClassName = NodeFormField + "response-details"; //$NON-NLS-1$
 
 	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
 	static final String ConditionClassName = NodeFormField + "condition"; //$NON-NLS-1$
 	static final String OperandClassName = NodeFormField + "operand"; //$NON-NLS-1$
+
+	static final String SERVER_FINGERPRINT_PATTERN = "\\d{2}(:\\d2){15}"; //$NON-NLS-1$
 
 	protected IntegerField hostPort;
 
@@ -62,6 +66,8 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 	protected TextField username;
 	protected Select<Auth_Method> authMethod;
 	protected PasswordField authArg;
+
+	protected TextField fingerprint; // optional - if none is given "PromiscuousVerifier"
 
 	protected TextField command;
 	protected TextArea  response;
@@ -74,7 +80,6 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		super(SSHConnection.class, nodeService);
 	}
 
-	@SuppressWarnings("serial")
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
@@ -121,6 +126,26 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.authArg.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.authArg).withValidator(this.propertiesResolvableValidator);
 
+		this.fingerprint = new TextField(Messages.getString("SSHConnectionForm.Fingerprint.Label")); //$NON-NLS-1$
+		this.fingerprint.setClassName(CommandClassName);
+		this.fingerprint.setThemeName(LabelPaddingTheme);
+		this.fingerprint.addThemeName(MonospaceTheme);
+		this.fingerprint.setWidth("47em"); // 16 double-digit groups plus ':' separators //$NON-NLS-1$
+		this.binder.forField(this.fingerprint)
+			.withValidator(this.propertiesResolvableValidator)
+			.withValidator((value, context) -> {
+					String fp;
+					try {
+						fp = this.node.resolveProperties(value);
+					} catch (Exception ex) {
+						return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
+					}
+					return fp.isBlank() || fp.matches(SERVER_FINGERPRINT_PATTERN)
+						? ValidationResult.ok()
+						: ValidationResult.error("Not a legal fingerprint string - must match pattern '{" + SERVER_FINGERPRINT_PATTERN + "}'"); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			).bind(SSHConnection::getFingerprint, SSHConnection::setFingerprint);
+
 		this.command = new TextField(Messages.getString("SSHConnectionForm.Command.Label")); //$NON-NLS-1$
 		this.command.setClassName(CommandClassName);
 		this.command.setThemeName(LabelPaddingTheme);
@@ -157,7 +182,6 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.operand.setThemeName(LabelPaddingTheme);
 		this.operand.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
-
 		this.binder.forField(this.condition).bind(SSHConnectionForm::getCondition, SSHConnectionForm::setCondition);
 		this.binder.forField(this.operand)
 			.withValidator(this.propertiesResolvableValidator)
@@ -173,6 +197,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.connnectionDetailsPanel.add(hostAndPort,
 		                                 this.resultingHostAddress,
 		                                 credentials,
+		                                 this.fingerprint,
 		                                 this.command
 		                                 );
 
