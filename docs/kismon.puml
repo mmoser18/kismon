@@ -1,0 +1,17 @@
+@startuml
+
+[UI] <<..ui..>> as ui
+[Backend] <<..backend..>> as backend
+[Services] <<..service..>> as service
+[Repositories] <<..repositories..>> as repositories
+[Entities] <<..entities..>> as entities
+[Security] <<..security..>> as security
+[Main] <<net.mmo.utils.kism>> as main
+
+ui --> entities
+ui --> service
+entities --> service
+service --> repositories
+main --> ui
+
+@enduml

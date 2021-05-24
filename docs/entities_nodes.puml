@@ -1,0 +1,46 @@
+@startuml
+
+package "entities.nodes" #EEEEEE {
+
+	abstract class Node
+	abstract class LeafNode
+	
+	class LeafNode
+	class IntermediateNode
+	class RootNode
+	
+	LeafNode --|> Node
+	IntermediateNode --|> Node
+	RootNode --|> IntermediateNode
+	
+	package "entities.nodes.connections" #DDDDDD {
+		HTTPConnection --|> LeafNode
+		IPConnection   --|> LeafNode
+		RESTConnection --|> HTTPConnection
+		SOAPConnection --|> HTTPConnection
+		JDBCConnection --|> HTTPConnection
+		PingConnection --|> IPConnection
+		SSHConnection  --|> IPConnection
+	}
+
+	enum NodeType { 
+		RootNode,
+		IntermediateNode
+		RESTConnection
+		SOAPConnection
+		JDBCConnection
+		PingConnection
+		SSHConnection
+	}	
+	
+	NodeFactory --> RootNode
+	NodeFactory --> IntermediateNode
+	NodeFactory --> RESTConnection
+	NodeFactory --> SOAPConnection
+	NodeFactory --> JDBCConnection
+	NodeFactory --> PingConnection
+	NodeFactory --> SSHConnection
+	NodeFactory --> NodeType
+}
+
+@enduml

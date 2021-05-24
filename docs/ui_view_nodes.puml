@@ -1,0 +1,39 @@
+@startuml
+
+package "ui.view.nodes" #EEEEEE {
+
+	abstract class NodeForm
+	abstract class LeafNodeForm
+	
+	class IntermediateNodeForm
+	class RootNodeForm
+	
+	LeafNodeForm --|> NodeForm
+	IntermediateNodeForm --|> NodeForm
+	RootNodeForm --|> IntermediateNodeForm
+
+	IntermediateNodeForm --|> NodeForm
+	RootNodeForm --|> IntermediateNodeForm
+	
+	package "ui.view.nodes.connections" #DDDDDD {
+		HTTPConnectionForm --|> LeafNodeForm
+		IPConnectionForm   --|> LeafNodeForm
+		RESTConnectionForm --|> HTTPConnectionForm
+		SOAPConnectionForm --|> HTTPConnectionForm
+		JDBCConnectionForm --|> HTTPConnectionForm
+		PingConnectionForm --|> IPConnectionForm
+		SSHConnectionForm  --|> IPConnectionForm
+	}
+
+	FormFactory --> RootNodeForm
+	FormFactory --> IntermediateNodeForm
+	FormFactory --> RESTConnectionForm
+	FormFactory --> SOAPConnectionForm
+	FormFactory --> JDBCConnectionForm
+	FormFactory --> PingConnectionForm
+	FormFactory --> SSHConnectionForm
+
+	NodeView --> FormFactory
+}
+
+@enduml
