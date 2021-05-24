@@ -31,6 +31,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 	protected TextField hostAddress;
 	protected TextField resultingHostAddress;
 
+
 	public IPConnectionForm(Class<N> clazz, NodeService nodeService) {
 		super(clazz, nodeService);
 	}
@@ -96,9 +97,9 @@ public abstract class IPConnectionForm <N extends IPConnection> extends LeafNode
 				: null);
 	}
 
-	static <N extends IPConnection> void setOperand(N n, String operand) {
+	static <N extends IPConnection> void setOperand(N n, String operands) {
 		if (n != null && n.getResultChecker() != null) {
-			n.getResultChecker().setOperand(operand);
+			n.getResultChecker().setOperand(operands);
 		}
 	}
 
