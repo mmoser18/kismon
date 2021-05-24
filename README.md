@@ -1,14 +1,13 @@
-# Project Base for Vaadin and Spring Boot
+# KIS-Monitoring
 
-This is an example project that can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
-
+This is a SpringBoot project whose goal is to monitor the liveness and responsiveness of web-application setups, specifically of their components such as DB, Mock-Server (if applicable) and the WebServerand application(s) running on it.
+Components can be organized and grouped in subtrees and the conditions for a component to be running and its responses to be considered as "OK" can be defined.
 
 ## Running the Application
 There are two ways to run the application :  using `mvn spring-boot:run` or by running the `Application` class directly from your IDE.
 
-You can use any IDE of your preference,but we suggest Eclipse or Intellij IDEA.
-Below are the configuration details to start the project using a `spring-boot:run` command. Both Eclipse and Intellij IDEA are covered.
+You can use any IDE of your preference,but we suggest Eclipse or IntelliJ IDEA.
+Below are the configuration details to start the project using a `spring-boot:run` command. Both Eclipse and IntelliJ IDEA are covered.
 
 #### Eclipse
 - Right click on a project folder and select `Run As` --> `Maven build..` . After that a configuration window is opened.
@@ -18,7 +17,7 @@ Below are the configuration details to start the project using a `spring-boot:ru
 
 Once configurations are set clicking `Run` will start the application
 
-#### Intellij IDEA
+#### IntelliJ IDEA
 - On the right side of the window, select Maven --> Plugins--> `spring-boot` --> `spring-boot:run` goal
 - Optionally, you can disable tests by clicking on a `Skip Tests mode` blue button.
 
@@ -65,7 +64,6 @@ Project follow the Maven's [standard directory layout structure](https://maven.a
 - Download this and other examples at [https://vaadin.com/start](https://vaadin.com/start)
 - Using Vaadin and Spring [https://vaadin.com/docs/v14/flow/spring/tutorial-spring-basic.html](https://vaadin.com/docs/v14/flow/spring/tutorial-spring-basic.html) article
 - Join discussion and ask a question at [https://vaadin.com/forum](https://vaadin.com/forum)
-
 
 ## Notes
 
