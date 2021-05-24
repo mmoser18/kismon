@@ -20,9 +20,25 @@ public class HistoryInfoService
 {
 	protected HistoryInfoRepository historyInfoRepository;
 
+	public boolean dbIsAvailable = false;
+//
+//	@Autowired
+//	private EntityManager entityManager;
+//
 	public HistoryInfoService(HistoryInfoRepository historyInfoRepository) {
 		log.debug("HistoryInfoService c'tor"); //$NON-NLS-1$
-		this.historyInfoRepository = historyInfoRepository;
+		try {
+			this.historyInfoRepository = historyInfoRepository;
+
+//			// This finally revealed how to do this:
+//			// https://stackoverflow.com/questions/22116005/how-to-create-jpa-repository-dynamically-inside-a-class
+//			RepositoryFactorySupport factory = new JpaRepositoryFactory(this.entityManager);
+//			this.historyInfoRepository = (HistoryInfoRepository)factory.getRepository(CustomHistoryInfoRepository.class);
+			this.dbIsAvailable = true;
+
+		} catch (Exception ex) {
+			log.error("Failed to create HistoryInfoRepository - is the service running and accessible?", ex); //$NON-NLS-1$
+		}
 	}
 
 	public List<HistoryInfo> findAll() {

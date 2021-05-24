@@ -16,6 +16,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -86,15 +87,19 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		addClassName(ViewClassName);
 		setSizeFull(); // use entire browser window
 
-		this.content = new Div();
-		this.content.addClassName(ViewContentClassName);
-		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+		if (historyInfoService.dbIsAvailable) {
+			this.content = new Div();
+			this.content.addClassName(ViewContentClassName);
+			setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 
-		this.content.setSizeFull();
+			this.content.setSizeFull();
 
-		configureContent();
-		add(getToolbar(), this.content);
-
+			configureContent();
+			add(getToolbar(), this.content);
+		} else { // no DB available for HistoryInfo
+			this.content = new Div();
+			this.content.add(new H1("no DB available for HistoryData! Check/start H2-DB")); //$NON-NLS-1$
+		}
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
