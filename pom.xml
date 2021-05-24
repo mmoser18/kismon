@@ -9,6 +9,23 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
+	<description>Keep-it-simple Monitoring</description>
+	<!-- url>tbd</url -->
+	<inceptionYear>2021</inceptionYear>
+
+	<!-- to be c=finalized if/when I move this to GitHub / MMO
+	<issueManagement>
+		<system>github</system>
+		<url>http://github.com/tbd/issues</url>
+	</issueManagement>
+
+	<scm>
+		<connection>scm:git:git://github.com/tbd/kism.git</connection>
+		<developerConnection>scm:git:git@github.com:mmo/kism.git</developerConnection>
+		<url>http://github.com/tbd/kism</url>
+	</scm>
+	 -->
+
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
@@ -363,6 +380,14 @@
 		</dependency>
 		<!- -->
 	</dependencies>
+
+	<developers>
+		<developer>
+			<id>mmo</id>
+			<name>Michael Moser</name>
+			<email>michael.moser@freesurf.ch</email>
+		</developer>
+	</developers>
 
 	<build>
 		<defaultGoal>spring-boot:run</defaultGoal>

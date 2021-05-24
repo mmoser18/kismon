@@ -26,6 +26,7 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.transport.TransportException;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 
 @Entity
 @Setter
@@ -41,7 +42,13 @@ public class SSHConnection extends IPConnection
 	protected int hostPort = 22; // default SSH port is 22
 
 	protected String username;
-	protected String password;
+
+	public enum Auth_Method {
+		PWD, // user & pwd: authArg is a password
+		KEY; // user & key: authArg is private key
+	}
+	protected Auth_Method authMethod = Auth_Method.PWD;
+	protected String authArg; // for PWD: password, for KEY: private key
 
 	protected String command;
 
@@ -49,7 +56,7 @@ public class SSHConnection extends IPConnection
 	transient protected String response;
 
 	@JsonIgnore
-	transient private SSHClient client;
+	transient private SSHClient sshClient;
 	@JsonIgnore
 	transient private Session session;
 
@@ -68,9 +75,13 @@ public class SSHConnection extends IPConnection
 			this.session.close();
 			this.session = null;
 		}
-		if (this.client != null) {
-			this.client.disconnect();
-			this.client = null;
+		if (this.sshClient != null) {
+			try {
+				this.sshClient.disconnect();
+			} catch (Exception ex) {
+				// ignore
+			}
+			this.sshClient = null;
 		}
 		super.finalize();
 	}
@@ -96,14 +107,29 @@ public class SSHConnection extends IPConnection
 			resetClient();
 		}
 	}
+
 	public void setPassword(String password) {
-		if (!Objects.equal(this.password, password)) {
-			this.password = password;
+		if (this.authMethod != Auth_Method.PWD) {
+			this.authMethod = Auth_Method.PWD;
+			setAuthArg(password);
+			resetClient();
+		} else if (!Objects.equal(this.getAuthArg(), password)) {
+			this.setAuthArg(password);
+			resetClient();
+		}
+	}
+	public void setPrivateKey(String privateKey) {
+		if (this.authMethod != Auth_Method.KEY) {
+			this.authMethod = Auth_Method.KEY;
+			setAuthArg(privateKey);
+			resetClient();
+		} else if (!Objects.equal(this.getAuthArg(), privateKey)) {
+			this.setAuthArg(privateKey);
 			resetClient();
 		}
 	}
 
-	// trigger a recreation of the client and the session
+	// trigger a recreation of the sshClient and the session
 	private void resetClient() {
 		if (this.session != null) {
 			try {
@@ -113,13 +139,13 @@ public class SSHConnection extends IPConnection
 			}
 			this.session = null;
 		}
-		if (this.client != null) {
+		if (this.sshClient != null) {
 			try {
-				this.client.disconnect();
+				this.sshClient.disconnect();
 			} catch (IOException ex) {
-				log.trace("Exception closing client", ex); //$NON-NLS-1$
+				log.trace("Exception closing sshClient", ex); //$NON-NLS-1$
 			}
-			this.client = null;
+			this.sshClient = null;
 		}
 	}
 
@@ -127,14 +153,24 @@ public class SSHConnection extends IPConnection
 	public void sendRequest() throws Exception {
 		log.info("ssh to '{}':", getResultingHostAddress()); //$NON-NLS-1$
 		try {
-			if (this.client == null) {
-				this.client = new SSHClient();
-				this.client.loadKnownHosts();
-				this.client.connect(getResultingHostAddress(), getHostPort());
-				this.client.authPassword(resolveProperties(getUsername()), resolveProperties(getPassword()));
+			if (this.sshClient == null) {
+				this.sshClient = new SSHClient();
+		        this.sshClient.addHostKeyVerifier(new PromiscuousVerifier());
+				this.sshClient.loadKnownHosts();
+				this.sshClient.connect(getResultingHostAddress(), getHostPort());
+				switch (this.authMethod) {
+				case PWD:
+					this.sshClient.authPassword(resolveProperties(getUsername()), resolveProperties(getAuthArg()));
+					break;
+				case KEY:
+					this.sshClient.authPublickey(resolveProperties(getUsername()), resolveProperties(getAuthArg()));
+					break;
+				default:
+					throw new IllegalArgumentException("Illegal Auth_Method: " + this.authMethod); //$NON-NLS-1$
+				}
 			}
 			if (this.session == null) {
-				this.session = this.client.startSession();
+				this.session = this.sshClient.startSession();
 			}
 			final String resolvedCommand = resolveProperties(getCommand());
 			// ... before executing the actual request:
@@ -159,22 +195,22 @@ public class SSHConnection extends IPConnection
 						log.debug("error executing '{}' (command:'{}'): {}", getName(), resolvedCommand, result); //$NON-NLS-1$
 						setState(State.DEGRADED);
 					} else { // nothing on error stream:
-						try (InputStream is = sshCommand.getInputStream()) {
-							result = readStream(is);
-						}
-						log.debug("result executing '{}' (command:'{}'): {}", getName(), resolvedCommand, result); //$NON-NLS-1$
 						setState(State.OK);
 					}
+					try (InputStream is = sshCommand.getInputStream()) {
+						result = readStream(is);
+					}
+					log.debug("result executing '{}' (command:'{}'): {}", getName(), resolvedCommand, result); //$NON-NLS-1$
 				}
 				setResponse(result);
 				deriveState();
 			} // cmd gets closed here.
 		} catch (Exception ex) {
-			log.error("Exception executing '{}' (creating client/session): {}", getName(), ex); //$NON-NLS-1$
+			log.error("Exception executing '{}' (creating sshClient/session): {}", getName(), ex); //$NON-NLS-1$
 			setDuration(-1);
 			setResponse(ex.getMessage());
 			setState(State.FAILED);
-			resetClient(); // trigger a new client and session setup for the next attempt:
+			resetClient(); // trigger a new sshClient and session setup for the next attempt:
 		} finally {
 			// create history entry:
 			final String resp = getResponse();
@@ -208,13 +244,24 @@ public class SSHConnection extends IPConnection
 	public String toString() {
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
-		return buf
-			.append(", hostPort:").append(this.hostPort) //$NON-NLS-1$
+		buf.append(", hostPort:").append(this.hostPort) //$NON-NLS-1$
 			.append(", username:").append(this.username) //$NON-NLS-1$
-			.append(", password:").append(this.password) //$NON-NLS-1$
+			.append(", authMethod:").append(this.authMethod) //$NON-NLS-1$
+			;
+			switch (this.authMethod) {
+			case PWD:
+				buf.append(", key:"); //$NON-NLS-1$
+				break;
+			case KEY:
+				buf.append(", pubkey:"); //$NON-NLS-1$
+				break;
+			default:
+				buf.append("<Illegal Auth_Method: " + this.authMethod + ">"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+		buf.append(getAuthArg())
 			.append(", command:").append(this.command) //$NON-NLS-1$
 			.append(", response:").append(this.response) //$NON-NLS-1$
-			.append("}") //$NON-NLS-1$
-			.toString();
+			.append("}"); //$NON-NLS-1$
+		return buf.toString();
 	}
 }

@@ -26,6 +26,7 @@ import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
+import net.mmo.utils.kism.entities.nodes.connections.SSHConnection.Auth_Method;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.ui.view.nodes.NodeForm;
 
@@ -39,7 +40,10 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 	static final String HostPortClassName = NodeFormField + "hostPort"; //$NON-NLS-1$
 
 	static final String UidClassName = NodeFormField + "username"; //$NON-NLS-1$
-	static final String PwdClassName = NodeFormField + "password"; //$NON-NLS-1$
+	static final String AuthMethodClassName = NodeFormField + "authMethod"; //$NON-NLS-1$
+//	static final String PwdClassName = NodeFormField + "password"; //$NON-NLS-1$
+//	static final String KeyClassName = NodeFormField + "privkey"; //$NON-NLS-1$
+	static final String AuthArgClassName = NodeFormField + "authArg"; //$NON-NLS-1$
 
 	static final String CommandClassName  = NodeFormField + "command"; //$NON-NLS-1$
 	static final String ResponseClassName = NodeFormField + "response"; //$NON-NLS-1$
@@ -54,8 +58,10 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 
 	protected IntegerField hostPort;
 
+	// authentication stuff:
 	protected TextField username;
-	protected PasswordField password;
+	protected Select<Auth_Method> authMethod;
+	protected PasswordField authArg;
 
 	protected TextField command;
 	protected TextArea  response;
@@ -68,6 +74,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		super(SSHConnection.class, nodeService);
 	}
 
+	@SuppressWarnings("serial")
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
@@ -89,28 +96,41 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 //				}
 //			});
 
+		this.authMethod = new Select<>(Auth_Method.values());
+		this.authMethod.setClassName(AuthMethodClassName);
+		this.authMethod.setLabel(Messages.getString("SSHConnectionForm.AuthMethod.Label")); //$NON-NLS-1$
+		this.authMethod.setItemLabelGenerator(item -> {
+				return Messages.getString("SSHConnectionForm.AuthMethod.Item." + item.name()); //$NON-NLS-1$
+			});
+		this.authMethod.addValueChangeListener(event -> {
+				if (event.isFromClient()) {
+					log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+					this.authArg.setLabel(Messages.getString("SSHConnectionForm.AuthArg.Label." + event.getValue().name())); //$NON-NLS-1$
+				}
+			});
+
 		this.username = new TextField(Messages.getString("SSHConnectionForm.Uid.Label")); //$NON-NLS-1$
 		this.username.setClassName(UidClassName);
 		this.username.setThemeName(LabelPaddingTheme);
 		this.username.setClearButtonVisible(NodeForm.clearButtonsVisible);
 		this.binder.forField(this.username).withValidator(this.propertiesResolvableValidator);
 
-		this.password = new PasswordField(Messages.getString("SSHConnectionForm.Pwd.Label")); //$NON-NLS-1$
-		this.password.setClassName(PwdClassName);
-		this.password.setThemeName(LabelPaddingTheme);
-		this.password.setClearButtonVisible(NodeForm.clearButtonsVisible);
-		this.binder.forField(this.password).withValidator(this.propertiesResolvableValidator);
+		this.authArg = new PasswordField(Messages.getString("SSHConnectionForm.AuthArg.Label." + Auth_Method.PWD.name())); //$NON-NLS-1$
+		this.authArg.setClassName(AuthArgClassName);
+		this.authArg.setThemeName(LabelPaddingTheme);
+		this.authArg.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.binder.forField(this.authArg).withValidator(this.propertiesResolvableValidator);
 
 		this.command = new TextField(Messages.getString("SSHConnectionForm.Command.Label")); //$NON-NLS-1$
 		this.command.setClassName(CommandClassName);
 		this.command.setThemeName(LabelPaddingTheme);
 		this.command.addThemeName(MonospaceTheme);
 		this.command.addValueChangeListener(event ->
-		{
-			if (event.isFromClient()) {
-				log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
-			}
-		});
+			{
+				if (event.isFromClient()) {
+					log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+				}
+			});
 
 		this.response = new TextArea(Messages.getString("SSHConnectionForm.Response.Label")); //$NON-NLS-1$
 		this.response.setClassName(ResponseClassName);
@@ -137,6 +157,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.operand.setThemeName(LabelPaddingTheme);
 		this.operand.setClearButtonVisible(NodeForm.clearButtonsVisible);
 
+
 		this.binder.forField(this.condition).bind(SSHConnectionForm::getCondition, SSHConnectionForm::setCondition);
 		this.binder.forField(this.operand)
 			.withValidator(this.propertiesResolvableValidator)
@@ -146,7 +167,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		HorizontalLayout hostAndPort = new HorizontalLayout(this.hostAddress, this.hostPort);
 		hostAndPort.addClassName(CombinedClassName);
 
-		HorizontalLayout credentials = new HorizontalLayout(this.username, this.password);
+		HorizontalLayout credentials = new HorizontalLayout(this.authMethod, this.username, this.authArg);
 		credentials.addClassName(CombinedClassName);
 
 		this.connnectionDetailsPanel.add(hostAndPort,

@@ -201,7 +201,7 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping localhost",
@@ -230,11 +230,12 @@
 				"operand" : ""
 			},
 			"hostPort" : 22,
-			"username" : "",
-			"password" : "",
-			"command" : "echo hello"
+			"username" : "mmo",
+			"authMethod" : "PWD",
+			"authArg" : "ich18bins",
+			"command" : "ping -c 1 google.com"
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -710,7 +711,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -1181,7 +1182,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
@@ -1195,30 +1196,30 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
+				"app_prot_ext" : "https://",
 				"app_uid" : "power",
+				"mock_port" : ":8080",
 				"mock_prot_ext" : "https://",
+				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
 				"app_host" : "<defined_in_lower_node>",
 				"app_port_ext" : ":443",
 				"app_prot_int" : "http://",
+				"mock_url_int" : "${mock_prot_int}${mock_host}${mock_port_int}/#mainInfo",
 				"db_url" : "${db_url_dmz}",
 				"app_url_ext" : "${app_prot_ext}${app_host}${app_port_ext}/wps/home.seam",
-				"mock_url_ext" : "${mock_prot_ext}${mock_host}${mock_port_ext}/#mainInfo",
-				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/wps/home.seam",
-				"app_pwd" : "",
-				"mock_uid" : "admin",
-				"mock_port_ext" : ":444",
-				"mock_pwd" : "47rjUX8P109Qmvj",
-				"app_prot_ext" : "https://",
-				"mock_port" : ":8080",
-				"app_port" : ":80",
-				"mock_url_int" : "${mock_prot_int}${mock_host}${mock_port_int}/#mainInfo",
 				"app_port_int" : ":80",
 				"app_prot" : "http://",
+				"mock_url_ext" : "${mock_prot_ext}${mock_host}${mock_port_ext}/#mainInfo",
 				"app_url" : "${app_prot}${app_host}${app_port}/wps/home.seam",
+				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/wps/home.seam",
+				"app_pwd" : "",
 				"mock_host" : "${app_host}",
-				"mock_prot_int" : "http://"
+				"mock_uid" : "admin",
+				"mock_port_ext" : ":444",
+				"mock_prot_int" : "http://",
+				"mock_pwd" : "47rjUX8P109Qmvj"
 			},
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
