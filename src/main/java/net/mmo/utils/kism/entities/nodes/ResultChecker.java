@@ -7,6 +7,7 @@ package net.mmo.utils.kism.entities.nodes;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import javax.persistence.Entity;
@@ -43,13 +44,21 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 		Outside(Integer.class, Integer.class),
 		;
 
-		final Class<?>[] args;
+		final Class<?>[] argClasses;
 
-		Condition(Class<?> ... args) {
-			this.args = args;
+		Condition(Class<?> ... argClasses) {
+			this.argClasses = argClasses;
 		}
-		int getNrArgs() {
-			return this.args.length;
+		public Class<?>[] getArgClasses() {
+			return this.argClasses;
+		}
+		public int getNrArgs() {
+			return this.argClasses.length;
+		}
+
+		@Override
+		public String toString() {
+			return this.name() + "(" + Arrays.toString(this.argClasses) + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -60,87 +69,117 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	transient ArrayList<Object> resolvedOperands;
 
 	@JsonIgnore
-	public void setOperand(String operand) {
-		if (this.operands == null || this.operands.size() < 1) {
-			this.operands = new ArrayList<>(1);
-			this.operands.add(operand);
-		} else {
-			this.operands.set(0, operand);
+	public void setOperandN(int index, String operand) {
+		synchronized(this) {
+			if (this.operands == null || this.operands.size() < index) {
+				this.operands = new ArrayList<>(index);
+				while (this.operands.size() < index-1) this.operands.add(""); //$NON-NLS-1$
+				this.operands.add(operand);
+			} else {
+				this.operands.set(index-1, operand);
+			}
+			this.resolvedOperands = null; // after changing any operand we need to resolve them again.
 		}
-	}
+ 	}
 	@JsonIgnore
-	public String getOperand() {
-		return (this.operands.size() > 0 ? this.operands.get(0) : null);
+	public String getOperandN(int index) {
+		return (this.operands.size() >= index ? this.operands.get(index-1) : null);
 	}
 
+	@SuppressWarnings("null")
 	public boolean checkResult(Node contextNode, String value) throws Exception {
+		boolean result = true;
 		if (this.condition != null) {
-			if (this.resolvedOperands == null) {
-				translateOperands(contextNode);
-				if (this.operands.size() != this.condition.getNrArgs()) {
-					throw new IllegalArgumentException(String.format("Illegal nr of arguments for condition '%s': %d (expected: %d)", //$NON-NLS-1$
-					                                   this.condition, this.operands.size(),  this.condition.getNrArgs()));
+			int nrArgs = this.condition.getNrArgs();
+			Object operand1;
+			Object operand2;
+			synchronized(this) {
+				if (this.resolvedOperands == null) {
+					this.resolvedOperands = resolveOperands(contextNode);
+					if (this.operands.size() != nrArgs) {
+						throw new IllegalArgumentException(String.format("Illegal nr of arguments for condition '%s': %d (expected: %d)", //$NON-NLS-1$
+						                                   this.condition, this.operands.size(), nrArgs));
+					}
 				}
+				operand1 = (nrArgs >= 1 ? this.resolvedOperands.get(0) : null);
+				operand2 = (nrArgs >= 2 ? this.resolvedOperands.get(1) : null);
 			}
 			switch (this.condition) {
 			case Equals:
-				return Objects.equals(value, this.resolvedOperands.get(0));
+				result = Objects.equals(value, operand1);
+				break;
 			case EqualsIgnoreCase:
-				return value != null && value.equalsIgnoreCase(((String)this.resolvedOperands.get(0)));
+				result = value != null && value.equalsIgnoreCase((String)operand1);
+				break;
 			case StartsWith:
-				return value != null && value.startsWith(((String)this.resolvedOperands.get(0)));
+				result = value != null && value.startsWith((String)operand1);
+				break;
 			case StartsWithIgnoreCase:
-				return value != null && this.resolvedOperands.get(0) != null && value.toUpperCase().startsWith(((String)this.resolvedOperands.get(0)).toUpperCase());
+				result = value != null && operand1 != null && value.toUpperCase().startsWith(((String)operand1).toUpperCase());
+				break;
 			case EndsWith:
-				return value != null && value.endsWith(((String)this.resolvedOperands.get(0)));
+				result = value != null && value.endsWith((String)operand1);
+				break;
 			case EndsWithIgnoreCase:
-				return value != null && this.resolvedOperands.get(0) != null && value.toUpperCase().endsWith(((String)this.resolvedOperands.get(0)).toUpperCase());
+				result = value != null && operand1 != null && value.toUpperCase().endsWith(((String)operand1).toUpperCase());
+				break;
 			case Contains:
-				return value != null && value.contains(((String)this.resolvedOperands.get(0)));
+				result = value != null && value.contains((String)operand1);
+				break;
 			case ContainsIgnoreCase:
-				return value != null && this.resolvedOperands.get(0) != null && value.toUpperCase().contains(((String)this.resolvedOperands.get(0)));
+				result = value != null && operand1 != null && value.toUpperCase().contains(((String)operand1).toUpperCase());
+				break;
 			case Matches:
-				return value != null && value.matches(((String)this.resolvedOperands.get(0))); // we might want to cache the regexp some day...
+				result = value != null && value.matches((String)operand1); // we might want to cache the regexp some day...
+				break;
 			case GreaterThan:
-				return value != null && (Integer.parseInt(value) > ((Integer)this.resolvedOperands.get(0)));
+				result = value != null && (Integer.parseInt(value) > (Integer)operand1);
+				break;
 			case GreaterOrEqual:
-				return value != null && (Integer.parseInt(value) >= ((Integer)this.resolvedOperands.get(0)));
+				result = value != null && (Integer.parseInt(value) >= (Integer)operand1);
+				break;
 			case LessThan:
-				return value != null && (Integer.parseInt(value) < ((Integer)this.resolvedOperands.get(0)));
+				result = value != null && (Integer.parseInt(value) < (Integer)operand1);
+				break;
 			case LessOrEqual:
-				return value != null && (Integer.parseInt(value) <= ((Integer)this.resolvedOperands.get(0)));
-			case Within:
-				if (value == null) return false;
-				{ // to overcome the stupid scoping in switch statements
+				result = value != null && (Integer.parseInt(value) <= (Integer)operand1);
+				break;
+			case Within: {
 					int intVal = Integer.parseInt(value);
-					return (intVal >= (Integer)this.resolvedOperands.get(0)) && (intVal <= (Integer)this.resolvedOperands.get(1));
+					result = (intVal >= (Integer)operand1) && (intVal <= (Integer)operand2);
 				}
-			case Outside:
-				if (value == null) return false;
-				{ // to overcome the stupid scoping in switch statements
+				break;
+			case Outside: {
 					int intVal = Integer.parseInt(value);
-					return (intVal < (Integer)this.resolvedOperands.get(0)) || (intVal > (Integer)this.resolvedOperands.get(1));
+					result = (intVal < (Integer)operand1) || (intVal > (Integer)operand2);
 				}
+				break;
 			default:
 				throw new RuntimeException("Unexpected Condition: " + this.condition); //$NON-NLS-1$
 			}
 		}
-		return true;
+		log.info("checking {}: operands: {}, value: {} => {}", //$NON-NLS-1$
+		         this.condition, this.resolvedOperands, value.length() < 100 ? value : value.substring(0,99) + "...", result); //$NON-NLS-1$
+		return result;
 	}
 
-	public void translateOperands(Node contextNode) {
-		this.resolvedOperands = new ArrayList<>(this.operands.size());
+	public ArrayList<Object> resolveOperands(Node contextNode) {
+		ArrayList<Object> resolvedOps = new ArrayList<>(this.operands.size());
 		this.operands.forEach(operand -> {
-			String resolvedValue;
+			Object resolvedValue;
 			try {
 				resolvedValue = contextNode.resolveProperties(operand);
+				if (Integer.class.isAssignableFrom(this.condition.argClasses[resolvedOps.size()])) {
+					resolvedValue = Integer.valueOf((String)resolvedValue);
+				}
 			} catch (Exception ex) {
 				resolvedValue = "Error resolving value '" + operand + "'"; //$NON-NLS-1$ //$NON-NLS-2$
-				log.error(resolvedValue, ex);
+				log.error(resolvedValue.toString(), ex);
 				resolvedValue += " - " + ex.getMessage(); //$NON-NLS-1$
 			}
-			this.resolvedOperands.add(resolvedValue);
+			resolvedOps.add(resolvedValue);
 		});
+		return resolvedOps;
 	}
 
 

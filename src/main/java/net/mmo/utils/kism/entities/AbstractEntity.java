@@ -11,7 +11,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @MappedSuperclass
 public abstract class AbstractEntity
 {
-	//	private static long idCtr;
+	@JsonIgnore
+	public static boolean initializing = true; // signals that we are still initializing the application
+	                                           // necessary to avoid calling updateAllResolvableValues
+	                                           // while still initializing/deserializing a node.
 
 	@JsonIgnore
 	@Id
@@ -43,8 +46,10 @@ public abstract class AbstractEntity
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()
-			+ "{id:" + getId() //$NON-NLS-1$
-			+ "}"; //$NON-NLS-1$
+		StringBuilder buf = new StringBuilder(this.getClass().getSimpleName());
+		return buf
+			.append("{id:").append(getId()) //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
+			.toString();
 	}
 }

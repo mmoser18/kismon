@@ -66,11 +66,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	@JsonIgnore
 	transient private State state = State.OK;
 
-	@JsonIgnore
-	public static boolean initializing = true; // signals that we are still initializing the application
-	                                           // necessary to avoid calling updateAllResolvableValues
-	                                           // while still initializing/deserializing a node.
-
 	// required for deserialization
 	protected Node() {
 		super();

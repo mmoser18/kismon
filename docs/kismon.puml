@@ -1,17 +1,35 @@
 @startuml
 
-[UI] <<..ui..>> as ui
-[Backend] <<..backend..>> as backend
-[Services] <<..service..>> as service
-[Repositories] <<..repositories..>> as repositories
-[Entities] <<..entities..>> as entities
-[Security] <<..security..>> as security
 [Main] <<net.mmo.utils.kism>> as main
 
-ui --> entities
-ui --> service
-entities --> service
-service --> repositories
+package "UI" <<..ui..>> as ui #EEEEEE {
+	package "Views" <<..views..>> as views #DDDDDD {
+		package "Nodes" <<..nodes..>> as nodes #DDDDDD {
+		}
+		package "History" <<..history..>> as history #DDDDDD {
+		}
+		package "Login" <<..login..>> as login #DDDDDD {
+		}
+		package "Dashboard" <<..dashboard..>> as dashboard #DDDDDD {
+		}
+	}
+}
+
+[Entities] <<..entities..>> as entities
+[Security] <<..security..>> as security
+
+package "Backend" <<..backend..>> as backend #EEEEEE {
+	[Services] <<..service..>> as service
+	[Repositories] <<..repositories..>> as repositories
+}
+
 main --> ui
+
+nodes --> entities
+nodes --> service
+
+entities --> service
+
+service --> repositories
 
 @enduml

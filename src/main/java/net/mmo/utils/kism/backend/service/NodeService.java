@@ -19,9 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.vaadin.flow.component.notification.Notification;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +37,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NodeService
 {
-	public final static String CONFIG_FILE_TYPE  = "kmc"; //$NON-NLS-1$
-	public final static String DEFAULT_FILE_NAME = "default"; //$NON-NLS-1$
+	public final static String DEFAULT_FILE_NAME = AppProperties.getProperties().getProperty("config_dflt_name", "default"); //$NON-NLS-1$ //$NON-NLS-2$
+	public final static String CONFIG_FILE_TYPE  = AppProperties.getProperties().getProperty("config_dflt_type", "kmc"); //$NON-NLS-1$ //$NON-NLS-2$
 
 	public static ApplicationArguments applicationArguments;
 
@@ -57,7 +59,7 @@ public class NodeService
 		if (getRootNodes().isEmpty()) {
 			List<String> args = (applicationArguments != null ? applicationArguments.getNonOptionArgs() : null);
 			String fileName = (args == null || args.isEmpty() ? this.configFile : args.get(0)); // cmd-line beats properties
-			init(fileName);
+			init(fileName != null ? fileName : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		}
 	}
 
@@ -73,11 +75,13 @@ public class NodeService
 		}
 		// save to file:
 		RootNode rootNode = getCorrespondingRootNode(node);
-		saveRootNodeToFile(rootNode);
+		String path = rootNode.getFilePath();
+		path = saveToFile(rootNode, rootNode.getName(), path != null ? path : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
+		if (path != null) rootNode.setFilePath(path);
 	}
 
 	public void saveAllRootNodes() {
-		getRootNodes().forEach(node -> saveRootNodeToFile(node));
+		getRootNodes().forEach(node -> save(node));
 	}
 
 	private void addNewRootNode(RootNode newRootNode) {
@@ -94,7 +98,7 @@ public class NodeService
 
 	/* create a new empty RootNode, if none exists */
 	public void init(String fileName) {
-		File file = new File(fileName != null ? fileName : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
+		File file = new File(fileName);
 		try {
 			readFile(file);
 		} catch (IOException t) {
@@ -146,25 +150,46 @@ public class NodeService
 		return (RootNode)node;
 	}
 
-	public void saveRootNodeToFile(RootNode rootNode) {
+	public String saveToFile(Object obj, String name, String fileName) {
 		try {
-			String fileName = rootNode.getFilePath();
-			if (fileName == null) fileName = DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE;
 			// TODO : provide some file selection box...
 			File file = new File(fileName);
-			if (file.canWrite()) {
-				this.writeFile(rootNode, file);
-				rootNode.setFilePath(fileName);
+			if ((!file.exists() && file.createNewFile()) || file.canWrite()) {
+				this.writeFile(obj, name, file);
+				return file.getCanonicalPath();
 			} else {
 				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
 				log.info(msg);
 				new Notification(msg, 10000).open();
 			}
 		} catch (Throwable t) {
-			String msg = String.format("Exception saving node '%s': %s", rootNode, t); //$NON-NLS-1$
+			String msg = String.format("Exception saving '%s': %s", obj, t); //$NON-NLS-1$
 			log.error(msg, t);
 			new Notification(msg, 10000).open();
 		}
+		return null;
+	}
+
+	public void writeFile(Object obj, String name, File file) throws IOException {
+		log.info("saving monitoredApplication '{}' to file '{}':",name, file); //$NON-NLS-1$
+		try (OutputStream fos = new FileOutputStream(file);
+		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+			writeStream(obj, bos);
+			bos.flush(); // this one proofed essential!
+			log.info("monitoredApplication '{}' successfully written to file '{}'.", name, file.getCanonicalPath()); //$NON-NLS-1$
+		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
+			throw t;
+		} finally {
+			// to automatically close the above streams
+		}
+	}
+
+	public void writeStream(Object obj, OutputStream out) throws IOException {
+		// we want the DefaultPrettyPrinter to use \t instead of 2 spaces for indentation:
+		this.mapper.writer(new DefaultPrettyPrinter()
+		                   .withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))) //$NON-NLS-1$
+			.writeValue(out, obj);
+
 	}
 
 	public RootNode readFile(File file) throws IOException {
@@ -190,36 +215,15 @@ public class NodeService
 	}
 
 	public RootNode readStream(InputStream inp, String fileName) throws IOException {
-		Node.initializing = true; // since our "beans" also contain logic we need to prevent certain functions while the are being deserialized
+		AbstractEntity.initializing = true; // since our "beans" also contain logic we need to prevent certain functions from being called while the are being deserialized
 		RootNode newRoot = this.mapper.readValue(inp, RootNode.class);
 		restoreParents(newRoot);
-		Node.initializing = false;
+		AbstractEntity.initializing = false;
 		newRoot.setFilePath(fileName);
 		newRoot.deriveNewState();
 		newRoot.updateAllResolvableValues(); // this triggers a trickle-down updating all resolvable properties in the entire tree
 		addNewRootNode(newRoot);
 		return newRoot;
-	}
-
-	public void writeFile(RootNode rootNode, File file) throws IOException {
-		log.info("saving rootNode '{}' to file '{}':", rootNode.getName(), file); //$NON-NLS-1$
-		try (OutputStream fos = new FileOutputStream(file);
-		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-			writeStream(rootNode, bos);
-			log.info("rootNode '{}' successfully written to file '{}'.", rootNode.getName(), file); //$NON-NLS-1$
-		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
-			throw t;
-		} finally {
-			// to automatically close the above streams
-		}
-	}
-
-	public void writeStream(RootNode rootNode, OutputStream out) throws IOException {
-		// we want the DefaultPrettyPrinter to use \t instead of 2 spaces for indentation:
-		this.mapper.writer(new DefaultPrettyPrinter()
-		                   .withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))) //$NON-NLS-1$
-			.writeValue(out, rootNode);
-
 	}
 
 	public Node addChild(IntermediateNode parent, Node child) {

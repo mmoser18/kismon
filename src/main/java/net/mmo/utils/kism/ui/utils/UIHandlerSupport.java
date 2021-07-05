@@ -65,9 +65,9 @@ public class UIHandlerSupport
 		}
 	}
 
-	public static <T extends Object> void executeLaterInternal(Component comp,
-	                                                           Supplier<T> longRunningActivity,
-	                                                           Consumer<T> uiActivity) {
+	protected static <T extends Object> void executeLaterInternal(Component comp,
+	                                                              Supplier<T> longRunningActivity,
+	                                                              Consumer<T> uiActivity) {
 		final T result; // final to make the lambda happy...
 		if (longRunningActivity != null) {
 			log.debug("longRunningActivity start:"); //$NON-NLS-1$

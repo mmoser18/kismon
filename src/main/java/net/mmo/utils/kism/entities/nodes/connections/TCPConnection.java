@@ -6,8 +6,6 @@
 package net.mmo.utils.kism.entities.nodes.connections;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,14 +14,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
-import net.mmo.utils.kism.entities.nodes.LeafNode;
-import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
 @Entity
 @Setter
 @Getter
 // @Slf4j
-abstract public class TCPConnection extends LeafNode
+abstract public class TCPConnection extends CheckableConnection
 {
 	private static final long serialVersionUID = 6679464784537111431L;
 
@@ -40,10 +36,6 @@ abstract public class TCPConnection extends LeafNode
 
 	@JsonIgnore
 	protected transient String resultingUrl;
-
-	@OneToOne
-	@JoinColumn(name = "result_checker_id")
-	protected ResultChecker resultChecker;
 
 	@JsonIgnore
 	public transient static String acceptableSSLVersions;

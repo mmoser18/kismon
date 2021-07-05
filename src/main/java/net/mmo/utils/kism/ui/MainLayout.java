@@ -15,9 +15,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.ui.view.history.HistoryInfoGraph;
-import net.mmo.utils.kism.ui.view.history.HistoryInfoTable;
-import net.mmo.utils.kism.ui.view.nodes.NodeView;
+import net.mmo.utils.kism.ui.views.history.HistoryInfoGraph;
+import net.mmo.utils.kism.ui.views.history.HistoryInfoTable;
+import net.mmo.utils.kism.ui.views.nodes.NodeView;
 
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-checkbox-styles.css", themeFor = "vaadin-checkbox")

@@ -9,7 +9,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import net.mmo.utils.kism.ui.view.login.LoginView;
+import net.mmo.utils.kism.ui.views.login.LoginView;
 import org.springframework.stereotype.Component;
 
 @Component

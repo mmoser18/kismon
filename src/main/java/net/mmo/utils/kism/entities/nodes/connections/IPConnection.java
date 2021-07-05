@@ -6,8 +6,6 @@
 package net.mmo.utils.kism.entities.nodes.connections;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,15 +14,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
-import net.mmo.utils.kism.entities.nodes.LeafNode;
-import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
 @Entity
 @Setter
 @Getter
 // @Slf4j
-abstract public class IPConnection extends LeafNode
+abstract public class IPConnection extends CheckableConnection
 {
 	private static final long serialVersionUID = 120134114096068701L;
 
@@ -36,10 +32,6 @@ abstract public class IPConnection extends LeafNode
 
 	@JsonIgnore
 	protected transient String resultingHostAddress;
-
-	@OneToOne
-	@JoinColumn(name = "result_checker_id")
-	protected ResultChecker resultChecker;
 
 
 	protected IPConnection() { // required for deserialization
@@ -78,7 +70,6 @@ abstract public class IPConnection extends LeafNode
 		return buf
 			.append(", hostAddress:").append(this.hostAddress) //$NON-NLS-1$
 			.append(", resultingHostAddress:").append(this.resultingHostAddress) //$NON-NLS-1$
-			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

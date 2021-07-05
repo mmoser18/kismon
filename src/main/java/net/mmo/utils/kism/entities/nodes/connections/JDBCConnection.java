@@ -56,6 +56,7 @@ public class JDBCConnection extends TCPConnection
 	transient protected Driver driver;
 	@JsonIgnore
 	transient protected Connection connection;
+
 	@JsonIgnore
 	transient protected Executor timeoutExecutor = Executors.newFixedThreadPool(3);
 
@@ -284,7 +285,9 @@ public class JDBCConnection extends TCPConnection
 	private void deriveState() throws Exception {
 		if (isCheckResults()) {
 			if (getResultChecker() != null) {
-				setState(getResultChecker().checkResult(this, getResponsePayload()) ? State.OK : State.FAILED);
+				boolean resultCheck = getResultChecker().checkResult(this, getResponsePayload());
+				log.info("deriveState: {}", resultCheck); //$NON-NLS-1$
+				setState(resultCheck ? State.OK : State.FAILED);
 				return;
 			} else {
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$

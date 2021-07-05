@@ -1,0 +1,47 @@
+/**
+ * @author Michael Moser (michael.moser@freesurf.ch)
+ * @since 06.12.2020
+ */
+
+package net.mmo.utils.kism.entities.nodes.connections;
+
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+
+import lombok.Getter;
+import lombok.Setter;
+import net.mmo.utils.kism.entities.nodes.LeafNode;
+import net.mmo.utils.kism.entities.nodes.ResultChecker;
+
+@Entity
+@Setter
+@Getter
+// @Slf4j
+abstract public class CheckableConnection extends LeafNode
+{
+	private static final long serialVersionUID = -7861536138222066083L;
+
+	@OneToOne
+	@JoinColumn(name = "result_checker_id")
+	protected ResultChecker resultChecker;
+
+
+	protected CheckableConnection() { // required for deserialization
+		super();
+	}
+
+	protected CheckableConnection(String name, String description) {
+		super(name, description);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder(super.toString());
+		buf.setLength(buf.length()-1);
+		return buf
+			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
+			.append("}") //$NON-NLS-1$
+			.toString();
+	}
+}

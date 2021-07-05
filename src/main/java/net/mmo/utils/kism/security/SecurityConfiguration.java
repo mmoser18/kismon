@@ -30,11 +30,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 	private static final String LOGIN_URL = "/login";
 	private static final String LOGOUT_SUCCESS_URL = "/login";
 
+//	@Autowired
+// VaadinDefaultRequestCache requestCache;
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable()  // Disables cross-site httpRequest forgery (CSRF) protection, as Vaadin already has CSRF protection
 			.requestCache()
-			.requestCache(new CustomRequestCache()) // Uses CustomRequestCache to track unauthorized requests so that users are redirected appropriately after login.
+//			.requestCache(this.requestCache) // Uses VaadinDefaultRequestCache to track unauthorized requests so that users are redirected appropriately after login.
+			.requestCache(new CustomRequestCache()) // Uses VaadinDefaultRequestCache to track unauthorized requests so that users are redirected appropriately after login.
 			.and().authorizeRequests() // Turns on authorization
 			.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll() // Allows all internal traffic from the Vaadin framework.
 			.anyRequest().authenticated() // Allows all authenticated traffic.

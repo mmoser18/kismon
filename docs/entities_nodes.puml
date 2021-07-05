@@ -2,6 +2,8 @@
 
 package "entities.nodes" #EEEEEE {
 
+	abstract class AbstractBaseClass
+	abstract class AbstractEntity
 	abstract class Node
 	abstract class LeafNode
 	
@@ -9,13 +11,16 @@ package "entities.nodes" #EEEEEE {
 	class IntermediateNode
 	class RootNode
 	
+	AbstractEntity --|> AbstractBaseClass
+	Node --|> AbstractEntity
 	LeafNode --|> Node
 	IntermediateNode --|> Node
 	RootNode --|> IntermediateNode
 	
 	package "entities.nodes.connections" #DDDDDD {
-		HTTPConnection --|> LeafNode
-		IPConnection   --|> LeafNode
+		CheckableConnection --|> LeafNode
+		HTTPConnection --|> CheckableConnection
+		IPConnection   --|> CheckableConnection
 		RESTConnection --|> HTTPConnection
 		SOAPConnection --|> HTTPConnection
 		JDBCConnection --|> HTTPConnection

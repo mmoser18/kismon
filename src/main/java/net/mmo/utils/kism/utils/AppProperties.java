@@ -1,5 +1,5 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
+ * @author Michael Moser (michael.moser@elca.ch)
  * @since 02.12.2020
  */
 

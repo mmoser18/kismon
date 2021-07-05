@@ -9,15 +9,16 @@ package "ui.view.nodes" #EEEEEE {
 	class RootNodeForm
 	
 	LeafNodeForm --|> NodeForm
+	
 	IntermediateNodeForm --|> NodeForm
 	RootNodeForm --|> IntermediateNodeForm
 
-	IntermediateNodeForm --|> NodeForm
-	RootNodeForm --|> IntermediateNodeForm
-	
 	package "ui.view.nodes.connections" #DDDDDD {
-		HTTPConnectionForm --|> LeafNodeForm
-		IPConnectionForm   --|> LeafNodeForm
+		abstract class CheckableConnectionForm
+		
+		CheckableConnectionForm --|> LeafNodeForm
+		HTTPConnectionForm --|> CheckableConnectionForm
+		IPConnectionForm   --|> CheckableConnectionForm
 		RESTConnectionForm --|> HTTPConnectionForm
 		SOAPConnectionForm --|> HTTPConnectionForm
 		JDBCConnectionForm --|> HTTPConnectionForm
