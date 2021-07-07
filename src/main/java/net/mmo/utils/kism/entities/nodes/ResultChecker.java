@@ -158,8 +158,8 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 				throw new RuntimeException("Unexpected Condition: " + this.condition); //$NON-NLS-1$
 			}
 		}
-		log.info("checking {}: operands: {}, value: {} => {}", //$NON-NLS-1$
-		         this.condition, this.resolvedOperands, value.length() < 100 ? value : value.substring(0,99) + "...", result); //$NON-NLS-1$
+		log.trace("checking {}: operands: {}, value: {} => {}", //$NON-NLS-1$
+		          this.condition, this.resolvedOperands, value.length() < 100 ? value : value.substring(0,99) + "...", result); //$NON-NLS-1$
 		return result;
 	}
 

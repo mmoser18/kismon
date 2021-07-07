@@ -286,7 +286,7 @@ public class JDBCConnection extends TCPConnection
 		if (isCheckResults()) {
 			if (getResultChecker() != null) {
 				boolean resultCheck = getResultChecker().checkResult(this, getResponsePayload());
-				log.info("deriveState: {}", resultCheck); //$NON-NLS-1$
+				log.trace("deriveState: {}", resultCheck); //$NON-NLS-1$
 				setState(resultCheck ? State.OK : State.FAILED);
 				return;
 			} else {
