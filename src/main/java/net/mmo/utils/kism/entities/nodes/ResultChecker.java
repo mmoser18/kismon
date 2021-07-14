@@ -10,15 +10,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import javax.persistence.Entity;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
 
-@Entity
 @Setter
 @Getter
 @Slf4j
@@ -63,7 +60,7 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	protected Condition condition;
-	protected ArrayList<String> operands = new ArrayList<>(0);
+	protected ArrayList<String> operands;
 
 	@JsonIgnore
 	transient ArrayList<Object> resolvedOperands;
@@ -71,19 +68,21 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	@JsonIgnore
 	public void setOperandN(int index, String operand) {
 		synchronized(this) {
-			if (this.operands == null || this.operands.size() < index) {
-				this.operands = new ArrayList<>(index);
-				while (this.operands.size() < index-1) this.operands.add(""); //$NON-NLS-1$
+			if (this.operands == null) {
+				this.operands = new ArrayList<>(this.condition != null ? this.condition.getNrArgs() : 0);
+			}
+			if (index >= this.operands.size()) {
+				while (index > this.operands.size()) this.operands.add("-undefined-"); //$NON-NLS-1$
 				this.operands.add(operand);
-			} else {
-				this.operands.set(index-1, operand);
+			} else { // index < size:
+				this.operands.set(index, operand);
 			}
 			this.resolvedOperands = null; // after changing any operand we need to resolve them again.
 		}
  	}
 	@JsonIgnore
 	public String getOperandN(int index) {
-		return (this.operands.size() >= index ? this.operands.get(index-1) : null);
+		return (this.operands != null ? (index < this.operands.size() ? this.operands.get(index) : null) : null);
 	}
 
 	@SuppressWarnings("null")
@@ -97,7 +96,7 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 				if (this.resolvedOperands == null) {
 					this.resolvedOperands = resolveOperands(contextNode);
 					if (this.operands.size() != nrArgs) {
-						throw new IllegalArgumentException(String.format("Illegal nr of arguments for condition '%s': %d (expected: %d)", //$NON-NLS-1$
+						throw new IllegalArgumentException(String.format("Illegal nr. of arguments for condition '%s': %d (expected: %d)", //$NON-NLS-1$
 						                                   this.condition, this.operands.size(), nrArgs));
 					}
 				}
@@ -165,24 +164,24 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 
 	public ArrayList<Object> resolveOperands(Node contextNode) {
 		ArrayList<Object> resolvedOps = new ArrayList<>(this.operands.size());
-		this.operands.forEach(operand -> {
+		for (int idx = 0; idx < this.condition.argClasses.length; idx++) {
+			String operand = this.operands.get(idx);
 			Object resolvedValue;
 			try {
-				resolvedValue = contextNode.resolveProperties(operand);
-				if (Integer.class.isAssignableFrom(this.condition.argClasses[resolvedOps.size()])) {
+				resolvedValue = operand.isEmpty() ? operand : contextNode.resolveProperties(operand);
+				log.trace("ResultChecker.resolveOperands(): operand {}: '{}', resolved value:'{}'", idx, operand, resolvedValue); //$NON-NLS-1$
+				if (Integer.class.isAssignableFrom(this.condition.argClasses[idx])) {
 					resolvedValue = Integer.valueOf((String)resolvedValue);
 				}
 			} catch (Exception ex) {
-				resolvedValue = "Error resolving value '" + operand + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+				resolvedValue = "Error resolving/converting '" + this.condition + "'-operand " + idx + ": '" + operand + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				log.error(resolvedValue.toString(), ex);
 				resolvedValue += " - " + ex.getMessage(); //$NON-NLS-1$
 			}
 			resolvedOps.add(resolvedValue);
-		});
+		}
 		return resolvedOps;
 	}
-
-
 
 	@Override
 	public String toString() {

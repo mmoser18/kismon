@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.Hashtable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -135,7 +136,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
 				}
 				return resolvedValue.isBlank()
-					? ValidationResult.error("operand must not be empty!") //$NON-NLS-1$
+					? ValidationResult.error("String operand must not be empty!") //$NON-NLS-1$
 					: ValidationResult.ok();
 			}
 		};
@@ -158,7 +159,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					Integer.parseInt(resolvedValue);
 					return ValidationResult.ok();
 				} catch (Exception ex) {
-					return ValidationResult.error("operand must not be empty!"); //$NON-NLS-1$
+					return ValidationResult.error("Cannot convert '" + resolvedValue + "' to a numeric value!"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			}
 		};
@@ -543,8 +544,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				fireEvent(new SaveEvent(this, this.node));
 				readBean(this.node);
 			} catch (ValidationException e) {
-				log.warn("Validation failed: ", e); //$NON-NLS-1$
-				new Notification(e.getMessage(), 0).open();
+				log.warn("Validation failed: {}: bean: {} / fields: {}", //$NON-NLS-1$
+				         e.getMessage(),
+				         e.getBeanValidationErrors().stream().map((validationResult) -> validationResult.getErrorMessage()).collect(Collectors.toList()),
+				         e.getFieldValidationErrors().stream().map((status) -> "'" + status.getField().getValue() + "': " + status.getResult().get().getErrorMessage()).collect(Collectors.toList())); //$NON-NLS-1$ //$NON-NLS-2$
+				new Notification(e.getBeanValidationErrors().toString(), 0).open();
 			}
 		} else {
 			setUiChanges(false);

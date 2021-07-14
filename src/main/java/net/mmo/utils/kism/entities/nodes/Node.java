@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -26,7 +25,6 @@ import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
 import org.springframework.util.Assert;
 
-@Entity
 @Setter
 @Getter
 // @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")

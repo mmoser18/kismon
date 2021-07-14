@@ -8,14 +8,11 @@ package net.mmo.utils.kism.entities.nodes.connections;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import javax.persistence.Entity;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Entity
 @Setter
 @Getter
 @Slf4j

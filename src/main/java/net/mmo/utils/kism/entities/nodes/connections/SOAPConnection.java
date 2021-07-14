@@ -7,12 +7,9 @@ package net.mmo.utils.kism.entities.nodes.connections;
 
 import java.net.http.HttpRequest.Builder;
 
-import javax.persistence.Entity;
-
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Setter
 @Getter
 public class SOAPConnection extends HTTPConnection

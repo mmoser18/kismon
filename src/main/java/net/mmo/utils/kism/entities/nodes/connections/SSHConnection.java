@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.persistence.Entity;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.Getter;
@@ -28,7 +26,6 @@ import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 
-@Entity
 @Setter
 @Getter
 @Slf4j
@@ -55,12 +52,12 @@ public class SSHConnection extends IPConnection
 	protected String command;
 
 	@JsonIgnore
-	transient protected String response;
-
-	@JsonIgnore
 	transient private SSHClient sshClient;
 	@JsonIgnore
 	transient private Session session;
+
+	@JsonIgnore
+	protected String response;
 
 
 	public SSHConnection() { // required for deserialization & node-factory

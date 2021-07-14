@@ -12,7 +12,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.persistence.Entity;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
@@ -29,7 +28,6 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 /**
  * Common superclass for leaf nodes.
  */
-@Entity
 @Setter
 @Getter
 @Slf4j

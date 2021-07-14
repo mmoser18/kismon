@@ -5,13 +5,10 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import javax.persistence.Entity;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.cfg.NotYetImplementedException;
 
-@Entity
 @Setter
 @Getter
 public class TelnetConnection extends TCPConnection

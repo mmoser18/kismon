@@ -592,6 +592,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			addClassName("editing"); //$NON-NLS-1$
 		} catch (java.lang.IllegalStateException ex) {
 			log.error("WTF?", ex); //$NON-NLS-1$
+			this.formFactory = new FormFactory<N>();
 			this.formWrapper.removeAll(); // remove old form
 			this.form = null;
 		}

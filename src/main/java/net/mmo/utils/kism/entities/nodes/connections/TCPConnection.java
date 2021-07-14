@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -15,7 +14,6 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Setter
 @Getter
 // @Slf4j
@@ -38,7 +36,7 @@ abstract public class TCPConnection extends CheckableConnection
 	protected transient String resultingUrl;
 
 	@JsonIgnore
-	public transient static String acceptableSSLVersions;
+	public transient static String[] acceptableSSLVersions;
 	@JsonIgnore
 	public transient static boolean disableHostNameVerification;
 	@JsonIgnore
