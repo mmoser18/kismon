@@ -38,7 +38,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.persistence.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -48,7 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
-@Entity
 @Setter
 @Getter
 @Slf4j
@@ -120,17 +118,17 @@ abstract public class HTTPConnection extends TCPConnection
 	//	transient protected history = new ArrayList();
 
 	@JsonIgnore // TODO just for now!
-	transient protected HttpHeaders requestHeaders;
+	protected HttpHeaders requestHeaders;
 	@JsonIgnore
-	transient protected byte[] requestBody;
+	protected byte[] requestBody;
 
 	// response:
 	@JsonIgnore
-	transient protected int responseStatusCode = -1;
+	protected int responseStatusCode = -1;
 	@JsonIgnore
-	transient protected HttpHeaders responseHeaders;
+	protected HttpHeaders responseHeaders;
 	@JsonIgnore
-	transient protected byte[] responseBody;
+	protected byte[] responseBody;
 
 
 	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
@@ -322,9 +320,9 @@ abstract public class HTTPConnection extends TCPConnection
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
-		if (acceptableSSLVersions != null && !acceptableSSLVersions.isBlank()) {
+		if (acceptableSSLVersions != null && acceptableSSLVersions.length > 0) {
 			SSLParameters sslParameters = new SSLParameters();
-			sslParameters.setProtocols(acceptableSSLVersions.split(",|\\s")); //$NON-NLS-1$
+			sslParameters.setProtocols(acceptableSSLVersions);
 			builder.sslParameters(sslParameters);
 		}
 
@@ -401,8 +399,8 @@ abstract public class HTTPConnection extends TCPConnection
 
 		setHttpRequest(builder.build());
 		setRequestHeaders(getHttpRequest().headers());
-		setResponseHeaders(null);
-		setResponseBody(null);
+		// setResponseHeaders(null);
+		// setResponseBody(null);
 		logRequestValues();
 	}
 
@@ -439,7 +437,7 @@ abstract public class HTTPConnection extends TCPConnection
 			}
 			// signal response pending:
 			setResponseHeaders(null);
-			setResponseBody("<not response received (yet)>".getBytes()); //$NON-NLS-1$
+			setResponseBody("<no response received (yet)>".getBytes()); //$NON-NLS-1$
 			// ... before executing the actual request:
 			long startTime = System.nanoTime();
 			response = client.send(request, BodyHandlers.ofByteArray());

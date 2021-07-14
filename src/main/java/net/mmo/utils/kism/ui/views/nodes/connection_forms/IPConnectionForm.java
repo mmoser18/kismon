@@ -94,7 +94,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 //	}
 
 
-	private void adaptResultCheckerVisibility(boolean check, N n) {
+//	@Override
+//	protected void adaptResultCheckerVisibility(boolean check, N n) {
 //		if (n != null) {
 //			if (n.getResultChecker() == null) {
 //				log.info("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
@@ -115,7 +116,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 //			this.condition.setVisible(false);
 //			this.operand.setVisible(false);
 //		}
-	}
+//	}
 
 	@Override
 	protected void updateResolvableValues() {

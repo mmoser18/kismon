@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
@@ -14,7 +13,6 @@ import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
-@Entity
 @Setter
 @Getter
 // @Slf4j

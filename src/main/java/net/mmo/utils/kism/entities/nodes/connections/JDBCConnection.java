@@ -65,9 +65,9 @@ public class JDBCConnection extends TCPConnection
 	@JsonIgnore
 	transient protected String resultingQuery;
 	@JsonIgnore
-	transient protected String responseStatus;
+	protected String responseStatus;
 	@JsonIgnore
-	transient protected String responsePayload;
+	protected String responsePayload;
 
 
 	public JDBCConnection() { // required for deserialization & node-factory

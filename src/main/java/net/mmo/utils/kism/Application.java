@@ -1,5 +1,6 @@
 package net.mmo.utils.kism;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +53,11 @@ public class Application extends SpringBootServletInitializer
 			String JavaHome = System.getProperty("$JAVA HOME"); //$NON-NLS-1$
 
 			TCPConnection.acceptableSSLVersions =
-				AppProperties.getProperties().getProperty("SupportedSslVersions", //$NON-NLS-1$
-				                                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3"); //$NON-NLS-1$
+				AppProperties.getProperties()
+				             .getProperty("SupportedSslVersions", //$NON-NLS-1$
+				                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3") //$NON-NLS-1$
+				             .split(",|\\s"); //$NON-NLS-1$
+			log.info("Acceptable SSL-versions are: {}", Arrays.toString(TCPConnection.acceptableSSLVersions)); //$NON-NLS-1$
 
 			TCPConnection.disableHostNameVerification = // we parse this into a boolean as syntax validation:
 				Boolean.parseBoolean(AppProperties.getProperties().getProperty("DisableHostNameVerification", //$NON-NLS-1$

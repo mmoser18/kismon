@@ -27,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
+import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
@@ -153,7 +153,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 			if (event.isFromClient()) {
 				log.info("headers value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				// this.node.setHeaders(event.getValue());
-				updateRequestData();
+				initRequestData();
 			}
 		});
 		this.binder.forField(this.headers)
@@ -179,7 +179,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 			if (event.isFromClient()) {
 				log.info("payload value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				// this.node.setPayload(event.getValue());
-				updateRequestData();
+				initRequestData();
 			}
 		});
 		this.binder.forField(this.payload).withValidator(this.propertiesResolvableValidator);
@@ -278,8 +278,10 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 	@Override
 	public boolean setNode(N n, boolean abandonChanges) {
 		boolean res = super.setNode(n, abandonChanges);
+		adaptPayloadVisibility(n != null ? n.getMethod() : null);
+		updateRequestData();
+		updateResponseData();
 		adaptAcceptableReturnCodesVisibility(n != null ? n.isCheckResults() : false);
-		updateRequestInfo();
 		return res;
 	}
 
@@ -300,15 +302,10 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 //		}
 //	}
 
-	protected void updateRequestInfo() {
-		adaptPayloadVisibility(this.node != null ? this.node.getMethod() : null);
-		updateRequestData();
-	}
-
 	@Override
 	protected void updateResolvableValues() {
 		super.updateResolvableValues();
-		updateRequestData();
+		initRequestData();
 	}
 
 	/* we want the payload field only be visible when a corresponding method is selected */
@@ -325,7 +322,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 //		return hasChanges;
 //	}
 
-	protected void updateRequestData() {
+	protected void initRequestData() {
 		if (this.node != null) {
 			try {
 				this.node.createRequest();
@@ -341,6 +338,20 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		}
 	}
 
+	protected void updateRequestData() {
+		if (this.node != null) {
+			this.requestHeaders.setValue(this.node.requestHeadersAsString());
+			this.requestBody.setValue(requestBodyAsString(this.node));
+		}
+	}
+
+	protected void updateResponseData() {
+		if (this.node != null) {
+			this.responseHeaders.setValue(this.node.responseHeadersAsString());
+			this.responseBody.setValue(responseBodyAsString(this.node));
+		}
+	}
+
 	protected String requestBodyAsString(N n) {
 		String convertedRequest = n.requestBodyAsString();
 		String requestText = (this.prettyPrintRequestXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedRequest, false) : convertedRequest);
@@ -352,4 +363,5 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		String responseText = (this.prettyPrintResponseXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedResponse, false) : convertedResponse);
 		return responseText != null ? responseText : ""; //$NON-NLS-1$
 	}
+
 }

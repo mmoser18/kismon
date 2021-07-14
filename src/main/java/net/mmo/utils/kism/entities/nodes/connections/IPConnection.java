@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,7 +15,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
-@Entity
 @Setter
 @Getter
 // @Slf4j

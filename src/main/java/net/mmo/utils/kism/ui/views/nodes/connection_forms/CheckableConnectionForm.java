@@ -44,6 +44,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 	protected Checkbox checkResults;
 	// protected ResultCheckerForm resultChecker;
 	protected Select<ResultChecker.Condition> condition;
+	// for now we support max. 2 operands:
 	protected TextArea operand1;
 	protected TextArea operand2;
 
@@ -73,7 +74,11 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 //		this.resultChecker.setClassName(ResultCheckerClassName);
 		this.condition = new Select<Condition>(Condition.values());
 		this.condition.setLabel(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
-		this.condition.setItemLabelGenerator(cond -> Messages.getString("ResultChecker.Condition.Value." + cond.name())); //$NON-NLS-1$
+		this.condition.setItemLabelGenerator(cond -> (cond != null
+		                                             ? Messages.getString("ResultChecker.Condition.Value." + cond.name())  //$NON-NLS-1$
+		                                             : Messages.getString("ResultChecker.Condition.Value.None"))); //$NON-NLS-1$
+		this.condition.setEmptySelectionAllowed(true);
+		this.condition.setEmptySelectionCaption(Messages.getString("ResultChecker.Condition.Value.None")); //$NON-NLS-1$
 		this.condition.addClassName(ConditionClassName);
 		this.binder.forField(this.condition).bind(CheckableConnectionForm::getCondition, CheckableConnectionForm::setCondition);
 		this.condition.addValueChangeListener(event ->
@@ -93,11 +98,11 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 			.withValidator((value, context) -> {
 				//TODO: make this into an own class
 				// if the nr of required args is smaller than 1 then this operand is irrelevant, so we always validate it as OK
-				Condition cvalue = (this.condition != null ? this.condition.getValue() : null);
-				int nrArgs = (cvalue != null ? cvalue.getNrArgs() : -1);
-				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, cvalue, nrArgs); //$NON-NLS-1$
-				if (cvalue == null || nrArgs < 1) return ValidationResult.ok();
-				Class<?> clazz = cvalue.getArgClasses()[0];
+				Condition condValue = this.condition.getValue();
+				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
+				if (condValue == null || nrArgs < 1) return ValidationResult.ok();
+				Class<?> clazz = condValue.getArgClasses()[0];
 				if (clazz == String.class) {
 					return this.nonEmptyStringValidator.apply(value, context);
 				} else if (clazz == Integer.class) {
@@ -116,11 +121,11 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 			.withValidator((value, context) -> {
 				//TODO: make this into an own class
 				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
-				Condition cvalue = (this.condition != null ? this.condition.getValue() : null);
-				int nrArgs = (cvalue != null ? cvalue.getNrArgs() : -1);
-				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, cvalue, nrArgs); //$NON-NLS-1$
-				if (cvalue == null || nrArgs < 2) return ValidationResult.ok();
-				Class<?> clazz = this.condition.getValue().getArgClasses()[1];
+				Condition condValue = this.condition.getValue();
+				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
+				if (condValue == null || nrArgs < 2) return ValidationResult.ok();
+				Class<?> clazz = condValue.getArgClasses()[1];
 				if (clazz == String.class) {
 					return this.nonEmptyStringValidator.apply(value, context);
 				} else if (clazz == Integer.class) {
@@ -219,13 +224,32 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 	}
 
 	static <N extends CheckableConnection> String getOperandN(N n, int index) {
-		return (n != null && n.getResultChecker() != null
-				? n.getResultChecker().getOperandN(index)
-				: null);
+		try {
+			return (n != null && n.getResultChecker() != null
+					? n.getResultChecker().getOperandN(index-1)
+					: null);
+		} catch (Exception ex) {
+			String nodeName = n.getName();
+			ResultChecker rs = n.getResultChecker();
+			Condition condition = (rs != null ? rs.getCondition() : null);
+			log.error(String.format("Something went wrong getting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
+			                         index, condition, nodeName),
+			          ex);
+			return null;
+		}
 	}
 	static <N extends CheckableConnection> void setOperandN(N n, int index, String operand) {
-		if (n != null && n.getResultChecker() != null) {
-			n.getResultChecker().setOperandN(index, operand);
+		try {
+			if ((n != null) && (n.getResultChecker() != null) && (index <= n.getResultChecker().getCondition().getNrArgs())) {
+				n.getResultChecker().setOperandN(index-1, operand);
+			}
+		} catch (Exception ex) {
+			String nodeName = (n != null ? n.getName() : "null"); //$NON-NLS-1$
+			ResultChecker rs = (n != null ? n.getResultChecker() : null);
+			Condition condition = (rs != null ? rs.getCondition() : null);
+			log.error(String.format("Something went wrong setting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
+			                         index, condition, nodeName),
+			          ex);
 		}
 	}
 
@@ -243,7 +267,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		return getOperandN(n, 2);
 	}
 
-	private void adaptResultCheckerVisibility(boolean check, N n) {
+	protected void adaptResultCheckerVisibility(boolean check, N n) {
 		if (n != null) {
 			if (n.getResultChecker() == null) {
 				log.info("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
@@ -258,11 +282,16 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 //			this.resultChecker.setVisible(check);
 			this.condition.setVisible(check);
 			// we need to control the visibility, number and labels of the operand fields:
-			boolean op1Visible = check && this.condition.getValue().getNrArgs() >= 1;
-			boolean op2Visible = check && this.condition.getValue().getNrArgs() >= 2;
-			boolean bothVisible = op1Visible && op2Visible;
+			boolean op1Visible = false;
+			boolean op2Visible = false;
+			Condition condValue = this.condition.getValue();
+			if (condValue != null) {
+				int nrArgs = condValue.getNrArgs();
+				op1Visible = check && nrArgs >= 1;
+				op2Visible = check && nrArgs >= 2;
+			}
 			this.operand1.setVisible(op1Visible);
-			if (op1Visible) this.operand1.setLabel(Messages.getString(bothVisible
+			if (op1Visible) this.operand1.setLabel(Messages.getString( op1Visible && op2Visible
 			                                                          ? "ResultChecker.Operand.Label1" //$NON-NLS-1$
 			                                                          : "ResultChecker.Operand.Label")); //$NON-NLS-1$
 			this.operand2.setVisible(op2Visible);
