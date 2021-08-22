@@ -119,11 +119,15 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
 	@Override
-	protected HashMap<String, Object> fetchData() {
+	protected HashMap<String, Object> fetchData(Integer myRefresh) {
 		log.info("HistoryInfoGraph.fetchData"); //$NON-NLS-1$
+		//  check whether to abort execution:
+		if (this.refreshCounter.get() > myRefresh) {
+			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return null; // if meanwhile another one has been triggered then abort this refresh
+		}
 
 		HashMap <String, Object> res = getMinMaxInfo();
-
 		ZoneId myZoneId = ZoneId.systemDefault();
 
 		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
@@ -133,33 +137,42 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		List<String> nodeNames = getFilteredNodeNames();
 		List<Series> timingData = new ArrayList<>(nodeNames.size());
 
-		nodeNames.forEach(name ->
-			{
-				log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
-				List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue,
-				                                                                null, null, // min-/max-duration doesn't make sense for graphs
-				                                                                minTimestampValue, maxTimestampValue);
+		for (String name: nodeNames) { // no stream.forEach here because we want to tbe able to quit preemptively
+			if (this.refreshCounter.get() > myRefresh) {
+				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+				return null; // if meanwhile another one has been triggered then abort this refresh
+			}
 
-				DataSeries timingSeries = new DataSeries();
-				timingSeries.setId(name);
-				timingSeries.setName(name);
+			log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
+			List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue,
+			                                                                null, null, // min-/max-duration doesn't make sense for graphs
+			                                                                minTimestampValue, maxTimestampValue);
 
-				int nrDataPoints = values.size();
-				log.info("got {} data points for '{}'", nrDataPoints, name); //$NON-NLS-1$
-				if (nrDataPoints > 0) {
-					Number[][] numberTuples = new Number[nrDataPoints][2];
-					for (int idx = 0; idx < nrDataPoints; idx++) {
-						HistoryInfo value = values.get(idx);
-						LocalDateTime timestamp = value.getTimestamp();
-						numberTuples[idx][0] = Date.from(timestamp.atZone(myZoneId).toInstant()).getTime();
-						Double duration = value.getDuration();
-						numberTuples[idx][1] = duration;
-					}
-					log.trace("addSeries():"); //$NON-NLS-1$
-					timingSeries.addData(numberTuples);
-					timingData.add(timingSeries);
+			if (this.refreshCounter.get() > myRefresh) {
+				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+				return null; // if meanwhile another one has been triggered then abort this refresh
+			}
+
+			DataSeries timingSeries = new DataSeries();
+			timingSeries.setId(name);
+			timingSeries.setName(name);
+
+			int nrDataPoints = values.size();
+			log.info("got {} data points for '{}'", nrDataPoints, name); //$NON-NLS-1$
+			if (nrDataPoints > 0) {
+				Number[][] numberTuples = new Number[nrDataPoints][2];
+				for (int idx = 0; idx < nrDataPoints; idx++) {
+					HistoryInfo value = values.get(idx);
+					LocalDateTime timestamp = value.getTimestamp();
+					numberTuples[idx][0] = Date.from(timestamp.atZone(myZoneId).toInstant()).getTime();
+					Double duration = value.getDuration();
+					numberTuples[idx][1] = duration;
 				}
-			});
+				log.trace("addSeries():"); //$NON-NLS-1$
+				timingSeries.addData(numberTuples);
+				timingData.add(timingSeries);
+			}
+		}
 		log.info("got timingData for {} series", timingData.size()); //$NON-NLS-1$
 
 		res.put(TimingDataKey, timingData);
@@ -172,8 +185,12 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	 * @param timingData
 	 */
 	@Override
-	protected void updateView(HashMap <String, Object> res) {
+	protected void updateView(Integer myRefresh, HashMap <String, Object> res) {
 		log.info("HistoryInfoGraph.updateTable"); //$NON-NLS-1$
+		if (this.refreshCounter.get() > myRefresh) {
+			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return; // if meanwhile another one has been triggered then abort this refresh
+		}
 		updateMinMaxFields(res);
 
 		// update graph data:
@@ -204,11 +221,11 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	private void selectNone() {
 		log.info("selectNone"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this, null, (x) -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
+		UIHandlerSupport.executeLater(this, 0, () -> forAllSeriesDo(ds -> ds.setVisible(false, true)));
 	}
 
 	private void selectAll() {
 		log.info("selectAll"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this, null, (x) -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
+		UIHandlerSupport.executeLater(this, 0, () -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
 	}
 }

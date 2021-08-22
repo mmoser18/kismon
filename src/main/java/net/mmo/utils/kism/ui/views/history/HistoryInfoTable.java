@@ -213,15 +213,24 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
 	@Override
-	protected HashMap <String, Object> fetchData() {
+	protected HashMap <String, Object> fetchData(Integer myRefreshNr) {
 		log.info("HistoryInfoTable.getMinMaxInfo"); //$NON-NLS-1$
 
 		HashMap <String, Object> res = getMinMaxInfo();
+		if (this.refreshCounter.get() > myRefreshNr) {
+			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return null; // if meanwhile another one has been triggered then abort this refresh
+		}
 
 		List<HistoryInfo> data =
 			this.historyInfoService.findByFilter((String)res.get(NameFilterValueKey), (NodeType)res.get(TypeFilterValueKey),
 			                                     (Double)res.get(MinDurationValueKey), (Double)res.get(MaxDurationValueKey),
 			                                     (LocalDateTime)res.get(MinTimestampValueKey), (LocalDateTime)res.get(MaxTimestampValueKey));
+
+		if (this.refreshCounter.get() > myRefreshNr) {
+			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return null; // if meanwhile another one has been triggered then abort this refresh
+		}
 
 		log.info("fetchData-result: {} found.", data != null ? data.size() + " entries" : "no data"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
@@ -230,8 +239,12 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 	}
 
 	@Override
-	protected void updateView(HashMap <String, Object> res) {
+	protected void updateView(Integer myRefreshNr, HashMap <String, Object> res) {
 		log.info("HistoryInfoTable.updateTable"); //$NON-NLS-1$
+		if (this.refreshCounter.get() > myRefreshNr) {
+			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return; // if meanwhile another one has been triggered then abort this refresh
+		}
 		updateMinMaxFields(res);
 
 		// update grid data:

@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -74,6 +75,8 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected Select<String> typeFilter = new Select<>();
 	protected Button refreshData;
 	LocalDateTime lastUpdate;
+
+	AtomicInteger refreshCounter = new AtomicInteger();
 
 	protected Div content;
 
@@ -206,7 +209,9 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected void refreshData() {
 		log.info("AbstractHistoryInfoView.refreshData"); //$NON-NLS-1$
 		this.lastUpdate = LocalDateTime.now();
-		UIHandlerSupport.executeLater(this, this::fetchData, this::updateView);
+		this.refreshCounter.incrementAndGet();
+		UIHandlerSupport.executeLater(this, this.refreshCounter.incrementAndGet(),
+		                              this::fetchData, this::updateView);
 	}
 
 	@Override
@@ -217,10 +222,10 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	}
 
 	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
-	abstract protected T fetchData();
+	abstract protected T fetchData(Integer refreshNr);
 
 	/* NOTE: this is supposed to update the view */
-	abstract protected void updateView(T res);
+	abstract protected void updateView(Integer refreshNr, T res);
 
 	// this fetches the minimum/maximum timestamp
 	protected HashMap <String, Object> getMinMaxInfo() {
