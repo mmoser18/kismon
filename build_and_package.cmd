@@ -15,3 +15,5 @@ rem we need the properties file HERE:
 echo copying resources to right place:
 for %%f in (application.properties banner.txt logback.xml) do copy src\main\resources\%%f target\
 for %%f in (default.kmc) do copy %%f target\
+
+pause

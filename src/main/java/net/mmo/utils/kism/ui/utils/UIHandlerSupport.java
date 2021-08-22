@@ -30,7 +30,7 @@ public class UIHandlerSupport
 
 	public static <T extends Object> void executeLater(Component comp,
 	                                                   Command longRunningActivity) {
-		log.info("executeLater({})", longRunningActivity); //$NON-NLS-1$
+		log.debug("executeLater({})", longRunningActivity); //$NON-NLS-1$
 		executeLater(comp, () -> longRunningActivity, null);
 	}
 
@@ -51,7 +51,7 @@ public class UIHandlerSupport
 	public static <T extends Object> void executeLater(Component comp,
 	                                                   Supplier<T> longRunningActivity,
 	                                                   Consumer<T> uiActivity) {
-		log.info("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
+		log.debug("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
 		if (DO_ASYNC) { // offload the heavy lifting to a different thread:
 			executorService.submit(new Runnable()
 				{
@@ -83,13 +83,13 @@ public class UIHandlerSupport
 		}
 		if (uiActivity != null) {
 			if (RESERVE_UI_BEFORE_UPDATE) {
-				log.info("obtaining GUI access:"); //$NON-NLS-1$
+				log.debug("obtaining GUI access:"); //$NON-NLS-1$
 				comp.getUI().ifPresentOrElse((ui) -> ui.access(() -> {
 				                            	log.debug("uiActivity start:"); //$NON-NLS-1$
 				                            	uiActivity.accept(result);
 				                            	log.debug("uiActivity done."); //$NON-NLS-1$
 				                             }),
-				                             () -> log.warn("no UI obtained.")); //$NON-NLS-1$
+				                             () -> log.warn("unable to obtain UI-handle - output dropped")); //$NON-NLS-1$
 			} else {
 				log.debug("uiActivity start:"); //$NON-NLS-1$
 				try {

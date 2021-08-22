@@ -55,7 +55,7 @@
 		<appender-ref ref="Console" />
 	</logger>
 
-	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="debug" additivity="false">
+	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info" additivity="false">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
@@ -70,7 +70,7 @@
 		<appender-ref ref="Console" />
 	</logger>
 
-	<root level="warn">
+	<root level="info">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</root>

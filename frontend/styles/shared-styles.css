@@ -40,6 +40,11 @@
 	width: 100%;
 }
 
+/* main level of node-form fields: */
+.node-form-field-execute {
+	align-items: flex-start;
+}
+
 /* stretch ResultCheckerForm inside node-form fields to full width: */
 .node-view .node-form .node-form-fields vaadin-vertical-layout {
 	padding: 2px;

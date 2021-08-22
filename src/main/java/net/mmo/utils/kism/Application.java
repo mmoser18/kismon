@@ -1,5 +1,6 @@
 package net.mmo.utils.kism;
 
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -58,6 +59,8 @@ public class Application extends SpringBootServletInitializer
 				                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3") //$NON-NLS-1$
 				             .split(",|\\s"); //$NON-NLS-1$
 			log.info("Acceptable SSL-versions are: {}", Arrays.toString(TCPConnection.acceptableSSLVersions)); //$NON-NLS-1$
+			// in case the list contains TLSv1(.0) and/or TLSv1.1:
+			checkAndRemoveAcceptableProtocolsFromDisabledList();
 
 			TCPConnection.disableHostNameVerification = // we parse this into a boolean as syntax validation:
 				Boolean.parseBoolean(AppProperties.getProperties().getProperty("DisableHostNameVerification", //$NON-NLS-1$
@@ -131,6 +134,19 @@ public class Application extends SpringBootServletInitializer
 
 	private static boolean nonBlank(String str) {
 		return str != null && !str.isBlank();
+	}
+
+	/** Java 1.8u61(?) disabled TLSv1 and TLSv1.1, so - if we want to allow that - we
+	 *  need to remove it from the disabledAlgorithms-list:
+	 **/
+	private static void checkAndRemoveAcceptableProtocolsFromDisabledList() {
+		String disabledAlgorithms = Security.getProperty("jdk.tls.disabledAlgorithms"); //$NON-NLS-1$
+		for (String acceptableSSLVersion: TCPConnection.acceptableSSLVersions) {
+			if (disabledAlgorithms.contains(acceptableSSLVersion)) { // we accept an SSL version that the JDK has disabled -> remove it from that list!
+				disabledAlgorithms = disabledAlgorithms.replace(acceptableSSLVersion + ",", ""); //$NON-NLS-1$ //$NON-NLS-2$ // this works only if the protocol to be removed is not at the end of the list but this is typically the case as the list ends with something like "include jdk.disabled.namedCurves"
+			}
+		}
+		Security.setProperty("jdk.tls.disabledAlgorithms", disabledAlgorithms); //$NON-NLS-1$
 	}
 
 // Code snippet that I found that should start the DB server if it is not already running,

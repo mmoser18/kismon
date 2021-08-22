@@ -410,7 +410,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ QA",
@@ -558,7 +558,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DMZ",
@@ -708,9 +708,9 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
 		"expanded" : false
 	}, {
@@ -1032,7 +1032,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RJP PROD",
@@ -1179,11 +1179,11 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : false
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
@@ -1197,10 +1197,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "power",
 				"app_prot_ext" : "https://",
-				"mock_prot_ext" : "https://",
+				"app_uid" : "power",
 				"mock_port" : ":8080",
+				"mock_prot_ext" : "https://",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1468,11 +1468,11 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "RW-Tool",
@@ -1486,8 +1486,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "ROLF",
+				"app_prot_ext" : "https://",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -1708,7 +1708,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "SSt",
