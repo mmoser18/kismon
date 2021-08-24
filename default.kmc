@@ -1834,7 +1834,7 @@
 		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-		"name" : "Check VMs",
+		"name" : "Check VMs' livelyhood",
 		"description" : "Check VMs' livelyhood",
 		"applicable" : true,
 		"properties" : { },
