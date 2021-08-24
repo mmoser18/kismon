@@ -232,7 +232,7 @@
 			"hostPort" : 22,
 			"username" : "mmo",
 			"authMethod" : "PWD",
-			"authArg" : "ich18bins",
+			"authArg" : "",
 			"fingerprint" : "",
 			"command" : "ping -c 1 google.com"
 		} ],
@@ -410,7 +410,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ QA",
@@ -710,7 +710,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : false
+			"expanded" : true
 		} ],
 		"expanded" : false
 	}, {
@@ -1181,7 +1181,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : false
+			"expanded" : true
 		} ],
 		"expanded" : false
 	}, {
@@ -1832,6 +1832,282 @@
 			"expanded" : true
 		} ],
 		"expanded" : false
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+		"name" : "Check VMs",
+		"description" : "Check VMs' livelyhood",
+		"applicable" : true,
+		"properties" : { },
+		"condition" : "ALL_MUST_BE_OK",
+		"children" : [ {
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+			"name" : "Ping ZHQuest VMs",
+			"description" : "Ping ZHQuest VMs",
+			"applicable" : true,
+			"properties" : { },
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-zhquest",
+				"description" : "Ping ksta-zh-zhquest.elcaDev.local (ZHQuest DEV)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "ksta-zh-zhquest.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zhquest-int3",
+				"description" : "Ping ksta-zhquest-int3.elcaDev.local (ZHQuest DEV)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "ksta-zhquest-int3.elcaDev.local"
+			} ],
+			"expanded" : true
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+			"name" : "Ping RegisterJP VMs",
+			"description" : "Ping RegisterJP VMs",
+			"applicable" : true,
+			"properties" : { },
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping zhstregisterjp-dev",
+				"description" : "zhstregisterjp-dev.elcaDev.local (RegisterJP DEV)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "zhstregisterjp-dev.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping zhstregisterjp-qa",
+				"description" : "Ping zhstregisterjp-qa.elcaDev.local (RegisterJP QA)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "zhstregisterjp-qa.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping zhstregisterjp-prod",
+				"description" : "Ping zhstregisterjp-prod.elcaDev.local (RegisterJP PROD)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "zhstregisterjp-prod.elcaDev.local"
+			} ],
+			"expanded" : true
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping ksta-zh-sst-mnt",
+			"description" : "Ping ksta-zh-sst-mnt.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "ksta-zh-sst-mnt.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping kstazh-wps",
+			"description" : "Ping kstazh-wps.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "kstazh-wps.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping ksta-zh-rwtool",
+			"description" : "Ping ksta-zh-rwtool.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "ksta-zh-rwtool.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping vm-zhdokumente-qa",
+			"description" : "Ping vm-zhdokumente-qa.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "vm-zhdokumente-qa.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping vm-zhquest-easy-dev",
+			"description" : "Ping vm-zhquest-easy-dev.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "vm-zhquest-easy-dev.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping kstazh-common-oracle",
+			"description" : "Ping kstazh-common-oracle.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "kstazh-common-oracle.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+			"name" : "Ping mocks",
+			"description" : "Ping mocks.elcaDev.local",
+			"applicable" : true,
+			"properties" : { },
+			"active" : true,
+			"period" : 60,
+			"timeout" : 15,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
+			"hostAddress" : "mocks.elcaDev.local"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+			"name" : "Ping DMZ VMs",
+			"description" : "Ping DMZ VMs",
+			"applicable" : true,
+			"properties" : { },
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-sst-mnt-dmz",
+				"description" : "Ping ksta-zh-sst-mnt-dmz.elcaDev.local",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "ksta-zh-sst-mnt-dmz.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-zhquest-dmz",
+				"description" : "Ping ksta-zh-zhquest-dmz.elcaDev.local",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "ksta-zh-zhquest-dmz.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-wps-dmz",
+				"description" : "Ping ksta-zh-wps-dmz.elcaDev.local",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "ksta-zh-wps-dmz.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-rwtool-dmz",
+				"description" : "Ping ksta-zh-rwtool-dmz.elcaDev.local",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : null
+				},
+				"hostAddress" : "ksta-zh-rwtool-dmz.elcaDev.local"
+			} ],
+			"expanded" : true
+		} ],
+		"expanded" : true
 	} ],
 	"expanded" : true
 }

@@ -15,9 +15,7 @@ import java.util.function.Supplier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.Command;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-@Service
 @Slf4j
 public class UIHandlerSupport
 {

@@ -232,7 +232,7 @@
 			"hostPort" : 22,
 			"username" : "mmo",
 			"authMethod" : "PWD",
-			"authArg" : "ich18bins",
+			"authArg" : "",
 			"fingerprint" : "",
 			"command" : "ping -c 1 google.com"
 		} ],
