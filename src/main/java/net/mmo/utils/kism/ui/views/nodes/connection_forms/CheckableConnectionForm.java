@@ -224,32 +224,45 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 	}
 
 	static <N extends CheckableConnection> String getOperandN(N n, int index) {
-		try {
-			return (n != null && n.getResultChecker() != null
-					? n.getResultChecker().getOperandN(index-1)
-					: null);
-		} catch (Exception ex) {
-			String nodeName = n.getName();
-			ResultChecker rs = n.getResultChecker();
-			Condition condition = (rs != null ? rs.getCondition() : null);
-			log.error(String.format("Something went wrong getting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
-			                         index, condition, nodeName),
-			          ex);
-			return null;
-		}
-	}
-	static <N extends CheckableConnection> void setOperandN(N n, int index, String operand) {
-		try {
-			if ((n != null) && (n.getResultChecker() != null) && (index <= n.getResultChecker().getCondition().getNrArgs())) {
-				n.getResultChecker().setOperandN(index-1, operand);
+		if (n != null) {
+			ResultChecker resultChecker = n.getResultChecker();
+			if (resultChecker != null) {
+				Condition condition = resultChecker.getCondition();
+				if (condition != null) {
+					int nrArgs = condition.getNrArgs();
+					if (nrArgs > 0) {
+						try {
+							return n.getResultChecker().getOperandN(index-1);
+						} catch (Exception ex) {
+							log.error(String.format("Something went wrong getting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
+							                         index, condition, n.getName()),
+							          ex);
+						}
+					}
+				}
 			}
-		} catch (Exception ex) {
-			String nodeName = (n != null ? n.getName() : "null"); //$NON-NLS-1$
-			ResultChecker rs = (n != null ? n.getResultChecker() : null);
-			Condition condition = (rs != null ? rs.getCondition() : null);
-			log.error(String.format("Something went wrong setting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
-			                         index, condition, nodeName),
-			          ex);
+		}
+		return null;
+	}
+
+	static <N extends CheckableConnection> void setOperandN(N n, int index, String operand) {
+		if (n != null) {
+			ResultChecker resultChecker = n.getResultChecker();
+			if (resultChecker != null) {
+				Condition condition = resultChecker.getCondition();
+				if (condition != null) {
+					int nrArgs = condition.getNrArgs();
+					if (nrArgs > 0) {
+						try {
+							n.getResultChecker().setOperandN(index-1, operand);
+						} catch (Exception ex) {
+							log.error(String.format("Something went wrong setting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
+							                        index, condition, n.getName()),
+							          ex);
+						}
+					}
+				}
+			}
 		}
 	}
 

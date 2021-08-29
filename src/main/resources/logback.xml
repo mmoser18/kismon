@@ -69,6 +69,11 @@
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
+	<logger name="net.mmo.utils.kism.entities.nodes.connections.PingConnection" level="debug" additivity="false">
+		<appender-ref ref="RollingFile" />
+		<appender-ref ref="Console" />
+	</logger>
+	
 
 	<root level="info">
 		<appender-ref ref="RollingFile" />

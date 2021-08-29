@@ -5,8 +5,14 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -20,13 +26,41 @@ public class PingConnection extends IPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
 
+	public final static String PROPERTYNAME_RESPONSE  = "ping_response";  //$NON-NLS-1$
+
+	/**
+	 * Responses are assumed to look like:
+	 * Request timed out.
+	 * Reply from 142.250.203.100: bytes=32 time=19ms TTL=118
+	 * Reply from ::1: time<1ms
+	 *
+	 */
 	@JsonIgnore
-	final static boolean isWindows;
+	private final static String PingTimedOut = "Request timed out."; //$NON-NLS-1$
+	@JsonIgnore
+	private final static String PingSuccessIPv4  = "Reply from \\d{1,3}(\\.\\d{1,3}){3}: (bytes=\\d{1,4} )?time(=\\d{1,5}|<1)ms( TTL=\\d{1,3})?"; //$NON-NLS-1$\
+	private final static int MatchGroupIPv4 = 3;	//                 1           1     2               2     3            3  4             4
+	@JsonIgnore
+	private final static String PingSuccessIPv6  = "Reply from ([\\dA-Fa-f]){0,4}(:([\\dA-Fa-f]){0,4}){0,7}: (bytes=\\d{1,4} )?time(=\\d{1,5}|<1)ms( TTL=\\d{1,3})?"; //$NON-NLS-1$
+	private final static int MatchGroupIPv6 = 5;	//         1           1     2 3           3     2       4               4     5            5  6             6
+
+	@JsonIgnore
+	private transient Pattern patternTimedOut = Pattern.compile(PingTimedOut);
+	@JsonIgnore
+	private transient Pattern patternSuccessIPv4 = Pattern.compile(PingSuccessIPv4);
+	@JsonIgnore
+	private transient Pattern patternSuccessIPv6 = Pattern.compile(PingSuccessIPv6);
+
+	@JsonIgnore
+	protected transient String response;
+
+	@JsonIgnore
+	private final static boolean isWindows;
 	static {
 		isWindows = System.getProperty("os.name").toLowerCase().contains("win"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	@JsonIgnore
-	transient ProcessBuilder processBuilder;
+	private transient ProcessBuilder processBuilder;
 
 
 	public PingConnection() { // required for deserialization and NodeFactory
@@ -48,15 +82,22 @@ public class PingConnection extends IPConnection
 		setProcessBuilder(null); // trigger a recreation of the processBuilder
 	}
 
+	public void setResponse(String response) {
+		if (!Objects.equals(this.response, response)) {
+			String oldResponse = this.response;
+			this.response = response;
+			informOnPropertyChange(PROPERTYNAME_RESPONSE, oldResponse, response);
+		}
+	}
+
 	/**
 	 * This implementation is neither very elegant nor performant, but the issue is that Java does
 	 * not provide access to ICMP. Its "<url>.isReachable() method uses ICMP only if running as admin
 	 * (or su on *nix) but falls back to the port 7 echo service when not. Since the echo service is
-	 * often not supported this is not a reliable solution.
+	 * typically not supported this is not a reliable solution.
 	 * The only solution seems to be to run the ping-command in a separate process, but this comes with
 	 * considerable overhead and measured times are much, much higher than the actual ping-times.
-	 * Solution for the latter would be to parse the output of the ping command but I was too lazy for
-	 * that. The point here is anyway only to check whether the system is responding, not how fast.
+	 * Work-around for the latter was be to parse the output of the ping command...
 	 */
 	@Override
 	public void sendRequest() throws Exception {
@@ -66,23 +107,62 @@ public class PingConnection extends IPConnection
 				                   (isWindows ? "-n" : "-c"), "1", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				                   "-w", Integer.toString(getTimeout() * 1000), // timeout in milliseconds //$NON-NLS-1$
 				                   resultingHostAddressResolved());
+			this.processBuilder.redirectErrorStream(true); // redirect error to input stream
+
 		}
 		// take timestamp:
 		setTimestamp(LocalDateTime.now());
 		// ... right before executing the actual request:
 		long startTime = System.nanoTime();
 		Process proc = this.processBuilder.start();
-		if (proc.waitFor(getTimeout()+3, TimeUnit.SECONDS)) {
-			long callDuration = System.nanoTime() - startTime;
-			log.debug("ping to '{}' responded in {} msecs", getResultingHostAddress(), callDuration / 1e6); //$NON-NLS-1$
-			setState(State.OK);
-			setDuration(callDuration);
-			setRequestResult(getState().name() + '/' + (callDuration / 1e6)/*=nano-secs to milli-secs*/);
+		if (proc.waitFor(getTimeout(), TimeUnit.SECONDS)) {
+			String time = null;
+			String details = null;
+			try (InputStream is = new BufferedInputStream(proc.getInputStream())) {
+				String res = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+				setResponse(res);
+				log.info("ping response is '{}'", res); //$NON-NLS-1$
+				if (res.contains(PingTimedOut)) {
+					setDuration(-1); // signal: "no response"
+					setState(State.FAILED);
+					details = PingTimedOut;
+				} else {
+					try {
+						Matcher matcherIPv4 = this.patternSuccessIPv4.matcher(res);
+						Matcher matcherIPv6 = this.patternSuccessIPv6.matcher(res);
+						if (matcherIPv4.find()) {
+							time = matcherIPv4.group(MatchGroupIPv4);
+						} else if (matcherIPv6.find()) {
+							time = matcherIPv6.group(MatchGroupIPv6);
+						}
+						if (time != null) {
+							setDurationMillis(time.startsWith("<") ? 1 : Long.parseLong(time)); //$NON-NLS-1$
+							setState(getDuration() > getTimeout() * 10e9  ? State.DEGRADED : State.OK);
+							details = time + " msecs"; //$NON-NLS-1$
+						} else { // time not found - we take the entire process' duration:
+							log.info("Couldn't locate time in the response '{}'", res); //$NON-NLS-1$
+							setDuration(System.nanoTime() - startTime);
+							setState(State.DEGRADED); // degraded since we didn't find the time in the response...
+						}
+					} catch (Exception ex) {
+						log.error("Exception analyzing/converting response '" + res + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
+						setDuration(0); // signal: "unknown response"
+						setState(State.FAILED);
+					}
+					if (details == null) {
+						details = "unexpected response: '" + res + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+					}
+				}
+			}
+			log.debug("ping to '{}': {}", getResultingHostAddress(), details); //$NON-NLS-1$
+			setRequestResult(getState().name() + '/' + details);
 		} else {
 			log.debug("ping to '{}' timed out.", getResultingHostAddress()); //$NON-NLS-1$
-			setState(State.FAILED);
 			setDuration(-1);
+			setState(State.FAILED);
 			setRequestResult(getState().name() + "/timed out"); //$NON-NLS-1$
 		}
+		informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
+
 	}
 }

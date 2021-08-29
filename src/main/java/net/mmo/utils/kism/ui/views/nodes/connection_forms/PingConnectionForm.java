@@ -5,6 +5,11 @@
 
 package net.mmo.utils.kism.ui.views.nodes.connection_forms;
 
+import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
+import static net.mmo.utils.kism.ui.UIConstants.MonospaceTheme;
+import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
+
+import com.vaadin.flow.component.textfield.TextArea;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 
@@ -13,7 +18,24 @@ public class PingConnectionForm extends IPConnectionForm<PingConnection>
 {
 	private static final long serialVersionUID = -5157762871511746801L;
 
+	static final String ResponseClassName          = NodeFormField + "response"; //$NON-NLS-1$
+
+	protected TextArea response;
+
 	public PingConnectionForm(NodeService nodeService) {
 		super(PingConnection.class, nodeService);
 	}
+
+	@Override
+	protected void createFormFields(NodeService nodeService) {
+		super.createFormFields(nodeService);
+		this.response = new TextArea(Messages.getString("PingConnectionForm.Response.Label")); //$NON-NLS-1$
+		this.response.setClassName(ResponseClassName);
+		this.response.setThemeName(LabelPaddingTheme);
+		this.response.addThemeName(MonospaceTheme);
+		this.binder.forField(this.response).bind((n) -> n.getResponse(), null);
+
+		this.fields.add(this.response);
+	}
+
 }

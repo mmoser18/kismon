@@ -247,6 +247,10 @@ abstract public class LeafNode extends Node
 		}
 	}
 
+	/**
+	 * Set duration in nano-seconds
+	 * @param duration
+	 */
 	public void setDuration(long duration) {
 		if (this.duration != duration) {
 			long oldDuration = this.duration;
@@ -254,6 +258,11 @@ abstract public class LeafNode extends Node
 			informOnPropertyChange(PROPERTYNAME_DURATION, oldDuration, duration);
 		}
 	}
+
+	public void setDurationMillis(long duration) {
+		setDuration(duration * 1000000); // convert msecs --> nano-secs);
+	}
+
 	public void setTimestamp(LocalDateTime timestamp) {
 		if (!Objects.equal(this.timestamp, timestamp)) {
 			LocalDateTime oldTimestamp = this.timestamp;

@@ -5,14 +5,11 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -20,10 +17,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 
 @Setter
@@ -53,8 +48,6 @@ public class SSHConnection extends IPConnection
 
 	@JsonIgnore
 	transient private SSHClient sshClient;
-	@JsonIgnore
-	transient private Session session;
 
 	@JsonIgnore
 	protected String response;
@@ -70,10 +63,6 @@ public class SSHConnection extends IPConnection
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void finalize() throws Throwable {
-		if (this.session != null) {
-			this.session.close();
-			this.session = null;
-		}
 		if (this.sshClient != null) {
 			try {
 				this.sshClient.disconnect();
@@ -130,14 +119,6 @@ public class SSHConnection extends IPConnection
 
 	// trigger a recreation of the sshClient and the session
 	private void resetClient() {
-		if (this.session != null) {
-			try {
-				this.session.close();
-			} catch (TransportException | ConnectionException ex) {
-				log.trace("Exception closing session", ex); //$NON-NLS-1$
-			}
-			this.session = null;
-		}
 		if (this.sshClient != null) {
 			try {
 				this.sshClient.disconnect();
@@ -176,16 +157,13 @@ public class SSHConnection extends IPConnection
 					throw new IllegalArgumentException("Illegal Auth_Method: " + this.authMethod); //$NON-NLS-1$
 				}
 			}
-			if (this.session == null) {
-				log.debug("Starting SSH session:"); //$NON-NLS-1$
-				this.session = this.sshClient.startSession();
-			}
 			final String resolvedCommand = resolveProperties(getCommand());
 			log.debug("{}: Executing command '{}':", getName(), resolvedCommand); //$NON-NLS-1$
 			// ... before executing the actual request:
 			setTimestamp(LocalDateTime.now());
 			long startTime = System.nanoTime();
-			try (final Command sshCommand = this.session.exec(resolvedCommand)) {
+			try (Session session = this.sshClient.startSession();
+				 Command sshCommand = session.exec(resolvedCommand)) {
 				sshCommand.join(getTimeout(), TimeUnit.SECONDS);
 				long callDuration = System.nanoTime() - startTime;
 				setDuration(callDuration);
@@ -218,7 +196,7 @@ public class SSHConnection extends IPConnection
 				deriveState();
 			} // cmd gets closed here.
 		} catch (Exception ex) {
-			log.error("Exception executing '{}' (creating sshClient/session): {}", getName(), ex); //$NON-NLS-1$
+			log.error("Exception executing '{}' (creating ssh-client/-session/-command): {}", getName(), ex); //$NON-NLS-1$
 			setDuration(-1);
 			setResponse(ex.getMessage());
 			setState(State.FAILED);
@@ -231,10 +209,8 @@ public class SSHConnection extends IPConnection
 		}
 	}
 
-	String readStream(InputStream str) {
-		return new BufferedReader(new InputStreamReader(str, StandardCharsets.UTF_8))
-			.lines()
-			.collect(Collectors.joining("\n")); //$NON-NLS-1$
+	String readStream(InputStream str) throws IOException {
+		return new String(str.readAllBytes(), StandardCharsets.UTF_8);
 	}
 
 	private void deriveState() throws Exception {

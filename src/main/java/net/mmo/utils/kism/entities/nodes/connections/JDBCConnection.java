@@ -189,7 +189,6 @@ public class JDBCConnection extends TCPConnection
 			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(statement, isRS);
 			setRequestResult(getState().name() + '/' + getResponseStatus());
-			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		} catch (Exception ex) {
 			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
 			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
@@ -209,6 +208,7 @@ public class JDBCConnection extends TCPConnection
 			if (statement != null) {
 				statement.close();
 			}
+			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		}
 	}
 

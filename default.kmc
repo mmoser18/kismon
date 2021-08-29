@@ -21,8 +21,8 @@
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-			"name" : "REST_0",
-			"description" : "REST Connection",
+			"name" : "Test REST_0",
+			"description" : "Test REST Connection",
 			"applicable" : true,
 			"properties" : {
 				"xxx" : "yyy"
@@ -47,8 +47,8 @@
 			"acceptableReturnCodes" : "200"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-			"name" : "SOAP_request_with_long_name",
-			"description" : "SOAP Connection",
+			"name" : "Test SOAP_request_with_long_name",
+			"description" : "Test SOAP Connection",
 			"applicable" : true,
 			"properties" : {
 				"x" : "Operation"
@@ -74,8 +74,8 @@
 			"soapAction" : "registerSSL"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-			"name" : "JDBC_0",
-			"description" : "JDBC Connection",
+			"name" : "Test JDBC_0",
+			"description" : "Test JDBC Connection",
 			"applicable" : false,
 			"properties" : {
 				"bar" : "zzz",
@@ -96,22 +96,22 @@
 			"driverName" : "oracle.jdbc.driver.OracleDriver"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-			"name" : "Intermediate Node 0",
-			"description" : "Intermediate Node 0",
+			"name" : "Test Intermediate Node 0",
+			"description" : "Test Intermediate Node 0",
 			"applicable" : true,
 			"properties" : { },
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "Intermediate Node 1",
-				"description" : "Intermediate Node 1",
+				"name" : "Test Intermediate Node 1",
+				"description" : "Test Intermediate Node 1",
 				"applicable" : true,
 				"properties" : { },
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-					"name" : "Intermediate Node 2",
-					"description" : "Intermediate Node 2",
+					"name" : "Test Intermediate Node 2",
+					"description" : "Test Intermediate Node 2",
 					"applicable" : true,
 					"properties" : { },
 					"condition" : "ALL_MUST_BE_OK",
@@ -178,8 +178,8 @@
 				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-				"name" : "REST Connection 5",
-				"description" : "REST Connection 5",
+				"name" : "Test REST Connection 2",
+				"description" : "Test REST Connection 2",
 				"applicable" : true,
 				"properties" : { },
 				"active" : false,
@@ -204,20 +204,23 @@
 			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-			"name" : "Ping localhost",
-			"description" : "Ping localhost",
+			"name" : "Test Ping localhost",
+			"description" : "Test Ping localhost",
 			"applicable" : true,
 			"properties" : { },
 			"active" : false,
 			"period" : 60,
-			"timeout" : 5,
+			"timeout" : 3,
 			"checkResults" : false,
-			"resultChecker" : null,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : null
+			},
 			"hostAddress" : "localhost"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
-			"name" : "SSH Connection 0",
-			"description" : "SSH Connection 0",
+			"name" : "Test SSH Connection",
+			"description" : "Test SSH Connection",
 			"applicable" : true,
 			"properties" : { },
 			"active" : false,
@@ -225,18 +228,18 @@
 			"timeout" : 5,
 			"checkResults" : true,
 			"resultChecker" : {
-				"condition" : "GreaterThan",
-				"operands" : [ "50" ]
+				"condition" : "Contains",
+				"operands" : [ "Reply from", "" ]
 			},
 			"hostAddress" : "localhost",
 			"hostPort" : 22,
 			"username" : "mmo",
 			"authMethod" : "PWD",
-			"authArg" : "",
+			"authArg" : "ich18bins",
 			"fingerprint" : "",
-			"command" : "ping -c 1 google.com"
+			"command" : "ping -n 1 www.google.com"
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -1197,10 +1200,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "power",
-				"mock_port" : ":8080",
+				"app_prot_ext" : "https://",
 				"mock_prot_ext" : "https://",
+				"mock_port" : ":8080",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1486,8 +1489,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "ROLF",
 				"app_prot_ext" : "https://",
+				"app_uid" : "ROLF",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -1856,10 +1859,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-zhquest.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -1871,10 +1871,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "ksta-zhquest-int3.elcaDev.local"
 			} ],
 			"expanded" : true
@@ -1895,10 +1892,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "zhstregisterjp-dev.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -1910,10 +1904,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "zhstregisterjp-qa.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -1925,10 +1916,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "zhstregisterjp-prod.elcaDev.local"
 			} ],
 			"expanded" : true
@@ -1942,10 +1930,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "ksta-zh-sst-mnt.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -1957,10 +1942,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "kstazh-wps.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -1972,10 +1954,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "ksta-zh-rwtool.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -1987,10 +1966,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "vm-zhdokumente-qa.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2002,10 +1978,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "vm-zhquest-easy-dev.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2017,10 +1990,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "kstazh-common-oracle.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2032,10 +2002,7 @@
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
-			"resultChecker" : {
-				"condition" : null,
-				"operands" : null
-			},
+			"resultChecker" : null,
 			"hostAddress" : "mocks.elcaDev.local"
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -2054,10 +2021,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-sst-mnt-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2069,10 +2033,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-zhquest-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2084,10 +2045,7 @@
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : false,
-				"resultChecker" : {
-					"condition" : null,
-					"operands" : null
-				},
+				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-wps-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
