@@ -282,8 +282,8 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 
 	protected void adaptResultCheckerVisibility(boolean check, N n) {
 		if (n != null) {
-			if (n.getResultChecker() == null) {
-				log.info("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
+			if (check && n.getResultChecker() == null) {
+				log.info("Creating {}:", ResultChecker.class.getSimpleName()); //$NON-NLS-1$
 				n.setResultChecker(new ResultChecker());
 // attempt to bind the ResultChecker in via a child-form:
 //				// if checkResults is active we need to add the validity of the resultChecker's binder to this one:
