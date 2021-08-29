@@ -187,11 +187,12 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	@Override
 	protected void updateView(Integer myRefresh, HashMap <String, Object> res) {
 		log.info("HistoryInfoGraph.updateTable"); //$NON-NLS-1$
+		updateMinMaxFields(res);
+
 		if (this.refreshCounter.get() > myRefresh) {
 			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
 			return; // if meanwhile another one has been triggered then abort this refresh
 		}
-		updateMinMaxFields(res);
 
 		// update graph data:
 		@SuppressWarnings("unchecked")

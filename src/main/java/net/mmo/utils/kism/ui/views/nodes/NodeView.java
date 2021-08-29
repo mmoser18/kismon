@@ -329,7 +329,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 								closeEditor();
 							}
 						}
-						this.form.setUiChanges(false);
+						if (this.form != null) { // editNode() may change that, so need to check again!
+							this.form.setUiChanges(false);
+						}
 					}
 				}
 			});
@@ -590,7 +592,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.form.setVisible(true);
 
 			addClassName("editing"); //$NON-NLS-1$
-		} catch (java.lang.IllegalStateException ex) {
+		} catch (java.lang.IllegalStateException ex) { // I keep getting these - still no idea why...
 			log.error("WTF?", ex); //$NON-NLS-1$
 			this.formFactory = new FormFactory<N>();
 			this.formWrapper.removeAll(); // remove old form
