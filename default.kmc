@@ -710,7 +710,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : false
+			"expanded" : true
 		} ],
 		"expanded" : false
 	}, {
@@ -1197,10 +1197,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "power",
-				"mock_port" : ":8080",
+				"app_prot_ext" : "https://",
 				"mock_prot_ext" : "https://",
+				"mock_port" : ":8080",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1486,8 +1486,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "ROLF",
 				"app_prot_ext" : "https://",
+				"app_uid" : "ROLF",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -1843,8 +1843,8 @@
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-			"name" : "Ping ZHQuest VMs",
-			"description" : "Ping ZHQuest VMs",
+			"name" : "ZHQuest VMs",
+			"description" : "ZHQuest VMs",
 			"applicable" : true,
 			"properties" : {
 				"uid" : "root",
@@ -1894,7 +1894,7 @@
 					"fingerprint" : "",
 					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest QA-VM",
@@ -1940,11 +1940,11 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-			"name" : "Ping RegisterJP VMs",
-			"description" : "Ping RegisterJP VMs",
+			"name" : "RegisterJP VMs",
+			"description" : "RegisterJP VMs",
 			"applicable" : true,
 			"properties" : {
 				"uid" : "root",
@@ -2084,7 +2084,7 @@
 				} ],
 				"expanded" : true
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-sst-mnt",
