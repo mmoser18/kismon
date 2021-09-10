@@ -44,9 +44,10 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 	protected Checkbox checkResults;
 	// protected ResultCheckerForm resultChecker;
 	protected Select<ResultChecker.Condition> condition;
-	// for now we support max. 2 operands:
+	// for now we support max. 3 operands:
 	protected TextArea operand1;
 	protected TextArea operand2;
+	protected TextArea operand3;
 
 	protected Accordion validationDetails;
 	protected VerticalLayout validationDetailsPanel;
@@ -134,6 +135,29 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
 			})
 			.bind(CheckableConnectionForm::getOperand2, CheckableConnectionForm::setOperand2);
+
+		this.operand3 = new TextArea(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
+		this.operand3.addClassName(OperandClassName);
+		this.operand3.setThemeName(LabelPaddingTheme);
+		this.operand3.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.binder.forField(this.operand3)
+			.withValidator(this.propertiesResolvableValidator)
+			.withValidator((value, context) -> {
+				//TODO: make this into an own class
+				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
+				Condition condValue = this.condition.getValue();
+				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
+				if (condValue == null || nrArgs < 3) return ValidationResult.ok();
+				Class<?> clazz = condValue.getArgClasses()[1];
+				if (clazz == String.class) {
+					return this.nonEmptyStringValidator.apply(value, context);
+				} else if (clazz == Integer.class) {
+					return this.nonEmptyNumberValidator.apply(value, context);
+				}
+				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
+			})
+			.bind(CheckableConnectionForm::getOperand3, CheckableConnectionForm::setOperand3);
 
 		this.validationDetails = new Accordion();
 		this.validationDetails.close(); // initially closed
@@ -223,44 +247,48 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		}
 	}
 
-	static <N extends CheckableConnection> String getOperandN(N n, int index) {
+	static <N extends CheckableConnection> String getOperandN(N n, int opNr) {
 		if (n != null) {
 			ResultChecker resultChecker = n.getResultChecker();
 			if (resultChecker != null) {
 				Condition condition = resultChecker.getCondition();
 				if (condition != null) {
-					int nrArgs = condition.getNrArgs();
-					if (nrArgs > 0) {
+					int nrExpectedArgs = condition.getNrArgs();
+					int index = opNr-1;
+					if (index < nrExpectedArgs) {
 						try {
-							return n.getResultChecker().getOperandN(index-1);
+							return n.getResultChecker().getOperandN(index);
 						} catch (Exception ex) {
 							log.error(String.format("Something went wrong getting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
-							                         index, condition, n.getName()),
+							                        opNr, condition, n.getName()),
 							          ex);
 						}
-					}
+					} // the others are simply ignored
 				}
 			}
 		}
 		return null;
 	}
 
-	static <N extends CheckableConnection> void setOperandN(N n, int index, String operand) {
+	// Note: This method gets called by the binder for ALL fields (i.e. also those that are hidden).
+	// The binder isn't aware of that So we need to ignore those that are not valid!
+	static <N extends CheckableConnection> void setOperandN(N n, int opNr, String operand) {
 		if (n != null) {
 			ResultChecker resultChecker = n.getResultChecker();
 			if (resultChecker != null) {
 				Condition condition = resultChecker.getCondition();
 				if (condition != null) {
-					int nrArgs = condition.getNrArgs();
-					if (nrArgs > 0) {
+					int nrExpectedArgs = condition.getNrArgs();
+					int index = opNr-1;
+					if (index < nrExpectedArgs) {
 						try {
-							n.getResultChecker().setOperandN(index-1, operand);
+							n.getResultChecker().setOperandN(index, operand);
 						} catch (Exception ex) {
 							log.error(String.format("Something went wrong setting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
-							                        index, condition, n.getName()),
+							                        opNr, condition, n.getName()),
 							          ex);
 						}
-					}
+					} // the others are simply ignored
 				}
 			}
 		}
@@ -280,6 +308,13 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		return getOperandN(n, 2);
 	}
 
+	static <N extends CheckableConnection> void setOperand3(N n, String operand) {
+		setOperandN(n, 3, operand);
+	}
+	static <N extends CheckableConnection> String getOperand3(N n) {
+		return getOperandN(n, 3);
+	}
+
 	protected void adaptResultCheckerVisibility(boolean check, N n) {
 		if (n != null) {
 			if (check && n.getResultChecker() == null) {
@@ -297,11 +332,13 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 			// we need to control the visibility, number and labels of the operand fields:
 			boolean op1Visible = false;
 			boolean op2Visible = false;
+			boolean op3Visible = false;
 			Condition condValue = this.condition.getValue();
 			if (condValue != null) {
 				int nrArgs = condValue.getNrArgs();
 				op1Visible = check && nrArgs >= 1;
 				op2Visible = check && nrArgs >= 2;
+				op3Visible = check && nrArgs >= 3;
 			}
 			this.operand1.setVisible(op1Visible);
 			if (op1Visible) this.operand1.setLabel(Messages.getString( op1Visible && op2Visible
@@ -309,6 +346,8 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 			                                                          : "ResultChecker.Operand.Label")); //$NON-NLS-1$
 			this.operand2.setVisible(op2Visible);
 			if (op2Visible) this.operand2.setLabel(Messages.getString("ResultChecker.Operand.Label2")); //$NON-NLS-1$
+			this.operand3.setVisible(op3Visible);
+			if (op3Visible) this.operand3.setLabel(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
 		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
 			log.info("removing ResultChecker from view:"); //$NON-NLS-1$
 //			this.resultChecker.setResultChecker(null);
@@ -316,6 +355,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 			this.condition.setVisible(false);
 			this.operand1.setVisible(false);
 			this.operand2.setVisible(false);
+			this.operand3.setVisible(false);
 		}
 	}
 }

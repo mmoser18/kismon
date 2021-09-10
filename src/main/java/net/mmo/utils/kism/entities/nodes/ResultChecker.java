@@ -68,10 +68,15 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	@JsonIgnore
 	public void setOperandN(int index, String operand) {
 		synchronized(this) {
+			int nrExpectedArgs = this.condition.getNrArgs();
 			if (this.operands == null) {
-				this.operands = new ArrayList<>(this.condition != null ? this.condition.getNrArgs() : 0);
+				this.operands = new ArrayList<>(this.condition != null ? nrExpectedArgs : 0);
 			}
-			if (index >= this.operands.size()) {
+			if (index >= nrExpectedArgs) {
+				throw new IllegalArgumentException(String.format("Illegal nr. of arguments for condition '%s': %d (max: %d)", //$NON-NLS-1$
+				                                                 this.condition, index+1, this.operands.size()));
+
+			} else if (index >= this.operands.size()) {
 				while (index > this.operands.size()) this.operands.add("-undefined-"); //$NON-NLS-1$
 				this.operands.add(operand);
 			} else { // index < size:
@@ -85,23 +90,25 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 		return (this.operands != null ? (index < this.operands.size() ? this.operands.get(index) : null) : null);
 	}
 
-	@SuppressWarnings("null")
+	@SuppressWarnings({"null", "unused"})
 	public boolean checkResult(Node contextNode, String value) throws Exception {
 		boolean result = true;
 		if (this.condition != null) {
-			int nrArgs = this.condition.getNrArgs();
+			int nrExpectedArgs = this.condition.getNrArgs();
 			Object operand1;
 			Object operand2;
+			Object operand3;
 			synchronized(this) {
 				if (this.resolvedOperands == null) {
 					this.resolvedOperands = resolveOperands(contextNode);
-					if (this.operands.size() != nrArgs) {
+					if (this.operands.size() != nrExpectedArgs) {
 						throw new IllegalArgumentException(String.format("Illegal nr. of arguments for condition '%s': %d (expected: %d)", //$NON-NLS-1$
-						                                   this.condition, this.operands.size(), nrArgs));
+						                                   this.condition, this.operands.size(), nrExpectedArgs));
 					}
 				}
-				operand1 = (nrArgs >= 1 ? this.resolvedOperands.get(0) : null);
-				operand2 = (nrArgs >= 2 ? this.resolvedOperands.get(1) : null);
+				operand1 = (nrExpectedArgs >= 1 ? this.resolvedOperands.get(0) : null);
+				operand2 = (nrExpectedArgs >= 2 ? this.resolvedOperands.get(1) : null);
+				operand3 = (nrExpectedArgs >= 3 ? this.resolvedOperands.get(2) : null);
 			}
 			switch (this.condition) {
 			case Equals:
@@ -132,24 +139,24 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 				result = value != null && value.matches((String)operand1); // we might want to cache the regexp some day...
 				break;
 			case GreaterThan:
-				result = value != null && (Integer.parseInt(value) > (Integer)operand1);
+				result = value != null && (Integer.parseInt(value.trim()) > (Integer)operand1);
 				break;
 			case GreaterOrEqual:
-				result = value != null && (Integer.parseInt(value) >= (Integer)operand1);
+				result = value != null && (Integer.parseInt(value.trim()) >= (Integer)operand1);
 				break;
 			case LessThan:
-				result = value != null && (Integer.parseInt(value) < (Integer)operand1);
+				result = value != null && (Integer.parseInt(value.trim()) < (Integer)operand1);
 				break;
 			case LessOrEqual:
-				result = value != null && (Integer.parseInt(value) <= (Integer)operand1);
+				result = value != null && (Integer.parseInt(value.trim()) <= (Integer)operand1);
 				break;
 			case Within: {
-					int intVal = Integer.parseInt(value);
+					int intVal = Integer.parseInt(value.trim());
 					result = (intVal >= (Integer)operand1) && (intVal <= (Integer)operand2);
 				}
 				break;
 			case Outside: {
-					int intVal = Integer.parseInt(value);
+					int intVal = Integer.parseInt(value.trim());
 					result = (intVal < (Integer)operand1) || (intVal > (Integer)operand2);
 				}
 				break;
