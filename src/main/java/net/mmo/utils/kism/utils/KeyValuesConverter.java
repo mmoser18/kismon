@@ -22,7 +22,7 @@ public class KeyValuesConverter
 	// reading:
 	public final static String KEY_VALUE_SEPARATORS = ":"; //$NON-NLS-1$
 	public final static String PROPERTY_SEPARATORS = "[\t\n]"; //$NON-NLS-1$
-	public final static String LEGAL_KEY_NAME_PATTERN = "\\w[\\w\\-_]*"; //$NON-NLS-1$
+	public final static String LEGAL_KEY_NAME_PATTERN = "\\p{Alpha}[\\w\\-]*"; //$NON-NLS-1$
 	public final static String OPTIONAL_WHITE_SPACE = "\\s*"; //$NON-NLS-1$
 	// generating:
 	public final static char KEY_VALUE_SEPARATOR = ':';
