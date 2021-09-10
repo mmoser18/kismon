@@ -396,7 +396,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				NodeView.this.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
 			}
 
-			// as long as ther are no derivatived of NodeView we can short-cut the call to handleChangeEvent:
+			// as long as there are no derivatives of NodeView we can short-cut the call to handleChangeEvent:
 			@Override
 			protected boolean predicate(N source, String propertyName, Object oldValue, Object newValue) {
 				return Objects.equal(propertyName, Node.PROPERTYNAME_STATE);
