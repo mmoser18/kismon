@@ -59,6 +59,12 @@
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>
+	<!-- 
+	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="debug" additivity="false">
+		<appender-ref ref="RollingFile" />
+		<appender-ref ref="Console" />
+	</logger>
+	 -->
 
 	<logger name="net.mmo.utils.kism.ui.view.results" level="debug" additivity="false">
 		<appender-ref ref="RollingFile" />
@@ -66,10 +72,6 @@
 	</logger>
 
 	<logger name="net.mmo.utils.kism" level="info" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
-	<logger name="net.mmo.utils.kism.entities.nodes.connections.PingConnection" level="debug" additivity="false">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</logger>

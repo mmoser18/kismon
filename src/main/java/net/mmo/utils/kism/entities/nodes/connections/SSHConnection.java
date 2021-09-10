@@ -131,15 +131,15 @@ public class SSHConnection extends IPConnection
 
 	@Override
 	public void sendRequest() throws Exception {
-		log.info("ssh to '{}':", getResultingHostAddress()); //$NON-NLS-1$
+		log.debug("ssh to '{}':", getResultingHostAddress()); //$NON-NLS-1$
 		try {
 			if (this.sshClient == null) {
-				log.debug("Creating SSHClient:"); //$NON-NLS-1$
+				log.trace("Creating SSHClient:"); //$NON-NLS-1$
 				this.sshClient = new SSHClient();
 				String resolvedFingerprint = resolveProperties(getFingerprint());
 				log.debug("accaptable fingerprint is '{}'", resolvedFingerprint); //$NON-NLS-1$
 				if (resolvedFingerprint == null || resolvedFingerprint.isBlank()) {
-					log.debug("using PromiscuousVerifier"); //$NON-NLS-1$
+					log.trace("using PromiscuousVerifier"); //$NON-NLS-1$
 					this.sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 				} else {
 					this.sshClient.addHostKeyVerifier(resolvedFingerprint);
@@ -167,13 +167,13 @@ public class SSHConnection extends IPConnection
 				sshCommand.join(getTimeout(), TimeUnit.SECONDS);
 				long callDuration = System.nanoTime() - startTime;
 				setDuration(callDuration);
-				log.info("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+				log.debug("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 				String result = sshCommand.getExitErrorMessage();
 				if (result != null) { // violent exit!
 					setResponse(result);
 					setState(State.FAILED);
 					sshCommand.close();
-					log.info("Exit-status for '{}' (command:'{}') was: {} / {}", //$NON-NLS-1$
+					log.debug("Exit-status for '{}' (command:'{}') was: {} / {}", //$NON-NLS-1$
 					         getName(), resolvedCommand, sshCommand.getExitStatus(), result);
 				} else { // cmd went OK:
 					try (InputStream is = sshCommand.getErrorStream()) {
@@ -189,7 +189,7 @@ public class SSHConnection extends IPConnection
 					try (InputStream is = sshCommand.getInputStream()) {
 						result = readStream(is);
 					}
-					log.debug("Rresult executing '{}' (command:'{}'): {}", //$NON-NLS-1$
+					log.debug("Result executing '{}' (command:'{}'): {}", //$NON-NLS-1$
 					          getName(), resolvedCommand, result);
 				}
 				setResponse(result);
@@ -224,7 +224,7 @@ public class SSHConnection extends IPConnection
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}
 		}
-		log.debug("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
+		log.trace("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
 		setState(res);
 	}
 

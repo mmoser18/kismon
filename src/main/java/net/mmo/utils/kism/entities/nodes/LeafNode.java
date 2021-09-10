@@ -163,9 +163,6 @@ abstract public class LeafNode extends Node
 	private void initExecutors() {
 		setRequestSender(new Runnable()
 			{ // this is the code being executed by the automatic executors
-				{
-					log.debug("Runnable for '{}' - c'tor:", getName()); //$NON-NLS-1$
-				}
 				@Override
 				public void run() {
 					if (isHaltAllRequests()) {
@@ -187,12 +184,12 @@ abstract public class LeafNode extends Node
 	public void executeRequest() throws Exception {
 		if (asyncRequests) {
 			this.interactiveExecutor.execute(() -> {
-				log.info("executing sendRequest-async: '{}'", getName()); //$NON-NLS-1$
-				executeRequestInternal("executing"); //$NON-NLS-1$
+				log.info("executing sendRequest(async): '{}'", getName()); //$NON-NLS-1$
+				executeRequestInternal("executing(async)"); //$NON-NLS-1$
 			});
 		} else {
-			log.info("executing sendRequest-sync:  '{}'", getName()); //$NON-NLS-1$
-			executeRequestInternal("executing"); //$NON-NLS-1$
+			log.info("executing sendRequest(sync):  '{}'", getName()); //$NON-NLS-1$
+			executeRequestInternal("executing(sync)"); //$NON-NLS-1$
 		}
 	}
 

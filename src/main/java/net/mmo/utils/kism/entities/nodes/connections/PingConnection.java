@@ -121,7 +121,7 @@ public class PingConnection extends IPConnection
 			try (InputStream is = new BufferedInputStream(proc.getInputStream())) {
 				String res = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 				setResponse(res);
-				log.info("ping response is '{}'", res); //$NON-NLS-1$
+				log.trace("ping response is '{}'", res); //$NON-NLS-1$
 				if (res.contains(PingTimedOut)) {
 					setDuration(-1); // signal: "no response"
 					setState(State.FAILED);
@@ -136,11 +136,11 @@ public class PingConnection extends IPConnection
 							time = matcherIPv6.group(MatchGroupIPv6);
 						}
 						if (time != null) {
-							setDurationMillis(time.startsWith("<") ? 1 : Long.parseLong(time)); //$NON-NLS-1$
+							setDurationMillis(time.equals("<1") ? 1 : Long.parseLong(time.substring(1))); //$NON-NLS-1$
 							setState(getDuration() > getTimeout() * 10e9  ? State.DEGRADED : State.OK);
 							details = time + " msecs"; //$NON-NLS-1$
 						} else { // time not found - we take the entire process' duration:
-							log.info("Couldn't locate time in the response '{}'", res); //$NON-NLS-1$
+							log.debug("Couldn't locate time in the response '{}'", res); //$NON-NLS-1$
 							setDuration(System.nanoTime() - startTime);
 							setState(State.DEGRADED); // degraded since we didn't find the time in the response...
 						}
@@ -150,7 +150,7 @@ public class PingConnection extends IPConnection
 						setState(State.FAILED);
 					}
 					if (details == null) {
-						details = "unexpected response: '" + res + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+						details = "unexpected response: '" + (res.length() > 200 ? res.substring(0,100) + "..." : res) + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					}
 				}
 			}
