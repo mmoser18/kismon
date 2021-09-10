@@ -236,7 +236,7 @@
 			"fingerprint" : "",
 			"command" : "ping -n 1 www.google.com"
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -495,13 +495,13 @@
 					"checkResults" : true,
 					"resultChecker" : {
 						"condition" : "Contains",
-						"operands" : [ "Available SOAP services:" ]
+						"operands" : [ "Available SOAP services:", "" ]
 					},
 					"url" : "${app_url}services?WSDL",
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_uid}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -710,7 +710,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
 		"expanded" : false
 	}, {
@@ -851,9 +851,9 @@
 					},
 					"url" : "${app_url}services?WSDL",
 					"method" : "GET",
-					"targetUid" : "",
-					"targetPwd" : "",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -998,9 +998,9 @@
 					},
 					"url" : "${app_url}services?WSDL",
 					"method" : "GET",
-					"targetUid" : "",
-					"targetPwd" : "",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1032,7 +1032,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RJP PROD",
@@ -1145,9 +1145,9 @@
 					},
 					"url" : "${app_url}services?WSDL",
 					"method" : "GET",
-					"targetUid" : "",
-					"targetPwd" : "",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1179,7 +1179,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],
@@ -1250,7 +1250,7 @@
 					},
 					"url" : "${db_url}",
 					"dbUid" : "${db_uid}",
-					"dbPwd" : "${db+pwd}",
+					"dbPwd" : "${db_pwd}",
 					"query" : "select * from DUAL",
 					"driverName" : "oracle.jdbc.driver.OracleDriver"
 				}, {
@@ -1369,7 +1369,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "WPS DMZ (old)",
@@ -1624,7 +1624,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RW-Tool Test",
@@ -1704,7 +1704,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : true
 		} ],
@@ -1827,7 +1827,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : true
 		} ],
@@ -1837,39 +1837,108 @@
 		"name" : "Check VMs' livelyhood",
 		"description" : "Check VMs' livelyhood",
 		"applicable" : true,
-		"properties" : { },
+		"properties" : {
+			"get_dsk_space" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
+		},
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "Ping ZHQuest VMs",
 			"description" : "Ping ZHQuest VMs",
 			"applicable" : true,
-			"properties" : { },
+			"properties" : {
+				"uid" : "root",
+				"pwd" : "root@zhquest"
+			},
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zh-zhquest",
-				"description" : "Ping ksta-zh-zhquest.elcaDev.local (ZHQuest DEV)",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "ZHQuest DEV-VM",
+				"description" : "ksta-zhquest-int3.elcadev.local (ZHQuest QA VM)",
 				"applicable" : true,
-				"properties" : { },
-				"active" : true,
-				"period" : 60,
-				"timeout" : 15,
-				"checkResults" : false,
-				"resultChecker" : null,
-				"hostAddress" : "ksta-zh-zhquest.elcaDev.local"
+				"properties" : {
+					"fqdn" : "ksta-zhquest-int3.elcadev.local"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+					"name" : "Ping ksta-zhquest-int3",
+					"description" : "Ping ksta-zhquest-int3.elcaDev.local (ZHQuest DEV)",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"resultChecker" : null,
+					"hostAddress" : "${fqdn}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "ZHQ DEV check available disk space",
+					"description" : "Check available disk space on ZHQuest DEV VM",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "LessThan",
+						"operands" : [ "90" ]
+					},
+					"hostAddress" : "${fqdn}",
+					"hostPort" : 22,
+					"username" : "${uid}",
+					"authMethod" : "PWD",
+					"authArg" : "${pwd}",
+					"fingerprint" : "",
+					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
+				} ],
+				"expanded" : false
 			}, {
-				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zhquest-int3",
-				"description" : "Ping ksta-zhquest-int3.elcaDev.local (ZHQuest DEV)",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "ZHQuest QA-VM",
+				"description" : "ksta-zh-zhquest.elcaDev.local (ZHQuest QA)",
 				"applicable" : true,
-				"properties" : { },
-				"active" : true,
-				"period" : 60,
-				"timeout" : 15,
-				"checkResults" : false,
-				"resultChecker" : null,
-				"hostAddress" : "ksta-zhquest-int3.elcaDev.local"
+				"properties" : {
+					"fqdn" : "ksta-zh-zhquest.elcaDev.local"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+					"name" : "Ping ksta-zh-zhquest",
+					"description" : "Ping ksta-zh-zhquest.elcaDev.local (ZHQuest DEV)",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"resultChecker" : null,
+					"hostAddress" : "${fqdn}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "ZHQ QA check available disk space",
+					"description" : "Check available disk space on  ZHQuest QA VM",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "LessThan",
+						"operands" : [ "90" ]
+					},
+					"hostAddress" : "${fqdn}",
+					"hostPort" : 22,
+					"username" : "${uid}",
+					"authMethod" : "PWD",
+					"authArg" : "${pwd}",
+					"fingerprint" : "",
+					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
+				} ],
+				"expanded" : false
 			} ],
 			"expanded" : true
 		}, {
@@ -1877,51 +1946,150 @@
 			"name" : "Ping RegisterJP VMs",
 			"description" : "Ping RegisterJP VMs",
 			"applicable" : true,
-			"properties" : { },
+			"properties" : {
+				"uid" : "root",
+				"pwd" : "P@ssw0rd"
+			},
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
-				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping zhstregisterjp-dev",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "RegisterJP DEV-VM",
 				"description" : "zhstregisterjp-dev.elcaDev.local (RegisterJP DEV)",
 				"applicable" : true,
-				"properties" : { },
-				"active" : true,
-				"period" : 60,
-				"timeout" : 15,
-				"checkResults" : false,
-				"resultChecker" : null,
-				"hostAddress" : "zhstregisterjp-dev.elcaDev.local"
+				"properties" : {
+					"fqdn" : "zhstregisterjp-dev.elcaDev.local"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+					"name" : "Ping zhstregisterjp-dev",
+					"description" : "zhstregisterjp-dev.elcaDev.local (RegisterJP DEV)",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"resultChecker" : null,
+					"hostAddress" : "${fqdn}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "RJP DEV check available disk space",
+					"description" : "Check available disk space on RegisterJP DEV VM",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "LessThan",
+						"operands" : [ "90" ]
+					},
+					"hostAddress" : "${fqdn}",
+					"hostPort" : 22,
+					"username" : "${uid}",
+					"authMethod" : "PWD",
+					"authArg" : "${pwd}",
+					"fingerprint" : "",
+					"command" : "${get_dsk_space}"
+				} ],
+				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping zhstregisterjp-qa",
-				"description" : "Ping zhstregisterjp-qa.elcaDev.local (RegisterJP QA)",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "RegisterJP QA-VM",
+				"description" : "zhstregisterjp-qa.elcaDev.local (RegisterJP QA)",
 				"applicable" : true,
-				"properties" : { },
-				"active" : false,
-				"period" : 60,
-				"timeout" : 15,
-				"checkResults" : false,
-				"resultChecker" : null,
-				"hostAddress" : "zhstregisterjp-qa.elcaDev.local"
+				"properties" : {
+					"fqdn" : "zhstregisterjp-qa.elcaDev.local"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+					"name" : "Ping zhstregisterjp-qa",
+					"description" : "Ping zhstregisterjp-qa.elcaDev.local (RegisterJP QA)",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"resultChecker" : null,
+					"hostAddress" : "${fqdn}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "RJP QA check available disk space",
+					"description" : "Check available disk space on RegisterJP QA VM",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "LessThan",
+						"operands" : [ "90" ]
+					},
+					"hostAddress" : "${fqdn}",
+					"hostPort" : 22,
+					"username" : "${uid}",
+					"authMethod" : "PWD",
+					"authArg" : "${pwd}",
+					"fingerprint" : "",
+					"command" : "${get_dsk_space}"
+				} ],
+				"expanded" : true
 			}, {
-				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping zhstregisterjp-prod",
-				"description" : "Ping zhstregisterjp-prod.elcaDev.local (RegisterJP PROD)",
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "RegisterJP PROD-VM",
+				"description" : "zhstregisterjp-prod.elcaDev.local (RegisterJP PROD)",
 				"applicable" : true,
-				"properties" : { },
-				"active" : true,
-				"period" : 60,
-				"timeout" : 15,
-				"checkResults" : false,
-				"resultChecker" : null,
-				"hostAddress" : "zhstregisterjp-prod.elcaDev.local"
+				"properties" : {
+					"fqdn" : "zhstregisterjp-prod.elcaDev.local"
+				},
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+					"name" : "Ping zhstregisterjp-prod",
+					"description" : "Ping zhstregisterjp-prod.elcaDev.local (RegisterJP PROD)",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : false,
+					"resultChecker" : null,
+					"hostAddress" : "${fqdn}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "RJP PROD check available disk space",
+					"description" : "Check available disk space on RegisterJP PROD VM",
+					"applicable" : true,
+					"properties" : { },
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "LessThan",
+						"operands" : [ "90" ]
+					},
+					"hostAddress" : "${fqdn}",
+					"hostPort" : 22,
+					"username" : "${uid}",
+					"authMethod" : "PWD",
+					"authArg" : "${pwd}",
+					"fingerprint" : "",
+					"command" : "${get_dsk_space}"
+				} ],
+				"expanded" : true
 			} ],
 			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-sst-mnt",
 			"description" : "Ping ksta-zh-sst-mnt.elcaDev.local",
-			"applicable" : true,
+			"applicable" : false,
 			"properties" : { },
 			"active" : true,
 			"period" : 60,
@@ -1933,7 +2101,7 @@
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping kstazh-wps",
 			"description" : "Ping kstazh-wps.elcaDev.local",
-			"applicable" : true,
+			"applicable" : false,
 			"properties" : { },
 			"active" : true,
 			"period" : 60,
@@ -1945,7 +2113,7 @@
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-rwtool",
 			"description" : "Ping ksta-zh-rwtool.elcaDev.local",
-			"applicable" : true,
+			"applicable" : false,
 			"properties" : { },
 			"active" : true,
 			"period" : 60,
@@ -2010,8 +2178,8 @@
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zh-sst-mnt-dmz",
-				"description" : "Ping ksta-zh-sst-mnt-dmz.elcaDev.local",
+				"name" : "Ping ksta-zh-sst-mnt-dmz internal",
+				"description" : "Ping ksta-zh-sst-mnt-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2022,9 +2190,21 @@
 				"hostAddress" : "ksta-zh-sst-mnt-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zh-zhquest-dmz",
-				"description" : "Ping ksta-zh-zhquest-dmz.elcaDev.local",
+				"name" : "Ping ksta-zh-sst-mnt-dmz external",
+				"description" : "Ping ksta-zh-sst-mnt-dmz.elca.ch (external address)",
 				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-sst-mnt-dmz.elca.ch"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-zhquest-dmz internal",
+				"description" : "Ping ksta-zh-zhquest-dmz.elcaDev.local (internal address)",
+				"applicable" : false,
 				"properties" : { },
 				"active" : true,
 				"period" : 60,
@@ -2034,8 +2214,20 @@
 				"hostAddress" : "ksta-zh-zhquest-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zh-wps-dmz",
-				"description" : "Ping ksta-zh-wps-dmz.elcaDev.local",
+				"name" : "Ping ksta-zh-zhquest-dmz external",
+				"description" : "Ping ksta-zh-zhquest-dmz.elca.ch (external address)",
+				"applicable" : false,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-zhquest-dmz.elca.ch"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-wps-dmz internal",
+				"description" : "Ping ksta-zh-wps-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2046,8 +2238,20 @@
 				"hostAddress" : "ksta-zh-wps-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zh-rwtool-dmz",
-				"description" : "Ping ksta-zh-rwtool-dmz.elcaDev.local",
+				"name" : "Ping ksta-zh-wps-dmz external",
+				"description" : "Ping ksta-zh-wps-dmz.elca.ch (external address)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-wps-dmz.elca.ch"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-rwtool-dmz internal",
+				"description" : "Ping ksta-zh-rwtool-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2056,8 +2260,20 @@
 				"checkResults" : false,
 				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-rwtool-dmz.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-rwtool-dmz external",
+				"description" : "Ping ksta-zh-rwtool-dmz.elca.ch (external address)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-rwtool-dmz.elca.ch"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
 		"expanded" : true
 	} ],

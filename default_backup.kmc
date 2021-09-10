@@ -226,7 +226,7 @@
 			"checkResults" : true,
 			"resultChecker" : {
 				"condition" : "Contains",
-				"operands" : [ "Reply from", "" ]
+				"operands" : [ "Reply from" ]
 			},
 			"hostAddress" : "localhost",
 			"hostPort" : 22,
@@ -236,7 +236,7 @@
 			"fingerprint" : "",
 			"command" : "ping -n 1 www.google.com"
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHQuest",
@@ -558,7 +558,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DMZ",
@@ -712,7 +712,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -1032,7 +1032,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "registerSSL"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RJP PROD",
@@ -1197,10 +1197,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "power",
-				"mock_port" : ":8080",
+				"app_prot_ext" : "https://",
 				"mock_prot_ext" : "https://",
+				"mock_port" : ":8080",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1486,8 +1486,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "ROLF",
 				"app_prot_ext" : "https://",
+				"app_uid" : "ROLF",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -1784,7 +1784,7 @@
 					"description" : "SSt DMZ Application server connection",
 					"applicable" : true,
 					"properties" : { },
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -1808,7 +1808,7 @@
 					"description" : "SSt Application DMZ",
 					"applicable" : true,
 					"properties" : { },
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1916,14 +1916,14 @@
 				"resultChecker" : null,
 				"hostAddress" : "zhstregisterjp-prod.elcaDev.local"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-sst-mnt",
 			"description" : "Ping ksta-zh-sst-mnt.elcaDev.local",
-			"applicable" : true,
+			"applicable" : false,
 			"properties" : { },
-			"active" : true,
+			"active" : false,
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
@@ -1933,9 +1933,9 @@
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping kstazh-wps",
 			"description" : "Ping kstazh-wps.elcaDev.local",
-			"applicable" : true,
+			"applicable" : false,
 			"properties" : { },
-			"active" : true,
+			"active" : false,
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
@@ -1945,9 +1945,9 @@
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-rwtool",
 			"description" : "Ping ksta-zh-rwtool.elcaDev.local",
-			"applicable" : true,
+			"applicable" : false,
 			"properties" : { },
-			"active" : true,
+			"active" : false,
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
@@ -2011,7 +2011,7 @@
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 				"name" : "Ping ksta-zh-sst-mnt-dmz",
-				"description" : "Ping ksta-zh-sst-mnt-dmz.elcaDev.local",
+				"description" : "Ping ksta-zh-sst-mnt-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2022,8 +2022,8 @@
 				"hostAddress" : "ksta-zh-sst-mnt-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
-				"name" : "Ping ksta-zh-zhquest-dmz",
-				"description" : "Ping ksta-zh-zhquest-dmz.elcaDev.local",
+				"name" : "Ping ksta-zh-sst-mnt-dmz",
+				"description" : "Ping ksta-zh-sst-mnt-dmz.elca.ch (external address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2031,11 +2031,35 @@
 				"timeout" : 15,
 				"checkResults" : false,
 				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-sst-mnt-dmz.elca.ch"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-zhquest-dmz",
+				"description" : "Ping ksta-zh-zhquest-dmz.elcaDev.local (internal address)",
+				"applicable" : false,
+				"properties" : { },
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-zhquest-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-zhquest-dmz",
+				"description" : "Ping ksta-zh-zhquest-dmz.elca.ch (external address)",
+				"applicable" : false,
+				"properties" : { },
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-zhquest-dmz.elca.ch"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 				"name" : "Ping ksta-zh-wps-dmz",
-				"description" : "Ping ksta-zh-wps-dmz.elcaDev.local",
+				"description" : "Ping ksta-zh-wps-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2046,8 +2070,20 @@
 				"hostAddress" : "ksta-zh-wps-dmz.elcaDev.local"
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-wps-dmz",
+				"description" : "Ping ksta-zh-wps-dmz.elca.ch (external address)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-wps-dmz.elca.ch"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 				"name" : "Ping ksta-zh-rwtool-dmz",
-				"description" : "Ping ksta-zh-rwtool-dmz.elcaDev.local",
+				"description" : "Ping ksta-zh-rwtool-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
 				"active" : true,
@@ -2056,10 +2092,22 @@
 				"checkResults" : false,
 				"resultChecker" : null,
 				"hostAddress" : "ksta-zh-rwtool-dmz.elcaDev.local"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+				"name" : "Ping ksta-zh-rwtool-dmz",
+				"description" : "Ping ksta-zh-rwtool-dmz.elca.ch (external address)",
+				"applicable" : true,
+				"properties" : { },
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : false,
+				"resultChecker" : null,
+				"hostAddress" : "ksta-zh-rwtool-dmz.elca.ch"
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	} ],
 	"expanded" : true
 }
