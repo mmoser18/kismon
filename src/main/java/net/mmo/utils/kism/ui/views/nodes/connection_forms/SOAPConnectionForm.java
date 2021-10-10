@@ -13,7 +13,6 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 
 @Slf4j
@@ -38,7 +37,8 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 		this.soapAction = new TextField(Messages.getString("SOAPConnectionForm.SoapAction.Label")); //$NON-NLS-1$
 		this.soapAction.setClassName(SoapActionClassName);
 		this.soapAction.setThemeName(LabelPaddingTheme);
-		this.soapAction.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.soapAction.setClearButtonVisible(this.clearButtonsVisible);
+		this.soapAction.setEnabled(this.isAdminUser);
 		this.binder.forField(this.soapAction)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator((value, context) ->
@@ -52,6 +52,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 
 		// there is no choice of methods for SOAP!
 		this.method.setVisible(false);
+		this.method.setEnabled(false); // just in case...
 		this.method.addValueChangeListener(change ->
 			{
 				HTTP_Method value = change.getValue();

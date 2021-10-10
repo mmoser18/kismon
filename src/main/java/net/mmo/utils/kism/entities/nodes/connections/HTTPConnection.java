@@ -495,9 +495,7 @@ abstract public class HTTPConnection extends TCPConnection
 				} // :search
 			}
 			if (getResultChecker() != null) {
-				if (!getResultChecker().checkResult(this, responseBodyAsString())) {
-					res = State.FAILED;
-				}
+				res = getResultChecker().checkResult(this, responseBodyAsString());
 			} else {
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}

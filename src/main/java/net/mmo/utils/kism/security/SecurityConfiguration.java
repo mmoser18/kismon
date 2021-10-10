@@ -8,6 +8,7 @@ package net.mmo.utils.kism.security;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.utils.AppProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,13 +26,15 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @SuppressWarnings("nls")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 {
-	private static final String LOGIN_PROCESSING_URL = "/login";
-	private static final String LOGIN_FAILURE_URL = "/login?error";
-	private static final String LOGIN_URL = "/login";
-	private static final String LOGOUT_SUCCESS_URL = "/login";
+	private static final String LOGIN_URL = "/" + CommonConstants.LoginURLSuffix;
+	private static final String LOGIN_PROCESSING_URL = LOGIN_URL;
+	private static final String LOGIN_FAILURE_URL = LOGIN_PROCESSING_URL + "?error";
+	private static final String LOGOUT_SUCCESS_URL = LOGIN_URL;
 
+
+//	TODO: Switch to VaadinDefaultRequestCache
 //	@Autowired
-// VaadinDefaultRequestCache requestCache;
+//	VaadinDefaultRequestCache requestCache;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -45,8 +48,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 			.and().formLogin().loginPage(LOGIN_URL).permitAll() // Enables form-based login and permits unauthenticated access to it.
 			.loginProcessingUrl(LOGIN_PROCESSING_URL) // Configures the login page URLs.
 			.failureUrl(LOGIN_FAILURE_URL)
-			.and().logout() // Configures the logout URL
+			.and().logout()
+			// .logoutUrl(LOGOUT_URL) // Configures the logout URL, i.e. the page to which we are redirected after logout
 			.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+
+		// logoutRequestMatcher(new AntPathRequestMatcher(logoutUrl, "GET")); // allow to logout with a simple GET-request
 	}
 
 	@Bean

@@ -31,7 +31,7 @@ public class RootNodeForm extends IntermediateNodeForm
 		this.filePath = new TextField(Messages.getString("RootNodeForm.FilePath.Label")); //$NON-NLS-1$
 		this.filePath.addClassName(NameClassName);
 		this.filePath.setThemeName(LabelPaddingTheme);
-		this.filePath.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.filePath.setClearButtonVisible(this.clearButtonsVisible);
 		this.binder.forField(this.filePath).bind(n -> ((RootNode)n).getFilePath(), null);
 
 		this.fields.addComponentAsFirst(this.filePath);

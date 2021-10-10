@@ -82,7 +82,7 @@ public class ArchitectureTests
 			.whereLayer("UI").mayOnlyBeAccessedByLayers("UINodes","UIHistory")
 			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections", "UIHistory")
 			// .whereLayer("UINodesConnections").mayNotBeAccessedByAnyLayer() // violated by FormFactory but that's OK
-			.whereLayer("Security").mayNotBeAccessedByAnyLayer()
+			// .whereLayer("Security").mayNotBeAccessedByAnyLayer()
 			.whereLayer("Backend").mayOnlyBeAccessedByLayers("Main", "UI","Entities")
 			;
 

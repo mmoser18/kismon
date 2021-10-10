@@ -45,6 +45,7 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 		this.activateAllChildren = new Button(Messages.getString("IntermediateNode.ActivateAllChildren.Label")); //$NON-NLS-1$
 		this.activateAllChildren.setClassName(ActivateAllChildrenClassName);
 		this.activateAllChildren.setThemeName(UIConstants.LabelPaddingTheme);
+		this.activateAllChildren.setEnabled(this.isAdminUser);
 		this.activateAllChildren.addClickListener(event ->
 			{
 				log.info("activateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
@@ -60,6 +61,7 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 		this.deactivateAllChildren = new Button(Messages.getString("IntermediateNode.DeactivateAllChildren.Label")); //$NON-NLS-1$
 		this.deactivateAllChildren.setClassName(DeactivateAllChildrenClassName);
 		this.deactivateAllChildren.setThemeName(UIConstants.LabelPaddingTheme);
+		this.deactivateAllChildren.setEnabled(this.isAdminUser);
 		this.deactivateAllChildren.addClickListener(event ->
 			{
 				log.info("deactivateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
@@ -79,6 +81,7 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 		this.condition.addClassName(OperationClassName);
 		this.condition.setLabel(Messages.getString("IntermediateNode.ChildCondition.Label")); //$NON-NLS-1$
 		this.condition.setItemLabelGenerator((cond) -> Messages.getString("IntermediateNode.ChildCondition." + cond.name())); //$NON-NLS-1$
+		this.condition.setEnabled(this.isAdminUser);
 		this.binder.forField(this.condition)
 			.bind(IntermediateNode::getCondition, IntermediateNode::setCondition);
 //		this.condition.addValueChangeListener(event ->

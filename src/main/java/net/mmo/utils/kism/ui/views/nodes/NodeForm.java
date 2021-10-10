@@ -33,6 +33,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.security.SecurityUtils;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
@@ -81,20 +82,17 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 * *user* has changed anything. We need to keep track of that ourselves.
 	 */
 	protected boolean uiChanges = false;
-
-	protected static boolean clearButtonsVisible =
-		Boolean.parseBoolean(AppProperties.getProperties().getProperty("NodeForm.ClearButtonsVisible", //$NON-NLS-1$
-		                                                               "true")); //$NON-NLS-1$
-
+	protected boolean isAdminUser;
+	protected boolean clearButtonsVisible;
 
 	protected PropertyChangeListenerWithPriorUIReservation<N> nodeRefreshListener;
 
 	/** reusable validator for fields that support properties */
 	protected Validator<String> propertiesResolvableValidator;
 	/** reusable validator for fields that must not be empty */
-	protected Validator<String> nonEmptyStringValidator;
+	public Validator<String> nonEmptyStringValidator;
 	/** reusable validator for fields that must not be empty */
-	protected Validator<String> nonEmptyNumberValidator;
+	public Validator<String> nonEmptyNumberValidator;
 	/** reusable URL validator for URL fields */
 	protected Validator<String> urlValidator;
 
@@ -102,6 +100,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public NodeForm(Class<N> clazz, NodeService nodeService) {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		addClassName(ViewClassName);
+
+		initFlags();
 
 		// We create a Validator that can be used everywhere where we need to check whether a field
 		// contains unresolvable properties:
@@ -221,6 +221,14 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			|| ((this.node != null) && (!(this.node instanceof RootNode) && (this.node.getParent() == null))); // a non-root node without parent is a free floating node which has changes by definition (since it was just created)
 	}
 
+	public void initFlags() {
+		this.isAdminUser = SecurityUtils.isAdminUser();
+		this.clearButtonsVisible =
+			Boolean.parseBoolean(AppProperties.getProperties().getProperty("NodeForm.ClearButtonsVisible", //$NON-NLS-1$
+			                     "true")) //$NON-NLS-1$
+			&& SecurityUtils.isAdminUser();
+	}
+
 	public void setState(Node.State state) {
 		this.stateField.setValue(StateLabelProvider.getStateLabel(state));
 	}
@@ -322,7 +330,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
 		this.name.setThemeName(UIConstants.LabelPaddingTheme);
-		this.name.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.name.setClearButtonVisible(this.clearButtonsVisible);
+		this.name.setEnabled(this.isAdminUser);
 		this.binder.forField(this.name)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator((value, context) ->
@@ -347,7 +356,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
 		this.description.setThemeName(UIConstants.LabelPaddingTheme);
-		this.description.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.description.setClearButtonVisible(this.clearButtonsVisible);
+		this.description.setEnabled(this.isAdminUser);
 
 		this.stateField = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.stateField.addClassName(StateClassName);
@@ -364,7 +374,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.properties.addClassName(PropertiesClassName);
 		this.properties.setThemeName(UIConstants.LabelPaddingTheme);
 		this.properties.addThemeName(UIConstants.MonospaceTheme);
-		this.properties.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.properties.setClearButtonVisible(this.clearButtonsVisible);
+		this.properties.setEnabled(this.isAdminUser);
+
 		this.binder.forField(this.properties)
 			.withValidator((value, context) ->
 				{ // Explicit validator instance:
@@ -397,7 +409,9 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.execute.addClickListener(event ->
 			{
 				log.info("execute clicked"); //$NON-NLS-1$
-				if (hasUiChanges()) validateAndSave();
+				if (SecurityUtils.isAdminUser() && hasUiChanges()) {
+					validateAndSave();
+				}
 				try {
 					this.node.executeRequest();
 				} catch (Throwable t) {
@@ -439,20 +453,20 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	protected void updateSaveButtonState() {
-		boolean enable = hasUiChanges() && binderIsValid();
-		log.debug("binder status change -> [save] enabled:{}", enable); //$NON-NLS-1$
-		this.save.setEnabled(enable);
+		boolean enableSave = hasUiChanges() && binderIsValid();
+		log.debug("binder status change -> [save] enabled:{}", enableSave); //$NON-NLS-1$
+		this.save.setEnabled(enableSave);
 
-		this.execute.setText(Messages.getString(this.uiChanges
+		this.execute.setText(Messages.getString(hasUiChanges() && SecurityUtils.isAdminUser()
 		                                        ? (this instanceof IntermediateNodeForm
 		                                          ? "IntermediateNodeForm.SaveAndExecute.Label" //$NON-NLS-1$
 		                                          : "LeafNodeForm.SaveAndExecute.Label") //$NON-NLS-1$
 		                                        : (this instanceof IntermediateNodeForm
 		                                          ? "IntermediateNodeForm.Execute.Label" //$NON-NLS-1$
 		                                          : "LeafNodeForm.Execute.Label"))); //$NON-NLS-1$
-		boolean isValid = binderIsValid();
-		log.debug("binder status change -> [execute] active:{}", isValid); //$NON-NLS-1$
-		this.execute.setEnabled(isValid);
+		boolean enableExecute = binderIsValid();
+		log.debug("binder status change -> [execute] active:{}", enableExecute); //$NON-NLS-1$
+		this.execute.setEnabled(enableExecute);
 	}
 
 	protected void updateResolvableValues() {
@@ -539,9 +553,11 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		if (this.node != null) {
 			log.info("validateAndSave '{}'", this.node.getName()); //$NON-NLS-1$
 			try {
-				validate(); // throws ValidationException if data not valid
-				writeBean(this.node);
-				fireEvent(new SaveEvent(this, this.node));
+				if (SecurityUtils.isAdminUser()) {
+					validate(); // throws ValidationException if data not valid
+					writeBean(this.node);
+					fireEvent(new SaveEvent(this, this.node));
+				}
 				readBean(this.node);
 			} catch (ValidationException e) {
 				log.warn("Validation failed: {}: bean: {} / fields: {}", //$NON-NLS-1$

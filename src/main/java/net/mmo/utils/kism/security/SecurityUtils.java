@@ -51,7 +51,7 @@ public final class SecurityUtils
 		return isAuthenticated() != null;
 	}
 
-	static boolean isAsminUser() {
+	public static boolean isAdminUser() {
 		Authentication authentication = isAuthenticated();
 		if (authentication != null) {
 			Object obj = authentication.getDetails();
@@ -59,7 +59,7 @@ public final class SecurityUtils
 				.map((auth) -> auth.getAuthority())
 				.collect(Collectors.toList());
 			log.info("user details: {} / authorities: {}", obj, auths);
-			return auths.contains("ADMIN");
+			return auths.contains("ROLE_ADMIN");
 		}
 		return false;
 	}

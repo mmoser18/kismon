@@ -13,7 +13,6 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 
 @Slf4j
 @PreserveOnRefresh
@@ -43,7 +42,8 @@ public abstract class TCPConnectionForm <N extends TCPConnection> extends Checka
 		this.url = new TextField(Messages.getString("TCPConnectionForm.URL.Label")); //$NON-NLS-1$
 		this.url.setClassName(URLClassName);
 		this.url.setThemeName(LabelPaddingTheme);
-		this.url.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.url.setClearButtonVisible(this.clearButtonsVisible);
+		this.url.setEnabled(this.isAdminUser);
 		this.url.addValueChangeListener(event ->
 			{
 				log.debug("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -64,6 +64,7 @@ public abstract class TCPConnectionForm <N extends TCPConnection> extends Checka
 		this.resultingURL = new TextField(Messages.getString("TCPConnectionForm.ResultingUrl.Value")); //$NON-NLS-1$
 		this.resultingURL.setClassName(ResultingURLClassName);
 		this.resultingURL.setThemeName(LabelPaddingTheme);
+		this.resultingURL.setReadOnly(true);
 		// same here:
 		// this.binder.forField(this.resultingURL).bind(TCPConnection::getResultingUrl, null);
 

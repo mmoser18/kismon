@@ -14,6 +14,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +25,6 @@ import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
 import net.mmo.utils.kism.entities.nodes.connections.CheckableConnection;
 import net.mmo.utils.kism.ui.views.nodes.LeafNodeForm;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 
 @Setter
 @Getter
@@ -63,6 +64,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 
 		this.checkResults = new Checkbox(Messages.getString("CheckableConnectionForm.CheckResult.Label")); //$NON-NLS-1$
 		this.checkResults.setClassName(CheckResultsClassName);
+		this.checkResults.setEnabled(this.isAdminUser);
 		this.checkResults.addValueChangeListener(event ->
 		{
 			log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -81,6 +83,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		this.condition.setEmptySelectionAllowed(true);
 		this.condition.setEmptySelectionCaption(Messages.getString("ResultChecker.Condition.Value.None")); //$NON-NLS-1$
 		this.condition.addClassName(ConditionClassName);
+		this.condition.setEnabled(this.isAdminUser);
 		this.binder.forField(this.condition).bind(CheckableConnectionForm::getCondition, CheckableConnectionForm::setCondition);
 		this.condition.addValueChangeListener(event ->
 		{
@@ -93,70 +96,76 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		this.operand1 = new TextArea(Messages.getString("ResultChecker.Operand.Label1")); //$NON-NLS-1$
 		this.operand1.addClassName(OperandClassName);
 		this.operand1.setThemeName(LabelPaddingTheme);
-		this.operand1.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.operand1.setClearButtonVisible(this.clearButtonsVisible);
+		this.operand1.setEnabled(this.isAdminUser);
 		this.binder.forField(this.operand1)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator((value, context) -> {
-				//TODO: make this into an own class
-				// if the nr of required args is smaller than 1 then this operand is irrelevant, so we always validate it as OK
-				Condition condValue = this.condition.getValue();
-				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
-				if (condValue == null || nrArgs < 1) return ValidationResult.ok();
-				Class<?> clazz = condValue.getArgClasses()[0];
-				if (clazz == String.class) {
-					return this.nonEmptyStringValidator.apply(value, context);
-				} else if (clazz == Integer.class) {
-					return this.nonEmptyNumberValidator.apply(value, context);
-				}
-				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
-			})
+			.withValidator(new OperandValidator(this, 1))
+//			.withValidator((value, context) -> {
+//				//TODO: make this into an own class
+//				// if the nr of required args is smaller than 1 then this operand is irrelevant, so we always validate it as OK
+//				Condition condValue = this.condition.getValue();
+//				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+//				log.debug("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
+//				if (condValue == null || nrArgs < 1) return ValidationResult.ok();
+//				Class<?> clazz = condValue.getArgClasses()[0];
+//				if (clazz == String.class) {
+//					return this.nonEmptyStringValidator.apply(value, context);
+//				} else if (clazz == Integer.class) {
+//					return this.nonEmptyNumberValidator.apply(value, context);
+//				}
+//				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
+//			})
 			.bind(CheckableConnectionForm::getOperand1, CheckableConnectionForm::setOperand1);
 
 		this.operand2 = new TextArea(Messages.getString("ResultChecker.Operand.Label2")); //$NON-NLS-1$
 		this.operand2.addClassName(OperandClassName);
 		this.operand2.setThemeName(LabelPaddingTheme);
-		this.operand2.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.operand2.setClearButtonVisible(this.clearButtonsVisible);
+		this.operand2.setEnabled(this.isAdminUser);
 		this.binder.forField(this.operand2)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator((value, context) -> {
-				//TODO: make this into an own class
-				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
-				Condition condValue = this.condition.getValue();
-				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
-				if (condValue == null || nrArgs < 2) return ValidationResult.ok();
-				Class<?> clazz = condValue.getArgClasses()[1];
-				if (clazz == String.class) {
-					return this.nonEmptyStringValidator.apply(value, context);
-				} else if (clazz == Integer.class) {
-					return this.nonEmptyNumberValidator.apply(value, context);
-				}
-				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
-			})
+			.withValidator(new OperandValidator(this, 2))
+//			.withValidator((value, context) -> {
+//				//TODO: make this into an own class
+//				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
+//				Condition condValue = this.condition.getValue();
+//				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+//				log.debug("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
+//				if (condValue == null || nrArgs < 2) return ValidationResult.ok();
+//				Class<?> clazz = condValue.getArgClasses()[1];
+//				if (clazz == String.class) {
+//					return this.nonEmptyStringValidator.apply(value, context);
+//				} else if (clazz == Integer.class) {
+//					return this.nonEmptyNumberValidator.apply(value, context);
+//				}
+//				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
+//			})
 			.bind(CheckableConnectionForm::getOperand2, CheckableConnectionForm::setOperand2);
 
 		this.operand3 = new TextArea(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
 		this.operand3.addClassName(OperandClassName);
 		this.operand3.setThemeName(LabelPaddingTheme);
-		this.operand3.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.operand3.setClearButtonVisible(this.clearButtonsVisible);
+		this.operand3.setEnabled(this.isAdminUser);
 		this.binder.forField(this.operand3)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator((value, context) -> {
-				//TODO: make this into an own class
-				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
-				Condition condValue = this.condition.getValue();
-				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
-				if (condValue == null || nrArgs < 3) return ValidationResult.ok();
-				Class<?> clazz = condValue.getArgClasses()[1];
-				if (clazz == String.class) {
-					return this.nonEmptyStringValidator.apply(value, context);
-				} else if (clazz == Integer.class) {
-					return this.nonEmptyNumberValidator.apply(value, context);
-				}
-				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
-			})
+			.withValidator(new OperandValidator(this, 3))
+//			.withValidator((value, context) -> {
+//				//TODO: make this into an own class
+//				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
+//				Condition condValue = this.condition.getValue();
+//				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+//				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
+//				if (condValue == null || nrArgs < 3) return ValidationResult.ok();
+//				Class<?> clazz = condValue.getArgClasses()[2];
+//				if (clazz == String.class) {
+//					return this.nonEmptyStringValidator.apply(value, context);
+//				} else if (clazz == Integer.class) {
+//					return this.nonEmptyNumberValidator.apply(value, context);
+//				}
+//				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
+//			})
 			.bind(CheckableConnectionForm::getOperand3, CheckableConnectionForm::setOperand3);
 
 		this.validationDetails = new Accordion();
@@ -164,7 +173,35 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		this.validationDetailsPanel = new VerticalLayout();
 		this.validationDetailsPanel.setClassName(ValidationDetailsClassName);
 		this.validationDetails.add(Messages.getString("CheckableConnectionForm.ValidationDetails.Label"), this.validationDetailsPanel); //$NON-NLS-1$
-		this.validationDetailsPanel.add(this.checkResults, this.condition, this.operand1, this.operand2);
+		this.validationDetailsPanel.add(this.checkResults, this.condition, this.operand1, this.operand2, this.operand3);
+	}
+
+	@SuppressWarnings("serial")
+	class OperandValidator implements Validator<String> {
+
+		CheckableConnectionForm<N> form;
+		int operandNr;
+
+		OperandValidator(CheckableConnectionForm<N> form, int operandNr) {
+			this.form = form;
+			this.operandNr = operandNr;
+		}
+		@Override
+		public ValidationResult apply(String value, ValueContext context) {
+			//TODO: make this into an own class
+			// if the nr of required args is smaller than operandNr then this operand is irrelevant, so we always validate it as OK
+			Condition condValue = this.form.condition.getValue();
+			int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
+			log.info("condition: {}, value: {}, nrArgs: {}", this.form.condition, condValue, nrArgs); //$NON-NLS-1$
+			if (condValue == null || nrArgs < this.operandNr) return ValidationResult.ok();
+			Class<?> clazz = condValue.getArgClasses()[this.operandNr-1];
+			if (clazz == String.class) {
+				return this.form.nonEmptyStringValidator.apply(value, context);
+			} else if (clazz == Integer.class) {
+				return this.form.nonEmptyNumberValidator.apply(value, context);
+			}
+			throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
+		}
 	}
 
 	@Override
@@ -349,7 +386,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 			this.operand3.setVisible(op3Visible);
 			if (op3Visible) this.operand3.setLabel(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
 		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
-			log.info("removing ResultChecker from view:"); //$NON-NLS-1$
+			log.debug("removing ResultChecker from view:"); //$NON-NLS-1$
 //			this.resultChecker.setResultChecker(null);
 //			this.resultChecker.setVisible(false);
 			this.condition.setVisible(false);

@@ -28,7 +28,6 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
@@ -98,17 +97,20 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.targetUid = new TextField(Messages.getString("HTTPConnectionForm.Uid.Label")); //$NON-NLS-1$
 		this.targetUid.setClassName(UidClassName);
 		this.targetUid.setThemeName(LabelPaddingTheme);
-		this.targetUid.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.targetUid.setClearButtonVisible(this.clearButtonsVisible);
+		this.targetUid.setEnabled(this.isAdminUser);
 		this.binder.forField(this.targetUid).withValidator(this.propertiesResolvableValidator);
 
 		this.targetPwd = new PasswordField(Messages.getString("HTTPConnectionForm.Pwd.Label")); //$NON-NLS-1$
 		this.targetPwd.setClassName(PwdClassName);
 		this.targetPwd.setThemeName(LabelPaddingTheme);
-		this.targetPwd.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.targetPwd.setClearButtonVisible(this.clearButtonsVisible);
+		this.targetPwd.setEnabled(this.isAdminUser);
 		this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
 
 		this.includeBasicAuthHeader= new Checkbox(Messages.getString("HTTPConnectionForm.IncludeBasicAuthHeader.Label")); //$NON-NLS-1$
 		this.includeBasicAuthHeader.setClassName(BasicAuthHdrClassName);
+		this.includeBasicAuthHeader.setEnabled(this.isAdminUser);
 		this.binder.forField(this.includeBasicAuthHeader)
 			.withValidator((value, context) ->
 			{ // Explicit validator instance:
@@ -134,6 +136,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.method = new Select<>(HTTP_Method.values());
 		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
 		this.method.setClassName(MethodClassName);
+		this.method.setEnabled(this.isAdminUser);
 		// this.method.setItemLabelGenerator(meth -> Messages.getString("HTTPConnectionForm.Method." + meth.name())); //$NON-NLS-1$
 		this.method.addValueChangeListener(event ->
 			{
@@ -147,7 +150,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
 		this.headers.addThemeName(MonospaceTheme);
-		this.headers.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.headers.setClearButtonVisible(this.clearButtonsVisible);
+		this.headers.setEnabled(this.isAdminUser);
 		this.headers.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
@@ -173,7 +177,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.payload.setClassName(RequestBodyClassName);
 		this.payload.setThemeName(LabelPaddingTheme);
 		this.payload.addThemeName(MonospaceTheme);
-		this.payload.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.payload.setClearButtonVisible(this.clearButtonsVisible);
+		this.payload.setEnabled(this.isAdminUser);
 		this.payload.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
@@ -187,30 +192,35 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
+		this.responseStatusCode.setReadOnly(true);
 		this.binder.forField(this.responseStatusCode).bind(HTTPConnection::getResponseStatusCode, null);
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
 		this.requestHeaders.setThemeName(LabelPaddingTheme);
 		this.requestHeaders.addThemeName(MonospaceTheme);
+		this.requestHeaders.setReadOnly(true);
 		this.binder.forField(this.requestHeaders).bind(HTTPConnection::requestHeadersAsString, null);
 
 		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.requestBody.setClassName(RequestBodyClassName);
 		this.requestBody.setThemeName(LabelPaddingTheme);
 		this.requestBody.addThemeName(MonospaceTheme);
+		this.requestBody.setReadOnly(true);
 		this.binder.forField(this.requestBody).bind((n) -> requestBodyAsString(n), null);
 
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
 		this.responseHeaders.setThemeName(LabelPaddingTheme);
 		this.responseHeaders.addThemeName(MonospaceTheme);
+		this.responseHeaders.setReadOnly(true);
 		this.binder.forField(this.responseHeaders).bind(HTTPConnection::responseHeadersAsString, null);
 
 		this.responseBody = new TextArea(Messages.getString("HTTPConnectionForm.ResponseBody.Label")); //$NON-NLS-1$
 		this.responseBody.setClassName(ResponseBodyClassName);
 		this.responseBody.setThemeName(LabelPaddingTheme);
 		this.responseBody.addThemeName(MonospaceTheme);
+		this.responseBody.setReadOnly(true);
 		this.binder.forField(this.responseBody).bind((n) -> responseBodyAsString(n), null);
 
 		this.prettyPrintRequestXml = new Checkbox(Messages.getString("HTTPConnectionForm.PrettyPrintXml.Label")); //$NON-NLS-1$
@@ -225,7 +235,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
 		this.acceptableReturnCodes.setThemeName(LabelPaddingTheme);
 		this.acceptableReturnCodes.addThemeName(MonospaceTheme);
-		this.acceptableReturnCodes.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.acceptableReturnCodes.setClearButtonVisible(this.clearButtonsVisible);
+		this.acceptableReturnCodes.setEnabled(this.isAdminUser);
 
 		// we cross-link the validators of the checkResults-checkbox and the acceptableReturnCodes-input field:
 		Binder.Binding<N, String> acceptableReturnCodesBinding = // memorize the binding below so we can re-trigger it

@@ -36,6 +36,8 @@ public class PingConnection extends IPConnection
 	 *
 	 */
 	@JsonIgnore
+	private final static String PingHostNotFound = "Ping request could not find host"; //$NON-NLS-1$
+	@JsonIgnore
 	private final static String PingTimedOut = "Request timed out."; //$NON-NLS-1$
 	@JsonIgnore
 	private final static String PingSuccessIPv4  = "Reply from \\d{1,3}(\\.\\d{1,3}){3}: (bytes=\\d{1,4} )?time(=\\d{1,5}|<1)ms( TTL=\\d{1,3})?"; //$NON-NLS-1$\
@@ -44,12 +46,10 @@ public class PingConnection extends IPConnection
 	private final static String PingSuccessIPv6  = "Reply from ([\\dA-Fa-f]){0,4}(:([\\dA-Fa-f]){0,4}){0,7}: (bytes=\\d{1,4} )?time(=\\d{1,5}|<1)ms( TTL=\\d{1,3})?"; //$NON-NLS-1$
 	private final static int MatchGroupIPv6 = 5;	//         1           1     2 3           3     2       4               4     5            5  6             6
 
-	@JsonIgnore
-	private transient Pattern patternTimedOut = Pattern.compile(PingTimedOut);
-	@JsonIgnore
-	private transient Pattern patternSuccessIPv4 = Pattern.compile(PingSuccessIPv4);
-	@JsonIgnore
-	private transient Pattern patternSuccessIPv6 = Pattern.compile(PingSuccessIPv6);
+	private static Pattern patternHostNotFound = Pattern.compile(PingHostNotFound);
+	private static Pattern patternTimedOut = Pattern.compile(PingTimedOut);
+	private static Pattern patternSuccessIPv4 = Pattern.compile(PingSuccessIPv4);
+	private static Pattern patternSuccessIPv6 = Pattern.compile(PingSuccessIPv6);
 
 	@JsonIgnore
 	protected transient String response;
@@ -128,19 +128,32 @@ public class PingConnection extends IPConnection
 					details = PingTimedOut;
 				} else {
 					try {
-						Matcher matcherIPv4 = this.patternSuccessIPv4.matcher(res);
-						Matcher matcherIPv6 = this.patternSuccessIPv6.matcher(res);
+						Matcher matcherIPv4 = patternSuccessIPv4.matcher(res);
 						if (matcherIPv4.find()) {
 							time = matcherIPv4.group(MatchGroupIPv4);
-						} else if (matcherIPv6.find()) {
-							time = matcherIPv6.group(MatchGroupIPv6);
+						} else {
+							Matcher matcherIPv6 = patternSuccessIPv6.matcher(res);
+							if (matcherIPv6.find()) {
+								time = matcherIPv6.group(MatchGroupIPv6);
+							}
 						}
 						if (time != null) {
 							setDurationMillis(time.equals("<1") ? 1 : Long.parseLong(time.substring(1))); //$NON-NLS-1$
 							setState(getDuration() > getTimeout() * 10e9  ? State.DEGRADED : State.OK);
 							details = time + " msecs"; //$NON-NLS-1$
-						} else { // time not found - we take the entire process' duration:
-							log.debug("Couldn't locate time in the response '{}'", res); //$NON-NLS-1$
+						} else if (patternHostNotFound.matcher(res).find()) {
+							details = "Host not found"; //$NON-NLS-1$
+							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
+							setDuration(0); // signal: "unknown response"
+							setState(State.FAILED);
+						} else if (patternTimedOut.matcher(res).find()) {
+							details = "Ping timed out"; //$NON-NLS-1$
+							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
+							setDuration(0); // signal: "unknown response"
+							setState(State.FAILED);
+						} else { // time not found in response - we take the entire process' duration:
+							details = "No time found in response"; //$NON-NLS-1$
+							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
 							setDuration(System.nanoTime() - startTime);
 							setState(State.DEGRADED); // degraded since we didn't find the time in the response...
 						}

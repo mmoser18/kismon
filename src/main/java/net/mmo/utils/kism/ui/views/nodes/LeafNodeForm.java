@@ -62,18 +62,21 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 
 		this.active = new Checkbox(Messages.getString("LeafNodeForm.Active.Label")); //$NON-NLS-1$
 		this.active.addClassName(ActiveClassName);
+		this.active.setEnabled(this.isAdminUser);
 
 		this.period = new IntegerField(Messages.getString("LeafNodeForm.Period.Label")); //$NON-NLS-1$
 		this.period.setSuffixComponent(new Span(Messages.getString("LeafNodeForm.Period.Suffix"))); //$NON-NLS-1$
 		this.period.addClassName(PeriodClassName);
 		this.period.setThemeName(LabelPaddingTheme);
-		this.period.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.period.setClearButtonVisible(this.clearButtonsVisible);
+		this.period.setEnabled(this.isAdminUser);
 
 		this.timeout = new IntegerField(Messages.getString("LeafNodeForm.Timeout.Label")); //$NON-NLS-1$
 		this.timeout.setSuffixComponent(new Span(Messages.getString("LeafNodeForm.Timeout.Suffix"))); //$NON-NLS-1$
 		this.timeout.addClassName(TimeoutClassName);
 		this.timeout.setThemeName(LabelPaddingTheme);
-		this.timeout.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.timeout.setClearButtonVisible(this.clearButtonsVisible);
+		this.timeout.setEnabled(this.isAdminUser);
 
 		this.duration = new NumberField(Messages.getString("LeafNodeForm.Duration.Label")); //$NON-NLS-1$
 		this.duration.setSuffixComponent(new Span(Messages.getString("LeafNodeForm.Duration.Suffix"))); //$NON-NLS-1$

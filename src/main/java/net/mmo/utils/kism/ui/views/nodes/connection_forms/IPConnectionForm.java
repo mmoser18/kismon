@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 
 @Slf4j
 @PreserveOnRefresh
@@ -41,7 +40,8 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 		this.hostAddress = new TextField(Messages.getString("IPConnectionForm.HostAddress.Label")); //$NON-NLS-1$
 		this.hostAddress.setClassName(HostAddressClassName);
 		this.hostAddress.setThemeName(LabelPaddingTheme);
-		this.hostAddress.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.hostAddress.setClearButtonVisible(this.clearButtonsVisible);
+		this.hostAddress.setEnabled(this.isAdminUser);
 		this.hostAddress.addValueChangeListener(event ->
 			{
 				log.debug("hostAddress value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -57,6 +57,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 		this.resultingHostAddress = new TextField(Messages.getString("IPConnectionForm.ResultingHostAddress.Label")); //$NON-NLS-1$
 		this.resultingHostAddress.setClassName(ResultingHostAddressClassName);
 		this.resultingHostAddress.setThemeName(LabelPaddingTheme);
+		this.resultingHostAddress.setReadOnly(true);
 
 		this.connnectionDetailsPanel.add(this.hostAddress, this.resultingHostAddress);
 	}

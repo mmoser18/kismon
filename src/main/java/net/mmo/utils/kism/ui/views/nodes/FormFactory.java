@@ -7,6 +7,7 @@ package net.mmo.utils.kism.ui.views.nodes;
 
 import java.util.Hashtable;
 
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
@@ -26,9 +27,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class FormFactory <N extends Node>
+/**
+ * Note that this class is not really a UI component but was made one so that its fields are
+ * session-local, i.e. each session has its own factory (and specifically its own form cache).
+ */
+public class FormFactory <N extends Node> extends VerticalLayout
 {
-//	// Here we cache the forms - one per nodeType. Since we don't have that many form types there is no cleanup nor eviction
+	private static final long serialVersionUID = 7234214483184623150L;
+
+	//Here we cache the forms - one per nodeType. Since we don't have that many
+	// form types there is no cleanup nor eviction
 	Hashtable<Class<N>, NodeForm<N>> forms = new Hashtable<>();
 
 	@SuppressWarnings("unchecked")
@@ -65,6 +73,7 @@ public class FormFactory <N extends Node>
 		} else {
 			log.info("found existing form for class {}: {}", clazz, form); //$NON-NLS-1$
 		}
+		form.initFlags(); // these may have changed (e.g. by a logout/login with a different uid)
 		return form;
 	}
 }

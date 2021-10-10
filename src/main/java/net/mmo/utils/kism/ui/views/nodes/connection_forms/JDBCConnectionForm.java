@@ -20,9 +20,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
-import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
+import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
 @Slf4j
 @PreserveOnRefresh
@@ -76,25 +75,29 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.driverName = new TextField(Messages.getString("JDBCConnectionForm.DriverName.Label")); //$NON-NLS-1$
 		this.driverName.setClassName(DriverNameClassName);
 		this.driverName.setThemeName(LabelPaddingTheme);
-		this.driverName.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.driverName.setClearButtonVisible(this.clearButtonsVisible);
+		this.driverName.setEnabled(this.isAdminUser);
 		this.binder.forField(this.driverName).withValidator(this.propertiesResolvableValidator);
 
 		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
 		this.dbUid.setClassName(UidClassName);
 		this.dbUid.setThemeName(LabelPaddingTheme);
-		this.dbUid.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.dbUid.setClearButtonVisible(this.clearButtonsVisible);
+		this.dbUid.setEnabled(this.isAdminUser);
 		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableValidator);
 
 		this.dbPwd = new PasswordField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
 		this.dbPwd.setClassName(PwdClassName);
 		this.dbPwd.setThemeName(LabelPaddingTheme);
-		this.dbPwd.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.dbPwd.setClearButtonVisible(this.clearButtonsVisible);
+		this.dbPwd.setEnabled(this.isAdminUser);
 		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableValidator);
 
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
 		this.query.setThemeName(LabelPaddingTheme);
-		this.query.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.query.setClearButtonVisible(this.clearButtonsVisible);
+		this.query.setEnabled(this.isAdminUser);
 		this.query.addValueChangeListener(event ->
 			{
 				log.debug("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -114,18 +117,21 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.resultingQuery.setClassName(ResultingQueryClassName);
 		this.resultingQuery.setThemeName(LabelPaddingTheme);
 		this.resultingQuery.setVisible(false);
+		this.resultingQuery.setReadOnly(true);
 		this.binder.forField(this.resultingQuery).bind(JDBCConnection::getResultingQuery, null);
 
 		this.responseStatus = new TextField(Messages.getString("JDBCConnectionForm.ResponseStatus.Label")); //$NON-NLS-1$
 		this.responseStatus.setClassName(DbResponseClassName);
 		this.responseStatus.setThemeName(LabelPaddingTheme);
 		this.responseStatus.addThemeName(MonospaceTheme);
+		this.responseStatus.setReadOnly(true);
 		this.binder.forField(this.responseStatus).bind(JDBCConnection::getResponseStatus, null);
 
 		this.responsePayload = new TextArea(Messages.getString("JDBCConnectionForm.ResponsePayload.Label")); //$NON-NLS-1$
 		this.responsePayload.setClassName(DbResponseClassName);
 		this.responsePayload.setThemeName(LabelPaddingTheme);
 		this.responsePayload.addThemeName(MonospaceTheme);
+		this.responsePayload.setReadOnly(true);
 		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
 
 		// combining and grouping bits and pieces:

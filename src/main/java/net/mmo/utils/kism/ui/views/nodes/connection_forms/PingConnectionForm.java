@@ -33,6 +33,7 @@ public class PingConnectionForm extends IPConnectionForm<PingConnection>
 		this.response.setClassName(ResponseClassName);
 		this.response.setThemeName(LabelPaddingTheme);
 		this.response.addThemeName(MonospaceTheme);
+		this.response.setReadOnly(true);
 		this.binder.forField(this.response).bind((n) -> n.getResponse(), null);
 
 		this.fields.add(this.response);

@@ -26,7 +26,6 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection.Auth_Method;
-import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
 @Slf4j
@@ -78,7 +77,8 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.hostPort.setClassName(HostPortClassName);
 		this.hostPort.setThemeName(LabelPaddingTheme);
 		this.hostPort.setHasControls(true);
-		this.hostPort.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.hostPort.setClearButtonVisible(this.clearButtonsVisible);
+		this.hostPort.setEnabled(this.isAdminUser);
 //		this.hostPort.addValueChangeListener(event ->
 //			{
 //				log.debug("hostAddress value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -97,6 +97,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.authMethod.setItemLabelGenerator(item -> {
 				return Messages.getString("SSHConnectionForm.AuthMethod.Item." + item.name()); //$NON-NLS-1$
 			});
+		this.authMethod.setEnabled(this.isAdminUser);
 		this.authMethod.addValueChangeListener(event -> {
 				if (event.isFromClient()) {
 					log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
@@ -107,13 +108,15 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.username = new TextField(Messages.getString("SSHConnectionForm.Uid.Label")); //$NON-NLS-1$
 		this.username.setClassName(UidClassName);
 		this.username.setThemeName(LabelPaddingTheme);
-		this.username.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.username.setClearButtonVisible(this.clearButtonsVisible);
+		this.username.setEnabled(this.isAdminUser);
 		this.binder.forField(this.username).withValidator(this.propertiesResolvableValidator);
 
 		this.authArg = new PasswordField(Messages.getString("SSHConnectionForm.AuthArg.Label." + Auth_Method.PWD.name())); //$NON-NLS-1$
 		this.authArg.setClassName(AuthArgClassName);
 		this.authArg.setThemeName(LabelPaddingTheme);
-		this.authArg.setClearButtonVisible(NodeForm.clearButtonsVisible);
+		this.authArg.setClearButtonVisible(this.clearButtonsVisible);
+		this.authArg.setEnabled(this.isAdminUser);
 		this.binder.forField(this.authArg).withValidator(this.propertiesResolvableValidator);
 
 		this.fingerprint = new TextField(Messages.getString("SSHConnectionForm.Fingerprint.Label")); //$NON-NLS-1$
@@ -121,6 +124,8 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.fingerprint.setThemeName(LabelPaddingTheme);
 		this.fingerprint.addThemeName(MonospaceTheme);
 		this.fingerprint.setWidth("47em"); // 16 double-digit groups plus ':' separators //$NON-NLS-1$
+		this.fingerprint.setClearButtonVisible(this.clearButtonsVisible);
+		this.fingerprint.setEnabled(this.isAdminUser);
 		this.binder.forField(this.fingerprint)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator((value, context) -> {
@@ -140,6 +145,8 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.command.setClassName(CommandClassName);
 		this.command.setThemeName(LabelPaddingTheme);
 		this.command.addThemeName(MonospaceTheme);
+		this.command.setClearButtonVisible(this.clearButtonsVisible);
+		this.command.setEnabled(this.isAdminUser);
 		this.command.addValueChangeListener(event ->
 			{
 				if (event.isFromClient()) {
@@ -151,6 +158,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.response.setClassName(ResponseClassName);
 		this.response.setThemeName(LabelPaddingTheme);
 		this.response.addThemeName(MonospaceTheme);
+		this.response.setReadOnly(true);
 
 		// combining and grouping bits and pieces:
 		HorizontalLayout hostAndPort = new HorizontalLayout(this.hostAddress, this.hostPort);

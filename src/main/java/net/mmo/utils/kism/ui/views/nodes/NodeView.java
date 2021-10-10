@@ -44,6 +44,7 @@ import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.NodeFactory;
 import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.security.SecurityUtils;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
@@ -77,6 +78,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public static final String ViewToolbarClassName = "node-view-toolbar";  //$NON-NLS-1$
 	public static final String ViewContentClassName = "node-view-content";  //$NON-NLS-1$
 	public static final String TreeClassName        = "node-view-tree"; //$NON-NLS-1$
+
+	public static final String ViewClassEditing = "editing"; //$NON-NLS-1$
+	public static final String ViewClassViewing = "viewing"; //$NON-NLS-1$
 
 	private NodeService nodeService;
 	private NodeFactory<N> nodeFactory;
@@ -125,7 +129,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 			// this.content.setOrientation(this.contentDirection.getOrientation());
 			CommonConstants.setClassName(this.content, this.contentDirection);
 
-			add(createToolbar(), this.content);
+			if (SecurityUtils.isAdminUser()) {
+				log.info("admin user"); //$NON-NLS-1$
+				add(createToolbar(), this.content);
+			} else {
+				log.info("non-admin user"); //$NON-NLS-1$
+				add(this.content);
+			}
 
 		} catch (Throwable t) {
 			log.error("Exception in c'tor:", t); //$NON-NLS-1$
@@ -563,6 +573,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 				return;
 			}
 			this.form.clearListeners();
+			removeClassName(ViewClassEditing);
+			removeClassName(ViewClassViewing);
 		}
 		try {
 			NodeForm<N> newForm;
@@ -581,17 +593,19 @@ public class NodeView <N extends Node> extends VerticalLayout
 				this.formWrapper.removeAll();
 				this.formWrapper.add(newForm);
 				this.formWrapper.setSizeFull();
-				this.content.setSplitterPosition(50);
+				this.content.setSplitterPosition(100);
 			}
-			this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
-			this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-			this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-			this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
-
+			if (SecurityUtils.isAdminUser()) {
+				this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
+				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
+				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
+				this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
+				addClassName(ViewClassEditing);
+			} else {
+				addClassName(ViewClassViewing);
+			}
 			this.form.setNode(node, true);
 			this.form.setVisible(true);
-
-			addClassName("editing"); //$NON-NLS-1$
 		} catch (java.lang.IllegalStateException ex) { // I keep getting these - still no idea why...
 			log.error("WTF?", ex); //$NON-NLS-1$
 			this.formFactory = new FormFactory<N>();

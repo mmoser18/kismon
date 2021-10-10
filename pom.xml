@@ -239,7 +239,7 @@
 			</exclusions>
 		</dependency>
 
-		<!--database dependencies - this also enables autoconfiguration for the h2 database -->
+		<!--database dependencies - this is also required to enable auto-configuration for the h2 database -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -259,7 +259,6 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<!--  -->
 		<!-- Using PostGres DB / not tested ->

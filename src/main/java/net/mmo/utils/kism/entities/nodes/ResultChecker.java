@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
+import net.mmo.utils.kism.entities.nodes.Node.State;
 
 @Setter
 @Getter
@@ -39,6 +40,8 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 		LessOrEqual(Integer.class),
 		Within(Integer.class, Integer.class),
 		Outside(Integer.class, Integer.class),
+		RangesAscending(Integer.class, Integer.class),
+		RangesDescending(Integer.class, Integer.class),
 		;
 
 		final Class<?>[] argClasses;
@@ -67,7 +70,7 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 
 	@JsonIgnore
 	public void setOperandN(int index, String operand) {
-		synchronized(this) {
+		synchronized(this) { // synchronized so that the operands can't be changed while we use them
 			int nrExpectedArgs = this.condition.getNrArgs();
 			if (this.operands == null) {
 				this.operands = new ArrayList<>(this.condition != null ? nrExpectedArgs : 0);
@@ -91,14 +94,14 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	@SuppressWarnings({"null", "unused"})
-	public boolean checkResult(Node contextNode, String value) throws Exception {
-		boolean result = true;
+	public State checkResult(Node contextNode, String value) throws Exception {
+		State result = State.OK;
 		if (this.condition != null) {
 			int nrExpectedArgs = this.condition.getNrArgs();
 			Object operand1;
 			Object operand2;
 			Object operand3;
-			synchronized(this) {
+			synchronized(this) { // synchronized so that the operands can't be used while we change them
 				if (this.resolvedOperands == null) {
 					this.resolvedOperands = resolveOperands(contextNode);
 					if (this.operands.size() != nrExpectedArgs) {
@@ -112,52 +115,78 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 			}
 			switch (this.condition) {
 			case Equals:
-				result = Objects.equals(value, operand1);
+				result = (Objects.equals(value, operand1) ? State.OK : State.FAILED);
 				break;
 			case EqualsIgnoreCase:
-				result = value != null && value.equalsIgnoreCase((String)operand1);
+				result = (value != null && value.equalsIgnoreCase((String)operand1) ? State.OK : State.FAILED);
 				break;
 			case StartsWith:
-				result = value != null && value.startsWith((String)operand1);
+				result = (value != null && value.startsWith((String)operand1) ? State.OK : State.FAILED);
 				break;
 			case StartsWithIgnoreCase:
-				result = value != null && operand1 != null && value.toUpperCase().startsWith(((String)operand1).toUpperCase());
+				result = (value != null && operand1 != null && value.toUpperCase().startsWith(((String)operand1).toUpperCase()) ? State.OK : State.FAILED);
 				break;
 			case EndsWith:
-				result = value != null && value.endsWith((String)operand1);
+				result = (value != null && value.endsWith((String)operand1) ? State.OK : State.FAILED);
 				break;
 			case EndsWithIgnoreCase:
-				result = value != null && operand1 != null && value.toUpperCase().endsWith(((String)operand1).toUpperCase());
+				result = (value != null && operand1 != null && value.toUpperCase().endsWith(((String)operand1).toUpperCase()) ? State.OK : State.FAILED);
 				break;
 			case Contains:
-				result = value != null && value.contains((String)operand1);
+				result = (value != null && value.contains((String)operand1) ? State.OK : State.FAILED);
 				break;
 			case ContainsIgnoreCase:
-				result = value != null && operand1 != null && value.toUpperCase().contains(((String)operand1).toUpperCase());
+				result = (value != null && operand1 != null && value.toUpperCase().contains(((String)operand1).toUpperCase()) ? State.OK : State.FAILED);
 				break;
 			case Matches:
-				result = value != null && value.matches((String)operand1); // we might want to cache the regexp some day...
+				result = (value != null && value.matches((String)operand1) ? State.OK : State.FAILED); // we might want to cache the regexp some day...
 				break;
 			case GreaterThan:
-				result = value != null && (Integer.parseInt(value.trim()) > (Integer)operand1);
+				result = (value != null && (Integer.parseInt(value.trim()) > (Integer)operand1) ? State.OK : State.FAILED);
 				break;
 			case GreaterOrEqual:
-				result = value != null && (Integer.parseInt(value.trim()) >= (Integer)operand1);
+				result = (value != null && (Integer.parseInt(value.trim()) >= (Integer)operand1) ? State.OK : State.FAILED);
 				break;
 			case LessThan:
-				result = value != null && (Integer.parseInt(value.trim()) < (Integer)operand1);
+				result = (value != null && (Integer.parseInt(value.trim()) < (Integer)operand1) ? State.OK : State.FAILED);
 				break;
 			case LessOrEqual:
-				result = value != null && (Integer.parseInt(value.trim()) <= (Integer)operand1);
+				result = (value != null && (Integer.parseInt(value.trim()) <= (Integer)operand1) ? State.OK : State.FAILED);
 				break;
-			case Within: {
+			case Within:
+				if (value != null) {
 					int intVal = Integer.parseInt(value.trim());
-					result = (intVal >= (Integer)operand1) && (intVal <= (Integer)operand2);
+					result = ((intVal >= (Integer)operand1) && (intVal <= (Integer)operand2) ? State.OK : State.FAILED);
+				} else {
+					result = State.FAILED;
 				}
 				break;
-			case Outside: {
+			case Outside:
+				if (value != null) {
 					int intVal = Integer.parseInt(value.trim());
-					result = (intVal < (Integer)operand1) || (intVal > (Integer)operand2);
+					result = ((intVal < (Integer)operand1) || (intVal > (Integer)operand2) ? State.OK : State.FAILED);
+				} else {
+					result = State.FAILED;
+				}
+				break;
+			case RangesAscending:
+				if (value != null) {
+					int intVal = Integer.parseInt(value.trim());
+					if (intVal <= (Integer)operand1) result = State.OK;
+					else if (intVal <= (Integer)operand2) result = State.DEGRADED;
+					else result = State.FAILED;
+				} else {
+					result = State.FAILED;
+				}
+				break;
+			case RangesDescending:
+				if (value != null) {
+					int intVal = Integer.parseInt(value.trim());
+					if (intVal >= (Integer)operand1) result = State.OK;
+					else if (intVal >= (Integer)operand2) result = State.DEGRADED;
+					else result = State.FAILED;
+				} else {
+					result = State.FAILED;
 				}
 				break;
 			default:
@@ -179,6 +208,8 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 				log.trace("ResultChecker.resolveOperands(): operand {}: '{}', resolved value:'{}'", idx, operand, resolvedValue); //$NON-NLS-1$
 				if (Integer.class.isAssignableFrom(this.condition.argClasses[idx])) {
 					resolvedValue = Integer.valueOf((String)resolvedValue);
+				} else if (Double.class.isAssignableFrom(this.condition.argClasses[idx])) {
+					resolvedValue = Double.valueOf((String)resolvedValue);
 				}
 			} catch (Exception ex) {
 				resolvedValue = "Error resolving/converting '" + this.condition + "'-operand " + idx + ": '" + operand + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$

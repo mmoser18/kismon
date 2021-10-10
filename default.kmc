@@ -11,6 +11,7 @@
 		"db_url_local" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
 		"db_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
 	},
+	"action" : null,
 	"condition" : "DEGRADED_ON_NOT_ALL_OK",
 	"children" : [ {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -18,6 +19,7 @@
 		"description" : "Just an example list of all possible nodes types",
 		"applicable" : false,
 		"properties" : { },
+		"action" : null,
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
@@ -27,6 +29,7 @@
 			"properties" : {
 				"xxx" : "yyy"
 			},
+			"action" : null,
 			"active" : false,
 			"period" : 30,
 			"timeout" : 15,
@@ -53,6 +56,7 @@
 			"properties" : {
 				"x" : "Operation"
 			},
+			"action" : null,
 			"active" : false,
 			"period" : 60,
 			"timeout" : 10,
@@ -81,6 +85,7 @@
 				"bar" : "zzz",
 				"foo" : "*"
 			},
+			"action" : null,
 			"active" : false,
 			"period" : 60,
 			"timeout" : 10,
@@ -100,6 +105,7 @@
 			"description" : "Test Intermediate Node 0",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -107,6 +113,7 @@
 				"description" : "Test Intermediate Node 1",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -114,6 +121,7 @@
 					"description" : "Test Intermediate Node 2",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"condition" : "ALL_MUST_BE_OK",
 					"children" : [ {
 						"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
@@ -121,6 +129,7 @@
 						"description" : "REST Connection 3",
 						"applicable" : true,
 						"properties" : { },
+						"action" : null,
 						"active" : false,
 						"period" : 60,
 						"timeout" : 45,
@@ -147,6 +156,7 @@
 					"description" : "REST Connection 4",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 45,
@@ -171,6 +181,7 @@
 					"description" : "Intermediate Node 6",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"condition" : "ALL_MUST_BE_OK",
 					"children" : [ ],
 					"expanded" : false
@@ -182,6 +193,7 @@
 				"description" : "Test REST Connection 2",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : false,
 				"period" : 60,
 				"timeout" : 45,
@@ -208,6 +220,7 @@
 			"description" : "Test Ping localhost",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"active" : false,
 			"period" : 60,
 			"timeout" : 3,
@@ -220,6 +233,7 @@
 			"description" : "Test SSH Connection",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"active" : false,
 			"period" : 60,
 			"timeout" : 5,
@@ -243,6 +257,7 @@
 		"description" : "All ZHQuest-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
+		"action" : null,
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -260,6 +275,7 @@
 				"mock_host" : "${app_host}",
 				"mock_url" : "http://${mock_host}:${mock_port}/zhquest-mock-external-services/"
 			},
+			"action" : null,
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -270,6 +286,7 @@
 					"app_host" : "ksta-zhquest-int3.elcadev.local",
 					"db_uid" : "ZHQUEST_INT3"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -277,6 +294,7 @@
 					"description" : "ping DB for ZHQuest DEV Environment",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -296,6 +314,7 @@
 					"description" : "send specific query to ZHQuest DEV DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -317,6 +336,7 @@
 					"properties" : {
 						"cookie" : "JSESSIONID=35527D565D216DEB8F156ED2635D884F"
 					},
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -341,6 +361,7 @@
 					"description" : "ZHQuest Application Server DEV services WSDL",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -365,6 +386,7 @@
 					"description" : "ZHQuest Application Server DEV service call",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -390,6 +412,7 @@
 					"description" : "Mock SecurityTokenServiceBinding for DEV",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -420,6 +443,7 @@
 					"app_host" : "ksta-zh-zhquest.elcadev.local",
 					"db_uid" : "ZHQUEST_QA"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -427,6 +451,7 @@
 					"description" : "ping DB for ZHQuest QA-Environment",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -446,6 +471,7 @@
 					"description" : "send specific query to ZHQuest QA DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -465,6 +491,7 @@
 					"description" : "ZHQuest Application Server QA UI",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -489,6 +516,7 @@
 					"description" : "ZHQuest Application Server QA services WSDL",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -513,6 +541,7 @@
 					"description" : "ZHQuest Application Server QA service call",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -538,6 +567,7 @@
 					"description" : "Mock SecurityTokenServiceBinding for ZHQuest QA",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -570,6 +600,7 @@
 					"db_uid" : "ZHQUESTDMZ",
 					"db_pwd" : "dU8fdzsC"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -577,6 +608,7 @@
 					"description" : "ping DB for ZHQuest DMZ-Environment",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -596,6 +628,7 @@
 					"description" : "send specific query to ZHQuest DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -615,6 +648,7 @@
 					"description" : "ZHQuest Application Server DMZ UI",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -639,6 +673,7 @@
 					"description" : "ZHQuest Application Server DMZ services WSDL",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -663,6 +698,7 @@
 					"description" : "ZHQuest Application Server DMZ service call",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -688,6 +724,7 @@
 					"description" : "Mock SecurityTokenServiceBinding for ZHQuest DMZ",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -719,6 +756,7 @@
 		"description" : "All RegisterJP-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
+		"action" : null,
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -738,6 +776,7 @@
 				"mock_host" : "zhstregisterjp-dev.elcadev.local",
 				"mock_url" : "http://${mock_host}${mock_port}/zhstregisterjp-mock-external-services/"
 			},
+			"action" : null,
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -748,6 +787,7 @@
 					"app_host" : "zhstregisterjp-dev.elcadev.local",
 					"db_uid" : "REGISTERJP_DEV"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -755,6 +795,7 @@
 					"description" : "ping RegisterJP DEV DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -774,6 +815,7 @@
 					"description" : "send specific query to RegisterJP DEV DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -793,6 +835,7 @@
 					"description" : "SOAP-UI Mock Server for RegisterJP DEV (actually shared among all RJP Dev-Environments)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -817,6 +860,7 @@
 					"description" : "RegisterJP Application Server DEV UI",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -841,6 +885,7 @@
 					"description" : "RegisterJP Application Server DEV services WSDL\n",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -865,6 +910,7 @@
 					"description" : "RegisterJP Application Server DEV service call",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -895,6 +941,7 @@
 					"app_host" : "zhstregisterjp-qa.elcadev.local",
 					"db_uid" : "REGISTERJP_QA"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -902,6 +949,7 @@
 					"description" : "ping RegisterJP QA DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -921,6 +969,7 @@
 					"description" : "send specific query to RegisterJP QA DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -940,6 +989,7 @@
 					"description" : "SOAP-UI Mock Server for RegisterJP QA (actually the same as RJP DEV)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -964,6 +1014,7 @@
 					"description" : "RegisterJP Application Server QA UI",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -988,6 +1039,7 @@
 					"description" : "RegisterJP Application Server QA services WSDL\n",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1012,6 +1064,7 @@
 					"description" : "RegisterJP Application Server QA service call",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1042,6 +1095,7 @@
 					"app_host" : "zhstregisterjp-prod.elcadev.local",
 					"db_uid" : "REGISTERJP_PROD"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -1049,6 +1103,7 @@
 					"description" : "ping RegisterJP PROD DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1068,6 +1123,7 @@
 					"description" : "send specific query to RegisterJP PROD DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -1087,6 +1143,7 @@
 					"description" : "SOAP-UI Mock Server for RegisterJP PROD (actually the same as RJP DEV)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1111,6 +1168,7 @@
 					"description" : "RegisterJP Application Server PROD UI",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 10,
@@ -1135,6 +1193,7 @@
 					"description" : "RegisterJP Application Server PROD services WSDL\n",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1159,6 +1218,7 @@
 					"description" : "RegisterJP Application Server PROD service call",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1190,6 +1250,7 @@
 		"description" : "All WPS-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
+		"action" : null,
 		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -1197,10 +1258,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "power",
 				"app_prot_ext" : "https://",
-				"mock_prot_ext" : "https://",
+				"app_uid" : "power",
 				"mock_port" : ":8080",
+				"mock_prot_ext" : "https://",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1222,6 +1283,7 @@
 				"mock_prot_int" : "http://",
 				"mock_pwd" : "47rjUX8P109Qmvj"
 			},
+			"action" : null,
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -1233,6 +1295,7 @@
 					"db_uid" : "WPSJENKINS",
 					"db_pwd" : "JENKINSWPS"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -1240,6 +1303,7 @@
 					"description" : "ping WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1259,6 +1323,7 @@
 					"description" : "send specific query to WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1278,6 +1343,7 @@
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1302,6 +1368,7 @@
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1326,6 +1393,7 @@
 					"description" : "WPS DMZ Application server basic connection (internal/HTTP)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1350,6 +1418,7 @@
 					"description" : "WPS DMZ Application server basic connection (external/HTTPS)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1380,6 +1449,7 @@
 					"db_uid" : "WPSJENKINS",
 					"db_pwd" : "JENKINSWPS"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -1387,6 +1457,7 @@
 					"description" : "ping WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1406,6 +1477,7 @@
 					"description" : "send specific query to WPS DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1425,6 +1497,7 @@
 					"description" : "Mocker for WPS DMZ",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1449,6 +1522,7 @@
 					"description" : "WPS Application server DMZ",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1479,6 +1553,7 @@
 		"description" : "All RW-Tool-related servers and DBs",
 		"applicable" : true,
 		"properties" : { },
+		"action" : null,
 		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -1486,8 +1561,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "ROLF",
+				"app_prot_ext" : "https://",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -1500,6 +1575,7 @@
 				"app_port_int" : ":8080",
 				"app_prot" : "http://"
 			},
+			"action" : null,
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
@@ -1512,6 +1588,7 @@
 					"db_uid" : "ZHRWTTEST",
 					"db_pwd" : "ZHRWTTEST"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -1519,6 +1596,7 @@
 					"description" : "ping RW-Tool DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1538,6 +1616,7 @@
 					"description" : "send specific query to RWT DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1557,6 +1636,7 @@
 					"description" : "RW-Tool DMZ Services WSDL",
 					"applicable" : false,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1581,6 +1661,7 @@
 					"description" : "RWT DMZ Application Server basic connection (internal/HTTP)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1605,6 +1686,7 @@
 					"description" : "RWT DMZ Application Server basic connection (external/HTTPS)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1640,6 +1722,7 @@
 					"db_pwd" : "ZHRWTTEST",
 					"app_pwd" : "?"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
@@ -1647,6 +1730,7 @@
 					"description" : "ping RWT DMZ DB\n",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1666,6 +1750,7 @@
 					"description" : "send specific query to RWT Test DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1685,6 +1770,7 @@
 					"description" : "RW-Tool Test Application UI",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
@@ -1715,14 +1801,16 @@
 		"description" : "All SSt-related servers and DBs",
 		"applicable" : false,
 		"properties" : { },
-		"condition" : "ALL_MUST_BE_OK",
+		"action" : null,
+		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "SSt Dev-Environments",
 			"description" : "SSt Dev-Environments",
 			"applicable" : true,
 			"properties" : { },
-			"condition" : "ALL_MUST_BE_OK",
+			"action" : null,
+			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "SSt DMZ",
@@ -1739,13 +1827,15 @@
 					"app_pwd" : "sstsst",
 					"app_prot" : "http://"
 				},
-				"condition" : "ALL_MUST_BE_OK",
+				"action" : null,
+				"condition" : "DEGRADED_ON_NOT_ALL_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "SSt DMZ DB-ping",
 					"description" : "ping SSt DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1765,6 +1855,7 @@
 					"description" : "send specific query to SSt DMZ DB",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1784,6 +1875,7 @@
 					"description" : "SSt DMZ Application server connection",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1808,6 +1900,7 @@
 					"description" : "SSt Application DMZ",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1827,11 +1920,11 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "Check VMs' livelyhood",
@@ -1840,7 +1933,8 @@
 		"properties" : {
 			"get_dsk_space" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
 		},
-		"condition" : "ALL_MUST_BE_OK",
+		"action" : null,
+		"condition" : "DEGRADED_ON_NOT_ALL_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "ZHQuest VMs",
@@ -1850,7 +1944,8 @@
 				"uid" : "root",
 				"pwd" : "root@zhquest"
 			},
-			"condition" : "ALL_MUST_BE_OK",
+			"action" : null,
+			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest DEV-VM",
@@ -1859,13 +1954,15 @@
 				"properties" : {
 					"fqdn" : "ksta-zhquest-int3.elcadev.local"
 				},
-				"condition" : "ALL_MUST_BE_OK",
+				"action" : null,
+				"condition" : "DEGRADED_ON_NOT_ALL_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 					"name" : "Ping ksta-zhquest-int3",
 					"description" : "Ping ksta-zhquest-int3.elcaDev.local (ZHQuest DEV)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1878,13 +1975,14 @@
 					"description" : "Check available disk space on ZHQuest DEV VM",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
 					"resultChecker" : {
-						"condition" : "LessThan",
-						"operands" : [ "90" ]
+						"condition" : "RangesAscending",
+						"operands" : [ "90", "95" ]
 					},
 					"hostAddress" : "${fqdn}",
 					"hostPort" : 22,
@@ -1903,13 +2001,15 @@
 				"properties" : {
 					"fqdn" : "ksta-zh-zhquest.elcaDev.local"
 				},
-				"condition" : "ALL_MUST_BE_OK",
+				"action" : null,
+				"condition" : "DEGRADED_ON_NOT_ALL_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 					"name" : "Ping ksta-zh-zhquest",
 					"description" : "Ping ksta-zh-zhquest.elcaDev.local (ZHQuest DEV)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1922,13 +2022,14 @@
 					"description" : "Check available disk space on  ZHQuest QA VM",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
 					"resultChecker" : {
-						"condition" : "LessThan",
-						"operands" : [ "90" ]
+						"condition" : "RangesAscending",
+						"operands" : [ "90", "95" ]
 					},
 					"hostAddress" : "${fqdn}",
 					"hostPort" : 22,
@@ -1938,9 +2039,9 @@
 					"fingerprint" : "",
 					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
-			"expanded" : false
+			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RegisterJP VMs",
@@ -1950,7 +2051,8 @@
 				"uid" : "root",
 				"pwd" : "P@ssw0rd"
 			},
-			"condition" : "ALL_MUST_BE_OK",
+			"action" : null,
+			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RegisterJP DEV-VM",
@@ -1959,13 +2061,15 @@
 				"properties" : {
 					"fqdn" : "zhstregisterjp-dev.elcaDev.local"
 				},
-				"condition" : "ALL_MUST_BE_OK",
+				"action" : null,
+				"condition" : "DEGRADED_ON_NOT_ALL_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 					"name" : "Ping zhstregisterjp-dev",
 					"description" : "zhstregisterjp-dev.elcaDev.local (RegisterJP DEV)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -1978,13 +2082,14 @@
 					"description" : "Check available disk space on RegisterJP DEV VM",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
 					"resultChecker" : {
-						"condition" : "LessThan",
-						"operands" : [ "90" ]
+						"condition" : "RangesAscending",
+						"operands" : [ "90", "95" ]
 					},
 					"hostAddress" : "${fqdn}",
 					"hostPort" : 22,
@@ -2003,6 +2108,7 @@
 				"properties" : {
 					"fqdn" : "zhstregisterjp-qa.elcaDev.local"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2010,6 +2116,7 @@
 					"description" : "Ping zhstregisterjp-qa.elcaDev.local (RegisterJP QA)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -2022,13 +2129,14 @@
 					"description" : "Check available disk space on RegisterJP QA VM",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
 					"resultChecker" : {
-						"condition" : "LessThan",
-						"operands" : [ "90" ]
+						"condition" : "RangesAscending",
+						"operands" : [ "90", "95" ]
 					},
 					"hostAddress" : "${fqdn}",
 					"hostPort" : 22,
@@ -2047,6 +2155,7 @@
 				"properties" : {
 					"fqdn" : "zhstregisterjp-prod.elcaDev.local"
 				},
+				"action" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2054,6 +2163,7 @@
 					"description" : "Ping zhstregisterjp-prod.elcaDev.local (RegisterJP PROD)",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
@@ -2066,13 +2176,14 @@
 					"description" : "Check available disk space on RegisterJP PROD VM",
 					"applicable" : true,
 					"properties" : { },
+					"action" : null,
 					"active" : true,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
 					"resultChecker" : {
-						"condition" : "LessThan",
-						"operands" : [ "90" ]
+						"condition" : "RangesAscending",
+						"operands" : [ "90", "95" ]
 					},
 					"hostAddress" : "${fqdn}",
 					"hostPort" : 22,
@@ -2084,13 +2195,14 @@
 				} ],
 				"expanded" : true
 			} ],
-			"expanded" : false
+			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-sst-mnt",
 			"description" : "Ping ksta-zh-sst-mnt.elcaDev.local",
 			"applicable" : false,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2103,6 +2215,7 @@
 			"description" : "Ping kstazh-wps.elcaDev.local",
 			"applicable" : false,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2115,6 +2228,7 @@
 			"description" : "Ping ksta-zh-rwtool.elcaDev.local",
 			"applicable" : false,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2127,6 +2241,7 @@
 			"description" : "Ping vm-zhdokumente-qa.elcaDev.local",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2139,6 +2254,7 @@
 			"description" : "Ping vm-zhquest-easy-dev.elcaDev.local",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2151,6 +2267,7 @@
 			"description" : "Ping kstazh-common-oracle.elcaDev.local",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2163,6 +2280,7 @@
 			"description" : "Ping mocks.elcaDev.local",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"active" : true,
 			"period" : 60,
 			"timeout" : 15,
@@ -2175,6 +2293,7 @@
 			"description" : "Ping DMZ VMs",
 			"applicable" : true,
 			"properties" : { },
+			"action" : null,
 			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
@@ -2182,6 +2301,7 @@
 				"description" : "Ping ksta-zh-sst-mnt-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2194,6 +2314,7 @@
 				"description" : "Ping ksta-zh-sst-mnt-dmz.elca.ch (external address)",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2206,6 +2327,7 @@
 				"description" : "Ping ksta-zh-zhquest-dmz.elcaDev.local (internal address)",
 				"applicable" : false,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2218,6 +2340,7 @@
 				"description" : "Ping ksta-zh-zhquest-dmz.elca.ch (external address)",
 				"applicable" : false,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2230,6 +2353,7 @@
 				"description" : "Ping ksta-zh-wps-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2242,6 +2366,7 @@
 				"description" : "Ping ksta-zh-wps-dmz.elca.ch (external address)",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2254,6 +2379,7 @@
 				"description" : "Ping ksta-zh-rwtool-dmz.elcaDev.local (internal address)",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
@@ -2266,6 +2392,7 @@
 				"description" : "Ping ksta-zh-rwtool-dmz.elca.ch (external address)",
 				"applicable" : true,
 				"properties" : { },
+				"action" : null,
 				"active" : true,
 				"period" : 60,
 				"timeout" : 15,

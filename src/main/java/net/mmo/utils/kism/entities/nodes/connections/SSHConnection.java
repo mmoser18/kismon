@@ -196,7 +196,7 @@ public class SSHConnection extends IPConnection
 				deriveState();
 			} // cmd gets closed here.
 		} catch (Exception ex) {
-			log.error("Exception executing '{}' (creating ssh-client/-session/-command): {}", getName(), ex); //$NON-NLS-1$
+			log.debug("Exception executing '{}' (creating ssh-client/-session/-command): {}", getName(), ex); //$NON-NLS-1$
 			setDuration(-1);
 			setResponse(ex.getMessage());
 			setState(State.FAILED);
@@ -217,9 +217,7 @@ public class SSHConnection extends IPConnection
 		State res = State.OK;
 		if (isCheckResults()) {
 			if (getResultChecker() != null) {
-				if (!getResultChecker().checkResult(this, getResponse())) {
-					res = State.FAILED;
-				}
+				res = getResultChecker().checkResult(this, getResponse());
 			} else {
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}

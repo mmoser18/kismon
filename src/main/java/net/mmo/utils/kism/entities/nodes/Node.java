@@ -58,11 +58,16 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private NodeProperties properties = new NodeProperties();
 
+	private Action<Node> action = null;
+
 	@JsonIgnore
 	protected transient IntermediateNode parent;
 
 	@JsonIgnore
 	transient private State state = State.OK;
+
+	@JsonIgnore
+	transient private int sameStateSince = 0;
 
 	// required for deserialization
 	protected Node() {
@@ -149,8 +154,14 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.state != state) {
 			State oldState = this.state;
 			this.state = state;
+			this.sameStateSince = 0;
 			informOnPropertyChange(PROPERTYNAME_STATE, oldState, state);
 			if (this.applicable && this.parent != null) this.parent.deriveNewState();
+		} else {
+			this.sameStateSince++;
+		}
+		if (this.action != null) {
+			this.action.checkForAction(this);
 		}
 	}
 
@@ -185,23 +196,23 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	}
 
 	// walk up the tree:
-	public void bubbleUp(Consumer<Node> action) {
+	public void bubbleUp(Consumer<Node> activity) {
 		for (Node n = this; n != null; n = n.getParent()) {
-			action.accept(n);
+			activity.accept(n);
 		}
 	}
 
 	// spread down the branch:
-	public void trickleDown(Consumer<Node> action) {
-		action.accept(this);
+	public void trickleDown(Consumer<Node> activity) {
+		activity.accept(this);
 	}
 
 	/** instead of recursively bubbling up we iterate up the parent ladder to execute action on the root node: */
-	public void onRootNodeDo(Consumer<Node> action) {
+	public void onRootNodeDo(Consumer<Node> activity) {
 		Node n = this;
 		while (n.getParent() != null) { n = n.getParent(); }
 		if (n instanceof RootNode) {
-			action.accept(n);
+			activity.accept(n);
 		// no else: this is normal for "free-floating" nodes, e.g. when creating a new node that hasn't yet been plugged into the tree
 		}
 	}

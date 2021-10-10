@@ -32,6 +32,13 @@ public class Application extends SpringBootServletInitializer
 		LeafNode.requestInfoService = requestInfoService;
 	}
 
+	// Code snippet that I found that should start the DB server if it is not already running
+	// - but unfortunately it does not work as expected but rather causes the application to crash. :-(
+	// CAUTION! The "-tcpAllowOthers" allows others to access the DB from other hosts as well but is a severe security hole and should only be added behind firewalls!
+//	@Bean(initMethod = "start", destroyMethod = "stop")
+//	public Server h2Server() throws SQLException {
+//		return Server.createTcpServer(/*"-ifNotExists" ,*/ "-tcp", "-tcpPort", "8082" /*", -tcpAllowOthers",*/); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+//	}
 
 //	// requires implements ApplicationRunner
 //	@Override
@@ -148,11 +155,4 @@ public class Application extends SpringBootServletInitializer
 		}
 		Security.setProperty("jdk.tls.disabledAlgorithms", disabledAlgorithms); //$NON-NLS-1$
 	}
-
-// Code snippet that I found that should start the DB server if it is not already running,
-// but I couldn't figure out where that "Server" class is supposed to come from...
-//	@Bean(initMethod = "start", destroyMethod = "stop")
-//	public Server h2Server() throws SQLException {
-//		return Server.createTcpServer("-tcp", "-ifNotExists" , "-tcpPort", "8082"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-//	}
 }
