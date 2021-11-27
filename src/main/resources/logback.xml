@@ -35,52 +35,24 @@
 	</appender>
 
 	<!-- silence the ArchUnit analysis stuff: -->
-	<logger name="com.tngtech.archunit.core.importer.JavaClassProcessor" level="info" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
+	<logger name="com.tngtech.archunit.core.importer.JavaClassProcessor" level="info" additivity="false" />
 	
 	<!-- silence the LogBacks startup mumbling : -->
-	<logger name="ch.qos.logback" level="warn" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
+	<logger name="ch.qos.logback" level="warn" additivity="false" />
+	<logger name="net.schmizz.sshj.transport.random.JCERandom" level="warn" additivity="false" />
 
-	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
-	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
-
-	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
+	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn" additivity="false" />
+	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn" additivity="false" />
+	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info" additivity="false" />
 	<!-- 
-	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="debug" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
+	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="debug" additivity="false" />
 	 -->
-
-	<logger name="net.mmo.utils.kism.ui.view.results" level="debug" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
-
-	<logger name="net.mmo.utils.kism" level="info" additivity="false">
-		<appender-ref ref="RollingFile" />
-		<appender-ref ref="Console" />
-	</logger>
-	
+	<logger name="net.mmo.utils.kism.ui.view.results" level="debug" additivity="false" />
+	<logger name="net.mmo.utils.kism" level="info" additivity="false" />
 
 	<root level="info">
 		<appender-ref ref="RollingFile" />
 		<appender-ref ref="Console" />
 	</root>
-
 </configuration>
 	
