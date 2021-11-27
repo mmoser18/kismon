@@ -32,35 +32,42 @@ public final class SecurityUtils
 			&& Stream.of(HandlerHelper.RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
 	}
 
-	static Authentication isAuthenticated() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	public static Authentication getAuthentication() {
+		return SecurityContextHolder.getContext().getAuthentication();
+	}
+
+	public static boolean isUserLoggedIn() {
+		Authentication authentication = getAuthentication();
 		boolean userIsLoggedIn =
 			authentication != null
 			&& !(authentication instanceof AnonymousAuthenticationToken)
 			&& authentication.isAuthenticated();
 
-//		if (userIsLoggedIn) {
-//			log.info("user successfully logged-in");
-//		} else {
-//			log.info("user not logged-in.");
-//		}
-		return (userIsLoggedIn ? authentication : null);
-	}
-
-	static boolean isUserLoggedIn() {
-		return isAuthenticated() != null;
+		if (userIsLoggedIn) {
+			log.info("user successfully logged-in");
+		} else {
+			log.info("user not logged-in.");
+		}
+		return userIsLoggedIn;
 	}
 
 	public static boolean isAdminUser() {
-		Authentication authentication = isAuthenticated();
-		if (authentication != null) {
-			Object obj = authentication.getDetails();
-			Collection<String> auths = authentication.getAuthorities().stream()
-				.map((auth) -> auth.getAuthority())
-				.collect(Collectors.toList());
-			log.info("user details: {} / authorities: {}", obj, auths);
-			return auths.contains("ROLE_ADMIN");
+		if (isUserLoggedIn()) {
+			Authentication authentication = getAuthentication();
+			if (authentication != null) {
+				Object obj = authentication.getDetails();
+				Collection<String> auths = authentication.getAuthorities().stream()
+					.map((auth) -> auth.getAuthority())
+					.collect(Collectors.toList());
+				log.info("user details: {} / authorities: {}", obj, auths);
+				return auths.contains("ROLE_ADMIN");
+			}
 		}
 		return false;
+	}
+
+	public static String getUserName() {
+		Authentication authentication = getAuthentication();
+		return (authentication != null ? authentication.getName() : null);
 	}
 }
