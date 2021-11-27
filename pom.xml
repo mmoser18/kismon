@@ -394,11 +394,10 @@
 	<build>
 		<defaultGoal>spring-boot:run</defaultGoal>
 		<plugins>
-			<!-- use this to force usage of javac if the default compiler crashes -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse> 
+					<forceJavacCompilerUse>false</forceJavacCompilerUse> <!-- use "true" to force usage of javac if the default maven compiler crashes -->
 				</configuration>
 			</plugin>
 			<plugin>
