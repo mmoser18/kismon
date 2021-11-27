@@ -33,7 +33,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver
 		try {
 			addClassName(ViewClassName);
 			setSizeFull();
-			setAlignItems(Alignment.START);
+			setAlignItems(Alignment.CENTER);
 			setJustifyContentMode(JustifyContentMode.CENTER);
 			this.login.setAction(CommonConstants.LoginURLSuffix);
 			add(new H1(CommonConstants.ApplicationFullName), this.login);
