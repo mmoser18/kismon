@@ -7,7 +7,7 @@ rem echo JAVACMD=%JAVACMD%
 rem echo ========================
 
 echo run maven build: 
-rem "call" because that's a cmd-file with an exit at the end. Without the call this also terminates *us*
+rem "call" because 'mvn' is actually a cmd-file with an exit at the end. Without the call this also terminates *us* ||-(
 rem call mvn clean package -Pproduction
 call mvn clean install -Pproduction
 
