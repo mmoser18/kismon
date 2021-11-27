@@ -9,9 +9,11 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 
+@PreserveOnRefresh
 public class RootNodeForm extends IntermediateNodeForm
 {
 	private static final long serialVersionUID = 2620944667353199126L;

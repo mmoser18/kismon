@@ -9,13 +9,11 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
 @Slf4j
-@PreserveOnRefresh
 public abstract class TCPConnectionForm <N extends TCPConnection> extends CheckableConnectionForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;

@@ -16,7 +16,6 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,6 @@ import net.mmo.utils.kism.ui.views.nodes.LeafNodeForm;
 @Setter
 @Getter
 @Slf4j
-@PreserveOnRefresh
 public abstract class CheckableConnectionForm <N extends CheckableConnection> extends LeafNodeForm<N>
 {
 	private static final long serialVersionUID = -6625293976700949063L;

@@ -10,12 +10,14 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 
 @Slf4j
+@PreserveOnRefresh
 public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 {
 	private static final long serialVersionUID = 5942900173416889404L;

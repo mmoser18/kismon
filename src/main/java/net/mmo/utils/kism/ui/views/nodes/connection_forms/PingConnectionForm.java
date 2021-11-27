@@ -10,10 +10,12 @@ import static net.mmo.utils.kism.ui.UIConstants.MonospaceTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 
 
+@PreserveOnRefresh
 public class PingConnectionForm extends IPConnectionForm<PingConnection>
 {
 	private static final long serialVersionUID = -5157762871511746801L;

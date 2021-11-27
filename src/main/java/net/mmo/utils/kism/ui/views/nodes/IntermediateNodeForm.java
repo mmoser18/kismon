@@ -11,6 +11,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
@@ -18,6 +19,7 @@ import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
 
 @Slf4j
+@PreserveOnRefresh
 public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 {
 	private static final long serialVersionUID = -6878512672974473759L;
