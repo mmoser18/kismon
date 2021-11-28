@@ -6,10 +6,16 @@ echo Level 1: Going to remove unsupported Vaadin v19+ entries from %fn%:
 pause
 rem let user see what we do:
 @echo on
-sed -i '|"@vaadin/application-theme-plugin": "\./target/plugins/application-theme-plugin"|d' %fn%
-sed -i '|"@vaadin/stats-plugin": "\./target/plugins/stats-plugin",|d' %fn%
-sed -i '|"@vaadin/theme-live-reload-plugin": "\./target/plugins/theme-live-reload-plugin",|d' %fn%
-sed -i '|"@vaadin/theme-loader": "\./target/plugins/theme-loader",|d' %fn%
+type %fn%   | findstr /V /C:"@vaadin/application-theme-plugin" > %fn%_1
+type %fn%_1 | findstr /V /C:"@vaadin/stats-plugin"             > %fn%_2
+type %fn%_2 | findstr /V /C:"@vaadin/theme-live-reload-plugin" > %fn%_3
+type %fn%_3 | findstr /V /C:"@vaadin/theme-loader"             > %fn%_4
+rem remove an already existing backup - just in case (if there were one the cp below won't work)
+rm %fn%~
+rem rename back to original and keep a backup:
+cp -b -f %fn%_4 %fn%
+rem delete the temp. files":
+rm %fn%_?
 @echo off
 echo unsupported Vaadin v19+ entries removed.from %fn%
 
@@ -40,6 +46,7 @@ rm -r -f %USERPROFILE%\.pnpm-debug.log
 rm -r -f %USERPROFILE%\.pnpm-state.json
 rmdir /S /Q %USERPROFILE%\.vaadin
 rmdir /S /Q %USERPROFILE%\.pnpm-store
+rem just in case:
 rmdir /S /Q D:\.pnpm-store
 rmdir /S /Q U:\.pnpm-store
 rem clear (and preload) default repository:

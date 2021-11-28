@@ -28,3 +28,4 @@ webpack.generated.js
 /webpack.config.js
 /debug.log
 /.npmrc
+/package.json~
