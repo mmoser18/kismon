@@ -2,7 +2,7 @@
 
 :package_entries
 set fn=package.json
-echo Level 1: Going to remove unsupported Vaadin v19+ entries from %fn%:
+echo Step 1: Going to remove unsupported Vaadin v19+ entries from %fn%:
 pause
 rem let user see what we do:
 @echo on
@@ -20,12 +20,13 @@ rm %fn%_?
 echo unsupported Vaadin v19+ entries removed.from %fn%
 
 :local_stuff
-echo Level 2: Going to remove project local stuff:
+echo Step 2: Going to remove project local stuff:
 pause
 rem let user see what we do:
 @echo on
-rmdir /S /Q .\node_modules
 rmdir /S /Q .\target
+rmdir /S /Q .\node_modules
+rmdir /S /Q .\frontend\generated
 rm package.json
 rm package-lock.json
 rm pnpm-lock.yaml
@@ -38,7 +39,7 @@ rm webpack.generated.js
 echo project local vaadin-generated stuff removed.
 
 :global_stuff
-echo Level 3: Going to remove global stuff: removing local pnpm stuff and emptying m2repository!
+echo Step 3: Going to remove global stuff: removing pnpm stuff
 pause
 rem let user see what we do:
 @echo on
@@ -46,16 +47,27 @@ rm -r -f %USERPROFILE%\.pnpm-debug.log
 rm -r -f %USERPROFILE%\.pnpm-state.json
 rmdir /S /Q %USERPROFILE%\.vaadin
 rmdir /S /Q %USERPROFILE%\.pnpm-store
-rem just in case:
+rem just in case - I encountered them here, too:
 rmdir /S /Q D:\.pnpm-store
 rmdir /S /Q U:\.pnpm-store
+@echo off
+echo global vaadin-installed stuff removed.
 rem clear (and preload) default repository:
+
+:repo_stuff
+echo Step 4: Going to empty m2repository!
+pause
+rem let user see what we do:
+@echo on
+rem strange enough I again and again got "access denied" on certain .jars ||-(  So we first take ownership...
+takeown /R /F %USERPROFILE%\.m2\m2repository
+rem ... before removing the stuff:
 rm -r -f %USERPROFILE%\.m2\m2repository\*
 cp -R %USERPROFILE%\.m2\repo-preload\* %USERPROFILE%\.m2\m2repository
 rem clear (and preload) 2nd repository:
 rem rm -r -f D:\m2repository\*
 rem cp -R %USERPROFILE%\.m2\repo-preload\* D:\m2repository
 @echo off
-echo global vaadin-installed stuff removed.
+echo m2repository cleaned.
 echo.
 pause
