@@ -54,7 +54,7 @@ public class MainLayout extends AppLayout
 		H1 appTitle = new H1(CommonConstants.ApplicationFullName);
 		appTitle.addClassName(TitleClassName);
 		// add a logout link to the page:
-		Anchor logout = new Anchor(CommonConstants.LogoutURLSuffix, LogoutLinkLabel);
+		Anchor logout = new Anchor(CommonConstants.LogoutURL, LogoutLinkLabel);
 		logout.addClassName(LogoutLinkClassName);
 
 		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, logout);

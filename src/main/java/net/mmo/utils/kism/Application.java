@@ -97,7 +97,6 @@ public class Application extends SpringBootServletInitializer
 			if (nonBlank(trustStorePwd)) System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
 
 			// the keystore we use to connect to other systems:
-			// not yet supported:
 			String keyStoreType =
 				AppProperties.getProperties().getProperty("KeyStoreType", //$NON-NLS-1$
 				                                          "jks"); //$NON-NLS-1$

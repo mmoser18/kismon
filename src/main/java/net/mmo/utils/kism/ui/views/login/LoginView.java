@@ -15,7 +15,7 @@ import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.CommonConstants;
 
-@Route(CommonConstants.LoginURLSuffix) // Note: this also acts as @Component annotation!
+@Route(CommonConstants.LoginURL) // Note: this also acts as @Component annotation!
 @PageTitle("Login | " + CommonConstants.ApplicationFullName)
 @Slf4j
 @SuppressWarnings("nls")
@@ -35,7 +35,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver
 			setSizeFull();
 			setAlignItems(Alignment.CENTER);
 			setJustifyContentMode(JustifyContentMode.CENTER);
-			this.login.setAction(CommonConstants.LoginURLSuffix);
+			this.login.setAction(CommonConstants.LoginURL);
 			add(new H1(CommonConstants.ApplicationFullName), this.login);
 
 			this.login.addLoginListener(ev -> { log.info("user '{}' logging in:", ev.getUsername());});

@@ -17,8 +17,8 @@ public class CommonConstants
 	public static final String ApplicationFullName = "KIS-Monitoring"; //$NON-NLS-1$
 	public static final String ApplicationShortName = "KISM"; //$NON-NLS-1$
 
-	public static final String LoginURLSuffix = "login"; //$NON-NLS-1$
-	public static final String LogoutURLSuffix = "logout"; //$NON-NLS-1$
+	public static final String LoginURL = "login"; //$NON-NLS-1$
+	public static final String LogoutURL = "logout"; //$NON-NLS-1$
 
 	public enum LayoutDirection {
 		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$
