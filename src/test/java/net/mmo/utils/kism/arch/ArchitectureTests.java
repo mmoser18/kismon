@@ -5,6 +5,9 @@
 
 package net.mmo.utils.kism.arch;
 
+import static com.tngtech.archunit.base.DescribedPredicate.not;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
+
 import javax.persistence.Entity;
 
 import com.tngtech.archunit.base.DescribedPredicate;
@@ -17,6 +20,8 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.Architectures;
+import com.tngtech.archunit.library.Architectures.LayeredArchitecture;
+import net.mmo.utils.kism.ui.views.nodes.FormFactory;
 
 @AnalyzeClasses(packages = "net.mmo.utils.kism..", importOptions = { ImportOption.DoNotIncludeTests.class })
 @SuppressWarnings("nls")
@@ -69,24 +74,32 @@ public class ArchitectureTests
 
 	@ArchTest
 	void checkLayers(JavaClasses classes) {
-		ArchRule rule = Architectures.layeredArchitecture()
+		LayeredArchitecture layers = Architectures.layeredArchitecture()
 			.layer("Main").definedBy("net.mmo.utils.kism")
 			.layer("Backend").definedBy("..backend..")
+			.layer("Service").definedBy("..backend.service..")
 			.layer("Entities").definedBy("..entities..")
+			.layer("Security").definedBy("..security")
 			.layer("UI").definedBy("..ui..")
 			.layer("UINodes").definedBy("..ui.views.nodes")
 			.layer("UIHistory").definedBy("..ui.views.history")
 			.layer("UINodesConnections").definedBy("..ui.views.nodes.connection_forms..")
-			.layer("Security").definedBy("..security")
-			.whereLayer("Main").mayNotBeAccessedByAnyLayer()
-			.whereLayer("UI").mayOnlyBeAccessedByLayers("UINodes","UIHistory")
-			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections", "UIHistory")
-			// .whereLayer("UINodesConnections").mayNotBeAccessedByAnyLayer() // violated by FormFactory but that's OK
-			// .whereLayer("Security").mayNotBeAccessedByAnyLayer()
-			.whereLayer("Backend").mayOnlyBeAccessedByLayers("Main", "UI","Entities")
 			;
 
+		ArchRule rule = layers
+			.whereLayer("Main").mayNotBeAccessedByAnyLayer()
+			.whereLayer("UI").mayOnlyBeAccessedByLayers("UINodes", "UIHistory", "Security")
+			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections", "UIHistory", "UI")
+			.whereLayer("Security").mayOnlyBeAccessedByLayers("UINodes")
+			.whereLayer("Backend").mayOnlyBeAccessedByLayers("Main", "UI","Entities")
+			;
 		rule.check(classes);
+
+		JavaClasses allExceptFormFactory = classes.that(not(belongToAnyOf(FormFactory.class)));
+		rule = layers
+			.whereLayer("UINodesConnections").mayOnlyBeAccessedByLayers("UINodes") // violated by FormFactory but that's OK
+			;
+		rule.check(allExceptFormFactory);
 	}
 
 	@ArchTest
