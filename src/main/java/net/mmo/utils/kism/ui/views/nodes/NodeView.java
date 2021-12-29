@@ -15,6 +15,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Objects;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -244,7 +246,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				try (InputStream is = buffer.getInputStream();
 				     BufferedInputStream bis = new BufferedInputStream(is)) {
 					RootNode rootNode = this.nodeService.readStream(is, fileName);
-					reportResult(rootNode, fileName);
+					reportUploadResult(rootNode, fileName);
 				} catch (Throwable t) {
 					reportException(fileName, t);
 				}
@@ -396,6 +398,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 		// dataProvider.
 		return dataProvider;
+	}
+
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
+		setNewNodeRefreshListener();
+	}
+
+	@Override
+	protected void onDetach(DetachEvent detachEvent) {
+		// after detaching we don't need any updates anymore:
+		removeOldNodeRefreshListener();
 	}
 
 	protected PropertyChangeListener createNodeRefreshListener() {
@@ -765,7 +778,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 //		}
 //	}
 //
-	private void reportResult(RootNode rootNode, String sourceName) {
+	private void reportUploadResult(RootNode rootNode, String sourceName) {
 		if (rootNode != null) { // new root was read: update UI
 			updateTree();
 		} else { // reading failed:
@@ -777,20 +790,30 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void updateTree() {
 		log.info("updateTree"); //$NON-NLS-1$
-//		// remove old refreshListener:
-		if (this.nodeRefreshListener == null) this.nodeService.getRootNodes().forEach((node) -> node.removeChangeListener(this.nodeRefreshListener));
+		removeOldNodeRefreshListener();
 		log.trace("data-provider: {}", this.tree.getDataProvider()); //$NON-NLS-1$
 //		if (this.tree.getDataProvider() == null) {
 			this.tree.setDataProvider(createDataProvider());
-			if (this.nodeRefreshListener == null) {
-				this.nodeRefreshListener = createNodeRefreshListener(); // make sure we have one...
-			}
-			// register our refresh-listener with each (new)root-node:
-			this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
+			setNewNodeRefreshListener();
 //		}
 		// expand/collapse tree to previously saved state:
 		getRootNodesAsBareNodes().forEach(node -> adjustCollapseExpanded(node));
 		recalculateColumnWidths(); // make sure the column widths are adjusted
+	}
+
+	protected void setNewNodeRefreshListener() {
+		if (this.nodeRefreshListener == null) {
+			this.nodeRefreshListener = createNodeRefreshListener(); // make sure we have one...
+		}
+		// register our refresh-listener with each (new)root-node:
+		this.nodeService.getRootNodes().forEach((node) -> node.addChangeListener(this.nodeRefreshListener));
+	}
+
+	protected void removeOldNodeRefreshListener() {
+		if (this.nodeRefreshListener != null) {
+			this.nodeService.getRootNodes().forEach((node) -> node.removeChangeListener(this.nodeRefreshListener));
+			this.nodeRefreshListener = null;
+		}
 	}
 
 	private void recalculateColumnWidths() {
