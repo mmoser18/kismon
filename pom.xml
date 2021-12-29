@@ -34,34 +34,30 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- some local settings: -->
-		<user.home>U:/</user.home>
-		<user.repo>${user.home}.m2/m2repository/</user.repo>
-
-		<!-- does it work? -->
-		<vaadin.version>22.0.1</vaadin.version>
-		<!-- doesn't work ->
-		<vaadin.version>21.0.4</vaadin.version>
-		<vaadin.version>19.0.0</vaadin.version>
-		<!- this DID work: ->
-		<vaadin.version>18.0.2</vaadin.version>
-		<!-  -->
+		<user.home>${USERPROFILE}</user.home>
+		<user.repo>${user.home}/.m2/m2repository/</user.repo>
+		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1, but did NOT work with v19.0.x..v21.0.4: -->
+		<vaadin.version>22.0.2</vaadin.version>
+		<!-- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
+		
+		<h2.version>2.0.204</h2.version>
+		<archunit-junit5.version>0.22.0</archunit-junit5.version>
+		<sshj.version>0.32.0</sshj.version>
 	</properties>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>2.6.1</version>
 	</parent>
 
 	<repositories>
 		<!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
-
-		<!-- Main Maven repository -->
 		<repository>
-			<id>central</id>
+			<id>central</id> <!-- Main Maven repository -->
 			<url>https://repo.maven.apache.org/maven2</url>
 			<snapshots>
 				<enabled>false</enabled>
@@ -217,7 +213,7 @@
 		<dependency>
 			<groupId>com.hierynomus</groupId>
 			<artifactId>sshj</artifactId>
-			<version>0.31.0</version>
+			<version>${sshj.version}</version>
 		</dependency>
 
 		<!-- dependency already included in SpringBoot: ->
@@ -263,6 +259,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
+			<version>${h2.version}</version>
 		</dependency>
 		<!--  -->
 		<!-- Using PostGres DB / not tested ->
@@ -351,7 +348,7 @@
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
 			<artifactId>archunit-junit5</artifactId>
-			<version>0.14.1</version>
+			<version>${archunit-junit5.version}</version>
 			<scope>test</scope>
 		</dependency>
 		
@@ -400,7 +397,7 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<forceJavacCompilerUse>false</forceJavacCompilerUse> <!-- use "true" to force usage of javac if the default maven compiler crashes -->
+					<forceJavacCompilerUse>true</forceJavacCompilerUse> <!-- use "true" to force usage of javac if the default maven compiler crashes -->
 				</configuration>
 			</plugin>
 			<plugin>
