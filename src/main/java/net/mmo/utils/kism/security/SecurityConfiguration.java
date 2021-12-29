@@ -28,6 +28,9 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @Configuration
 @Slf4j
 @SuppressWarnings("nls")
+// Vaadin <v19.0.x:
+//public class SecurityConfiguration extends WebSecurityConfigurerAdapter
+// Vaadin >= v19.0.x:
 public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 {
 	private static final String LOGIN_URL = '/' + CommonConstants.LoginURL;
@@ -35,6 +38,9 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 	private static final String LOGIN_FAILURE_URL = LOGIN_URL + "?error";
 	private static final String LOGOUT_SUCCESS_URL = '/' + CommonConstants.LogoutURL;
 
+	// Vaadin <v19.0.x:
+//	CustomRequestCache requestCache;
+	// Vaadin >= v19.0.x:
 	@Autowired
 	VaadinDefaultRequestCache requestCache;
 
@@ -43,6 +49,9 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 		log.info("configure: http={}", http);
 		http.csrf().disable()  // Disables cross-site httpRequest forgery (CSRF) protection, as Vaadin already has CSRF protection
 			.requestCache()
+			// Vaadin <v19.0.x:
+			// .requestCache(new CustomRequestCache())
+			// Vaadin >= v19.0.x:
 			.requestCache(this.requestCache) // Uses VaadinDefaultRequestCache to track unauthorized requests so that users are redirected appropriately after login.
 			.and().authorizeRequests() // Turns on authorization
 			.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll() // Allows all internal traffic from the Vaadin framework.
@@ -53,7 +62,7 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 			.and().logout()
 			// commented since these are the defaults:
 			//.invalidateHttpSession(true)
-			// .logoutUrl(LOGOUT_URL) // Configures the logout URL, i.e. the page to which we are redirected after logout
+			.logoutUrl(CommonConstants.LogoutURL)
 			.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
 		// logoutRequestMatcher(new AntPathRequestMatcher(logoutUrl, "GET")); // allow to logout with a simple GET-request
 	}

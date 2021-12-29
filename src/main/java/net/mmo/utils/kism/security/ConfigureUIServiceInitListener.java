@@ -23,9 +23,9 @@ public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 		// in Vaadin) and then add a listener before every view transition to the UI:
 		event.getSource().addUIInitListener(uiEvent ->
 			{
-    			final UI ui = uiEvent.getUI();
-    			ui.addBeforeEnterListener(this::authenticateNavigation);
-    		});
+				final UI ui = uiEvent.getUI();
+				ui.addBeforeEnterListener(this::authenticateNavigation);
+			});
 	}
 
 	// the BeforeEnterListener that's called before each transition:
