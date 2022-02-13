@@ -104,7 +104,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
-	                FormFactory<N> formFactory) { // defined as constructor args to force orderClause
+	                FormFactory<N> formFactory) { // defined as constructor args to force order
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
