@@ -169,12 +169,12 @@
 			<artifactId>superfields</artifactId>
 			<version>0.10.0</version>
 		</dependency>
-		<!-- -->		
+		<!-- -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-testbench</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 		<!-- -->
 
 		<!-- SpringBoot security (for login screen) -->
@@ -244,6 +244,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+		<!--
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		-->
 		<!-- Spring's JPA apparently also requires spring-aop (but doesn't seem 
 			to declare it ||-( It got <some error>... Caused by: java.lang.NoClassDefFoundError: 
 			org.springframework.data.jpa.repository.JpaRepository ... but after having 
@@ -259,8 +265,10 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
+			<scope>runtime</scope>
 		</dependency>
+		
+
 		<!--  -->
 		<!-- Using PostGres DB / not tested ->
 		<dependency>
@@ -351,7 +359,6 @@
 			<version>${archunit-junit5.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
 		
 		<!-- using javamelody-core for monitoring ->
 		<dependency>
