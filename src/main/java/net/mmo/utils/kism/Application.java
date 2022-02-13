@@ -35,6 +35,7 @@ public class Application extends SpringBootServletInitializer
 	// Code snippet that I found that should start the DB server if it is not already running
 	// - but unfortunately it does not work as expected but rather causes the application to crash. :-(
 	// CAUTION! The "-tcpAllowOthers" allows others to access the DB from other hosts as well but is a severe security hole and should only be added behind firewalls!
+
 //	@Bean(initMethod = "start", destroyMethod = "stop")
 //	public Server h2Server() throws SQLException {
 //		return Server.createTcpServer(/*"-ifNotExists" ,*/ "-tcp", "-tcpPort", "8082" /*", -tcpAllowOthers",*/); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -55,6 +56,7 @@ public class Application extends SpringBootServletInitializer
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		try {
+			log.info("main() started:"); //$NON-NLS-1$
 			// This should disable the SpringBoot devtools from reloading the thread - but didn't work:
 			//System.setProperty("spring.devtools.restart.enabled", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -94,7 +96,7 @@ public class Application extends SpringBootServletInitializer
 			log.info("Truststore path: '{}' / nodeType: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
 			if (nonBlank(trustStoreType)) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
 			if (nonBlank(trustStorePath)) System.setProperty("javax.net.ssl.trustStore", trustStorePath); //$NON-NLS-1$
-			if (nonBlank(trustStorePwd)) System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
+			if (nonBlank(trustStorePwd))  System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
 
 			// the keystore we use to connect to other systems:
 			String keyStoreType =
@@ -110,7 +112,7 @@ public class Application extends SpringBootServletInitializer
 			log.info("Keystore path: '{}' / nodeType: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
 			if (nonBlank(keyStoreType)) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
 			if (nonBlank(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
-			if (nonBlank(keyStorePwd)) System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
+			if (nonBlank(keyStorePwd))  System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
 			String localeStr = AppProperties.getProperties().getProperty("Locale"); //$NON-NLS-1$
 			if (nonBlank(localeStr)) {
@@ -133,9 +135,10 @@ public class Application extends SpringBootServletInitializer
 			if (e.getClass().getName().contains("SilentExitException")) { // SpringBoot devtools trying to replace the main thread //$NON-NLS-1$
 				log.debug("Spring is restarting the main thread - see spring-boot-devtools"); //$NON-NLS-1$
 			} else {
-				log.error("Application crashed!", e); //$NON-NLS-1$
+				log.error("SpringApplication.run() crashed!", e); //$NON-NLS-1$
 			}
 		}
+		log.info("main() ended."); //$NON-NLS-1$
 	}
 
 	private static boolean nonBlank(String str) {
