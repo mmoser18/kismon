@@ -119,15 +119,8 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
 	@Override
-	protected HashMap<String, Object> fetchData(Integer myRefresh) {
+	protected void fetchData(HashMap <String, Object> res) {
 		log.info("HistoryInfoGraph.fetchData"); //$NON-NLS-1$
-		//  check whether to abort execution:
-		if (this.refreshCounter.get() > myRefresh) {
-			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
-			return null; // if meanwhile another one has been triggered then abort this refresh
-		}
-
-		HashMap <String, Object> res = getMinMaxInfo();
 		ZoneId myZoneId = ZoneId.systemDefault();
 
 		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
@@ -138,9 +131,9 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		List<Series> timingData = new ArrayList<>(nodeNames.size());
 
 		for (String name: nodeNames) { // no stream.forEach here because we want to tbe able to quit preemptively
-			if (this.refreshCounter.get() > myRefresh) {
+			if (refreshIsObsolete(res)) {
 				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
-				return null; // if meanwhile another one has been triggered then abort this refresh
+				return; // if meanwhile another one has been triggered then abort this refresh
 			}
 
 			log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
@@ -149,9 +142,9 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 			                                                                minTimestampValue, maxTimestampValue,
 			                                                                0, 0);
 
-			if (this.refreshCounter.get() > myRefresh) {
+			if (refreshIsObsolete(res)) {
 				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
-				return null; // if meanwhile another one has been triggered then abort this refresh
+				return; // if meanwhile another one has been triggered then abort this refresh
 			}
 
 			DataSeries timingSeries = new DataSeries();
@@ -177,8 +170,6 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		log.info("got timingData for {} series", timingData.size()); //$NON-NLS-1$
 
 		res.put(TimingDataKey, timingData);
-
-		return res;
 	}
 
 	/**
@@ -186,11 +177,11 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	 * @param timingData
 	 */
 	@Override
-	protected void updateView(Integer myRefresh, HashMap <String, Object> res) {
+	protected void updateView(HashMap <String, Object> res) {
 		log.info("HistoryInfoGraph.updateTable"); //$NON-NLS-1$
 		updateMinMaxFields(res);
 
-		if (this.refreshCounter.get() > myRefresh) {
+		if (refreshIsObsolete(res)) {
 			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
 			return; // if meanwhile another one has been triggered then abort this refresh
 		}

@@ -4,12 +4,10 @@ import static net.mmo.utils.kism.ui.UIConstants.CombinedClassName;
 import static net.mmo.utils.kism.ui.UIConstants.HistoryViewField;
 import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -25,12 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.nodes.NodeFactory;
 import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
+import net.mmo.utils.kism.ui.utils.MyDateTimePicker;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.comparator.Comparators;
-import org.vaadin.miki.superfields.dates.SuperDateTimePicker;
 
 /**
  * Defines the application's main view, routed to via the base URL
@@ -66,6 +64,8 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected static final String MaxTimestampValueKey = "maxTimestampValue"; //$NON-NLS-1$
 	protected static final String MinTimestampFoundKey = "minTimestampFound"; //$NON-NLS-1$
 	protected static final String MaxTimestampFoundKey = "maxTimestampFound"; //$NON-NLS-1$
+
+	protected static final String RefreshNrKey = "refreshNumber"; //$NON-NLS-1$
 
 	protected MyDateTimePicker timestampMinimum;
 	protected MyDateTimePicker timestampMaximum;
@@ -200,6 +200,13 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		return toolbar;
 	}
 
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
+		log.info("AbstractHistoryInfoView.onAttach"); //$NON-NLS-1$
+		super.onAttach(attachEvent);
+		refreshData();
+	}
+
 	// setting the values to null will cause them to be refreshed with the minimum/maximum
 	protected void resetMinMaxValues() {
 		this.timestampMinimum.setValue(null);
@@ -211,26 +218,45 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.lastUpdate = LocalDateTime.now();
 		this.refreshCounter.incrementAndGet();
 		UIHandlerSupport.executeLater(this, this.refreshCounter.incrementAndGet(),
-		                              this::fetchData, this::updateView);
+		                              this::fetchDataInternal, this::updateViewInternal);
 	}
 
-	@Override
-	protected void onAttach(AttachEvent attachEvent) {
-		log.info("AbstractHistoryInfoView.onAttach"); //$NON-NLS-1$
-		super.onAttach(attachEvent);
-		refreshData();
+	/** if the highest refreshNr triggered is higher than our's than our refresh is obsolete */
+	protected boolean refreshIsObsolete(HashMap <String, Object> res) {
+		return this.refreshCounter.get() > (int)res.get(RefreshNrKey);
 	}
 
-	/* NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
-	abstract protected T fetchData(Integer refreshNr);
+	HashMap <String, Object> fetchDataInternal(Integer refreshNr) {
+		HashMap <String, Object> res = new HashMap<>();
+		res.put(RefreshNrKey, refreshNr);
 
-	/* NOTE: this is supposed to update the view */
-	abstract protected void updateView(Integer refreshNr, T res);
+		getMinMaxInfo(res);
+		// Since the above getMinMaxInfo()-call may have taken a while we check:
+		if (refreshIsObsolete(res)) {
+			log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return null; // if meanwhile another refresh has been triggered then abort this refresh
+		}
+		fetchData(res);
+		return res;
+	}
+
+	/** NOTE: this is executed by a different thread - it MUST NOT access any GUI elements! */
+	abstract protected void fetchData(HashMap <String, Object> res);
+
+	void updateViewInternal(Integer refreshNr, HashMap <String, Object> res) {
+		if (refreshIsObsolete(res)) { // Since it may be a while since this was triggered we check again:
+			log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return;
+		}
+		updateMinMaxFields(res);
+		updateView(res);
+	}
+
+	/** NOTE: this is executed by a GUI thread - it is supposed to update the view */
+	abstract protected void updateView(HashMap <String, Object> res);
 
 	// this fetches the minimum/maximum timestamp
-	protected HashMap <String, Object> getMinMaxInfo() {
-
-		HashMap <String, Object> res = new HashMap<>();
+	protected void getMinMaxInfo(HashMap <String, Object> res) {
 
 		String nameFilterValue = (this.nameFilterValueStr != null ? this.nameFilterValueStr.replace('*', '%') : null);
 		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
@@ -273,8 +299,6 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		res.put(MaxTimestampValueKey, maxTimestampValue);
 		res.put(MinTimestampFoundKey, minTimestampFound);
 		res.put(MaxTimestampFoundKey, maxTimestampFound);
-
-		return res;
 	}
 
 	protected void updateMinMaxFields(HashMap <String, Object> res) {
@@ -338,16 +362,4 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected LocalDateTime truncatedToMinutes(LocalDateTime timestamp) {
 		return (timestamp != null ? timestamp.minusSeconds(timestamp.getSecond()).minusNanos(timestamp.getNano()) : null);
 	}
-
-	protected class MyDateTimePicker extends SuperDateTimePicker
-	{
-		private static final long serialVersionUID = 7607754515556993999L;
-
-		MyDateTimePicker() {
-			super();
-			setStep(Duration.ofMinutes(1));
-			setLocale(Locale.getDefault());
-		}
-	}
-
 }

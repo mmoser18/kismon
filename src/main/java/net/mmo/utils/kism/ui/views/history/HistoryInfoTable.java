@@ -39,13 +39,10 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
-	protected static final String timingDataKey = "timingData"; //$NON-NLS-1$
-
 	protected static final String MinDurationValueKey = "minDurationValue"; //$NON-NLS-1$
 	protected static final String MaxDurationValueKey = "maxDurationValue"; //$NON-NLS-1$
 	protected static final String MinDurationFoundKey = "minDurationFound"; //$NON-NLS-1$
 	protected static final String MaxDurationFoundKey = "maxDurationFound"; //$NON-NLS-1$
-	protected static final String RefreshNrKey = "refreshNumber"; //$NON-NLS-1$
 	protected NumberField durationMinimum;
 	protected NumberField durationMaximum;
 	protected Grid<HistoryInfo> grid;
@@ -146,9 +143,9 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 	}
 
 	@Override
-	protected HashMap<String, Object> getMinMaxInfo() {
+	protected void getMinMaxInfo(HashMap <String, Object> res) {
 
-		HashMap <String, Object> res = super.getMinMaxInfo();
+		super.getMinMaxInfo(res);
 
 		String nameFilterValue = (String)res.get(NameFilterValueKey);
 		VisibleNodeType nodeTypeFilterValue = (VisibleNodeType)res.get(TypeFilterValueKey);
@@ -177,8 +174,6 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 		res.put(MaxDurationValueKey, maxDurationValue);
 		res.put(MinDurationFoundKey, minDurationFound);
 		res.put(MaxDurationFoundKey, maxDurationFound);
-
-		return res;
 	}
 
 	@Override
@@ -214,37 +209,24 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	/* NOTE: this method is executed by a different thread - it MUST NOT access any GUI elements! */
 	@Override
-	protected HashMap <String, Object> fetchData(Integer myRefreshNr) {
-		log.info("HistoryInfoTable.getMinMaxInfo"); //$NON-NLS-1$
-
-		HashMap <String, Object> res = getMinMaxInfo();
-		res.put(RefreshNrKey, myRefreshNr);
-		// Since the above getMinMaxInfo()-call may have taken a while we check again:
-		if (refreshIsObsolete(res)) {
-			log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
-			return null; // if meanwhile another one has been triggered then abort this refresh
-		}
-		// nothing else to put into the map - we fetch the data in chunks later
-		return res;
+	protected void fetchData(HashMap <String, Object> res) {
+		log.info("HistoryInfoTable.fetchData"); //$NON-NLS-1$
+		// nothing to put into the map - we fetch the data in chunks later
 	}
 
 	/* NOTE: this method IS executed by a GUI thread - it CAN access GUI elements! */
 	@Override
 	@SuppressWarnings("serial")
-	protected void updateView(Integer myRefreshNr, HashMap <String, Object> res) {
+	protected void updateView(HashMap <String, Object> res) {
 		log.info("HistoryInfoTable.updateView"); //$NON-NLS-1$
-		if (refreshIsObsolete(res)) { // Since it may be a while since this was triggered we check again:
-			log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
-			return;
-		}
-		updateMinMaxFields(res);
-
 		// we are doing the DB query inline in the GUI thread - to be seen how well this works:
-		log.debug("creating data provider:"); //$NON-NLS-1$
 		this.grid.setItems(
 			new CallbackDataProvider<HistoryInfo, Void>(
 				new CallbackDataProvider.FetchCallback<HistoryInfo, Void>() {
 					private static final long serialVersionUID = 1L;
+					{
+						log.debug("creating data provider:"); //$NON-NLS-1$
+					}
 					@Override
 					public Stream<HistoryInfo> fetch(Query<HistoryInfo, Void> query) {
 						// Since it may have taken a while until this method was called we check again:
@@ -287,10 +269,5 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 				}
 			)
 		);
-	}
-
-	// if the highest refreshNr triggered is higher than our's than our refresh is obsolete:
-	private boolean refreshIsObsolete(HashMap <String, Object> res) {
-		return this.refreshCounter.get() > (int)res.get(RefreshNrKey);
 	}
 }
