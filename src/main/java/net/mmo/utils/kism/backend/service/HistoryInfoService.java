@@ -46,10 +46,11 @@ public class HistoryInfoService
 		return this.historyInfoRepository.findAll();
 	}
 
-	public List<HistoryInfo> findByFilter(String nameFilter, VisibleNodeType typeFilter,
-	                                      Double minDurationValue, Double maxDurationValue,
-	                                      LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound,
-	                                      int offset, int limit) {
+	public List<HistoryInfo> findByFilter(String nameFilter, VisibleNodeType typeFilter
+	                                     ,Double minDurationValue, Double maxDurationValue
+	                                     ,LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound
+	                                     ,int offset, int limit
+	                                     ) {
 		if ((nameFilter == null || nameFilter.isEmpty()) &&
 			typeFilter == null &&
 			minDurationValue == null && maxDurationValue == null &&
@@ -57,40 +58,42 @@ public class HistoryInfoService
 			offset <= 0 && limit <= 0) {
 			return this.historyInfoRepository.findAll();
 		} else {
-			return this.historyInfoRepository.findByFilter(nameFilter, typeFilter
-			                                              , minDurationValue, maxDurationValue
-			                                              , timestampLowerBound, timestampUpperBound
-			                                              , OffsetLimitPageable.of(offset, limit)
+			return this.historyInfoRepository.findByFilter(nameFilterSanitized(nameFilter), typeFilter
+			                                              ,minDurationValue, maxDurationValue
+			                                              ,timestampLowerBound, timestampUpperBound
+			                                              ,(limit > 0 ? OffsetLimitPageable.of(offset, limit) : null)
 			                                              );
 		}
 	}
 
 	public Double findLowestDurationWithFilter(String nameFilter, VisibleNodeType typeFilter) {
-		return this.historyInfoRepository.findLowestDurationWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findLowestDurationWithFilter(nameFilterSanitized(nameFilter), typeFilter);
 	}
 
 	public Double findHighestDurationWithFilter(String nameFilter, VisibleNodeType typeFilter) {
-		return this.historyInfoRepository.findHighestDurationWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findHighestDurationWithFilter(nameFilterSanitized(nameFilter), typeFilter);
 	}
 
 	public LocalDateTime findLowestTimestampWithFilter(String nameFilter, VisibleNodeType typeFilter) {
-		return this.historyInfoRepository.findLowestTimestampWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findLowestTimestampWithFilter(nameFilterSanitized(nameFilter), typeFilter);
 	}
 
 	public LocalDateTime findHighestTimestampWithFilter(String nameFilter, VisibleNodeType typeFilter) {
-		return this.historyInfoRepository.findHighestTimestampWithFilter(nameFilter, typeFilter);
+		return this.historyInfoRepository.findHighestTimestampWithFilter(nameFilterSanitized(nameFilter), typeFilter);
 	}
 
 	public Long count() {
 		return this.historyInfoRepository.count();
 	}
 
-	public Long countWithFilter(String nameFilter, VisibleNodeType typeFilter,
-	                            Double minDurationValue, Double maxDurationValue,
-	                            LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
-		return this.historyInfoRepository.countWithFilter(nameFilter, typeFilter,
-		                                                  minDurationValue, maxDurationValue,
-		                                                  timestampLowerBound, timestampUpperBound);
+	public Long countWithFilter(String nameFilter, VisibleNodeType typeFilter
+	                           ,Double minDurationValue, Double maxDurationValue
+	                           ,LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound
+	                           ) {
+		return this.historyInfoRepository.countWithFilter(nameFilterSanitized(nameFilter), typeFilter
+		                                                 ,minDurationValue, maxDurationValue
+		                                                 ,timestampLowerBound, timestampUpperBound
+		                                                 );
 	}
 
 	public void delete(HistoryInfo historyInfo) {
@@ -108,12 +111,13 @@ public class HistoryInfoService
 		return saved;
 	}
 
-	public List<String> getNodeNames() {
+	public List<String> getAllNodeNames() {
 		return this.historyInfoRepository.getNodeNames();
 	}
 
-	public List<String> getNodeNames(String nameFilter, VisibleNodeType typeFilter) {
-		return this.historyInfoRepository.getNodeNames(nameFilter, typeFilter);
+	public List<String> getNodeNamesFiltered(String nameFilter, VisibleNodeType typeFilter) {
+		return this.historyInfoRepository.getNodeNames(nameFilterSanitized(nameFilter),
+		                                               typeFilter);
 	}
 
 
@@ -122,13 +126,17 @@ public class HistoryInfoService
 	                                       LocalDateTime upperBoundTimeStamp,
 	                                       int offset, int limit) {
 		return this.historyInfoRepository.findByFilter(name, null
-		                                              , null, null
-		                                              , lowerBoundTimeStamp, upperBoundTimeStamp
-		                                              , OffsetLimitPageable.of(offset, limit)
+		                                              ,null, null
+		                                              ,lowerBoundTimeStamp, upperBoundTimeStamp
+		                                              ,OffsetLimitPageable.of(offset, limit)
 		                                              );
 	}
 	public List<HistoryInfo> getTimingDataForNode(String name,int offset, int limit) {
 		return getTimingDataForNode(name, null, null, offset, limit);
+	}
+
+	private static String nameFilterSanitized(String nameFilterValue) {
+		return (nameFilterValue == null || nameFilterValue.isBlank() ? null : nameFilterValue.replaceAll("\\*", "%")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 //	public Map<String, Integer> getStats() {

@@ -130,17 +130,18 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		List<String> nodeNames = getFilteredNodeNames();
 		List<Series> timingData = new ArrayList<>(nodeNames.size());
 
-		for (String name: nodeNames) { // no stream.forEach here because we want to tbe able to quit preemptively
+		for (String name: nodeNames) { // no stream.forEach here because we want to be able to quit preemptively
 			if (refreshIsObsolete(res)) {
 				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
 				return; // if meanwhile another one has been triggered then abort this refresh
 			}
 
 			log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
-			List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue,
-			                                                                null, null, // min-/max-duration doesn't make sense for graphs
-			                                                                minTimestampValue, maxTimestampValue,
-			                                                                0, 0);
+			List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue
+			                                                               ,null, null // min-/max-duration doesn't make sense for graphs
+			                                                               ,minTimestampValue, maxTimestampValue
+			                                                               ,0, 0
+			                                                               );
 
 			if (refreshIsObsolete(res)) {
 				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
@@ -190,7 +191,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		@SuppressWarnings("unchecked")
 		List<Series> timingData = (List<Series>)res.get("timingData"); //$NON-NLS-1$
 
-		log.info("setting chart data:"); //$NON-NLS-1$
+		log.info("setting chart data for {} series", timingData.size()); //$NON-NLS-1$
 		Configuration conf = this.chart.getConfiguration();
 		conf.setSeries(timingData);
 		this.chart.drawChart(true);

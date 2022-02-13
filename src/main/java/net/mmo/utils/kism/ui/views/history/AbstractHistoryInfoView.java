@@ -73,7 +73,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	protected ComboBox<String> nameFilter = new ComboBox<>();
 	protected String nameFilterValueStr;
 	protected Select<String> typeFilter = new Select<>();
-	protected Button refreshData;
+	protected Button refreshAll;
 	LocalDateTime lastUpdate;
 
 	AtomicInteger refreshCounter = new AtomicInteger();
@@ -115,6 +115,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.nameFilter.setLabel(Messages.getString("HistoryView.TextField.NameFilter.Label")); //$NON-NLS-1$
 		this.nameFilter.setPlaceholder(Messages.getString("HistoryView.TextField.NameFilter.PlaceHolder")); //$NON-NLS-1$
 		this.nameFilter.setClearButtonVisible(true);
+		this.nameFilter.setItems(getAllNodeNames());
 		this.nameFilter.setAllowCustomValue(true);
 		this.nameFilter.addCustomValueSetListener((e) -> {
 			if (e.isFromClient()) {
@@ -128,15 +129,15 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 				resetMinMaxValues();
 				refreshData();
 			}
+			this.nameFilter.setItems(getFilteredNodeNames());
 		});
 //		this.nameFilter.addValueChangeListener(e -> {
 //			log.info("nameFilter changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
 //			if (e.isFromClient()) {
 //				resetMinMaxValues();
-//				refreshData();
+//				refreshAll();
 //			}
 //		});
-		UIHandlerSupport.executeLater(this, this::getAllNodeNames, (res) -> this.nameFilter.setItems(res));
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
 		this.typeFilter.setLabel(Messages.getString("HistoryView.TextField.TypeFilter.Label")); //$NON-NLS-1$
@@ -157,9 +158,11 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		filters.addClassName(FiltersClassName);
 		filters.setWidth("13em"); // seems impossible to assign that via styling ||-(  //$NON-NLS-1$
 
-		this.refreshData = new Button(Messages.getString("HistoryView.Button.RefreshData.Label")); //$NON-NLS-1$
-		this.refreshData.addClickListener(e -> {
-			log.info("refreshData clicked"); //$NON-NLS-1$
+		this.refreshAll = new Button(Messages.getString("HistoryView.Button.RefreshData.Label")); //$NON-NLS-1$
+		this.refreshAll.addClickListener(e -> {
+			log.info("refreshAll clicked"); //$NON-NLS-1$
+			this.nameFilter.setItems(getFilteredNodeNames()); // this may have changed as well...
+			resetMinMaxValues();
 			refreshData();
 		});
 
@@ -194,9 +197,11 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		timestampExtremes.setWidth("25em");  // seems impossible to assign that via styling ||-(  //$NON-NLS-1$
 
 
-		HorizontalLayout toolbar = new HorizontalLayout(filters, timestampExtremes, this.refreshData);
+		HorizontalLayout toolbar = new HorizontalLayout(filters, timestampExtremes, this.refreshAll);
 		toolbar.addClassName(ToolbarClassName);
 		toolbar.setWidthFull();
+
+		UIHandlerSupport.executeLater(this, this::getAllNodeNames, (res) -> this.nameFilter.setItems(res));
 		return toolbar;
 	}
 
@@ -214,7 +219,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	}
 
 	protected void refreshData() {
-		log.info("AbstractHistoryInfoView.refreshData"); //$NON-NLS-1$
+		log.info("AbstractHistoryInfoView.refreshAll"); //$NON-NLS-1$
 		this.lastUpdate = LocalDateTime.now();
 		this.refreshCounter.incrementAndGet();
 		UIHandlerSupport.executeLater(this, this.refreshCounter.incrementAndGet(),
@@ -258,7 +263,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	// this fetches the minimum/maximum timestamp
 	protected void getMinMaxInfo(HashMap <String, Object> res) {
 
-		String nameFilterValue = (this.nameFilterValueStr != null ? this.nameFilterValueStr.replace('*', '%') : null);
+		String nameFilterValue = this.nameFilterValueStr;
 		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
 		res.put(NameFilterValueKey, nameFilterValue);
@@ -340,20 +345,20 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 	}
 
 	protected List<String> getAllNodeNames() {
-		List<String> allNodeNames = this.historyInfoService.getNodeNames(null, null);
-		allNodeNames.sort(Comparators.comparable());
+		List<String> allNodeNames = this.historyInfoService.getAllNodeNames();
+		// allNodeNames.sort(Comparators.comparable());
 		log.info("nr of allNodeNames: {}", allNodeNames.size()); //$NON-NLS-1$
 		return allNodeNames;
 	}
 
 	protected List<String> getFilteredNodeNames() {
-		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
 		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
-		return getFilteredNodeNames(nameFilterValue, nodeTypeFilterValue);
+		return getFilteredNodeNames(this.nameFilterValueStr, nodeTypeFilterValue);
 	}
 
 	protected List<String> getFilteredNodeNames(String nameFilterValue, VisibleNodeType nodeTypeFilterValue) {
-		List<String> filteredNodeNames = this.historyInfoService.getNodeNames(nameFilterValue, nodeTypeFilterValue);
+		log.info("filtering nodes by name '{}' and type '{}'", nameFilterValue, nodeTypeFilterValue); //$NON-NLS-1$
+		List<String> filteredNodeNames = this.historyInfoService.getNodeNamesFiltered(nameFilterValue, nodeTypeFilterValue);
 		filteredNodeNames.sort(Comparators.comparable());
 		log.info("nr of filteredNodeNames({},{}): {}", nameFilterValue, nodeTypeFilterValue, filteredNodeNames.size()); //$NON-NLS-1$
 		return filteredNodeNames;
