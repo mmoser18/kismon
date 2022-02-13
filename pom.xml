@@ -163,19 +163,11 @@
 			<groupId>javax.websocket</groupId>
 			<artifactId>javax.websocket-api</artifactId>
 		</dependency>
-		<!-- contains a replacement for the DateTimePicker / works only with v18.0.x -->
-		<dependency>
-			<groupId>org.vaadin.miki</groupId>
-			<artifactId>superfields</artifactId>
-			<version>0.10.0</version>
-		</dependency>
-		<!-- -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-testbench</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- -->
 
 		<!-- SpringBoot security (for login screen) -->
 		<dependency>
