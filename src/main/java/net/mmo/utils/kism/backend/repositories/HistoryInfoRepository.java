@@ -38,8 +38,11 @@ public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>,
 		  " and (:lowerBoundTimeStamp is null or r.timestamp >= :lowerBoundTimeStamp)" //$NON-NLS-1$
 		+ " and (:upperBoundTimeStamp is null or r.timestamp <= :upperBoundTimeStamp)" //$NON-NLS-1$
 		;
-	final static String orderClause =
-		  " order by id asc"; //$NON-NLS-1$
+	final static String orderByIdClause =
+					  " order by id asc"; //$NON-NLS-1$
+
+	final static String orderByNameClause =
+					  " order by name asc"; //$NON-NLS-1$
 
 //	final static String limitAndOffset =
 //		  " offset :offset limit :limit" //$NON-NLS-1$
@@ -54,7 +57,7 @@ public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>,
 	/** unfortunately JPA doesn't support offset and limit, instead one needs to provide a {@link Pageable}
 	 * - see {@link OffsetLimitPageable} for an implementation that translates between the two concepts
 	 */
-	@Query(value="select r from HistoryInfo r " + fullWhereClause + orderClause)
+	@Query(value="select r from HistoryInfo r " + fullWhereClause + orderByIdClause)
 	List<HistoryInfo> findByFilter(@Param("nameFilter") String nameFilter
 	                              ,@Param("typeFilter") VisibleNodeType typeFilter
 	                              ,@Param("lowerBoundDuration") Double minDurationValue
@@ -98,10 +101,10 @@ public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>,
 	                                            ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                            );
 
-	@Query("select distinct r.name from HistoryInfo r")
+	@Query("select distinct r.name from HistoryInfo r" + orderByNameClause)
 	List<String> getNodeNames();
 
-	@Query("select distinct r.name from HistoryInfo r" + basicWhereClause)
+	@Query("select distinct r.name from HistoryInfo r" + basicWhereClause + orderByNameClause)
 	List<String> getNodeNames(@Param("nameFilter") String nameFilter
 	                         ,@Param("typeFilter") VisibleNodeType typeFilter
 	                         );
