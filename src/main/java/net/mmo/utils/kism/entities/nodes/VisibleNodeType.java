@@ -11,7 +11,7 @@ import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 
-public enum NodeType {
+public enum VisibleNodeType {
 	RootNode(RootNode.class),
 	IntermediateNode(IntermediateNode.class),
 	RESTConnection(RESTConnection.class),
@@ -23,7 +23,7 @@ public enum NodeType {
 
 	Class<? extends Node> nodeClass;
 
-	NodeType(Class<? extends Node> nodeClass) {
+	VisibleNodeType(Class<? extends Node> nodeClass) {
 		this.nodeClass = nodeClass;
 	}
 

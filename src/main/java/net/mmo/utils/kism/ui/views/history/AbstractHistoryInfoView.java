@@ -24,7 +24,7 @@ import com.vaadin.flow.component.select.Select;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.nodes.NodeFactory;
-import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
@@ -233,7 +233,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		HashMap <String, Object> res = new HashMap<>();
 
 		String nameFilterValue = (this.nameFilterValueStr != null ? this.nameFilterValueStr.replace('*', '%') : null);
-		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
+		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 
 		res.put(NameFilterValueKey, nameFilterValue);
 		res.put(TypeFilterValueKey, nodeTypeFilterValue);
@@ -324,11 +324,11 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 
 	protected List<String> getFilteredNodeNames() {
 		String nameFilterValue = (this.nameFilter.getValue() != null ? this.nameFilter.getValue().replace('*', '%') : null);
-		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
+		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 		return getFilteredNodeNames(nameFilterValue, nodeTypeFilterValue);
 	}
 
-	protected List<String> getFilteredNodeNames(String nameFilterValue, NodeType nodeTypeFilterValue) {
+	protected List<String> getFilteredNodeNames(String nameFilterValue, VisibleNodeType nodeTypeFilterValue) {
 		List<String> filteredNodeNames = this.historyInfoService.getNodeNames(nameFilterValue, nodeTypeFilterValue);
 		filteredNodeNames.sort(Comparators.comparable());
 		log.info("nr of filteredNodeNames({},{}): {}", nameFilterValue, nodeTypeFilterValue, filteredNodeNames.size()); //$NON-NLS-1$

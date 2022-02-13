@@ -17,7 +17,7 @@ public class NodeFactory <N extends Node>
 {
 	private static int nodeCtr = 0;
 
-	public N createNode(NodeType type)
+	public N createNode(VisibleNodeType type)
 		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException {
 		Class<? extends Node> nodeClass = type.getNodeClass();
@@ -30,9 +30,9 @@ public class NodeFactory <N extends Node>
 		return newNode;
 	}
 
-	public static List<NodeType> getLeafNodeTypes() {
-		ArrayList<NodeType> res = new ArrayList<>();
-		Arrays.asList(NodeType.values()).forEach(value -> { if (LeafNode.class.isAssignableFrom(value.getNodeClass())) res.add(value); });
+	public static List<VisibleNodeType> getLeafNodeTypes() {
+		ArrayList<VisibleNodeType> res = new ArrayList<>();
+		Arrays.asList(VisibleNodeType.values()).forEach(value -> { if (LeafNode.class.isAssignableFrom(value.getNodeClass())) res.add(value); });
 		return res;
 	}
 }

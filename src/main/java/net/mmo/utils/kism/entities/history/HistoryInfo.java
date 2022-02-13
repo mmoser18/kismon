@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.AbstractEntity;
-import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 
 @Entity
 @Setter
@@ -27,7 +27,7 @@ public class HistoryInfo extends AbstractEntity implements Serializable
 	protected String name;
 
 	/** simple name of node class that generated this result */
-	protected NodeType nodeType;
+	protected VisibleNodeType nodeType;
 
 	/** duration of request (in milli-seconds) */
 	protected double duration;
@@ -52,7 +52,7 @@ public class HistoryInfo extends AbstractEntity implements Serializable
 
 	public HistoryInfo(String name, String nodeType, double duration, LocalDateTime timestamp, String result) {
 		setName(name);
-		setNodeType(NodeType.valueOf(nodeType));
+		setNodeType(VisibleNodeType.valueOf(nodeType));
 		setDuration(duration);
 		setTimestamp(timestamp);
 		setResult(result);

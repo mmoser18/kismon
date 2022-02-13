@@ -34,7 +34,7 @@ import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
-import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
@@ -130,7 +130,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		HashMap <String, Object> res = getMinMaxInfo();
 		ZoneId myZoneId = ZoneId.systemDefault();
 
-		NodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
+		VisibleNodeType nodeTypeFilterValue = NodeTypeLabelProvider.getNodeType(this.typeFilter.getValue());
 		LocalDateTime minTimestampValue = (LocalDateTime)res.get(MinTimestampValueKey);
 		LocalDateTime maxTimestampValue = (LocalDateTime)res.get(MaxTimestampValueKey);
 
@@ -146,7 +146,8 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 			log.debug("fetching and converting data for node '{}'", name); //$NON-NLS-1$
 			List<HistoryInfo> values = this.historyInfoService.findByFilter(name, nodeTypeFilterValue,
 			                                                                null, null, // min-/max-duration doesn't make sense for graphs
-			                                                                minTimestampValue, maxTimestampValue);
+			                                                                minTimestampValue, maxTimestampValue,
+			                                                                0, 0);
 
 			if (this.refreshCounter.get() > myRefresh) {
 				log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$

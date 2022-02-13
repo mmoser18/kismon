@@ -44,8 +44,8 @@ import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.NodeFactory;
-import net.mmo.utils.kism.entities.nodes.NodeType;
 import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.security.SecurityUtils;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
@@ -104,7 +104,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
-	                FormFactory<N> formFactory) { // defined as constructor args to force order
+	                FormFactory<N> formFactory) { // defined as constructor args to force orderClause
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
@@ -151,9 +151,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private HorizontalLayout createToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 
-		ComboBox<NodeType> nodeTypeSelector = new ComboBox<>(Messages.getString("NodeView.ComboBox.NodeTypes.Label")); //$NON-NLS-1$
-		nodeTypeSelector.setItems(NodeType.values());
-		nodeTypeSelector.setValue(NodeType.IntermediateNode);
+		ComboBox<VisibleNodeType> nodeTypeSelector = new ComboBox<>(Messages.getString("NodeView.ComboBox.NodeTypes.Label")); //$NON-NLS-1$
+		nodeTypeSelector.setItems(VisibleNodeType.values());
+		nodeTypeSelector.setValue(VisibleNodeType.IntermediateNode);
 		nodeTypeSelector.addValueChangeListener(change ->
 			{
 				log.info("nodeTypeSelector changed to {}", change.getValue()); //$NON-NLS-1$
@@ -162,9 +162,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 		Button addNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
 		addNodeButton.addClickListener(click ->
 			{
-				NodeType type = nodeTypeSelector.getValue();
+				VisibleNodeType type = nodeTypeSelector.getValue();
 				log.info("add node (nodeType={})", type); //$NON-NLS-1$
-				if (type == NodeType.RootNode) {
+				if (type == VisibleNodeType.RootNode) {
 					createNewRootNode();
 				} else {
 					IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode(type, selectedNode)); // in the first step we only create a new node
@@ -534,7 +534,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		});
 	}
 
-	void createNewChildNode(NodeType nodeType, IntermediateNode parentNode) {
+	void createNewChildNode(VisibleNodeType nodeType, IntermediateNode parentNode) {
 		log.info("createNewChildNode(type={}, parentNode='{}')", nodeType, parentNode.getName()); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
 		N newNode;
