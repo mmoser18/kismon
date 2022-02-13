@@ -11,7 +11,8 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.repositories.HistoryInfoRepository;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
-import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
+import net.mmo.utils.kism.utils.OffsetLimitPageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,34 +46,38 @@ public class HistoryInfoService
 		return this.historyInfoRepository.findAll();
 	}
 
-	public List<HistoryInfo> findByFilter(String nameFilter, NodeType typeFilter,
+	public List<HistoryInfo> findByFilter(String nameFilter, VisibleNodeType typeFilter,
 	                                      Double minDurationValue, Double maxDurationValue,
-	                                      LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
+	                                      LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound,
+	                                      int offset, int limit) {
 		if ((nameFilter == null || nameFilter.isEmpty()) &&
 			typeFilter == null &&
 			minDurationValue == null && maxDurationValue == null &&
-			timestampLowerBound == null && timestampUpperBound == null) {
+			timestampLowerBound == null && timestampUpperBound == null &&
+			offset <= 0 && limit <= 0) {
 			return this.historyInfoRepository.findAll();
 		} else {
-			return this.historyInfoRepository.findByFilter(nameFilter, typeFilter,
-			                                               minDurationValue, maxDurationValue,
-			                                               timestampLowerBound, timestampUpperBound);
+			return this.historyInfoRepository.findByFilter(nameFilter, typeFilter
+			                                              , minDurationValue, maxDurationValue
+			                                              , timestampLowerBound, timestampUpperBound
+			                                              , OffsetLimitPageable.of(offset, limit)
+			                                              );
 		}
 	}
 
-	public Double findLowestDurationWithFilter(String nameFilter, NodeType typeFilter) {
+	public Double findLowestDurationWithFilter(String nameFilter, VisibleNodeType typeFilter) {
 		return this.historyInfoRepository.findLowestDurationWithFilter(nameFilter, typeFilter);
 	}
 
-	public Double findHighestDurationWithFilter(String nameFilter, NodeType typeFilter) {
+	public Double findHighestDurationWithFilter(String nameFilter, VisibleNodeType typeFilter) {
 		return this.historyInfoRepository.findHighestDurationWithFilter(nameFilter, typeFilter);
 	}
 
-	public LocalDateTime findLowestTimestampWithFilter(String nameFilter, NodeType typeFilter) {
+	public LocalDateTime findLowestTimestampWithFilter(String nameFilter, VisibleNodeType typeFilter) {
 		return this.historyInfoRepository.findLowestTimestampWithFilter(nameFilter, typeFilter);
 	}
 
-	public LocalDateTime findHighestTimestampWithFilter(String nameFilter, NodeType typeFilter) {
+	public LocalDateTime findHighestTimestampWithFilter(String nameFilter, VisibleNodeType typeFilter) {
 		return this.historyInfoRepository.findHighestTimestampWithFilter(nameFilter, typeFilter);
 	}
 
@@ -80,10 +85,13 @@ public class HistoryInfoService
 		return this.historyInfoRepository.count();
 	}
 
-	public Long countWithFilter(String nameFilter, NodeType typeFilter) {
-		return this.historyInfoRepository.countWithFilter(nameFilter, typeFilter);
+	public Long countWithFilter(String nameFilter, VisibleNodeType typeFilter,
+	                            Double minDurationValue, Double maxDurationValue,
+	                            LocalDateTime timestampLowerBound, LocalDateTime timestampUpperBound) {
+		return this.historyInfoRepository.countWithFilter(nameFilter, typeFilter,
+		                                                  minDurationValue, maxDurationValue,
+		                                                  timestampLowerBound, timestampUpperBound);
 	}
-
 
 	public void delete(HistoryInfo historyInfo) {
 		this.historyInfoRepository.delete(historyInfo);
@@ -104,20 +112,23 @@ public class HistoryInfoService
 		return this.historyInfoRepository.getNodeNames();
 	}
 
-	public List<String> getNodeNames(String nameFilter, NodeType typeFilter) {
+	public List<String> getNodeNames(String nameFilter, VisibleNodeType typeFilter) {
 		return this.historyInfoRepository.getNodeNames(nameFilter, typeFilter);
 	}
 
 
-	List<HistoryInfo> getTimingDataForNode(String name,
+	public List<HistoryInfo> getTimingDataForNode(String name,
 	                                       LocalDateTime lowerBoundTimeStamp,
-	                                       LocalDateTime upperBoundTimeStamp) {
-		return  this.historyInfoRepository.findByFilter(name, null,
-		                                                null, null,
-		                                                lowerBoundTimeStamp, upperBoundTimeStamp);
+	                                       LocalDateTime upperBoundTimeStamp,
+	                                       int offset, int limit) {
+		return this.historyInfoRepository.findByFilter(name, null
+		                                              , null, null
+		                                              , lowerBoundTimeStamp, upperBoundTimeStamp
+		                                              , OffsetLimitPageable.of(offset, limit)
+		                                              );
 	}
-	List<HistoryInfo> getTimingDataForNode(String name) {
-		return getTimingDataForNode(name, null, null);
+	public List<HistoryInfo> getTimingDataForNode(String name,int offset, int limit) {
+		return getTimingDataForNode(name, null, null, offset, limit);
 	}
 
 //	public Map<String, Integer> getStats() {

@@ -9,13 +9,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import net.mmo.utils.kism.entities.history.HistoryInfo;
-import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
+import net.mmo.utils.kism.utils.OffsetLimitPageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Repository class to access the database. Spring Boot makes this a painless process:
+ * Repository class to access the database. Spring Boot makes this a painless process (well...):
  * All you need to do is define an interface that describes the entity nodeType and primary key
  * nodeType, and Spring Data will configure one for you.
  */
@@ -29,76 +31,71 @@ public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>,
 		;
 
 	final static String durationWhereClause =
-					  " and (:lowerBoundDuration is null or r.duration >= :lowerBoundDuration)" //$NON-NLS-1$
-					+ " and (:upperBoundDuration is null or r.duration <= :upperBoundDuration)" //$NON-NLS-1$
-					;
+		  " and (:lowerBoundDuration is null or r.duration >= :lowerBoundDuration)" //$NON-NLS-1$
+		+ " and (:upperBoundDuration is null or r.duration <= :upperBoundDuration)" //$NON-NLS-1$
+		;
 	final static String timestampWhereClause =
-					  " and (:lowerBoundTimeStamp is null or r.timestamp >= :lowerBoundTimeStamp)" //$NON-NLS-1$
-					+ " and (:upperBoundTimeStamp is null or r.timestamp <= :upperBoundTimeStamp)" //$NON-NLS-1$
-					;
+		  " and (:lowerBoundTimeStamp is null or r.timestamp >= :lowerBoundTimeStamp)" //$NON-NLS-1$
+		+ " and (:upperBoundTimeStamp is null or r.timestamp <= :upperBoundTimeStamp)" //$NON-NLS-1$
+		;
+	final static String orderClause =
+		  " order by id asc"; //$NON-NLS-1$
 
 //	final static String limitAndOffset =
-//					"limit :limit offset :offset " //$NON-NLS-1$
-//					;
+//		  " offset :offset limit :limit" //$NON-NLS-1$
+//		;
 
 	final static String fullWhereClause =
-					  basicWhereClause
-					+ durationWhereClause
-					+ timestampWhereClause
-					;
+		  basicWhereClause
+		+ durationWhereClause
+		+ timestampWhereClause
+		;
 
-	@Query("select r from HistoryInfo r " + fullWhereClause)
+	/** unfortunately JPA doesn't support offset and limit, instead one needs to provide a {@link Pageable}
+	 * - see {@link OffsetLimitPageable} for an implementation that translates between the two concepts
+	 */
+	@Query(value="select r from HistoryInfo r " + fullWhereClause + orderClause)
 	List<HistoryInfo> findByFilter(@Param("nameFilter") String nameFilter
-	                              ,@Param("typeFilter") NodeType typeFilter
+	                              ,@Param("typeFilter") VisibleNodeType typeFilter
 	                              ,@Param("lowerBoundDuration") Double minDurationValue
 	                              ,@Param("upperBoundDuration") Double maxDurationValue
 	                              ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                              ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
+	                              ,Pageable pageable
 	                              );
-
-//	@Query("select r from HistoryInfo r " + fullWhereClause + limitAndOffset)
-//	List<HistoryInfo> findByFilter(@Param("nameFilter") String nameFilter
-//	                              ,@Param("typeFilter") NodeType typeFilter
-//	                              ,@Param("lowerBoundDuration") Double minDurationValue
-//	                              ,@Param("upperBoundDuration") Double maxDurationValue
-//	                              ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
-//	                              ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
-//	                              ,@Param("offset") int offset
-//	                              ,@Param("limit") int limit
-//	                              );
 
 	@Query("select min(r.duration) from HistoryInfo r" + basicWhereClause)
 	Double findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
-	                                   ,@Param("typeFilter") NodeType typeFilter
+	                                   ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                   );
 
 	@Query("select max(r.duration) from HistoryInfo r" + basicWhereClause)
 	Double findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
-	                                    ,@Param("typeFilter") NodeType typeFilter
+	                                    ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                    );
 
 	@Query("select min(r.duration) from HistoryInfo r" + basicWhereClause + timestampWhereClause)
 	Double findLowestDurationWithFilter(@Param("nameFilter") String nameFilter
-	                                   ,@Param("typeFilter") NodeType typeFilter
+	                                   ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                   ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                                   ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                                   );
 
 	@Query("select max(r.duration) from HistoryInfo r" + basicWhereClause + timestampWhereClause)
 	Double findHighestDurationWithFilter(@Param("nameFilter") String nameFilter
-	                                    ,@Param("typeFilter") NodeType typeFilter
+	                                    ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                    ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                                    ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                                    );
 
 	@Query("select min(r.timestamp) from HistoryInfo r" + basicWhereClause)
 	LocalDateTime findLowestTimestampWithFilter(@Param("nameFilter") String nameFilter
-	                                           ,@Param("typeFilter") NodeType typeFilter
+	                                           ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                           );
 
 	@Query("select max(r.timestamp) from HistoryInfo r" + basicWhereClause)
 	LocalDateTime findHighestTimestampWithFilter(@Param("nameFilter") String nameFilter
-	                                            ,@Param("typeFilter") NodeType typeFilter
+	                                            ,@Param("typeFilter") VisibleNodeType typeFilter
 	                                            );
 
 	@Query("select distinct r.name from HistoryInfo r")
@@ -106,17 +103,19 @@ public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>,
 
 	@Query("select distinct r.name from HistoryInfo r" + basicWhereClause)
 	List<String> getNodeNames(@Param("nameFilter") String nameFilter
-	                         ,@Param("typeFilter") NodeType typeFilter
+	                         ,@Param("typeFilter") VisibleNodeType typeFilter
 	                         );
 
 	@Query("select count(r.id) from HistoryInfo r" + basicWhereClause)
 	Long countWithFilter(@Param("nameFilter") String nameFilter
-                        ,@Param("typeFilter") NodeType typeFilter
+                        ,@Param("typeFilter") VisibleNodeType typeFilter
                         );
 
-	@Query("select count(r.id) from HistoryInfo r" + basicWhereClause + timestampWhereClause)
+	@Query("select count(r.id) from HistoryInfo r" + basicWhereClause + durationWhereClause + timestampWhereClause)
 	Long countWithFilter(@Param("nameFilter") String nameFilter
-	                    ,@Param("typeFilter") NodeType typeFilter
+	                    ,@Param("typeFilter") VisibleNodeType typeFilter
+	                    ,@Param("lowerBoundDuration") Double minDurationValue
+	                    ,@Param("upperBoundDuration") Double maxDurationValue
 	                    ,@Param("lowerBoundTimeStamp") LocalDateTime lowerBoundTimeStamp
 	                    ,@Param("upperBoundTimeStamp") LocalDateTime upperBoundTimeStamp
 	                    );

@@ -6,18 +6,23 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
+import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
-import net.mmo.utils.kism.entities.nodes.NodeType;
+import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
@@ -36,12 +41,16 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 {
 	private static final long serialVersionUID = -352635233754729967L;
 
-	protected final static String timingDataKey = "timingData"; //$NON-NLS-1$
+	protected static final String timingDataKey = "timingData"; //$NON-NLS-1$
 
-	protected final static String MinDurationValueKey = "minDurationValue"; //$NON-NLS-1$
-	protected final static String MaxDurationValueKey = "maxDurationValue"; //$NON-NLS-1$
-	protected final static String MinDurationFoundKey = "minDurationFound"; //$NON-NLS-1$
-	protected final static String MaxDurationFoundKey = "maxDurationFound"; //$NON-NLS-1$
+	protected static final String MinDurationValueKey = "minDurationValue"; //$NON-NLS-1$
+	protected static final String MaxDurationValueKey = "maxDurationValue"; //$NON-NLS-1$
+	protected static final String MinDurationFoundKey = "minDurationFound"; //$NON-NLS-1$
+	protected static final String MaxDurationFoundKey = "maxDurationFound"; //$NON-NLS-1$
+
+	protected static final String RefreshNrKey = "refreshNumber"; //$NON-NLS-1$
+
+	private static final boolean FETCH_ALL = false;
 
 	protected NumberField durationMinimum;
 	protected NumberField durationMaximum;
@@ -149,7 +158,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 		HashMap <String, Object> res = super.getMinMaxInfo();
 
 		String nameFilterValue = (String)res.get(NameFilterValueKey);
-		NodeType nodeTypeFilterValue = (NodeType)res.get(TypeFilterValueKey);
+		VisibleNodeType nodeTypeFilterValue = (VisibleNodeType)res.get(TypeFilterValueKey);
 
 		// adjust min/maxDuration:
 		Double minDurationValue = this.durationMinimum.getValue();
@@ -217,41 +226,113 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 		log.info("HistoryInfoTable.getMinMaxInfo"); //$NON-NLS-1$
 
 		HashMap <String, Object> res = getMinMaxInfo();
+		// Since the above call may have taken a while we check again:
 		if (this.refreshCounter.get() > myRefreshNr) {
-			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
 			return null; // if meanwhile another one has been triggered then abort this refresh
 		}
+		res.put(RefreshNrKey, myRefreshNr);
 
-		List<HistoryInfo> data =
-			this.historyInfoService.findByFilter((String)res.get(NameFilterValueKey), (NodeType)res.get(TypeFilterValueKey),
-			                                     (Double)res.get(MinDurationValueKey), (Double)res.get(MaxDurationValueKey),
-			                                     (LocalDateTime)res.get(MinTimestampValueKey), (LocalDateTime)res.get(MaxTimestampValueKey));
-
-		if (this.refreshCounter.get() > myRefreshNr) {
-			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
-			return null; // if meanwhile another one has been triggered then abort this refresh
-		}
-
-		log.info("fetchData-result: {} found.", data != null ? data.size() + " entries" : "no data"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-
-		res.put(timingDataKey, data);
+		if (FETCH_ALL) {
+			List<HistoryInfo> data =
+				this.historyInfoService.findByFilter((String)res.get(NameFilterValueKey), (VisibleNodeType)res.get(TypeFilterValueKey)
+				                                    ,(Double)res.get(MinDurationValueKey), (Double)res.get(MaxDurationValueKey)
+				                                    ,(LocalDateTime)res.get(MinTimestampValueKey), (LocalDateTime)res.get(MaxTimestampValueKey)
+				                                    ,0, 0
+				                                    );
+			// Since the above call may have taken a while we check again:
+			if (this.refreshCounter.get() > myRefreshNr) {
+				log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
+				return null; // if meanwhile another one has been triggered then abort this refresh
+			}
+			log.debug("fetchData-result: {} found.", data != null ? data.size() + " entries" : "no data"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			res.put(timingDataKey, data);
+		} // else: nothing else to put into the map
 		return res;
 	}
 
+	@SuppressWarnings("serial")
 	@Override
 	protected void updateView(Integer myRefreshNr, HashMap <String, Object> res) {
-		log.info("HistoryInfoTable.updateTable"); //$NON-NLS-1$
+		log.info("HistoryInfoTable.updateView"); //$NON-NLS-1$
+		// Since it may be a while since this was triggered we check again:
 		if (this.refreshCounter.get() > myRefreshNr) {
-			log.info("another refresh pending - aborting this one..."); //$NON-NLS-1$
-			return; // if meanwhile another one has been triggered then abort this refresh
+			log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
+			return;
 		}
 		updateMinMaxFields(res);
 
-		// update grid data:
-		@SuppressWarnings("unchecked")
-		List<HistoryInfo> data = (List<HistoryInfo>)res.get(timingDataKey);
+//		// old version - putting all data into grid at once (takes forever...)
+//		// update grid data:
+//		@SuppressWarnings("unchecked")
+//		List<HistoryInfo> allData = (List<HistoryInfo>)res.get(timingDataKey);
+//		log.info("setting grid allData:"); //$NON-NLS-1$
+//		this.grid.setItems(allData);
 
-		log.info("setting grid data:"); //$NON-NLS-1$
-		this.grid.setItems(data);
+		log.debug("creating data provider:"); //$NON-NLS-1$
+		this.grid.setItems(
+			new CallbackDataProvider<HistoryInfo, Void>(
+				new FetchCallback<HistoryInfo, Void>() {
+					@Override
+					public Stream<HistoryInfo> fetch(Query<HistoryInfo, Void> query) {
+						// Since it may have taken a while until this method was called we check again:
+						if (HistoryInfoTable.this.refreshCounter.get() > (int)res.get(RefreshNrKey)) {
+							log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
+							return Stream.empty();
+						}
+						// The index of the first item to load
+						final int offset = query.getOffset();
+						// The number of items to load
+						final int limit = query.getLimit();
+						log.debug("CallbackDataProvider-fetch: offset:{} / limit:{}", offset, limit); //$NON-NLS-1$
+
+						if (FETCH_ALL) {
+							@SuppressWarnings("unchecked")
+							List<HistoryInfo> allData = (List<HistoryInfo>)res.get(timingDataKey);
+							if (allData != null) {
+								int min = offset;
+								int asz = allData.size();
+								if (asz > min) {
+									int max = Math.min(min + limit, asz);
+									if (max > min) {
+										List<HistoryInfo> data = allData.subList(min, max);
+										log.info("CallbackDataProvider-fetch: {} entries found [{}-{}].", data.size(), min, max-1); //$NON-NLS-1$
+										return data.stream();
+									}
+								}
+							}
+							log.debug("CallbackDataProvider-fetch: no data found."); //$NON-NLS-1$
+							return Stream.empty();
+						} else { // doing the DB query inline in the GUI thread - to be seen how this works:
+							List<HistoryInfo> data =
+								HistoryInfoTable.this.historyInfoService.findByFilter((String)res.get(NameFilterValueKey), (VisibleNodeType)res.get(TypeFilterValueKey)
+								                                                     ,(Double)res.get(MinDurationValueKey), (Double)res.get(MaxDurationValueKey)
+								                                                     ,(LocalDateTime)res.get(MinTimestampValueKey), (LocalDateTime)res.get(MaxTimestampValueKey)
+								                                                     ,offset, limit
+								                                                     );
+							// Since the above call may have taken a while we check again:
+							if (HistoryInfoTable.this.refreshCounter.get() > (int)res.get(RefreshNrKey)) {
+								log.debug("another refresh pending - aborting this one..."); //$NON-NLS-1$
+								return Stream.empty();
+							}
+							log.debug("CallbackDataProvider-fetch: {} entries found.", data.size()); //$NON-NLS-1$
+							return data.stream();
+						}
+					}
+				},
+				new CountCallback<HistoryInfo, Void>() {
+					@Override
+					public int count(Query<HistoryInfo, Void> query) {
+						Long count = HistoryInfoTable.this.historyInfoService.countWithFilter((String)res.get(NameFilterValueKey)
+						                                                                     ,(VisibleNodeType)res.get(TypeFilterValueKey)
+						                                                                     ,(Double)res.get(MinDurationValueKey), (Double)res.get(MaxDurationValueKey)
+						                                                                     ,(LocalDateTime)res.get(MinTimestampValueKey), (LocalDateTime)res.get(MaxTimestampValueKey)
+						                                                                     );
+						log.debug("CallbackDataProvider-count: {}", count); //$NON-NLS-1$
+						return count.intValue();
+					}
+				}
+			)
+		);
 	}
 }
