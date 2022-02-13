@@ -28,7 +28,7 @@ package "entities.nodes" #EEEEEE {
 		SSHConnection  --|> IPConnection
 	}
 
-	enum NodeType { 
+	enum VisibleNodeType {
 		RootNode,
 		IntermediateNode
 		RESTConnection
@@ -45,7 +45,7 @@ package "entities.nodes" #EEEEEE {
 	NodeFactory --> JDBCConnection
 	NodeFactory --> PingConnection
 	NodeFactory --> SSHConnection
-	NodeFactory --> NodeType
+	NodeFactory --> VisibleNodeType
 }
 
 @enduml

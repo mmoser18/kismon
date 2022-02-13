@@ -2,11 +2,8 @@
 
 package "net.mmo.utils.kism" #FFFFFF {
 
-'	include::entities_nodes.puml[]
-'	include::ui_view_nodes.puml[]
-
-	!include docs/entities_nodes.puml
-	!include docs/ui_view_nodes.puml
+	!include entities_nodes.puml
+	!include ui_view_nodes.puml
 
 	IntermediateNodeForm o--> IntermediateNode
 	RootNodeForm         o--> RootNode
