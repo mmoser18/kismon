@@ -1076,10 +1076,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "power",
-				"mock_port" : ":8080",
+				"app_prot_ext" : "https://",
 				"mock_prot_ext" : "https://",
+				"mock_port" : ":8080",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1379,8 +1379,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "ROLF",
 				"app_prot_ext" : "https://",
+				"app_uid" : "ROLF",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -2427,7 +2427,11 @@
 			"properties" : {
 				"xxx" : "yyy"
 			},
-			"action" : null,
+			"action" : {
+				"className" : "net.mmo.utils.kism.entities.nodes.actions.EmitLogAction",
+				"triggerThresholds": [ 1, 1, 1], 
+				"previousActionState": null
+			},
 			"active" : false,
 			"period" : 30,
 			"timeout" : 15,
