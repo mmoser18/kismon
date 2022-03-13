@@ -19,7 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Slf4j
-@SuppressWarnings({"nls"})
+@SuppressWarnings({"nls", "javadoc"})
 public final class SecurityUtils
 {
 	private SecurityUtils() {
@@ -43,9 +43,7 @@ public final class SecurityUtils
 			&& !(authentication instanceof AnonymousAuthenticationToken)
 			&& authentication.isAuthenticated();
 
-		if (userIsLoggedIn) {
-			log.info("user successfully logged-in");
-		} else {
+		if (!userIsLoggedIn) {
 			log.info("user not logged-in.");
 		}
 		return userIsLoggedIn;

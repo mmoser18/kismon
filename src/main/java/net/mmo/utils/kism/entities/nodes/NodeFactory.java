@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings("javadoc")
 @Component
 public class NodeFactory <N extends Node>
 {

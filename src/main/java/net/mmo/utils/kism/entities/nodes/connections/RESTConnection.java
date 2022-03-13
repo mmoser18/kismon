@@ -8,6 +8,7 @@ package net.mmo.utils.kism.entities.nodes.connections;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 public class RESTConnection extends HTTPConnection

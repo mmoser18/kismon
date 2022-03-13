@@ -30,6 +30,7 @@ import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPConnectionForm<N>
 {

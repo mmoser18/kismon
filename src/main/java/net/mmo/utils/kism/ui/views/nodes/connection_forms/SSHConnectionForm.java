@@ -28,6 +28,7 @@ import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection.Auth_Method;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 @PreserveOnRefresh
 public class SSHConnectionForm extends IPConnectionForm<SSHConnection>

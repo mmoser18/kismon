@@ -28,6 +28,7 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 /**
  * Common superclass for leaf nodes.
  */
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j

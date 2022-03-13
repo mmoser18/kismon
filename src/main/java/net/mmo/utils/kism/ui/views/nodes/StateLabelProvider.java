@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import net.mmo.utils.kism.entities.nodes.Node;
 
+@SuppressWarnings("javadoc")
 public class StateLabelProvider
 {
 	static HashMap<Node.State, String> labels = new HashMap<>();

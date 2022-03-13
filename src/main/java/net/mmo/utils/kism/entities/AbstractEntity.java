@@ -8,6 +8,7 @@ import javax.persistence.MappedSuperclass;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+@SuppressWarnings("javadoc")
 @MappedSuperclass
 public abstract class AbstractEntity
 {

@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.cfg.NotYetImplementedException;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 public class TelnetConnection extends TCPConnection

@@ -14,10 +14,11 @@ import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 // @Slf4j
-abstract public class TCPConnection extends CheckableConnection
+abstract public class TCPConnection extends CheckableNode
 {
 	private static final long serialVersionUID = 6679464784537111431L;
 

@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
@@ -41,6 +42,7 @@ import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 
 
+@SuppressWarnings("javadoc")
 @Route(value = "history-graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
 @PageTitle("History Graph | " + CommonConstants.ApplicationFullName)
 @Slf4j
@@ -199,7 +201,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	protected void adjustVisibility() {
 		log.info("adjustVisibility"); //$NON-NLS-1$
-		UIHandlerSupport.executeLater(this, this::getFilteredNodeNames, this::updateVisibility);
+		UIHandlerSupport.executeLater(this, (Supplier<List<String>>)this::getFilteredNodeNames, this::updateVisibility);
 	}
 
 	protected void updateVisibility(List<String> filteredNodeNames) {

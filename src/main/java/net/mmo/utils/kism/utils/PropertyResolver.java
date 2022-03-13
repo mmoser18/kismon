@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
  * Code shamelessly stolen from the example shown here and then adapted for my purposes:
  * https://stackoverflow.com/questions/17349334/search-and-replace-formatted-properties-inside-java-string
  */
+@SuppressWarnings("javadoc")
 // @Slf4j
 public class PropertyResolver
 {

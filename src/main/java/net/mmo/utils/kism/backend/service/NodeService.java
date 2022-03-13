@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 /**
  * Implements the service to access and store Nodes
  */
+@SuppressWarnings("javadoc")
 @Service
 @Slf4j
 public class NodeService

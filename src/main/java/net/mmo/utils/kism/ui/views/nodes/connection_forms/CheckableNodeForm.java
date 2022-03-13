@@ -22,13 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
-import net.mmo.utils.kism.entities.nodes.connections.CheckableConnection;
+import net.mmo.utils.kism.entities.nodes.connections.CheckableNode;
 import net.mmo.utils.kism.ui.views.nodes.LeafNodeForm;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j
-public abstract class CheckableConnectionForm <N extends CheckableConnection> extends LeafNodeForm<N>
+public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNodeForm<N>
 {
 	private static final long serialVersionUID = -6625293976700949063L;
 
@@ -52,7 +53,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 	protected VerticalLayout validationDetailsPanel;
 
 
-	public CheckableConnectionForm(Class<N> clazz, NodeService nodeService) {
+	public CheckableNodeForm(Class<N> clazz, NodeService nodeService) {
 		super(clazz, nodeService);
 	}
 
@@ -60,7 +61,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);
 
-		this.checkResults = new Checkbox(Messages.getString("CheckableConnectionForm.CheckResult.Label")); //$NON-NLS-1$
+		this.checkResults = new Checkbox(Messages.getString("CheckableNodeForm.CheckResult.Label")); //$NON-NLS-1$
 		this.checkResults.setClassName(CheckResultsClassName);
 		this.checkResults.setEnabled(this.isAdminUser);
 		this.checkResults.addValueChangeListener(event ->
@@ -82,7 +83,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		this.condition.setEmptySelectionCaption(Messages.getString("ResultChecker.Condition.Value.None")); //$NON-NLS-1$
 		this.condition.addClassName(ConditionClassName);
 		this.condition.setEnabled(this.isAdminUser);
-		this.binder.forField(this.condition).bind(CheckableConnectionForm::getCondition, CheckableConnectionForm::setCondition);
+		this.binder.forField(this.condition).bind(CheckableNodeForm::getCondition, CheckableNodeForm::setCondition);
 		this.condition.addValueChangeListener(event ->
 		{
 			log.debug("condition value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
@@ -114,7 +115,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 //				}
 //				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
 //			})
-			.bind(CheckableConnectionForm::getOperand1, CheckableConnectionForm::setOperand1);
+			.bind(CheckableNodeForm::getOperand1, CheckableNodeForm::setOperand1);
 
 		this.operand2 = new TextArea(Messages.getString("ResultChecker.Operand.Label2")); //$NON-NLS-1$
 		this.operand2.addClassName(OperandClassName);
@@ -139,7 +140,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 //				}
 //				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
 //			})
-			.bind(CheckableConnectionForm::getOperand2, CheckableConnectionForm::setOperand2);
+			.bind(CheckableNodeForm::getOperand2, CheckableNodeForm::setOperand2);
 
 		this.operand3 = new TextArea(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
 		this.operand3.addClassName(OperandClassName);
@@ -164,23 +165,23 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 //				}
 //				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
 //			})
-			.bind(CheckableConnectionForm::getOperand3, CheckableConnectionForm::setOperand3);
+			.bind(CheckableNodeForm::getOperand3, CheckableNodeForm::setOperand3);
 
 		this.validationDetails = new Accordion();
 		this.validationDetails.close(); // initially closed
 		this.validationDetailsPanel = new VerticalLayout();
 		this.validationDetailsPanel.setClassName(ValidationDetailsClassName);
-		this.validationDetails.add(Messages.getString("CheckableConnectionForm.ValidationDetails.Label"), this.validationDetailsPanel); //$NON-NLS-1$
+		this.validationDetails.add(Messages.getString("CheckableNodeForm.ValidationDetails.Label"), this.validationDetailsPanel); //$NON-NLS-1$
 		this.validationDetailsPanel.add(this.checkResults, this.condition, this.operand1, this.operand2, this.operand3);
 	}
 
 	@SuppressWarnings("serial")
 	class OperandValidator implements Validator<String> {
 
-		CheckableConnectionForm<N> form;
+		CheckableNodeForm<N> form;
 		int operandNr;
 
-		OperandValidator(CheckableConnectionForm<N> form, int operandNr) {
+		OperandValidator(CheckableNodeForm<N> form, int operandNr) {
 			this.form = form;
 			this.operandNr = operandNr;
 		}
@@ -270,19 +271,19 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 //		return super.binderIsValid();
 //	}
 
-	static <N extends CheckableConnection> ResultChecker.Condition getCondition(N n) {
+	static <N extends CheckableNode> ResultChecker.Condition getCondition(N n) {
 		return (n != null && n.getResultChecker() != null
 				? n.getResultChecker().getCondition()
 				: null);
 	}
 
-	static <N extends CheckableConnection> void setCondition(N n, ResultChecker.Condition condition) {
+	static <N extends CheckableNode> void setCondition(N n, ResultChecker.Condition condition) {
 		if (n != null && n.getResultChecker() != null) {
 			n.getResultChecker().setCondition(condition);
 		}
 	}
 
-	static <N extends CheckableConnection> String getOperandN(N n, int opNr) {
+	static <N extends CheckableNode> String getOperandN(N n, int opNr) {
 		if (n != null) {
 			ResultChecker resultChecker = n.getResultChecker();
 			if (resultChecker != null) {
@@ -307,7 +308,7 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 
 	// Note: This method gets called by the binder for ALL fields (i.e. also those that are hidden).
 	// The binder isn't aware of that So we need to ignore those that are not valid!
-	static <N extends CheckableConnection> void setOperandN(N n, int opNr, String operand) {
+	static <N extends CheckableNode> void setOperandN(N n, int opNr, String operand) {
 		if (n != null) {
 			ResultChecker resultChecker = n.getResultChecker();
 			if (resultChecker != null) {
@@ -329,24 +330,24 @@ public abstract class CheckableConnectionForm <N extends CheckableConnection> ex
 		}
 	}
 
-	static <N extends CheckableConnection> void setOperand1(N n, String operand) {
+	static <N extends CheckableNode> void setOperand1(N n, String operand) {
 		setOperandN(n, 1, operand);
 	}
-	static <N extends CheckableConnection> String getOperand1(N n) {
+	static <N extends CheckableNode> String getOperand1(N n) {
 		return getOperandN(n, 1);
 	}
 
-	static <N extends CheckableConnection> void setOperand2(N n, String operand) {
+	static <N extends CheckableNode> void setOperand2(N n, String operand) {
 		setOperandN(n, 2, operand);
 	}
-	static <N extends CheckableConnection> String getOperand2(N n) {
+	static <N extends CheckableNode> String getOperand2(N n) {
 		return getOperandN(n, 2);
 	}
 
-	static <N extends CheckableConnection> void setOperand3(N n, String operand) {
+	static <N extends CheckableNode> void setOperand3(N n, String operand) {
 		setOperandN(n, 3, operand);
 	}
-	static <N extends CheckableConnection> String getOperand3(N n) {
+	static <N extends CheckableNode> String getOperand3(N n) {
 		return getOperandN(n, 3);
 	}
 

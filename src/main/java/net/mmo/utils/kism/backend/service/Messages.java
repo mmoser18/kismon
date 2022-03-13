@@ -8,6 +8,7 @@ package net.mmo.utils.kism.backend.service;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+@SuppressWarnings("javadoc")
 public class Messages
 {
 	private static final String BUNDLE_NAME = Messages.class.getPackageName() + ".messages"; //$NON-NLS-1$

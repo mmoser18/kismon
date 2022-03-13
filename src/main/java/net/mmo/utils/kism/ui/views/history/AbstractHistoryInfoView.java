@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -36,6 +37,7 @@ import org.springframework.util.comparator.Comparators;
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
+@SuppressWarnings("javadoc")
 abstract public class AbstractHistoryInfoView <T extends Object> extends VerticalLayout
 {
 	private static final long serialVersionUID = 697446986998667247L;
@@ -118,26 +120,21 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.nameFilter.setItems(getAllNodeNames());
 		this.nameFilter.setAllowCustomValue(true);
 		this.nameFilter.addCustomValueSetListener((e) -> {
+			log.info("nameFilter: custom value set='{}': fromClient={}", e.getDetail(), e.isFromClient()); //$NON-NLS-1$
 			if (e.isFromClient()) {
-				log.info("custom value: '{}'", e.getDetail()); //$NON-NLS-1$
-				this.nameFilterValueStr = e.getDetail();
-				try {
-					this.nameFilter.setValue(this.nameFilterValueStr);
-				} catch (Exception ex) {
-					// ignore - even if setAllowCustomValue is set to true the ComboBox only accepts values from its predefined list ||-(
-				}
+				setFilteredNameValues( e.getDetail()); // we are interested in what the user typed!
 				resetMinMaxValues();
 				refreshData();
 			}
-			this.nameFilter.setItems(getFilteredNodeNames());
 		});
-//		this.nameFilter.addValueChangeListener(e -> {
-//			log.info("nameFilter changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
-//			if (e.isFromClient()) {
-//				resetMinMaxValues();
-//				refreshAll();
-//			}
-//		});
+		this.nameFilter.addValueChangeListener(e -> {
+			log.info("nameFilter: value changed='{}', fromClient={}",  e.getValue(), e.isFromClient()); //$NON-NLS-1$
+			if (e.isFromClient()) {
+				setFilteredNameValues(e.getValue());
+				resetMinMaxValues();
+				refreshData();
+			}
+		});
 
 		this.typeFilter.setClassName(TypeFilterFieldClassName);
 		this.typeFilter.setLabel(Messages.getString("HistoryView.TextField.TypeFilter.Label")); //$NON-NLS-1$
@@ -147,7 +144,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		this.typeFilter.setEmptySelectionAllowed(true);
 		this.typeFilter.setEmptySelectionCaption(Messages.getString("HistoryView.TextField.TypeFilter.None")); //$NON-NLS-1$
 		this.typeFilter.addValueChangeListener(e -> {
-			log.info("typeFilter changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
+			log.info("typeFilter changed: type={}, fromClient={}", e.getValue(), e.isFromClient()); //$NON-NLS-1$
 			if (e.isFromClient()) {
 				resetMinMaxValues();
 				refreshData();
@@ -201,8 +198,22 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		toolbar.addClassName(ToolbarClassName);
 		toolbar.setWidthFull();
 
-		UIHandlerSupport.executeLater(this, this::getAllNodeNames, (res) -> this.nameFilter.setItems(res));
+		UIHandlerSupport.executeLater(this, (Supplier<List<String>>)this::getAllNodeNames, (List<String> res) -> this.nameFilter.setItems(res));
 		return toolbar;
+	}
+
+	// Even if setAllowCustomValue is set to true the ComboBox only accepts values from its predefined list ||-(
+	// We thus add the currently enetered selection string to that list so that it remains visible and is't replaced by "<enter pattern here...>":
+	private void setFilteredNameValues(String filterString) {
+		this.nameFilterValueStr = filterString;
+		List<String> names = getFilteredNodeNames(); // get a list of items matching this far
+		if (names.contains(this.nameFilterValueStr)) {
+			names = getAllNodeNames(); // once we selected a single entry we allow to reselect from all again
+		} else {
+			names.add(0, this.nameFilterValueStr);
+		}
+		this.nameFilter.setItems(names);
+		this.nameFilter.setValue(this.nameFilterValueStr); // we need to (re-)set the selected value since it got erased by setItems(...) above
 	}
 
 	@Override

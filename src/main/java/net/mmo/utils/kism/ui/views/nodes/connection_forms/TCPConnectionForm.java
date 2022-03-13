@@ -13,8 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
+@SuppressWarnings("javadoc")
 @Slf4j
-public abstract class TCPConnectionForm <N extends TCPConnection> extends CheckableConnectionForm<N>
+public abstract class TCPConnectionForm <N extends TCPConnection> extends CheckableNodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 

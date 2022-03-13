@@ -13,10 +13,13 @@ import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
+/**
+ * a connection that has a result checker
+ */
 @Setter
 @Getter
 // @Slf4j
-abstract public class CheckableConnection extends LeafNode
+abstract public class CheckableNode extends LeafNode
 {
 	private static final long serialVersionUID = -7861536138222066083L;
 
@@ -25,11 +28,11 @@ abstract public class CheckableConnection extends LeafNode
 	protected ResultChecker resultChecker;
 
 
-	protected CheckableConnection() { // required for deserialization
+	protected CheckableNode() { // required for deserialization
 		super();
 	}
 
-	protected CheckableConnection(String name, String description) {
+	protected CheckableNode(String name, String description) {
 		super(name, description);
 	}
 

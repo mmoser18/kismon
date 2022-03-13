@@ -10,7 +10,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("nls")
+@SuppressWarnings({"nls", "javadoc"})
 public class KeyValuesConverterTest
 {
 	final static String SIMPLE_CASE  = "foo:bar\tbar:foo\nbaz:else";

@@ -23,6 +23,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 @PreserveOnRefresh
 public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>

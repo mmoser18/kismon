@@ -31,6 +31,7 @@
 	<!-- silence the LogBacks startup mumbling : -->
 	<logger name="ch.qos.logback" level="info"/>
 	<logger name="net.schmizz.sshj.transport.random.JCERandom" level="warn"/>
+	<logger name="net.schmizz.sshj.transport.TransportImpl" level="warn"/>
 
 	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn"/>
 	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn"/>

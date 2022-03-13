@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
+@SuppressWarnings("javadoc")
 public class CustomLocalDateTimeDeserializer extends StdDeserializer<LocalDateTime>
 {
 	private static final long serialVersionUID = -5040408858032478856L;

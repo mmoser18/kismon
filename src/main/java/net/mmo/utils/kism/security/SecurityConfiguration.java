@@ -24,10 +24,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+@SuppressWarnings({"nls", "javadoc"})
 @EnableWebSecurity
 @Configuration
 @Slf4j
-@SuppressWarnings("nls")
 // Vaadin <v19.0.x:
 //public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 // Vaadin >= v19.0.x:

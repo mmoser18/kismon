@@ -26,6 +26,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
 
+@SuppressWarnings("javadoc")
 public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;

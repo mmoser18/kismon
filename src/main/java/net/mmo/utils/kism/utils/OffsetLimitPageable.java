@@ -11,12 +11,20 @@ package net.mmo.utils.kism.utils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+/**
+ * class that implements offset and limit for queries (Spring only supports paging ||-( )
+ */
 public class OffsetLimitPageable implements Pageable
 {
 	private int offset;
 	private int limit;
 	private Sort sort = Sort.unsorted();
 
+	/**
+	 * That's the purpose of the entire class
+	 * @param offset
+	 * @param limit
+	 */
 	public OffsetLimitPageable(int offset, int limit) {
 		setOffset(offset);
 		setLimit(limit);
@@ -35,6 +43,12 @@ public class OffsetLimitPageable implements Pageable
 		this.limit = limit;
 	}
 
+	/**
+	 * Wraps the constructor to make it nicer readable
+	 * @param offset
+	 * @param limit
+	 * @return OffsetLimitPageable
+	 */
 	public static OffsetLimitPageable of(int offset, int limit) {
 		return new OffsetLimitPageable(offset, limit);
 	}
@@ -94,6 +108,9 @@ public class OffsetLimitPageable implements Pageable
 		return hasPrevious() ? previous() : first();
 	}
 
+	/**
+	 * @return the previous page if any, else the current is returned
+	 */
 	public Pageable previous() {
 		// The integers are positive. Subtracting does not let them become bigger than integer.
 		return hasPrevious()

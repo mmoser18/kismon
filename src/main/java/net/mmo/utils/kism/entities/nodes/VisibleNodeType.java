@@ -11,6 +11,10 @@ import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 
+/**
+ * enumerates all visible nodes
+ */
+@SuppressWarnings("javadoc")
 public enum VisibleNodeType {
 	RootNode(RootNode.class),
 	IntermediateNode(IntermediateNode.class),

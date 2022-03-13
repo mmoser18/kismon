@@ -21,6 +21,7 @@ import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j

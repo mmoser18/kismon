@@ -15,10 +15,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 // @Slf4j
-abstract public class IPConnection extends CheckableConnection
+abstract public class IPConnection extends CheckableNode
 {
 	private static final long serialVersionUID = 120134114096068701L;
 

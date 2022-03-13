@@ -11,6 +11,7 @@ import lombok.Setter;
 import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 
+@SuppressWarnings("javadoc")
 @Entity
 @Setter
 @Getter

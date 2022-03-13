@@ -5,6 +5,7 @@
 
 package net.mmo.utils.kism.utils;
 
+@SuppressWarnings("javadoc")
 public class ExceptionUtils
 {
 	private ExceptionUtils() {

@@ -23,6 +23,7 @@ import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.MainLayout;
+import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
 /**
  * Defines the application's main view, routed to via the base URL
  */
+@SuppressWarnings("javadoc")
 @Route(value="history-table", layout = MainLayout.class)
 @PageTitle("History Table | " + CommonConstants.ApplicationFullName)
 @Component // to make it possible to @Autowire it
@@ -79,17 +81,17 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Result")) //$NON-NLS-1$
 			;
 
+		this.grid.asSingleSelect().addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
+		this.grid.addAttachListener(e -> { if (e.isFromClient()) { refreshData(); }});
+
+		this.content.add(this.grid);
+
 		this.grid.getColumns().forEach(column ->
 		{	column
 				.setSortable(true)
 				.setAutoWidth(true)
 				.setFlexGrow(0);
 		});
-
-		this.grid.asSingleSelect().addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
-		this.grid.addAttachListener(e -> { if (e.isFromClient()) { refreshData(); }});
-
-		this.content.add(this.grid);
 	}
 
 	@Override
@@ -252,6 +254,9 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 							return Stream.empty();
 						}
 						log.debug("CallbackDataProvider-fetch: {} entries found.", data.size()); //$NON-NLS-1$
+
+						recalculateColumnWidths(res); // recalculate the columns width
+
 						return data.stream();
 					}
 				},
@@ -269,5 +274,21 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 				}
 			)
 		);
+	}
+
+	private void recalculateColumnWidths(HashMap <String, Object> res) {
+		recalculateColumnWidths(250, res);
+	}
+	private void recalculateColumnWidths(long delay, HashMap <String, Object> res) {
+		if (!refreshIsObsolete(res)) {
+			// original
+			// this.tree.recalculateColumnWidths(); // make sure the column widths are adjusted
+			// The above always came too early - with 1/4 sec delay we finally saw some improvement:
+			UIHandlerSupport.executeLater(this, delay, () -> {
+				if (!refreshIsObsolete(res)) {
+					this.grid.recalculateColumnWidths();
+				}
+			});
+		}
 	}
 }

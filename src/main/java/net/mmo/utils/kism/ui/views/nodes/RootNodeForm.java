@@ -13,6 +13,7 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 
+@SuppressWarnings("javadoc")
 @PreserveOnRefresh
 public class RootNodeForm extends IntermediateNodeForm
 {

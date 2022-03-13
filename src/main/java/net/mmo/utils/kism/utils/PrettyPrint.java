@@ -5,6 +5,11 @@
 
 package net.mmo.utils.kism.utils;
 
+/**
+ * Provides a pretty-printed (i.e. line-wrappend and properly indented) version of an Object
+ * (e.g. a Node-hierarchy). Brackets and Braces are considered for indentation.
+ */
+@SuppressWarnings("javadoc")
 public class PrettyPrint
 {
 	public static int indentation = 4;
@@ -22,7 +27,7 @@ public class PrettyPrint
 			char ch = input.charAt(pos++);
 			switch (ch) {
 			case ',':
-				buf.append(',');
+				buf.append(ch);
 				buf.append('\n');
 				emitIndentation(nesting, buf);
 				if (input.charAt(pos) == ' ') pos++; // swallow ' ' following ','

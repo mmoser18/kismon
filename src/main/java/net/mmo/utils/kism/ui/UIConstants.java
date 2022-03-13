@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 import net.mmo.utils.kism.utils.AppProperties;
 
+@SuppressWarnings("javadoc")
 public class UIConstants
 {
 	public final static String EMPTY_STRING = ""; //$NON-NLS-1$

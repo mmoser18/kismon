@@ -41,6 +41,7 @@ import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 public abstract class NodeForm <N extends Node> extends VerticalLayout
 {

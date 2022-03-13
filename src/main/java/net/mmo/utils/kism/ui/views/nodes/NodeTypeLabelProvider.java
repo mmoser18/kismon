@@ -10,6 +10,7 @@ import java.util.HashMap;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 
+@SuppressWarnings("javadoc")
 public class NodeTypeLabelProvider
 {
 	static HashMap<String, String> labels = new HashMap<>();

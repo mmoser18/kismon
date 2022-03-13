@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 public class AppProperties
 {
@@ -17,6 +18,9 @@ public class AppProperties
 
 	private static Properties appProperties;
 
+	/**
+	 * @return top level (i.e. application) properties
+	 */
 	public final static Properties getProperties() {
 		if (appProperties == null) {
 			appProperties = new Properties(System.getProperties());

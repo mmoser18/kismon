@@ -18,7 +18,7 @@ import net.mmo.utils.kism.ui.CommonConstants;
 @Route(CommonConstants.LoginURL) // Note: this also acts as @Component annotation!
 @PageTitle("Login | " + CommonConstants.ApplicationFullName)
 @Slf4j
-@SuppressWarnings("nls")
+@SuppressWarnings({"nls", "javadoc"})
 public class LoginView extends VerticalLayout implements BeforeEnterObserver
 {
 	private static final long serialVersionUID = 2530016773527276009L;

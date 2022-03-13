@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j
@@ -27,7 +28,6 @@ public class RootNode extends IntermediateNode
 
 	@JsonIgnore
 	public transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
-
 
 	public RootNode() { // required for deserialization & node-factory
 		super();

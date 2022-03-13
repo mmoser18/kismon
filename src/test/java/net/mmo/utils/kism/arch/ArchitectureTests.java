@@ -24,7 +24,7 @@ import com.tngtech.archunit.library.Architectures.LayeredArchitecture;
 import net.mmo.utils.kism.ui.views.nodes.FormFactory;
 
 @AnalyzeClasses(packages = "net.mmo.utils.kism..", importOptions = { ImportOption.DoNotIncludeTests.class })
-@SuppressWarnings("nls")
+@SuppressWarnings({"nls", "javadoc"})
 public class ArchitectureTests
 {
 	// Note: The boilerplate code

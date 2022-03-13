@@ -21,6 +21,7 @@ import org.springframework.data.repository.query.Param;
  * All you need to do is define an interface that describes the entity nodeType and primary key
  * nodeType, and Spring Data will configure one for you.
  */
+@SuppressWarnings("javadoc")
 public interface HistoryInfoRepository extends JpaRepository<HistoryInfo, Long>, CustomHistoryInfoRepository
 {
 //	// using Java Persistence Query Language (JPQL) to phrase the query:

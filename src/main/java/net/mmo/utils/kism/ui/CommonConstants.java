@@ -10,6 +10,7 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout.Orientation;
 import lombok.extern.slf4j.Slf4j;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 public class CommonConstants
 {

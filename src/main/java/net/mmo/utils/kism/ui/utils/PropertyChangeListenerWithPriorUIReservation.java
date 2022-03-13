@@ -15,12 +15,16 @@ import net.mmo.utils.kism.entities.nodes.Node;
 /**
  * A PropertyChangeListener that first acquires access to the UI so that the calling thread can then do
  * UI updates.
+ * @param <N> the type of the node
  */
 @Slf4j
 public abstract class PropertyChangeListenerWithPriorUIReservation<N extends Node> implements PropertyChangeListener
 {
 	Component component;
 
+	/**
+	 * @param component
+	 */
 	public PropertyChangeListenerWithPriorUIReservation(Component component) {
 		this.component = component;
 	}
@@ -36,12 +40,13 @@ public abstract class PropertyChangeListenerWithPriorUIReservation<N extends Nod
 		if (this.component.isVisible() && predicate(source, propertyName, oldValue, newValue)) {
 			this.component.getUI().ifPresentOrElse((ui) -> ui.access(() -> handlePropertyChangeEvent(source, propertyName, oldValue, newValue)),
 			                                       () -> log.trace("UI not present for {} - '{}' - ignoring PropertyChangeEvent '{}': '{}' -> '{}'.", //$NON-NLS-1$
-			                                                       this.component, source.getName(), propertyName, oldValue, newValue));
+			                                                                    this.component, source.getName(), propertyName, oldValue, newValue));
 		}
 	}
 
 	/**
-	 * Since acquiring the UI is a costly operation we allow to avoid that unless necessary by overriding the predicate method
+	 * Since acquiring the UI is a costly operation we allow to avoid that unless necessary by overriding
+	 * the predicate method
 	 * @param source
 	 * @param propertyName
 	 * @param oldValue

@@ -9,7 +9,8 @@ import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 
-/** utility class to make the default properties accessible */
+/** utility class to make a node's properties accessible */
+@SuppressWarnings("javadoc")
 @Slf4j
 public class NodeProperties extends Properties
 {

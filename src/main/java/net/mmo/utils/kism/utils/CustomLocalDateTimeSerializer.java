@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
+@SuppressWarnings("javadoc")
 public class CustomLocalDateTimeSerializer extends StdSerializer<LocalDateTime>
 {
 	private static final long serialVersionUID = -5040408858032478855L;

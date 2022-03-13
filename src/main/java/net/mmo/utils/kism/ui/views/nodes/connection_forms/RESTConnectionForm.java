@@ -9,6 +9,7 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.RESTConnection;
 
+@SuppressWarnings("javadoc")
 @PreserveOnRefresh
 public class RESTConnectionForm extends HTTPConnectionForm<RESTConnection>
 {

@@ -25,6 +25,7 @@ import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
 import org.springframework.util.Assert;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 // @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")

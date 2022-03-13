@@ -25,6 +25,7 @@ import net.mmo.utils.kism.ui.views.nodes.connection_forms.SOAPConnectionForm;
 import net.mmo.utils.kism.ui.views.nodes.connection_forms.SSHConnectionForm;
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings("javadoc")
 @Component
 @Slf4j
 /**
@@ -35,13 +36,17 @@ public class FormFactory <N extends Node> extends VerticalLayout
 {
 	private static final long serialVersionUID = 7234214483184623150L;
 
-	//Here we cache the forms - one per nodeType. Since we don't have that many
-	// form types there is no cleanup nor eviction
+	/**
+	 * Here we cache the forms - one per nodeType. Since we don't have that many
+	 * form types there is no cleanup nor eviction
+	 */
 	Hashtable<Class<N>, NodeForm<N>> forms = new Hashtable<>();
 
 	@SuppressWarnings("unchecked")
-	// @Cacheable("forms") // tried using Spring cache here but didn't work. And as a sideeffect
-	// it caused darn slow application startup, so back to a good ol' Hashtable...
+	/**
+	 * @Cacheable("forms") // tried using Spring cache here but didn't work. And as a sideeffect
+	 * it caused dead slow application startup, so back to a good ol' Hashtable...
+	 */
 	NodeForm<N> createForm(Class<N> clazz, NodeService nodeService) {
 		NodeForm<N> form = this.forms.get(clazz);
 		if (form == null) {

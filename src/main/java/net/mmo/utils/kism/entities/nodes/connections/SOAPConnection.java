@@ -10,6 +10,7 @@ import java.net.http.HttpRequest.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 public class SOAPConnection extends HTTPConnection

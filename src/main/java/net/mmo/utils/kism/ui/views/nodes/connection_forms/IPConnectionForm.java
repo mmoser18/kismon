@@ -14,8 +14,9 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
+@SuppressWarnings("javadoc")
 @Slf4j
-public abstract class IPConnectionForm <N extends IPConnection> extends CheckableConnectionForm<N>
+public abstract class IPConnectionForm <N extends IPConnection> extends CheckableNodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 

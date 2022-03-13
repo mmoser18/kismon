@@ -16,6 +16,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 @PreserveOnRefresh
 public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>

@@ -47,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j
@@ -54,6 +55,9 @@ abstract public class HTTPConnection extends TCPConnection
 {
 	private static final long serialVersionUID = -1288268291213672552L;
 
+	/**
+	 * the supported HTTP Methods
+	 */
 	@Getter
 	public enum HTTP_Method {
 		GET    (false),	// GET method requests a representation of the specified resource. Requests using GET should only retrieve data.

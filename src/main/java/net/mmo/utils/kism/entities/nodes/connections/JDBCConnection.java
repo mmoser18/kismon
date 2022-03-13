@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j

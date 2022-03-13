@@ -14,10 +14,19 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+/**
+ * provides misc. variants of confirmation dialogs
+ */
 public class ConfirmDialog extends Dialog
 {
 	private static final long serialVersionUID = -3151200601662024616L;
 
+	/**
+	 * @param header
+	 * @param question
+	 * @param confirmLabel
+	 * @param confirmListener
+	 */
 	public ConfirmDialog(String header, String question,
 	                     String confirmLabel, ComponentEventListener<ClickEvent<Button>> confirmListener) {
 		this(header, question,
@@ -26,6 +35,14 @@ public class ConfirmDialog extends Dialog
 		     null, null);
 	}
 
+	/**
+	 * @param header
+	 * @param question
+	 * @param confirmLabel
+	 * @param confirmListener
+	 * @param rejectLabel
+	 * @param rejectListener
+	 */
 	public ConfirmDialog(String header, String question,
 	                     String confirmLabel, ComponentEventListener<ClickEvent<Button>> confirmListener,
 	                     String rejectLabel , ComponentEventListener<ClickEvent<Button>> rejectListener) {
@@ -35,6 +52,16 @@ public class ConfirmDialog extends Dialog
 		     null, null);
 	}
 
+	/**
+	 * @param header
+	 * @param question
+	 * @param confirmLabel
+	 * @param confirmListener
+	 * @param rejectLabel
+	 * @param rejectListener
+	 * @param cancelLabel
+	 * @param cancelListener
+	 */
 	public ConfirmDialog(String header, String question,
 	                     String confirmLabel, ComponentEventListener<ClickEvent<Button>> confirmListener,
 	                     String rejectLabel , ComponentEventListener<ClickEvent<Button>> rejectListener,
@@ -46,28 +73,32 @@ public class ConfirmDialog extends Dialog
 
 		if (header != null) msgLane.add(new H3(header));
 		for (String str: question.split("\n")) { //$NON-NLS-1$
+
 			msgLane.add(new Label(str));
 		}
 
 		HorizontalLayout buttons = new HorizontalLayout();
-		Button confirmButton = new Button(confirmLabel, event -> {
-			close();
-			if (confirmListener != null) confirmListener.onComponentEvent(event);
-		});
+		Button confirmButton = new Button(confirmLabel, event ->
+			{
+				close();
+				if (confirmListener != null) confirmListener.onComponentEvent(event);
+			});
 		buttons.add(confirmButton);
 
 		if (rejectLabel != null) {
-			Button rejectButton = new Button(rejectLabel, event -> {
-				close();
-				if (rejectListener != null) rejectListener.onComponentEvent(event);
-			});
+			Button rejectButton = new Button(rejectLabel, event ->
+				{
+					close();
+					if (rejectListener != null) rejectListener.onComponentEvent(event);
+				});
 			buttons.add(rejectButton);
 		}
 		if (cancelLabel != null) {
-			Button cancelButton = new Button(cancelLabel, event -> {
-				close();
-				if (cancelListener != null) cancelListener.onComponentEvent(event);
-			});
+			Button cancelButton = new Button(cancelLabel, event ->
+				{
+					close();
+					if (cancelListener != null) cancelListener.onComponentEvent(event);
+				});
 			buttons.add(cancelButton);
 		}
 		add(msgLane, buttons);

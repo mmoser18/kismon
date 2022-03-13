@@ -15,6 +15,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.PingConnection;
 
 
+@SuppressWarnings("javadoc")
 @PreserveOnRefresh
 public class PingConnectionForm extends IPConnectionForm<PingConnection>
 {

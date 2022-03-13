@@ -17,6 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.entities.nodes.Node.State;
 
+/**
+ * Provides the functionality to check the result of a query or request for specific content
+ */
+@SuppressWarnings("javadoc")
 @Setter
 @Getter
 @Slf4j

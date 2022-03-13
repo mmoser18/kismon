@@ -5,6 +5,7 @@
 
 package net.mmo.utils.kism.backend.repositories;
 
+@SuppressWarnings("javadoc")
 public interface CustomHistoryInfoRepository
 {
 	// empty

@@ -18,6 +18,7 @@ import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
 
+@SuppressWarnings("javadoc")
 @Slf4j
 @PreserveOnRefresh
 public class IntermediateNodeForm extends NodeForm<IntermediateNode>

@@ -15,6 +15,7 @@ import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.utils.OffsetLimitPageable;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("javadoc")
 @Service
 @Slf4j
 public class HistoryInfoService

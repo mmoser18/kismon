@@ -61,7 +61,9 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 /**
  * Defines the application's main view, routed to via the base URL
+ * @param <N> the node-type
  */
+@SuppressWarnings("javadoc")
 @Route(value="", layout = MainLayout.class)
 @PageTitle("Nodes | " + CommonConstants.ApplicationFullName)
 @Component // to make it possible to @Autowire it
@@ -298,33 +300,29 @@ public class NodeView <N extends Node> extends VerticalLayout
 			})
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
 			.setKey("state") // set a column key so you can access this column later on using grid.getColumnByKey("myIcon"); //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0)
 			;
 		this.tree.addColumn(node -> NodeTypeLabelProvider.getNodeTypeLabel(node))
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Type")) //$NON-NLS-1$
 			.setKey("nodeType") //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0)
 			;
 		this.tree.addColumn(Node::getName)
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Name")) //$NON-NLS-1$
 			.setKey("name") //$NON-NLS-1$
-			.setAutoWidth(true)
-			.setFlexGrow(0)
 			;
 		this.tree.addColumn(node -> getNodeDescription(node))
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Description")) //$NON-NLS-1$
 			.setKey("description") //$NON-NLS-1$
-			.setAutoWidth(false)
-			.setFlexGrow(1)
 			;
 		this.tree.addColumn((node) -> node.isApplicable() ? "\u2714" : "\u2716") // ✔ ✖ //$NON-NLS-1$ //$NON-NLS-2$
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.Applicable")) //$NON-NLS-1$
 			.setKey("applicable") //$NON-NLS-1$`
-			.setAutoWidth(true)
-			.setFlexGrow(0)
 			;
+
+		this.tree.getColumns().forEach(column ->
+		{	column
+				.setAutoWidth(true)
+				.setFlexGrow(0);
+		});
 
 		// connect view and model:
 		this.tree.asSingleSelect().addValueChangeListener(event ->
