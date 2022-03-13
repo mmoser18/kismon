@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
+import net.mmo.utils.kism.entities.nodes.actions.Action;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
@@ -253,11 +254,11 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			.append(", name:").append(getName()) //$NON-NLS-1$
 			.append(", description:").append(getDescription()) //$NON-NLS-1$
 			.append(", state:").append(getState()) //$NON-NLS-1$
-			// to avoid recursion we only emit the parent's name, not the entire object!:
+			// to avoid recursion we must only emit the parent's name, not the entire object!:
 			.append(", parent(name):").append(this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", applicable:").append(isApplicable()) //$NON-NLS-1$
 			.append(", properties: {").append(KeyValuesConverter.convertMapToString(getProperties(), ", ")).append('}') //$NON-NLS-1$ //$NON-NLS-2$
-			.append('}')
+			.append("}, action:").append(getAction()) //$NON-NLS-1$
 			.toString();
 	}
 }

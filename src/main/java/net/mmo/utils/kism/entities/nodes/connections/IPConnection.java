@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import net.mmo.utils.kism.entities.nodes.CheckableNode;
 
 /** Name should have been just "Connection" but that class name was already used by JDBC */
 @SuppressWarnings("javadoc")

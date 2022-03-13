@@ -3,15 +3,13 @@
  * @since 06.12.2020
  */
 
-package net.mmo.utils.kism.entities.nodes.connections;
+package net.mmo.utils.kism.entities.nodes;
 
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.mmo.utils.kism.entities.nodes.LeafNode;
-import net.mmo.utils.kism.entities.nodes.ResultChecker;
 
 /**
  * a connection that has a result checker

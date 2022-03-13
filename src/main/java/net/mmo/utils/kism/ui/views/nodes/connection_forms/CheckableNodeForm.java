@@ -20,9 +20,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
+import net.mmo.utils.kism.entities.nodes.CheckableNode;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
-import net.mmo.utils.kism.entities.nodes.connections.CheckableNode;
 import net.mmo.utils.kism.ui.views.nodes.LeafNodeForm;
 
 @SuppressWarnings("javadoc")
