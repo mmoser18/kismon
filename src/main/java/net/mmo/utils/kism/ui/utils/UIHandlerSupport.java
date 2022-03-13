@@ -5,8 +5,6 @@
 
 package net.mmo.utils.kism.ui.utils;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,164 +13,136 @@ import java.util.function.Supplier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.Command;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.ThreadSupport;
 
+/**
+ * utility class for the execution of activities that need to reserve the UI before being run
+ */
 @Slf4j
 public class UIHandlerSupport
 {
-	private static ExecutorService executorService = Executors.newFixedThreadPool(10);
-
-	private final static boolean DO_ASYNC = true;
 	private final static boolean RESERVE_UI_BEFORE_UPDATE = true;
 
 	private UIHandlerSupport() {
 		throw new RuntimeException("should never be called..."); //$NON-NLS-1$
 	}
 
+	/**
+	 * @param <T> the type of the result produced by longRunningActivity
+	 * @param comp the component whose UI has to be reserved before uiActivity is executed
+	 * @param delay1 optional delay before longRunningActivity
+	 * @param longRunningActivity method that creates a result which will be passed to uiActivity
+	 * @param delay2 optional delay before uiActivity
+	 * @param uiActivity operates on (typically: visualizes) the result created by longRunningActivity
+	 */
+	public static <T extends Object> void executeLater(Component comp,
+	                                                   long delay1,
+	                                                   Supplier<T> longRunningActivity,
+	                                                   long delay2,
+	                                                   Consumer<T> uiActivity) {
+		ThreadSupport.executeLater(delay1, longRunningActivity,
+		                           delay2, (result) ->
+			{
+				if (uiActivity != null) {
+					if (RESERVE_UI_BEFORE_UPDATE) {
+						log.debug("obtaining GUI access:"); //$NON-NLS-1$
+						comp.getUI().ifPresentOrElse((ui) -> ui.access(() -> {
+						                            	log.debug("uiActivity start:"); //$NON-NLS-1$
+						                            	uiActivity.accept(result);
+						                            	log.debug("uiActivity done."); //$NON-NLS-1$
+						                             }),
+						                             () -> log.warn("unable to obtain UI-handle - output dropped")); //$NON-NLS-1$
+					} else {
+						try {
+							log.debug("uiActivity start:"); //$NON-NLS-1$
+							uiActivity.accept(result);
+							log.debug("uiActivity done."); //$NON-NLS-1$
+						} catch (Exception ex) {
+							log.error("uiActivity failed.", ex); //$NON-NLS-1$
+						}
+					}
+				}
+			});
+	}
+
+	/**
+	 * @param comp the component whose UI has to be reserved before uiActivity is executed
+	 * @param delay optional delay before uiActivity is executed
+	 * @param uiActivity some UI activity
+	 */
 	public static void executeLater(Component comp,
 	                                long delay,  // in milliseconds
 	                                Command uiActivity) { // ui-activity to be started after delay
 		executeLater(comp,
-		             () -> { // create dummy Supplier
-		            	 if (delay > 0) {
-		            		 try {
-		            			 Thread.sleep(delay);
-		            		 } catch (InterruptedException ex) {
-		            			 log.warn("thread was interrupted"); //$NON-NLS-1$
-		            		 }
-		            	 }
-		            	 return null;
-		             },
-		             (__) -> uiActivity.execute()); // map Command to Consumer
+		             0, null,
+		             delay, (_1_) -> uiActivity.execute());
 	}
 
+	/**
+	 * @param <O> the type of the object that is passed to uiActivity
+	 * @param comp the component whose UI has to be reserved before uiActivity is executed
+	 * @param obj will be passed as argument to the uiActivity:
+	 * @param uiActivity that will operate on the passed object
+	 */
+	public static <O extends Object> void executeLater(Component comp,
+	                                                   O obj,
+	                                                   Consumer<O> uiActivity) {
+		executeLater(comp,
+		             0, null,
+		             0, (_1_) -> uiActivity.accept(obj));
+	}
+
+	/**
+	 * @param <T> the type of the result that is created by longRunningActivity and passed to uiActivity
+	 * @param comp the component whose UI has to be reserved before uiActivity is executed
+	 * @param longRunningActivity method that creates a result which will be passed to uiActivity
+	 * @param uiActivity operates on (typically: visualizes) the result created by longRunningActivity
+	 **/
 	public static <T extends Object> void executeLater(Component comp,
 	                                                   Supplier<T> longRunningActivity,
 	                                                   Consumer<T> uiActivity) {
 		log.debug("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
-		if (DO_ASYNC) { // offload the heavy lifting to a different thread:
-			executorService.submit(new Runnable()
-				{
-					@Override
-					public void run () {
-						executeLaterInternal(comp, longRunningActivity, uiActivity);
-					}
-				});
-		} else {
-			executeLaterInternal(comp, longRunningActivity, uiActivity);
-		}
-	}
-
-	protected static <T extends Object> void executeLaterInternal(Component comp,
-	                                                              Supplier<T> longRunningActivity,
-	                                                              Consumer<T> uiActivity) {
-		final T result; // final to make the lambda happy...
-		if (longRunningActivity != null) {
-			log.debug("longRunningActivity start:"); //$NON-NLS-1$
-			try {
-				result = longRunningActivity.get();
-				log.debug("longRunningActivity done."); //$NON-NLS-1$
-			} catch (Exception ex) {
-				log.error("longRunningActivity failed.", ex); //$NON-NLS-1$
-				return;
-			}
-		} else {
-			result = null;
-		}
-		if (uiActivity != null) {
-			if (RESERVE_UI_BEFORE_UPDATE) {
-				log.debug("obtaining GUI access:"); //$NON-NLS-1$
-				comp.getUI().ifPresentOrElse((ui) -> ui.access(() -> {
-				                            	log.debug("uiActivity start:"); //$NON-NLS-1$
-				                            	uiActivity.accept(result);
-				                            	log.debug("uiActivity done."); //$NON-NLS-1$
-				                             }),
-				                             () -> log.warn("unable to obtain UI-handle - output dropped")); //$NON-NLS-1$
-			} else {
-				log.debug("uiActivity start:"); //$NON-NLS-1$
-				try {
-					uiActivity.accept(result);
-					log.debug("uiActivity done."); //$NON-NLS-1$
-				} catch (Exception ex) {
-					log.error("uiActivity failed.", ex); //$NON-NLS-1$
-				}
-			}
-		}
-	}
-
-	// Same as above but with an argument to pass:
-
-	public static <O extends Object> void executeLater(Component comp,
-	                                                   long delay,  // in milliseconds
-	                                                   O obj, // Object to be passed to uiActivity
-	                                                   Consumer<O> uiActivity) { // ui-activity to be started after delay
 		executeLater(comp,
-		             obj,
-		             (__) -> { // create dummy Function
-		            	 if (delay > 0) {
-		            		 try {
-		            			 Thread.sleep(delay);
-		            		 } catch (InterruptedException ex) {
-		            			 log.warn("thread was interrupted"); //$NON-NLS-1$
-		            		 }
-		            	 }
-		            	 return null;
-		             },
-		             (_1_, _2_) -> uiActivity.accept(obj)); // map Consumer to BiConsumer
+		             0, longRunningActivity,
+		             0, uiActivity);
 	}
 
+	/**
+	 * @param <T> the type of the result that is created by longRunningActivity and passed to uiActivity
+	 * @param <O> the type of the parameter that is passed to longRunningActivity
+	 * @param comp the component whose UI has to be reserved before uiActivity is executed
+	 * @param obj an object that is passed to both, longRunningActivity and uiActivity
+	 * @param delay1 optional delay before longRunningActivity
+	 * @param longRunningActivity method that creates a result which will be passed to uiActivity
+	 * @param delay2 optional delay before uiActivity
+	 * @param uiActivity operates on (typically: visualizes) the result created by longRunningActivity
+	 **/
 	public static <O extends Object, T extends Object> void executeLater(Component comp,
-	                                                   O obj, // Object to be passed to longRunningActivity and uiActivity
-	                                                   Function<O, T> longRunningActivity,
-	                                                   BiConsumer<O, T> uiActivity) {
-		log.debug("executeLater({}, {})", longRunningActivity, uiActivity); //$NON-NLS-1$
-		if (DO_ASYNC) { // offload the heavy lifting to a different thread:
-			executorService.submit(new Runnable()
-				{
-					@Override
-					public void run () {
-						executeLaterInternal(comp, obj, longRunningActivity, uiActivity);
-					}
-				});
-		} else {
-			executeLaterInternal(comp, obj, longRunningActivity, uiActivity);
-		}
+	                                                                     O obj, // Object to be passed to longRunningActivity and uiActivity
+	                                                                     long delay1,
+	                                                                     Function<O, T> longRunningActivity,
+	                                                                     long delay2,
+	                                                                     BiConsumer<O, T> uiActivity) {
+		executeLater(comp,
+		             delay1, () -> longRunningActivity.apply(obj),
+		             delay2, (result) -> uiActivity.accept(obj, result));
 	}
 
-	protected static <O extends Object, T extends Object> void executeLaterInternal(Component comp,
-	                                                                                O obj, // Object to be passed to longRunningActivity and uiActivity
-	                                                                                Function<O, T> longRunningActivity,
-	                                                                                BiConsumer<O, T> uiActivity) {
-		final T result; // final to make the lambda happy...
-		if (longRunningActivity != null) {
-			log.debug("longRunningActivity start:"); //$NON-NLS-1$
-			try {
-				result = longRunningActivity.apply(obj);
-				log.debug("longRunningActivity done."); //$NON-NLS-1$
-			} catch (Exception ex) {
-				log.error("longRunningActivity failed.", ex); //$NON-NLS-1$
-				return;
-			}
-		} else {
-			result = null;
-		}
-		if (uiActivity != null) {
-			if (RESERVE_UI_BEFORE_UPDATE) {
-				log.debug("obtaining GUI access:"); //$NON-NLS-1$
-				comp.getUI().ifPresentOrElse((ui) -> ui.access(() -> {
-				                            	log.debug("uiActivity start:"); //$NON-NLS-1$
-				                            	uiActivity.accept(obj, result);
-				                            	log.debug("uiActivity done."); //$NON-NLS-1$
-				                             }),
-				                             () -> log.warn("unable to obtain UI-handle - output dropped")); //$NON-NLS-1$
-			} else {
-				log.debug("uiActivity start:"); //$NON-NLS-1$
-				try {
-					uiActivity.accept(obj, result);
-					log.debug("uiActivity done."); //$NON-NLS-1$
-				} catch (Exception ex) {
-					log.error("uiActivity failed.", ex); //$NON-NLS-1$
-				}
-			}
-		}
+	/**
+	 * Short form of the above method with zero delays
+	 * @param <O> the type of the parameter that is passed to longRunningActivity
+	 * @param <T> the type of the result that is created by longRunningActivity and passed to uiActivity
+	 * @param comp the component whose UI has to be reserved before uiActivity is executed
+	 * @param obj an object that is passed to both, longRunningActivity and uiActivity
+	 * @param longRunningActivity method that creates a result which will be passed to uiActivity
+	 * @param uiActivity operates on (typically: visualizes) the result created by longRunningActivity
+	 **/
+	public static <O extends Object, T extends Object> void executeLater(Component comp,
+	                                                                     O obj, // Object to be passed to longRunningActivity and uiActivity
+	                                                                     Function<O, T> longRunningActivity,
+	                                                                     BiConsumer<O, T> uiActivity) {
+		executeLater(comp, obj,
+		             0, longRunningActivity,
+		             0, uiActivity);
 	}
 }
