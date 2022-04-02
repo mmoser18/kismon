@@ -24,7 +24,7 @@ echo Step 2: Going to remove project local stuff:
 pause
 rem let user see what we do:
 @echo on
-mvn vaadin:clean-frontend
+call mvn vaadin:clean-frontend
 rmdir /S /Q .\target
 rmdir /S /Q .\node_modules
 rmdir /S /Q .\frontend\generated
