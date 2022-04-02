@@ -1,5 +1,7 @@
-echo run application using Java-11:
+@echo off
 set JAVA_HOME=C:\Program Files\Java\jdk-11.0
+rem set JAVA_HOME=C:\Program Files\Java\jdk-17.0
+echo run application using %JAVA_HOME%:
 
 rem we need the properties file HERE:
 echo copying required resources to right place:

@@ -28,15 +28,15 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- some local settings: -->
 		<user.home>${USERPROFILE}</user.home>
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
-		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1, but did NOT work with v19.0.x..v21.0.4: -->
+		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1/2, but did NOT work with v19.0.x..v21.0.4: -->
 		<vaadin.version>22.0.2</vaadin.version>
 		<!-- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->

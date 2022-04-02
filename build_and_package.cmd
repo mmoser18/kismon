@@ -1,6 +1,7 @@
 @echo off
-echo build using Java-11:
 set JAVA_HOME=C:\Program Files\Java\jdk-11.0
+rem set JAVA_HOME=C:\Program Files\Java\jdk-17.0
+echo building using %JAVA_HOME%:
 rem echo ========================
 rem echo JAVA_HOME=%JAVA_HOME%
 rem echo JAVACMD=%JAVACMD%
