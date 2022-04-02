@@ -22,11 +22,6 @@ public class RootNodeForm extends IntermediateNodeForm
 	static final String FilePathClassName = NodeFormField + "filePath"; //$NON-NLS-1$
 
 	protected TextField filePath;
-
-	public RootNodeForm(NodeService nodeService) {
-		super(nodeService);
-	}
-
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);

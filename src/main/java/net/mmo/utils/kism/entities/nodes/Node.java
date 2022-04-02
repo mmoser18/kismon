@@ -20,7 +20,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
-import net.mmo.utils.kism.entities.nodes.actions.Action;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
@@ -60,16 +59,11 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	private NodeProperties properties = new NodeProperties();
 
-	private Action<Node> action = null;
-
 	@JsonIgnore
 	protected transient IntermediateNode parent;
 
 	@JsonIgnore
 	transient private State state = State.OK;
-
-	@JsonIgnore
-	transient private int sameStateSince = 0;
 
 	// required for deserialization
 	protected Node() {
@@ -156,14 +150,8 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		if (this.state != state) {
 			State oldState = this.state;
 			this.state = state;
-			this.sameStateSince = 0;
 			informOnPropertyChange(PROPERTYNAME_STATE, oldState, state);
 			if (this.applicable && this.parent != null) this.parent.deriveNewState();
-		} else {
-			this.sameStateSince++;
-		}
-		if (this.action != null) {
-			this.action.checkForAction(this);
 		}
 	}
 
@@ -258,7 +246,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			.append(", parent(name):").append(this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", applicable:").append(isApplicable()) //$NON-NLS-1$
 			.append(", properties: {").append(KeyValuesConverter.convertMapToString(getProperties(), ", ")).append('}') //$NON-NLS-1$ //$NON-NLS-2$
-			.append("}, action:").append(getAction()) //$NON-NLS-1$
 			.toString();
 	}
 }

@@ -23,6 +23,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @SuppressWarnings({"nls", "javadoc"})
 @EnableWebSecurity
@@ -36,7 +37,7 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 	private static final String LOGIN_URL = '/' + CommonConstants.LoginURL;
 	private static final String LOGIN_PROCESSING_URL = LOGIN_URL;
 	private static final String LOGIN_FAILURE_URL = LOGIN_URL + "?error";
-	private static final String LOGOUT_SUCCESS_URL = '/' + CommonConstants.LogoutURL;
+	private static final String LOGOUT_SUCCESS_URL = '/' + CommonConstants.LogoutSuccessURL;
 
 	// Vaadin <v19.0.x:
 //	CustomRequestCache requestCache;
@@ -55,16 +56,18 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 			.requestCache(this.requestCache) // Uses VaadinDefaultRequestCache to track unauthorized requests so that users are redirected appropriately after login.
 			.and().authorizeRequests() // Turns on authorization
 			.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll() // Allows all internal traffic from the Vaadin framework.
+			.requestMatchers(new AntPathRequestMatcher(CommonConstants.LogoutSuccessURL)).permitAll() // Allows all access to the logout-page
 			.anyRequest().authenticated() // Allows all authenticated traffic.
 			.and().formLogin().loginPage(LOGIN_URL).permitAll() // Enables form-based login and permits unauthenticated access to it.
 			.loginProcessingUrl(LOGIN_PROCESSING_URL) // Configures the login page URLs.
 			.failureUrl(LOGIN_FAILURE_URL)
-			.and().logout()
+			.and().logout().permitAll()
 			// commented since these are the defaults:
 			//.invalidateHttpSession(true)
 			.logoutUrl(CommonConstants.LogoutURL)
-			.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
-		// logoutRequestMatcher(new AntPathRequestMatcher(logoutUrl, "GET")); // allow to logout with a simple GET-request
+			.logoutSuccessUrl(LOGOUT_SUCCESS_URL)
+			.logoutRequestMatcher(new AntPathRequestMatcher(CommonConstants.LogoutURL, "GET")) // allow to logout with a simple GET-request
+			;
 	}
 
 	@Bean

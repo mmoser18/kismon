@@ -27,7 +27,7 @@ import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
 
 @SuppressWarnings("javadoc")
-public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
+public abstract class LeafNodeForm <N extends LeafNode> extends ActionForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
 
@@ -53,8 +53,9 @@ public abstract class LeafNodeForm <N extends LeafNode> extends NodeForm<N>
 	protected NumberField duration;
 
 
-	public LeafNodeForm(Class<N> clazz, NodeService nodeService) {
-		super(clazz, nodeService);
+	@Override
+	public void init(Class<N> clazz, NodeService nodeService) {
+		super.init(clazz, nodeService);
 	}
 
 	@Override

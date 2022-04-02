@@ -3,6 +3,7 @@ package net.mmo.utils.kism;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
@@ -65,9 +66,9 @@ public class Application extends SpringBootServletInitializer
 
 			String JavaHome = System.getProperty("$JAVA HOME"); //$NON-NLS-1$
 
+			Properties appProperties = AppProperties.getProperties();
 			TCPConnection.acceptableSSLVersions =
-				AppProperties.getProperties()
-				             .getProperty("SupportedSslVersions", //$NON-NLS-1$
+				appProperties.getProperty("SupportedSslVersions", //$NON-NLS-1$
 				                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3") //$NON-NLS-1$
 				             .split(",|\\s"); //$NON-NLS-1$
 			log.info("Acceptable SSL-versions are: {}", Arrays.toString(TCPConnection.acceptableSSLVersions)); //$NON-NLS-1$
@@ -75,26 +76,26 @@ public class Application extends SpringBootServletInitializer
 			checkAndRemoveAcceptableProtocolsFromDisabledList();
 
 			TCPConnection.disableHostNameVerification = // we parse this into a boolean as syntax validation:
-				Boolean.parseBoolean(AppProperties.getProperties().getProperty("DisableHostNameVerification", //$NON-NLS-1$
-				                                                               "true")); //$NON-NLS-1$
+				Boolean.parseBoolean(appProperties.getProperty("DisableHostNameVerification", //$NON-NLS-1$
+				                                               "true")); //$NON-NLS-1$
 			System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", //$NON-NLS-1$
 			                                   Boolean.toString(TCPConnection.disableHostNameVerification));
 
 			TCPConnection.trustAllCertificates =
-				Boolean.parseBoolean(AppProperties.getProperties().getProperty("TrustAllCertificates", //$NON-NLS-1$
-				                                                               "true")); //$NON-NLS-1$
+				Boolean.parseBoolean(appProperties.getProperty("TrustAllCertificates", //$NON-NLS-1$
+				                                               "true")); //$NON-NLS-1$
 
 			// the truststore for certificates that we trust (only relevant, if we trustAllCertificates == false)
 			// not yet supported:
 			String trustStoreType =
-				AppProperties.getProperties().getProperty("TrustStoreType", //$NON-NLS-1$
-				                                          "pkcs12"); //$NON-NLS-1$
+				appProperties.getProperty("TrustStoreType", //$NON-NLS-1$
+				                          "pkcs12"); //$NON-NLS-1$
 			String trustStorePath =
-				AppProperties.getProperties().getProperty("TrustStorePath", //$NON-NLS-1$
-				                                          (JavaHome != null ? JavaHome : ".") + "/lib/security/cacerts"); //$NON-NLS-1$ //$NON-NLS-2$
+				appProperties.getProperty("TrustStorePath", //$NON-NLS-1$
+				                          (JavaHome != null ? JavaHome : ".") + "/lib/security/cacerts"); //$NON-NLS-1$ //$NON-NLS-2$
 			String trustStorePwd =
-				AppProperties.getProperties().getProperty("TrustStorePassword", //$NON-NLS-1$
-				                                          "changeit"); //$NON-NLS-1$
+				appProperties.getProperty("TrustStorePassword", //$NON-NLS-1$
+				                          "changeit"); //$NON-NLS-1$
 
 			log.info("Truststore path: '{}' / nodeType: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
 			if (nonBlank(trustStoreType)) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
@@ -103,25 +104,25 @@ public class Application extends SpringBootServletInitializer
 
 			// the keystore we use to connect to other systems:
 			String keyStoreType =
-				AppProperties.getProperties().getProperty("KeyStoreType", //$NON-NLS-1$
-				                                          "jks"); //$NON-NLS-1$
+				appProperties.getProperty("KeyStoreType", //$NON-NLS-1$
+				                          "jks"); //$NON-NLS-1$
 			String keyStorePath =
-				AppProperties.getProperties().getProperty("KeyStorePath", //$NON-NLS-1$
-				                                          "D:\\Projects\\KStA_ZH_ZHQuest\\spec\\Testing\\Testsystems\\Testcertificates\\certificates - test systems\\localhost-keystore.p12"); //$NON-NLS-1$
+				appProperties.getProperty("KeyStorePath", //$NON-NLS-1$
+				                          "D:\\Projects\\KStA_ZH_ZHQuest\\spec\\Testing\\Testsystems\\Testcertificates\\certificates - test systems\\localhost-keystore.p12"); //$NON-NLS-1$
 			String keyStorePwd =
-				AppProperties.getProperties().getProperty("KeyStorePassword", //$NON-NLS-1$
-				                                          "password"); //$NON-NLS-1$
+				appProperties.getProperty("KeyStorePassword", //$NON-NLS-1$
+				                          "password"); //$NON-NLS-1$
 
 			log.info("Keystore path: '{}' / nodeType: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
 			if (nonBlank(keyStoreType)) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
 			if (nonBlank(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
 			if (nonBlank(keyStorePwd))  System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
-			String localeStr = AppProperties.getProperties().getProperty("Locale"); //$NON-NLS-1$
+			String localeStr = appProperties.getProperty("Locale"); //$NON-NLS-1$
 			if (nonBlank(localeStr)) {
 				Locale locale = Locale.forLanguageTag(localeStr);
-			log.info("Setting Locale: given '{}' -> found: '{}' / language: '{}'", //$NON-NLS-1$
-			         localeStr, locale, (locale != null ? locale.getLanguage() : null));
+				log.info("Setting Locale: given '{}' -> found: '{}' / language: '{}'", //$NON-NLS-1$
+				         localeStr, locale, (locale != null ? locale.getLanguage() : null));
 				Locale.setDefault(locale);
 			}
 

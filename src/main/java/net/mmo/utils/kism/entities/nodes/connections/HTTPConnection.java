@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -40,7 +41,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -241,7 +241,7 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	public void setAcceptableReturnCodes(String acceptableReturnCodes) {
-		this.acceptableReturnCodes= acceptableReturnCodes;
+		this.acceptableReturnCodes = acceptableReturnCodes;
 	}
 
 	private synchronized void setHttpClient(HttpClient httpClient) {
@@ -265,7 +265,7 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	public void setRequestHeaders(HttpHeaders requestHeaders) {
-		if (!Objects.equal(this.requestHeaders, requestHeaders)) {
+		if (!Objects.equals(this.requestHeaders, requestHeaders)) {
 			HttpHeaders oldRequestHeaders = this.requestHeaders;
 			this.requestHeaders = requestHeaders;
 			informOnPropertyChange(PROPERTYNAME_REQUEST_HEADERS, oldRequestHeaders, requestHeaders);
@@ -273,7 +273,7 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	public void setRequestBody(byte[] requestBody) {
-		if (!Objects.equal(this.requestBody, requestBody)) {
+		if (!Objects.equals(this.requestBody, requestBody)) {
 			byte[] oldRequestBody = this.requestBody;
 			this.requestBody = requestBody;
 			informOnPropertyChange(PROPERTYNAME_REQUEST_BODY, oldRequestBody, requestBody);
@@ -291,21 +291,21 @@ abstract public class HTTPConnection extends TCPConnection
 	// update received data:
 
 	public void setResponseStatusCode(int responseStatusCode ) {
-		if (!Objects.equal(this.responseStatusCode, responseStatusCode)) {
+		if (!Objects.equals(this.responseStatusCode, responseStatusCode)) {
 			int oldResponseStatusCode = this.responseStatusCode;
 			this.responseStatusCode = responseStatusCode;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_STATUS_CODE, oldResponseStatusCode, responseStatusCode);
 		}
 	}
 	public void setResponseHeaders(HttpHeaders responseHeaders) {
-		if (!Objects.equal(this.responseHeaders, responseHeaders)) {
+		if (!Objects.equals(this.responseHeaders, responseHeaders)) {
 			HttpHeaders oldResponseHeaders = this.responseHeaders;
 			this.responseHeaders = responseHeaders;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_HEADERS, oldResponseHeaders, responseHeaders);
 		}
 	}
 	public void setResponseBody(byte[] responseBody) {
-		if (!Objects.equal(this.responseBody, responseBody)) {
+		if (!Objects.equals(this.responseBody, responseBody)) {
 			byte[] oldResponseBody = this.responseBody;
 			this.responseBody = responseBody;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_BODY, oldResponseBody, responseBody);

@@ -53,30 +53,31 @@ public class FormFactory <N extends Node> extends VerticalLayout
 			log.info("creating new form for node-class {}:", clazz); //$NON-NLS-1$
 			try {
 				if (clazz == RootNode.class) {
-					form = (NodeForm<N>)new RootNodeForm(nodeService);
+					form = (NodeForm<N>)new RootNodeForm();
 				} else if (clazz == IntermediateNode.class) {
-					form = (NodeForm<N>)new IntermediateNodeForm(nodeService);
+					form = (NodeForm<N>)new IntermediateNodeForm();
 				} else if (clazz == RESTConnection.class) {
-					form = (NodeForm<N>)new RESTConnectionForm(nodeService);
+					form = (NodeForm<N>)new RESTConnectionForm();
 				} else if (clazz == SOAPConnection.class) {
-					form = (NodeForm<N>)new SOAPConnectionForm(nodeService);
+					form = (NodeForm<N>)new SOAPConnectionForm();
 				} else if (clazz == JDBCConnection.class) {
-					form = (NodeForm<N>)new JDBCConnectionForm(nodeService);
+					form = (NodeForm<N>)new JDBCConnectionForm();
 				} else if (clazz == PingConnection.class) {
-					form = (NodeForm<N>)new PingConnectionForm(nodeService);
+					form = (NodeForm<N>)new PingConnectionForm();
 				} else if (clazz == SSHConnection.class) {
-					form = (NodeForm<N>)new SSHConnectionForm(nodeService);
+					form = (NodeForm<N>)new SSHConnectionForm();
 				} else {
-					throw new IllegalArgumentException("No form defined (yet) for node class " + clazz); //$NON-NLS-1$
+					throw new IllegalArgumentException("No form defined (yet) for node " + clazz); //$NON-NLS-1$
 				}
+				form.init(nodeService);
 				this.forms.put(clazz, form); // cache it
 				log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
 			} catch (Throwable t) { // also covers class not found and all such issues...
-				log.error("Error creating form for node class " + clazz, t); //$NON-NLS-1$
+				log.error("Error creating form for node of " + clazz, t); //$NON-NLS-1$
 				return null;
 			}
 		} else {
-			log.info("found existing form for class {}: {}", clazz, form); //$NON-NLS-1$
+			log.info("found existing form for {}: {}", clazz, form); //$NON-NLS-1$
 		}
 		form.initFlags(); // these may have changed (e.g. by a logout/login with a different uid)
 		return form;

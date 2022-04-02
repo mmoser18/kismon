@@ -36,7 +36,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 	static final String CheckResultsClassName = NodeFormField + "checkResults"; //$NON-NLS-1$
 
 	static final String ValidationDetailsClassName = NodeFormField + "validation-details"; //$NON-NLS-1$
-	static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
+	// static final String ResultCheckerClassName = NodeFormField + "resultChecker"; //$NON-NLS-1$
 	static final String ConditionClassName = NodeFormField + "condition"; //$NON-NLS-1$
 	static final String OperandClassName = NodeFormField + "operand"; //$NON-NLS-1$
 
@@ -52,10 +52,6 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 	protected Accordion validationDetails;
 	protected VerticalLayout validationDetailsPanel;
 
-
-	public CheckableNodeForm(Class<N> clazz, NodeService nodeService) {
-		super(clazz, nodeService);
-	}
 
 	@Override
 	protected void createFormFields(NodeService nodeService) {

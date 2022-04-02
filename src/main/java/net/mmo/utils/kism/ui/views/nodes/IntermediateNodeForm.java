@@ -21,7 +21,7 @@ import net.mmo.utils.kism.ui.UIConstants;
 @SuppressWarnings("javadoc")
 @Slf4j
 @PreserveOnRefresh
-public class IntermediateNodeForm extends NodeForm<IntermediateNode>
+public class IntermediateNodeForm extends ActionForm<IntermediateNode>
 {
 	private static final long serialVersionUID = -6878512672974473759L;
 
@@ -36,9 +36,9 @@ public class IntermediateNodeForm extends NodeForm<IntermediateNode>
 
 	protected Select<IntermediateNode.ChildrenCondition> condition;
 
-
-	public IntermediateNodeForm(NodeService nodeService) {
-		super(IntermediateNode.class, nodeService);
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(IntermediateNode.class, nodeService);
 	}
 
 	@Override

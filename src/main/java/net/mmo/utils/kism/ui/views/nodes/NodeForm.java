@@ -67,7 +67,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	// this is not yet added to the form to allow subclasses to include them at appropriate places:
 	protected Button execute;
-
 	protected VerticalLayout fields;
 
 	private Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
@@ -94,111 +93,40 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	public Validator<String> nonEmptyStringValidator;
 	/** reusable validator for fields that must not be empty */
 	public Validator<String> nonEmptyNumberValidator;
+	/** reusable validator for fields that must be 0 or positive */
+	public Validator<String> positiveNumberValidator;
+
 	/** reusable URL validator for URL fields */
-	protected Validator<String> urlValidator;
+	public Validator<String> urlValidator;
 
 
-	public NodeForm(Class<N> clazz, NodeService nodeService) {
+	protected NodeForm() {
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
+	}
+
+	public void init(NodeService nodeService) {
+		throw new IllegalStateException("This method must never be called! Subclasses need to override it and call init(Class<N> nodeClass, NodeService nodeService) instead!"); //$NON-NLS-1$
+	}
+	public void init(Class<N> clazz, NodeService nodeService) {
 		addClassName(ViewClassName);
 
 		initFlags();
 
-		// We create a Validator that can be used everywhere where we need to check whether a field
-		// contains unresolvable properties:
-		this.propertiesResolvableValidator = new Validator<>()
-		{
-			private static final long serialVersionUID = -7211887363956128833L;
-
-			@Override
-			public ValidationResult apply(String value, ValueContext context) {
-				try {
-					if (NodeForm.this.node != null) NodeForm.this.node.resolveProperties(value);
-					return ValidationResult.ok(); // still here -> the above conversion succeeded
-				} catch (Exception ex) { // Exception -> the above conversion failed
-					return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
-																value, ex.getMessage()));
-				}
-			}
-		};
-
-		this.nonEmptyStringValidator = new Validator<>()
-		{
-			private static final long serialVersionUID = -7211887363956128833L;
-
-			@Override
-			public ValidationResult apply(String value, ValueContext context) {
-				String resolvedValue;
-				try {
-					resolvedValue = NodeForm.this.node != null
-					                ? NodeForm.this.node.resolveProperties(value)
-					                : value;
-				} catch (Exception ex) {
-					return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
-				}
-				return resolvedValue.isBlank()
-					? ValidationResult.error("String operand must not be empty!") //$NON-NLS-1$
-					: ValidationResult.ok();
-			}
-		};
-
-		this.nonEmptyNumberValidator = new Validator<>()
-		{
-			private static final long serialVersionUID = -7211887363956128833L;
-
-			@Override
-			public ValidationResult apply(String value, ValueContext context) {
-				String resolvedValue;
-				try {
-					resolvedValue = NodeForm.this.node != null
-					                ? NodeForm.this.node.resolveProperties(value)
-					                : value;
-				} catch (Exception ex) {
-					return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
-				}
-				try {
-					Integer.parseInt(resolvedValue);
-					return ValidationResult.ok();
-				} catch (Exception ex) {
-					return ValidationResult.error("Cannot convert '" + resolvedValue + "' to a numeric value!"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-			}
-		};
-
-		this.urlValidator = new Validator<>()
-		{
-			private static final long serialVersionUID = 4829240255774815878L;
-
-			@Override
-			public ValidationResult apply(String value, ValueContext context) {
-				log.trace("validating url: '{}'", value); //$NON-NLS-1$
-				try {
-					if (NodeForm.this.node != null) {
-						// we check whether we can resolve the url and convert it to a valid URL:
-						URI uri = new URI(NodeForm.this.node.resolveProperties(value));
-						// no check necessary - any error is thrown!
-						log.debug("validation succeeded: '{}' => '{}'", value, uri); //$NON-NLS-1$
-					} else {
-						log.debug("node == null: validation succeeded"); //$NON-NLS-1$
-					}
-					return ValidationResult.ok();
-				} catch (Exception ex) {
-					log.debug("validation failed: '{}' -> {}", value, ex); //$NON-NLS-1$
-					return ValidationResult.error(String.format(Messages.getString("NodeForm.URL.ValidatorErrorMsg"), //$NON-NLS-1$
-					                                            value, ex));
-				}
-			}
-		};
+		createValidators();
 
 		// we create our binder:
 		this.binder = new BeanValidationBinder<>(clazz);
 
+		// this creates the majority of the fields:
 		createFormFields(nodeService);
+
+		// here we append stuff at the very end of the form:
+		appendFurtherFields(nodeService);
 
 		// we bind the binder to our node-beans:
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form fields
 		                                      // or else the later readBean/writeBean won't work!
-		                                      // Took me a day to find out why the binding was a No-op... ||-(
+		                                      // Took me a day to find out why the binding was a No-Op... ||-(
 
 		add(this.header, this.fields, createButtonsLayout());
 
@@ -422,9 +350,127 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		this.fields = new VerticalLayout(this.name, this.description, stateAndApplicable, this.properties);
 		this.fields.setClassName(FieldsClassName);
+	}
+
+	/**
+	 * to be extended by subclasses
+	 */
+	protected void appendFurtherFields(NodeService nodeService) {
 		this.fields.setSizeFull();
 		// this.fields.setWidthFull();
 		this.fields.setMargin(false);
+	}
+
+	/**
+	 * to be extended by subclasses
+	 */
+	protected void createValidators() {
+		// We create a Validator that can be used everywhere where we need to check whether a field
+		// contains unresolvable properties:
+		this.propertiesResolvableValidator = new Validator<>()
+		{
+			private static final long serialVersionUID = -7211887363956128833L;
+
+			@Override
+			public ValidationResult apply(String value, ValueContext context) {
+				try {
+					if (NodeForm.this.node != null) {
+						NodeForm.this.node.resolveProperties(value);
+					}
+					return ValidationResult.ok(); // if still here -> the above conversion succeeded
+				} catch (Exception ex) { // Exception -> the above conversion failed
+					return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
+																value, ex.getMessage()));
+				}
+			}
+		};
+
+		this.nonEmptyStringValidator = new Validator<>()
+		{
+			private static final long serialVersionUID = -7211887363956128833L;
+
+			@Override
+			public ValidationResult apply(String value, ValueContext context) {
+				String resolvedValue;
+				try {
+					resolvedValue = NodeForm.this.node != null
+					                ? NodeForm.this.node.resolveProperties(value)
+					                : value;
+				} catch (Exception ex) {
+					return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
+				}
+				return resolvedValue.isBlank()
+					? ValidationResult.error("String operand must not be empty!") //$NON-NLS-1$
+					: ValidationResult.ok();
+			}
+		};
+
+		this.nonEmptyNumberValidator = new Validator<>()
+		{
+			private static final long serialVersionUID = -7211887363956128833L;
+
+			@Override
+			public ValidationResult apply(String value, ValueContext context) {
+				String resolvedValue;
+				try {
+					resolvedValue = NodeForm.this.node != null
+					                ? NodeForm.this.node.resolveProperties(value)
+					                : value;
+				} catch (Exception ex) {
+					return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
+				}
+				try {
+					Integer.parseInt(resolvedValue);
+					return ValidationResult.ok();
+				} catch (Exception ex) {
+					return ValidationResult.error("Cannot convert '" + resolvedValue + "' to a numeric value!"); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+		};
+
+		this.positiveNumberValidator = new Validator<>()
+		{
+			private static final long serialVersionUID = -476108409332944491L;
+
+			@Override
+			public ValidationResult apply(String value, ValueContext context) {
+				String resolvedValue;
+				try {
+					resolvedValue = NodeForm.this.node != null
+					                ? NodeForm.this.node.resolveProperties(value)
+					                : value;
+				} catch (Exception ex) {
+					return ValidationResult.error("Error resolving property: " + ex); //$NON-NLS-1$
+				}
+				try {
+					if (Integer.parseInt(resolvedValue) >= 0) return ValidationResult.ok();
+					return ValidationResult.error("'" + resolvedValue + "' must be non-negative!"); //$NON-NLS-1$ //$NON-NLS-2$
+				} catch (Exception ex) {
+					return ValidationResult.error("Cannot convert '" + resolvedValue + "' to a numeric value!"); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+		};
+
+		this.urlValidator = new Validator<>()
+		{
+			private static final long serialVersionUID = 4829240255774815878L;
+
+			@Override
+			public ValidationResult apply(String value, ValueContext context) {
+				log.trace("validating url: '{}'", value); //$NON-NLS-1$
+				try {
+					// we check whether we can resolve the url and convert it to a valid URL:
+					URI uri = new URI(NodeForm.this.node != null ? NodeForm.this.node.resolveProperties(value) : value);
+					// no check necessary - any error is thrown!
+					log.debug("validation succeeded: '{}' => '{}'", value, uri); //$NON-NLS-1$
+					return ValidationResult.ok();
+				} catch (Exception ex) {
+					log.debug("validation failed: '{}' -> {}", value, ex); //$NON-NLS-1$
+					return ValidationResult.error(String.format(Messages.getString("NodeForm.URL.ValidatorErrorMsg"), //$NON-NLS-1$
+					                                            value, ex));
+				}
+			}
+		};
 	}
 
 	public N getNode() {

@@ -15,7 +15,8 @@ public class RESTConnectionForm extends HTTPConnectionForm<RESTConnection>
 {
 	private static final long serialVersionUID = 7200842663851555372L;
 
-	public RESTConnectionForm(NodeService nodeService) {
-		super(RESTConnection.class, nodeService);
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(RESTConnection.class, nodeService);
 	}
 }

@@ -13,11 +13,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -117,14 +117,14 @@ public class JDBCConnection extends TCPConnection
 	}
 
 	public void setResponseStatus(String responseStatus) {
-		if (!Objects.equal(this.responseStatus, responseStatus)) {
+		if (!Objects.equals(this.responseStatus, responseStatus)) {
 			String oldResponseStatus = this.responseStatus;
 			this.responseStatus = responseStatus;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_STATUS, oldResponseStatus, responseStatus);
 		}
 	}
 	public void setResponsePayload(String responsePayload) {
-		if (!Objects.equal(this.responsePayload, responsePayload)) {
+		if (!Objects.equals(this.responsePayload, responsePayload)) {
 			String oldResponsePayload = this.responsePayload;
 			this.responsePayload = responsePayload;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_PAYLOAD, oldResponsePayload, responsePayload);

@@ -5,12 +5,13 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
+import java.util.Objects;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.CheckableNode;
@@ -60,7 +61,7 @@ abstract public class TCPConnection extends CheckableNode
 	}
 
 	public void setUrl(String url) {
-		if (!Objects.equal(this.url, url)) {
+		if (!Objects.equals(this.url, url)) {
 			this.url = url;
 			updateResultingUrl();
 		}

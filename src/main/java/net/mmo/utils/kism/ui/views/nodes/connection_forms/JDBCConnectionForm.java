@@ -53,8 +53,9 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 	protected TextArea  responsePayload;
 
 
-	public JDBCConnectionForm(NodeService nodeService) {
-		super(JDBCConnection.class, nodeService);
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(JDBCConnection.class, nodeService);
 	}
 
 	@Override

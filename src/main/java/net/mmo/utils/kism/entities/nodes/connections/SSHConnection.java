@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +77,7 @@ public class SSHConnection extends IPConnection
 
 	@Override
 	public void setResultingHostAddress(String resultingHostAddress) {
-		if (!Objects.equal(this.getResultingHostAddress(), resultingHostAddress)) {
+		if (!Objects.equals(this.getResultingHostAddress(), resultingHostAddress)) {
 			super.setResultingHostAddress(resultingHostAddress);
 			resetClient();
 		}
@@ -91,7 +91,7 @@ public class SSHConnection extends IPConnection
 	}
 
 	public void setUsername(String username) {
-		if (!Objects.equal(this.username, username)) {
+		if (!Objects.equals(this.username, username)) {
 			this.username = username;
 			resetClient();
 		}
@@ -102,7 +102,7 @@ public class SSHConnection extends IPConnection
 			this.authMethod = Auth_Method.PWD;
 			setAuthArg(password);
 			resetClient();
-		} else if (!Objects.equal(this.getAuthArg(), password)) {
+		} else if (!Objects.equals(this.getAuthArg(), password)) {
 			this.setAuthArg(password);
 			resetClient();
 		}
@@ -112,7 +112,7 @@ public class SSHConnection extends IPConnection
 			this.authMethod = Auth_Method.KEY;
 			setAuthArg(privateKey);
 			resetClient();
-		} else if (!Objects.equal(this.getAuthArg(), privateKey)) {
+		} else if (!Objects.equals(this.getAuthArg(), privateKey)) {
 			this.setAuthArg(privateKey);
 			resetClient();
 		}

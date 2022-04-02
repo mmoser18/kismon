@@ -29,11 +29,6 @@ public abstract class TCPConnectionForm <N extends TCPConnection> extends Checka
 	protected TextField url;
 	protected TextField resultingURL;
 
-
-	public TCPConnectionForm(Class<N> clazz, NodeService nodeService) {
-		super(clazz, nodeService);
-	}
-
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);

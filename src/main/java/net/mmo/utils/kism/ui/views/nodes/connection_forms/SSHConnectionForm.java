@@ -65,9 +65,9 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 	protected TextField command;
 	protected TextArea  response;
 
-
-	public SSHConnectionForm(NodeService nodeService) {
-		super(SSHConnection.class, nodeService);
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(SSHConnection.class, nodeService);
 	}
 
 	@Override

@@ -25,8 +25,9 @@ public class PingConnectionForm extends IPConnectionForm<PingConnection>
 
 	protected TextArea response;
 
-	public PingConnectionForm(NodeService nodeService) {
-		super(PingConnection.class, nodeService);
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(PingConnection.class, nodeService);
 	}
 
 	@Override

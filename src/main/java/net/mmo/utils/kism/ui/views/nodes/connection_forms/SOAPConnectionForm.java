@@ -27,11 +27,10 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 
 	protected TextField soapAction;
 
-
-	public SOAPConnectionForm(NodeService nodeService) {
-		super(SOAPConnection.class, nodeService);
+	@Override
+	public void init(NodeService nodeService) {
+		super.init(SOAPConnection.class, nodeService);
 	}
-
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);

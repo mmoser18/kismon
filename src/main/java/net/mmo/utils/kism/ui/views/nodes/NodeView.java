@@ -10,11 +10,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Objects;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -127,7 +127,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 			this.content = new SplitLayout(this.tree, this.formWrapper);
 			this.content.addClassName(ViewContentClassName);
 			this.content.setSizeFull();
-			// this.content.setSplitterPosition(200); // initial position
 			this.content.setSplitterPosition(100); // initial position
 
 			// this.content.setOrientation(this.contentDirection.getOrientation());
@@ -420,7 +419,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			// as long as there are no derivatives of NodeView we can short-cut the call to handleChangeEvent:
 			@Override
 			protected boolean predicate(N source, String propertyName, Object oldValue, Object newValue) {
-				return Objects.equal(propertyName, Node.PROPERTYNAME_STATE);
+				return Objects.equals(propertyName, Node.PROPERTYNAME_STATE);
 			}
 			// for better log-messages:
 			@Override
@@ -604,7 +603,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 				this.formWrapper.removeAll();
 				this.formWrapper.add(newForm);
 				this.formWrapper.setSizeFull();
-				this.content.setSplitterPosition(100);
+				log.info("editNode: setting splitter to 50:"); //$NON-NLS-1$
+				this.content.setSplitterPosition(50);
 			}
 			if (SecurityUtils.isAdminUser()) {
 				this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
@@ -629,9 +629,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.info("NodeView.closeEditor"); //$NON-NLS-1$
 		if (this.form.setNode(null, false)) {
 			removeClassName("editing"); //$NON-NLS-1$
-			this.form.setVisible(false);
 			this.formWrapper.setSizeUndefined();
+			log.info("closeEditor: setting splitter to 100:"); //$NON-NLS-1$
 			this.content.setSplitterPosition(100);
+			this.form.setVisible(false);
+			this.form = null;
 		}
 	}
 

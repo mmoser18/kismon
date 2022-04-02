@@ -5,12 +5,13 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
+import java.util.Objects;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.CheckableNode;
@@ -49,7 +50,7 @@ abstract public class IPConnection extends CheckableNode
 	}
 
 	public void setHostAddress(String hostAddress) {
-		if (!Objects.equal(this.hostAddress, hostAddress)) {
+		if (!Objects.equals(this.hostAddress, hostAddress)) {
 			this.hostAddress = hostAddress;
 			updateResultingHostAddress();
 		}

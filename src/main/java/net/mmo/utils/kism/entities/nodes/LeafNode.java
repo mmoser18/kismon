@@ -6,6 +6,7 @@
 package net.mmo.utils.kism.entities.nodes;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,7 +17,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 @Setter
 @Getter
 @Slf4j
-abstract public class LeafNode extends Node
+abstract public class LeafNode extends ActionableNode
 {
 	private static final long serialVersionUID = 265720619758262963L;
 
@@ -262,7 +262,7 @@ abstract public class LeafNode extends Node
 	}
 
 	public void setTimestamp(LocalDateTime timestamp) {
-		if (!Objects.equal(this.timestamp, timestamp)) {
+		if (!Objects.equals(this.timestamp, timestamp)) {
 			LocalDateTime oldTimestamp = this.timestamp;
 			this.timestamp = timestamp;
 			informOnPropertyChange(PROPERTYNAME_TIMESTAMP, oldTimestamp, timestamp);

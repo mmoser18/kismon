@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Getter
 @Slf4j
-public class IntermediateNode extends Node
+public class IntermediateNode extends ActionableNode
 {
 	private static final long serialVersionUID = 1171867853266571835L;
 

@@ -27,11 +27,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 	protected TextField hostAddress;
 	protected TextField resultingHostAddress;
 
-
-	public IPConnectionForm(Class<N> clazz, NodeService nodeService) {
-		super(clazz, nodeService);
-	}
-
 	@Override
 	protected void createFormFields(NodeService nodeService) {
 		super.createFormFields(nodeService);

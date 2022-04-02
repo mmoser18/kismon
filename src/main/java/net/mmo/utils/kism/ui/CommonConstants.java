@@ -20,6 +20,7 @@ public class CommonConstants
 
 	public static final String LoginURL = "login"; //$NON-NLS-1$
 	public static final String LogoutURL = "logout"; //$NON-NLS-1$
+	public static final String LogoutSuccessURL = "login?logout-success"; //$NON-NLS-1$
 
 	public enum LayoutDirection {
 		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$
