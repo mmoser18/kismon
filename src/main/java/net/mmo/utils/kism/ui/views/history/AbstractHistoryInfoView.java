@@ -239,7 +239,8 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 
 	/** if the highest refreshNr triggered is higher than our's than our refresh is obsolete */
 	protected boolean refreshIsObsolete(HashMap <String, Object> res) {
-		return this.refreshCounter.get() > (int)res.get(RefreshNrKey);
+		Integer myKey = (Integer)res.get(RefreshNrKey);
+		return myKey != null && this.refreshCounter.get() > myKey;
 	}
 
 	HashMap <String, Object> fetchDataInternal(Integer refreshNr) {
