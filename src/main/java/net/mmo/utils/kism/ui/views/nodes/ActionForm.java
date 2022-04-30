@@ -161,7 +161,8 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		if (ac != null) {
 			ac.getTriggerThresholds()[state.ordinal()] = value;
 		} else {
-			log.error("This should never happen - setting threshold value for undefinded ActionCheck"); //$NON-NLS-1$
+			log.error("This should never happen - setThreshold called with value {} for state {} for non-existent ActionCheck in node {}", //$NON-NLS-1$
+			          value, state, n);
 		}
 	}
 
