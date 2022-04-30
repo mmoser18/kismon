@@ -29,5 +29,6 @@ webpack.generated.js
 /debug.log
 /.npmrc
 /package.json~
-/default_2022_03_15.kmc
 /.pnpm-debug.log
+/default_old.kmc
+/default_2022_03_15.kmc
