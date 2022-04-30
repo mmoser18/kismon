@@ -21,6 +21,7 @@ public class CommonConstants
 	public static final String LoginURL = "login"; //$NON-NLS-1$
 	public static final String LogoutURL = "logout"; //$NON-NLS-1$
 	public static final String LogoutSuccessURL = "login?logout-success"; //$NON-NLS-1$
+	public static final String PasswordPlaceHolder = "<password_suppressed>"; // text to send instead of a password for non-admin users //$NON-NLS-1$
 
 	public enum LayoutDirection {
 		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$
@@ -67,4 +68,8 @@ public class CommonConstants
 		}
 	}
 
+	/**	Utility to be used as getters for binders to suppress passwords from being sent to client */
+	public static String suppressedPassword(Object _1_) {
+		return PasswordPlaceHolder;
+	}
 }
