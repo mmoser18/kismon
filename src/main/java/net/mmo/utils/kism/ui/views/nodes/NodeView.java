@@ -499,6 +499,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void addNewNode(Node newNode, IntermediateNode parentNode) {
+		if (newNode == null) {
+			log.error("newNode can not be null in addNode() - when adding child of {}", parentNode); return; //$NON-NLS-1$
+		}
+		if (parentNode == null) {
+			log.error("parentNode can not be null in addNode() - when adding node {}", newNode.getName()); return; //$NON-NLS-1$
+		}
 		log.info("addNewNode '{}' to parent '{}'", newNode.getName(), parentNode.getName()); //$NON-NLS-1$
 		this.nodeService.addChild(parentNode, newNode);
 		parentNode.expanded = true; // make sure the newly added child gets visible
