@@ -194,7 +194,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
 		}
 		this.node = newNode;
-		this.uiChanges = false; // when we have a new node this is initially always the case!
 		log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		// this.binder.setBean(node);
 		if (newNode != null) {
@@ -208,6 +207,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		}
 		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
 		readBean(newNode); // to update the form values from the new node to the UI fields.
+		this.uiChanges = false; // when we have a new node this is initially always the case!
 		return true;
 	}
 
