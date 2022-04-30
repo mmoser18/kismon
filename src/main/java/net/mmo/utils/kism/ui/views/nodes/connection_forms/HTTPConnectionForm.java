@@ -27,6 +27,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
+import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
@@ -100,7 +101,12 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.targetPwd.setThemeName(LabelPaddingTheme);
 		this.targetPwd.setClearButtonVisible(this.clearButtonsVisible);
 		this.targetPwd.setEnabled(this.isAdminUser);
-		this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
+		this.targetPwd.setRevealButtonVisible(this.isAdminUser);
+		if (this.isAdminUser) {
+			this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
+		} else { // we don't want to send the pwd to the client - not even hidden - if (s)he is not an admin user!
+			this.binder.forField(this.targetPwd).bind(CommonConstants::suppressedPassword, null);
+		}
 
 		this.includeBasicAuthHeader= new Checkbox(Messages.getString("HTTPConnectionForm.IncludeBasicAuthHeader.Label")); //$NON-NLS-1$
 		this.includeBasicAuthHeader.setClassName(BasicAuthHdrClassName);

@@ -27,6 +27,7 @@ import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection.Auth_Method;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
+import net.mmo.utils.kism.ui.CommonConstants;
 
 @SuppressWarnings("javadoc")
 @Slf4j
@@ -118,8 +119,12 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.authArg.setThemeName(LabelPaddingTheme);
 		this.authArg.setClearButtonVisible(this.clearButtonsVisible);
 		this.authArg.setEnabled(this.isAdminUser);
-		this.binder.forField(this.authArg).withValidator(this.propertiesResolvableValidator);
-
+		this.authArg.setRevealButtonVisible(this.isAdminUser);
+		if (this.isAdminUser) {
+			this.binder.forField(this.authArg).withValidator(this.propertiesResolvableValidator);
+		} else { // we don't want to send the pwd to the client - not even hidden - if (s)he is not an admin user!
+			this.binder.forField(this.authArg).bind(CommonConstants::suppressedPassword, null);
+		}
 		this.fingerprint = new TextField(Messages.getString("SSHConnectionForm.Fingerprint.Label")); //$NON-NLS-1$
 		this.fingerprint.setClassName(CommandClassName);
 		this.fingerprint.setThemeName(LabelPaddingTheme);

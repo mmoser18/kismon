@@ -25,7 +25,6 @@ public abstract class TCPConnectionForm <N extends TCPConnection> extends Checka
 
 	static final String RequestDetailsClassName = NodeFormField + "request-details"; //$NON-NLS-1$
 
-
 	protected TextField url;
 	protected TextField resultingURL;
 

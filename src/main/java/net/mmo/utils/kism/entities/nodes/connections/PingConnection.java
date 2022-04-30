@@ -131,17 +131,22 @@ public class PingConnection extends IPConnection
 					try {
 						Matcher matcherIPv4 = patternSuccessIPv4.matcher(res);
 						if (matcherIPv4.find()) {
+							log.trace("matcherIPv4 matched."); //$NON-NLS-1$
 							time = matcherIPv4.group(MatchGroupIPv4);
 						} else {
 							Matcher matcherIPv6 = patternSuccessIPv6.matcher(res);
 							if (matcherIPv6.find()) {
+								log.trace("matcherIPv6 matched."); //$NON-NLS-1$
 								time = matcherIPv6.group(MatchGroupIPv6);
+							} else {
+								log.trace("no matcherIPx matched."); //$NON-NLS-1$
 							}
 						}
 						if (time != null) {
-							setDurationMillis(time.equals("<1") ? 1 : Long.parseLong(time.substring(1))); //$NON-NLS-1$
-							setState(getDuration() > getTimeout() * 10e9  ? State.DEGRADED : State.OK);
+							long timeValue = time.equals("<1") ? 1 : Long.parseLong(time.substring(1)); //$NON-NLS-1$
+							setDurationMillis(timeValue);
 							details = time + " msecs"; //$NON-NLS-1$
+							setState(getDuration() > getTimeout() * 10e9  ? State.DEGRADED : State.OK);
 						} else if (patternHostNotFound.matcher(res).find()) {
 							details = "Host not found"; //$NON-NLS-1$
 							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
@@ -164,7 +169,7 @@ public class PingConnection extends IPConnection
 						setState(State.FAILED);
 					}
 					if (details == null) {
-						details = "unexpected response: '" + (res.length() > 200 ? res.substring(0,100) + "..." : res) + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+						details = "unexpected response: '" + (res.length() > 200 ? res.substring(0,200) + "..." : res) + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					}
 				}
 			}

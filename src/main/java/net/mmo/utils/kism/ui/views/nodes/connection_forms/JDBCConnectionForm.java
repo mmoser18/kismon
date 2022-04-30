@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
+import net.mmo.utils.kism.ui.CommonConstants;
 
 @SuppressWarnings("javadoc")
 @Slf4j
@@ -93,8 +94,12 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.dbPwd.setThemeName(LabelPaddingTheme);
 		this.dbPwd.setClearButtonVisible(this.clearButtonsVisible);
 		this.dbPwd.setEnabled(this.isAdminUser);
-		this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableValidator);
-
+		this.dbPwd.setRevealButtonVisible(this.isAdminUser);
+		if (this.isAdminUser) {
+			this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableValidator);
+		} else { // we don't want to send the pwd to the client - not even hidden - if (s)he is not an admin user!
+			this.binder.forField(this.dbPwd).bind(CommonConstants::suppressedPassword, null);
+		}
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
 		this.query.setThemeName(LabelPaddingTheme);
