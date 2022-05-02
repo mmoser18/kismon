@@ -2,7 +2,8 @@ package net.mmo.utils.kism.ui.views.nodes;
 
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
@@ -51,13 +51,13 @@ import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
+import net.mmo.utils.kism.ui.utils.LazyDownloadButton;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.vaadin.olli.FileDownloadWrapper;
 
 /**
  * Defines the application's main view, routed to via the base URL
@@ -224,19 +224,57 @@ public class NodeView <N extends Node> extends VerticalLayout
 				saveAllRootNodes();
 			});
 
-		Button downloadFileButton = new Button(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
-		FileDownloadWrapper buttonWrapper =
-			new FileDownloadWrapper(new StreamResource("content", //$NON-NLS-1$
-			                                           () -> {
-//			                                              Set<Node> nodes = this.tree.getSelectedItems();
-//			                                              if (nodes.isEmpty()) {
-//			                                              	return null;
-//			                                              }
-//			                                              Node node = nodes.iterator().next();
-//			                                              return new ByteArrayInputStream(node.getName().getBytes());
-				                                          return new ByteArrayInputStream("some bytes".getBytes()); //$NON-NLS-1$
-			                                           }));
-		buttonWrapper.wrapComponent(downloadFileButton);
+		LazyDownloadButton downloadFileButton =
+			// Create a new instance - it needs at least a caption (or icon) and a callback to create the
+			// content on click time. Note that the callback is called OUTSIDE of the current UI.
+			// You need to use UI.access() if you want to access the UI.
+			new LazyDownloadButton(Messages.getString("NodeView.Button.Download.Label"), //$NON-NLS-1$,
+			                       () -> { // get filename:
+			                       	String filename = getSelectedNodeRootNodeFilename();
+			                       	if (filename == null) return null;
+			                       	File file = new File(filename);
+			                       	return file.getName();
+			                       },
+			                       (filename) -> {
+			                       	if (filename != null) {
+			                       		File file = new File(filename);
+			                       		if (file.exists() && file.isFile() && file.canRead()) {
+			                       			try {
+			                       				return new FileInputStream(file);
+			                       			} catch (Exception ex) {
+			                       				log.error("Exception opening file", ex); //$NON-NLS-1$
+			                       			}
+			                       		} else {
+			                       			log.error("File '{}' not found or not readable", file); //$NON-NLS-1$
+			                       		}
+			                       	}
+			                       	return null;
+			                       })
+			{
+				private static final long serialVersionUID = -948298009586080827L;
+			};
+		add(downloadFileButton);
+
+		downloadFileButton.setDisableOnClick(true);
+		downloadFileButton.addClickListener(event -> {
+			// show some feedback to the user, that the download is being prepared in the background
+			event.getSource().setText("Preparing download..."); //$NON-NLS-1$
+		});
+		// LDB also provides a "download start" listener - this listener is fired, when the client
+		// side starts the download. Please be aware to NOT remove the button here or its content,
+		// otherwise the download can fail.
+		downloadFileButton.addDownloadStartsListener(event -> {
+			log.info("Download was started by event: {}", event.getClientSideEvent()); //$NON-NLS-1$
+			event.getSource().setText(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
+			// restore normal state, so that the user can click to download the content again:
+			downloadFileButton.setEnabled(true);
+		});
+		downloadFileButton.addDownloadAbortedListener(event -> {
+			log.info("Download was aborted - reason: {}", event.getReason()); //$NON-NLS-1$
+			event.getSource().setText(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
+			// restore normal state, so that the user can click to download the content again:
+			downloadFileButton.setEnabled(true);
+		});
 
 		MemoryBuffer buffer = new MemoryBuffer(); // alternative: new FileBuffer();
 		Upload uploadFile = new Upload(buffer);
@@ -279,6 +317,30 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.haltRequests.setClassName(halted ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
+	private String getSelectedNodeRootNodeFilename() {
+		RootNode root = null;
+		Set<Node> nodes = this.tree.getSelectedItems();
+		if (nodes.isEmpty()) {
+			List<Node> roots = this.tree.getTreeData().getRootItems();
+			if (roots.isEmpty()) {
+				log.error("No root node found."); //$NON-NLS-1$
+				return null;
+			}
+			root = (RootNode)roots.get(0);
+			log.info("Selected first root node for download: '{}'", root.getName()); //$NON-NLS-1$
+		} else { // node selected - find corresponding root node:
+			Node node = nodes.iterator().next();
+			root = node.getRootNode();
+			if (root == null) {
+				log.error("No root node found for node '{}'", node.getName()); //$NON-NLS-1$
+				return null;
+			}
+			log.info("Selected root node of node '{}' for download: '{}'", node.getName(), root.getName()); //$NON-NLS-1$
+		}
+		String filename = root.getFilePath();
+		log.info("Selected filename for download: '{}'", filename); //$NON-NLS-1$
+		return filename;
+	}
 
 	private void configureTree() {
 		log.trace("Configuring TreeGrid:"); //$NON-NLS-1$
