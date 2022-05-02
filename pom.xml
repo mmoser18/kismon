@@ -154,12 +154,6 @@
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>
 		</dependency>
-		<!-- vaadin contribution for file download links and buttons: https://vaadin.com/directory/component/file-download-wrapper -->
-		<dependency>
-			<groupId>org.vaadin.olli</groupId>
-			<artifactId>file-download-wrapper</artifactId>
-			<version>3.0.1</version>
-		</dependency>
 		<dependency>
 			<groupId>org.vaadin.addons</groupId>
 			<artifactId>sizereporter</artifactId>
