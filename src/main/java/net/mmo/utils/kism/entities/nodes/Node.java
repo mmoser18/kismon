@@ -197,12 +197,16 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		activity.accept(this);
 	}
 
-	/** instead of recursively bubbling up we iterate up the parent ladder to execute action on the root node: */
-	public void onRootNodeDo(Consumer<Node> activity) {
+	public RootNode getRootNode() {
 		Node n = this;
 		while (n.getParent() != null) { n = n.getParent(); }
-		if (n instanceof RootNode) {
-			activity.accept(n);
+		return (n instanceof RootNode ? (RootNode)n : null);
+	}
+	/** instead of recursively bubbling up we iterate up the parent ladder to execute action on the root node: */
+	public void onRootNodeDo(Consumer<Node> activity) {
+		RootNode root = getRootNode();
+		if (root != null) {
+			activity.accept(root);
 		// no else: this is normal for "free-floating" nodes, e.g. when creating a new node that hasn't yet been plugged into the tree
 		}
 	}
