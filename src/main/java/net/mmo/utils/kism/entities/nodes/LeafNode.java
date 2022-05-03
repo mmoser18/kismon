@@ -201,7 +201,7 @@ abstract public class LeafNode extends ActionableNode
 			resultMsg = getRequestResult();
 		} catch (Exception ex) {
 			if (shortRequestLogEntries) {
-				if (log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
+				if (log.isInfoEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
 					log.info("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 				}
 			} else {

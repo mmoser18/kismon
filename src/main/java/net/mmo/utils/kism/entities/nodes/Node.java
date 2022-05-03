@@ -197,6 +197,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		activity.accept(this);
 	}
 
+	@JsonIgnore
 	public RootNode getRootNode() {
 		Node n = this;
 		while (n.getParent() != null) { n = n.getParent(); }
