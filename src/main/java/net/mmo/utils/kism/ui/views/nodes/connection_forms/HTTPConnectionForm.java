@@ -94,7 +94,9 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.targetUid.setThemeName(LabelPaddingTheme);
 		this.targetUid.setClearButtonVisible(this.clearButtonsVisible);
 		this.targetUid.setEnabled(this.isAdminUser);
-		this.binder.forField(this.targetUid).withValidator(this.propertiesResolvableValidator);
+		this.binder.forField(this.targetUid)
+			.withValidator(this.propertiesResolvableValidator)
+			.bind(HTTPConnection::getTargetUid, HTTPConnection::setTargetUid);
 
 		this.targetPwd = new PasswordField(Messages.getString("HTTPConnectionForm.Pwd.Label")); //$NON-NLS-1$
 		this.targetPwd.setClassName(PwdClassName);
@@ -103,7 +105,9 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.targetPwd.setEnabled(this.isAdminUser);
 		this.targetPwd.setRevealButtonVisible(this.isAdminUser);
 		if (this.isAdminUser) {
-			this.binder.forField(this.targetPwd).withValidator(this.propertiesResolvableValidator);
+			this.binder.forField(this.targetPwd)
+				.withValidator(this.propertiesResolvableValidator)
+				.bind(HTTPConnection::getTargetPwd, HTTPConnection::setTargetPwd);
 		} else { // we don't want to send the pwd to the client - not even hidden - if (s)he is not an admin user!
 			this.binder.forField(this.targetPwd).bind(CommonConstants::suppressedPassword, null);
 		}
@@ -113,24 +117,24 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.includeBasicAuthHeader.setEnabled(this.isAdminUser);
 		this.binder.forField(this.includeBasicAuthHeader)
 			.withValidator((value, context) ->
-			{ // Explicit validator instance:
-				if (value) {
-					if (this.node != null) {
-						try {
-							String resolvedUid = this.node.resolveProperties(this.node.getTargetUid());
-							@SuppressWarnings("unused")
-							String resolvedPwd = this.node.resolveProperties(this.node.getTargetPwd());
-							if ((resolvedUid == null) || resolvedUid.isBlank()) { // No check on pwd! Pwd CAN resolve to empty - an account without password is possible and legal!
-								return ValidationResult.error(Messages.getString("HTTPConnectionForm.Validator.IncludeBasicAuth.UidPwdNotSet")); //$NON-NLS-1$
+				{ // Explicit validator instance:
+					if (value) {
+						if (this.node != null) {
+							try {
+								String resolvedUid = this.node.resolveProperties(this.node.getTargetUid());
+								@SuppressWarnings("unused")
+								String resolvedPwd = this.node.resolveProperties(this.node.getTargetPwd());
+								if ((resolvedUid == null) || resolvedUid.isBlank()) { // No check on pwd! Pwd CAN resolve to empty - an account without password is possible and legal!
+									return ValidationResult.error(Messages.getString("HTTPConnectionForm.Validator.IncludeBasicAuth.UidPwdNotSet")); //$NON-NLS-1$
+								}
+							} catch (Exception ex) { // exception in resolveProperties:
+								return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
+								                                            value, ex.getMessage()));
 							}
-						} catch (Exception ex) { // exception in resolveProperties:
-							return ValidationResult.error(String.format(Messages.getString("NodeForm.Validator.Properties.IllegalValue"), //$NON-NLS-1$
-							                                            value, ex.getMessage()));
 						}
 					}
-				}
-				return ValidationResult.ok();
-			})
+					return ValidationResult.ok();
+				})
 			.bind(HTTPConnection::isIncludeBasicAuthHeader, HTTPConnection::setIncludeBasicAuthHeader);
 
 		this.method = new Select<>(HTTP_Method.values());
@@ -187,41 +191,47 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 				initRequestData();
 			}
 		});
-		this.binder.forField(this.payload).withValidator(this.propertiesResolvableValidator);
+		this.binder.forField(this.payload)
+			.withValidator(this.propertiesResolvableValidator);
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
 		this.responseStatusCode.setReadOnly(true);
-		this.binder.forField(this.responseStatusCode).bind(HTTPConnection::getResponseStatusCode, null);
+		this.binder.forField(this.responseStatusCode)
+			.bind(HTTPConnection::getResponseStatusCode, null);
 
 		this.requestHeaders = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
 		this.requestHeaders.setClassName(RequestHeadersClassName);
 		this.requestHeaders.setThemeName(LabelPaddingTheme);
 		this.requestHeaders.addThemeName(MonospaceTheme);
 		this.requestHeaders.setReadOnly(true);
-		this.binder.forField(this.requestHeaders).bind(HTTPConnection::requestHeadersAsString, null);
+		this.binder.forField(this.requestHeaders)
+			.bind(HTTPConnection::requestHeadersAsString, null);
 
 		this.requestBody = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
 		this.requestBody.setClassName(RequestBodyClassName);
 		this.requestBody.setThemeName(LabelPaddingTheme);
 		this.requestBody.addThemeName(MonospaceTheme);
 		this.requestBody.setReadOnly(true);
-		this.binder.forField(this.requestBody).bind((n) -> requestBodyAsString(n), null);
+		this.binder.forField(this.requestBody)
+			.bind((n) -> requestBodyAsString(n), null);
 
 		this.responseHeaders = new TextArea(Messages.getString("HTTPConnectionForm.ResponseHeaders.Label")); //$NON-NLS-1$
 		this.responseHeaders.setClassName(ResponseHeadersClassName);
 		this.responseHeaders.setThemeName(LabelPaddingTheme);
 		this.responseHeaders.addThemeName(MonospaceTheme);
 		this.responseHeaders.setReadOnly(true);
-		this.binder.forField(this.responseHeaders).bind(HTTPConnection::responseHeadersAsString, null);
+		this.binder.forField(this.responseHeaders)
+			.bind(HTTPConnection::responseHeadersAsString, null);
 
 		this.responseBody = new TextArea(Messages.getString("HTTPConnectionForm.ResponseBody.Label")); //$NON-NLS-1$
 		this.responseBody.setClassName(ResponseBodyClassName);
 		this.responseBody.setThemeName(LabelPaddingTheme);
 		this.responseBody.addThemeName(MonospaceTheme);
 		this.responseBody.setReadOnly(true);
-		this.binder.forField(this.responseBody).bind((n) -> responseBodyAsString(n), null);
+		this.binder.forField(this.responseBody)
+			.bind((n) -> responseBodyAsString(n), null);
 
 		this.prettyPrintRequestXml = new Checkbox(Messages.getString("HTTPConnectionForm.PrettyPrintXml.Label")); //$NON-NLS-1$
 		this.prettyPrintRequestXml.setClassName(BasicAuthHdrClassName);
