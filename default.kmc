@@ -213,9 +213,9 @@
 					},
 					"url" : "${svc_url}EQuestService",
 					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "equest",
+					"targetPwd" : "equest",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -393,9 +393,9 @@
 					},
 					"url" : "${svc_url}EQuestService",
 					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "equest",
+					"targetPwd" : "equest",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -408,7 +408,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DEV (NEU)",
 				"description" : "ZHQuest DEV environment (NEU) (server: ksta-zh-zhq-dev.elcadev.local)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"app_host" : "ksta-zh-zhq-dev.elcadev.local",
 					"db_uid" : "ZHQUEST_DEV"
@@ -417,7 +417,7 @@
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ DEV Proxy",
+					"name" : "ZHQ DEV Proxy (new)",
 					"description" : "ZHQuest DEV Apache Server",
 					"applicable" : true,
 					"properties" : { },
@@ -442,7 +442,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ Mock Server",
+					"name" : "ZHQ Mock Server (new)",
 					"description" : "ZHQ Mock Server (Tomcat)",
 					"applicable" : true,
 					"properties" : { },
@@ -467,7 +467,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "ZHQ DEV DB-ping",
+					"name" : "ZHQ DEV DB-ping (new)",
 					"description" : "ping DB for ZHQuest DEV Environment",
 					"applicable" : true,
 					"properties" : { },
@@ -487,7 +487,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "ZHQ DEV DB-query",
+					"name" : "ZHQ DEV DB-query (new)",
 					"description" : "send specific query to ZHQuest DEV DB",
 					"applicable" : true,
 					"properties" : { },
@@ -507,7 +507,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ DEV Mock",
+					"name" : "ZHQ DEV Mock (new)",
 					"description" : "Mock for ZHQuest DEV",
 					"applicable" : true,
 					"properties" : { },
@@ -524,7 +524,7 @@
 					"method" : "GET",
 					"targetUid" : "",
 					"targetPwd" : "",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -532,7 +532,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-					"name" : "ZHQ DEV Mock SAM",
+					"name" : "ZHQ DEV Mock SAM (new)",
 					"description" : "Mock SecurityTokenServiceBinding for DEV",
 					"applicable" : true,
 					"properties" : { },
@@ -558,7 +558,7 @@
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ DEV Application UI",
+					"name" : "ZHQ DEV Application UI (new)",
 					"description" : "ZHQuest Application Server DEV UI",
 					"applicable" : true,
 					"properties" : {
@@ -585,7 +585,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ DEV Services WSDL",
+					"name" : "ZHQ DEV Services WSDL (new)",
 					"description" : "ZHQuest Application Server DEV services WSDL",
 					"applicable" : true,
 					"properties" : { },
@@ -602,7 +602,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -610,7 +610,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-					"name" : "ZHQ DEV Service Call",
+					"name" : "ZHQ DEV Service Call (new)",
 					"description" : "ZHQuest Application Server DEV service call",
 					"applicable" : true,
 					"properties" : { },
@@ -625,8 +625,8 @@
 					},
 					"url" : "${svc_url}EQuestService",
 					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
+					"targetUid" : "",
+					"targetPwd" : "",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -782,9 +782,9 @@
 					},
 					"url" : "${svc_url}EQuestService",
 					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "equest",
+					"targetPwd" : "equest",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -792,7 +792,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],
@@ -816,11 +816,13 @@
 				"app_url" : "${app_prot}${app_host}${app_port}${app_path}",
 				"db_query" : "select TEXT from REF_ANREDE_TYP",
 				"app_port" : "",
+				"tech_pwd" : "registerJP1",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "register",
 				"mock_host" : "zhstregisterjp-dev.elcadev.local",
 				"mock_url" : "http://${mock_host}${mock_port}/zhstregisterjp-mock-external-services/",
 				"app_host" : "<defined-in-lower-node>",
+				"tech_uid" : "registerJP1",
 				"svc_url" : "${app_url}services/",
 				"db_uid" : "---",
 				"app_path" : "/registerjp/",
@@ -923,7 +925,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
@@ -946,9 +948,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "${app_uid}",
-					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -971,9 +973,9 @@
 					},
 					"url" : "${svc_url}C3AdapterService/3",
 					"method" : "POST",
-					"targetUid" : "${app_uid}",
-					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1099,7 +1101,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
@@ -1122,9 +1124,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "${app_uid}",
-					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1147,8 +1149,8 @@
 					},
 					"url" : "${svc_url}C3AdapterService/3",
 					"method" : "POST",
-					"targetUid" : "",
-					"targetPwd" : "",
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -1275,7 +1277,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
@@ -1298,9 +1300,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "${app_uid}",
-					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1323,8 +1325,8 @@
 					},
 					"url" : "${svc_url}C3AdapterService/3",
 					"method" : "POST",
-					"targetUid" : "",
-					"targetPwd" : "",
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -1355,11 +1357,11 @@
 					"fingerprint" : "",
 					"command" : "${restart_cmd}"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
@@ -2588,7 +2590,7 @@
 			} ],
 			"expanded" : false
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "Umsysteme",
@@ -2828,7 +2830,7 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "Jenkins",
@@ -2945,7 +2947,7 @@
 			} ],
 			"expanded" : false
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "test-nodes",
