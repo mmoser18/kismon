@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 
@@ -284,17 +285,17 @@ public class JDBCConnection extends TCPConnection
 	}
 
 	private void deriveState() throws Exception {
+		State checkResult = State.OK; // if there is no check defined we consider any successful query-response as OK
 		if (isCheckResults()) {
-			if (getResultChecker() != null) {
-				State resultCheck = getResultChecker().checkResult(this, getResponsePayload());
-				log.trace("deriveState: {}", resultCheck); //$NON-NLS-1$
-				setState(resultCheck);
-				return;
+			ResultChecker checker = getResultChecker();
+			if (checker != null && checker.getCondition() != null) {
+				checkResult = checker.checkResult(this, getResponsePayload());
 			} else {
-				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
+				log.debug("no result check defined."); //$NON-NLS-1$
 			}
 		}
-		setState(State.OK); // if there is no check defined we consider any successful query-response as OK
+		setState(checkResult);
+		log.trace("deriveState: {}", checkResult); //$NON-NLS-1$
 	}
 
 	@Override

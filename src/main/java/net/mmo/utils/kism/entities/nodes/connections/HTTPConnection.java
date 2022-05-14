@@ -44,6 +44,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 
@@ -346,7 +347,13 @@ abstract public class HTTPConnection extends TCPConnection
 				{
 					@Override
 					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(getTargetUid(), getTargetPwd().toCharArray());
+						try {
+							return new PasswordAuthentication(resolveProperties(getTargetUid()),
+							                                  resolveProperties(getTargetPwd()).toCharArray());
+						} catch (Exception ex) {
+							log.error("uid and/or password resolved to null - no authentication possible", ex); //$NON-NLS-1$
+							return null;
+						}
 					}
 				});
 		}
@@ -482,29 +489,33 @@ abstract public class HTTPConnection extends TCPConnection
 
 	private void deriveState() throws Exception {
 		State res = State.OK;
+		String name = getName();
 		if (isCheckResults()) {
 			String acceptableCodes = resolveProperties(getAcceptableReturnCodes());
+			log.trace("deriveState '{}': acceptableCodes:{}", name, acceptableCodes); //$NON-NLS-1$
 			if (acceptableCodes != null && !acceptableCodes.isBlank()) {
 				String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
-				log.debug("responseStatusCode:{} - responseStatusCodeStr:{}", getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
+				log.trace("deriveState '{}': responseStatusCode:{} - responseStatusCodeStr:{}", name, getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
 				search: {
 					for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 						if (acceptable.equals(responseStatusCodeStr)) {
-							log.debug("responseStatusCode:{} -> matched: {}", getResponseStatusCode(), acceptable); //$NON-NLS-1$
+							log.debug("deriveState '{}': responseStatusCode:{} -> matched: {}", name, getResponseStatusCode(), acceptable); //$NON-NLS-1$
 							break search;
 						}
+						log.trace("deriveState '{}': responseStatusCode:{} -> did not match: {}", name, getResponseStatusCode(), acceptable); //$NON-NLS-1$
 					}
-					log.debug("responseStatusCode:{} -> no match found.", getResponseStatusCode()); //$NON-NLS-1$
+					log.debug("deriveState '{}': responseStatusCode:{} -> no match found.", name,getResponseStatusCode()); //$NON-NLS-1$
 					res = State.FAILED;
 				} // :search
 			}
-			if (getResultChecker() != null) {
+			ResultChecker checker = getResultChecker();
+			if (checker != null && checker.getCondition() != null) {
 				res = getResultChecker().checkResult(this, responseBodyAsString());
-			} else {
-				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
+			} else { // we only check for acceptableReturnCodes - might want to check that we did...y
+				log.debug("no result check defined."); //$NON-NLS-1$
 			}
 		}
-		log.debug("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
+		log.debug("deriveState '{}': {} - checking:{} (received:'{}', acceptable:'{}', checker:{})", name, res, isCheckResults(), getResponseStatusCode(), getAcceptableReturnCodes(), getResultChecker()); //$NON-NLS-1$
 		setState(res);
 	}
 
