@@ -105,7 +105,7 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 			Object operand1;
 			Object operand2;
 			Object operand3;
-			synchronized(this) { // synchronized so that the operands can't be used while we change them
+			synchronized(this) { // synchronized so that the operands can't be modified while we change them
 				if (this.resolvedOperands == null) {
 					this.resolvedOperands = resolveOperands(contextNode);
 					if (this.operands.size() != nrExpectedArgs) {
