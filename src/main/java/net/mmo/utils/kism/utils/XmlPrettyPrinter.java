@@ -47,7 +47,7 @@ public class XmlPrettyPrinter
 			xmlDoc       = toXmlDocument(xmlString);
 			formattedXML = prettyPrint(xmlDoc);
 		} catch (ParserConfigurationException | SAXException | IOException | TransformerException e) {
-			e.printStackTrace();
+			log.error("exception pretty-printing XML", e); //$NON-NLS-1$
 		}
 		return formattedXML;
 	}
