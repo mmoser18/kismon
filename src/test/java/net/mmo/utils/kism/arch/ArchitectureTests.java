@@ -21,6 +21,14 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.Architectures;
 import com.tngtech.archunit.library.Architectures.LayeredArchitecture;
+
+import com.tngtech.archunit.lang.CompositeArchRule;
+import com.tngtech.archunit.library.GeneralCodingRules;
+import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
+
+import static com.tngtech.archunit.lang.conditions.ArchPredicates.are;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo;
+// import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 import net.mmo.utils.kism.ui.views.nodes.FormFactory;
 
 @AnalyzeClasses(packages = "net.mmo.utils.kism..", importOptions = { ImportOption.DoNotIncludeTests.class })
@@ -100,6 +108,30 @@ public class ArchitectureTests
 			.whereLayer("UINodesConnections").mayOnlyBeAccessedByLayers("UINodes") // violated by FormFactory but that's OK
 			;
 		rule.check(allExceptFormFactory);
+	}
+
+	@ArchTest
+	public void classes_should_adhere_to_general_coding_rules(JavaClasses classes) {
+		
+		JavaClasses allExcludingExceptions = classes
+//			.that(are(not(equivalentTo(Main.class)))
+//				// .and(that(not(belongToAnyOf(foobar.class)))
+//				// ...
+//				)
+			;
+			
+		CompositeArchRule.of(GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS)
+			.and(GeneralCodingRules.NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING)
+			// the others we *do* use - so disabled:
+			// .and(GeneralCodingRules.NO_CLASSES_SHOULD_THROW_GENERIC_EXCEPTIONS)
+			// .and(GeneralCodingRules.NO_CLASSES_SHOULD_USE_JODATIME)
+			.because("these are violation of our general coding rules!")
+			.check(allExcludingExceptions);
+	}
+
+	@ArchTest
+	void checkCycles(JavaClasses classes) {
+		SlicesRuleDefinition.slices().matching("ch.zh.ksta.zhquest.(*)..").should().beFreeOfCycles();
 	}
 
 	@ArchTest
