@@ -223,7 +223,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ QA",
@@ -403,7 +403,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DEV (NEU)",
@@ -602,7 +602,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -625,8 +625,8 @@
 					},
 					"url" : "${svc_url}EQuestService",
 					"method" : "POST",
-					"targetUid" : "",
-					"targetPwd" : "",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -796,7 +796,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "ZHStRegisterJP",
@@ -925,7 +925,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
@@ -948,9 +948,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "${tech_uid}",
-					"targetPwd" : "${tech_pwd}",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "monitor",
+					"targetPwd" : "rotinom",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -975,7 +975,7 @@
 					"method" : "POST",
 					"targetUid" : "${tech_uid}",
 					"targetPwd" : "${tech_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1101,7 +1101,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
@@ -1124,9 +1124,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "${tech_uid}",
-					"targetPwd" : "${tech_pwd}",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "monitor",
+					"targetPwd" : "rotinom",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1151,7 +1151,7 @@
 					"method" : "POST",
 					"targetUid" : "${tech_uid}",
 					"targetPwd" : "${tech_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1277,7 +1277,7 @@
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
-					"includeBasicAuthHeader" : true,
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
@@ -1300,9 +1300,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "${tech_uid}",
-					"targetPwd" : "${tech_pwd}",
-					"includeBasicAuthHeader" : false,
+					"targetUid" : "monitor",
+					"targetPwd" : "rotinom",
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1327,7 +1327,7 @@
 					"method" : "POST",
 					"targetUid" : "${tech_uid}",
 					"targetPwd" : "${tech_pwd}",
-					"includeBasicAuthHeader" : false,
+					"includeBasicAuthHeader" : true,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1361,7 +1361,7 @@
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : true
+		"expanded" : false
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "WPS",
@@ -1573,10 +1573,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "WPS DMZ (old) DB-ping",
 					"description" : "ping WPS DMZ DB",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1593,10 +1593,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "WPS DMZ (old) DB query",
 					"description" : "send specific query to WPS DMZ DB",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1613,10 +1613,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "WPS DMZ (old) Mock",
 					"description" : "Mocker for WPS DMZ",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1638,10 +1638,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "WPS DMZ (old) Application basic connection",
 					"description" : "WPS Application server DMZ",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -1824,7 +1824,7 @@
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RW-Tool Test",
@@ -1917,10 +1917,10 @@
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "SSt",
 		"description" : "All SSt-related servers and DBs",
-		"applicable" : false,
+		"applicable" : true,
 		"properties" : { },
 		"actionCheck" : null,
-		"condition" : "DEGRADED_ON_NOT_ALL_OK",
+		"condition" : "ALL_MUST_BE_OK",
 		"children" : [ {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "SSt Dev-Environments",
@@ -1928,7 +1928,7 @@
 			"applicable" : true,
 			"properties" : { },
 			"actionCheck" : null,
-			"condition" : "DEGRADED_ON_NOT_ALL_OK",
+			"condition" : "ALL_MUST_BE_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "SSt TEST",
@@ -1937,14 +1937,14 @@
 				"properties" : {
 					"app_uid" : "ADMIN",
 					"app_host" : "ksta-zh-sst-mnt.dev.elca.ch",
-					"app_url" : "${app_prot}${app_host}${app_port}${app_path}",
 					"app_port" : ":8080",
+					"app_url_int" : "http://${app_host}${app_port}${app_path}",
 					"db_url" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=ksta-zh-sst-mnt.dev.elca.ch)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=xe)))",
 					"db_uid" : "SSTMNTTEST",
+					"app_url_ext" : "https://${app_host}${app_path}",
 					"db_pwd" : "SSTMNTTEST",
 					"app_path" : "/sst",
-					"app_pwd" : "yvON3aZxprnkyz5OF7fEmy",
-					"app_prot" : "http://"
+					"app_pwd" : "yvON3aZxprnkyz5OF7fEmy"
 				},
 				"actionCheck" : null,
 				"condition" : "DEGRADED_ON_NOT_ALL_OK",
@@ -1990,20 +1990,20 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "SSt TEST Application server",
-					"description" : "SSt TEST Application server connection",
-					"applicable" : true,
+					"name" : "SSt TEST Application server (internal)",
+					"description" : "SSt TEST Application server connection (internal)",
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
-					"checkResults" : false,
+					"checkResults" : true,
 					"resultChecker" : {
 						"condition" : null,
 						"operands" : [ ]
 					},
-					"url" : "${app_url}",
+					"url" : "${app_url_int}",
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
@@ -2015,9 +2015,9 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "SSt TEST Application basic connection",
-					"description" : "SSt Application TEST",
-					"applicable" : true,
+					"name" : "SSt TEST Application basic connection (internal)",
+					"description" : "SSt Application TEST (internal)",
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
 					"active" : false,
@@ -2028,7 +2028,57 @@
 						"condition" : null,
 						"operands" : [ ]
 					},
-					"url" : "${app_url}",
+					"url" : "${app_url_int}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "SSt TEST Application server (external)",
+					"description" : "SSt TEST Application server connection (external)",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : null,
+						"operands" : [ ]
+					},
+					"url" : "${app_url_ext}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "SSt TEST Application basic connection (external)",
+					"description" : "SSt Application TEST (external)",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : null,
+						"operands" : [ ]
+					},
+					"url" : "${app_url_ext}",
 					"method" : "GET",
 					"targetUid" : "${app_uid}",
 					"targetPwd" : "${app_pwd}",
@@ -2111,7 +2161,7 @@
 					"fingerprint" : "",
 					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest QA-VM",
@@ -2181,7 +2231,7 @@
 					"resultChecker" : null,
 					"hostAddress" : "ksta-zh-zhq-dev.elcadev.local"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQuest QA-VM (new)",
@@ -2229,7 +2279,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RegisterJP VMs",
@@ -2426,11 +2476,11 @@
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping vm-zhdokumente-qa",
-			"description" : "Ping vm-zhdokumente-qa.elcaDev.local",
-			"applicable" : true,
+			"description" : "Note: server currently powered down - Ping vm-zhdokumente-qa.elcaDev.local",
+			"applicable" : false,
 			"properties" : { },
 			"actionCheck" : null,
-			"active" : true,
+			"active" : false,
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
@@ -2465,11 +2515,11 @@
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping mocks",
-			"description" : "Ping mocks.elcaDev.local",
-			"applicable" : true,
+			"description" : "Note: server currently powered down - Ping mocks.elcaDev.local",
+			"applicable" : false,
 			"properties" : { },
 			"actionCheck" : null,
-			"active" : true,
+			"active" : false,
 			"period" : 60,
 			"timeout" : 15,
 			"checkResults" : false,
