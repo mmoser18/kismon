@@ -37,6 +37,7 @@
 
 	<!-- 
 	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="debug"/>
+	<logger name="net.mmo.utils.kism.entities.nodes.connections.HTTPConnection" level="trace"/>
 	 -->
 	<logger name="net.mmo.utils.kism.entities.nodes.actions" level="trace"/>
 
