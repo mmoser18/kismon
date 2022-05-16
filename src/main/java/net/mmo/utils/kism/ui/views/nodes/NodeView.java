@@ -161,38 +161,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 			});
 
 		Button addNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
-		addNodeButton.addClickListener(click ->
-			{
-				VisibleNodeType type = nodeTypeSelector.getValue();
-				log.info("add node (nodeType={})", type); //$NON-NLS-1$
-				if (type == VisibleNodeType.RootNode) {
-					createNewRootNode();
-				} else {
-					IfSuitableNodeSelectedForAddition((selectedNode) -> createNewChildNode(type, selectedNode)); // in the first step we only create a new node
-				}
-			});
+		addNodeButton.addClickListener(click -> addNode(nodeTypeSelector.getValue()));
+
+		Button duplicateNodeButton = new Button(Messages.getString("NodeView.Button.DuplicateNode.Label")); //$NON-NLS-1$
+		duplicateNodeButton.addClickListener(click -> duplicateNode());
 
 		Button delNodeButton = new Button(Messages.getString("NodeView.Button.DeleteNode.Label")); //$NON-NLS-1$
-		delNodeButton.addClickListener(click ->
-			{
-				Set<Node> nodes = this.tree.getSelectedItems();
-				if (nodes.isEmpty()) {
-					/// TODO: AlertUser("Select nodes to be deleted first!");
-				} else {
-					removeNodes(nodes);
-				}
-			});
-
-		Button clearListButton = new Button(Messages.getString("NodeView.Button.ClearList.Label")); //$NON-NLS-1$
-		clearListButton.addClickListener(click ->
-			{
-				Set<Node> nodes = this.tree.getSelectedItems();
-				if (nodes.isEmpty()) {
-					/// TODO: AlertUser("Select nodes to be deleted first!");
-				} else {
-					removeList(nodes);
-				}
-			});
+		delNodeButton.addClickListener(click -> deleteNode());
 
 		Button directionButton = new Button(String.format(Messages.getString("NodeView.Button.Direction.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
 		directionButton.addClickListener(click ->
@@ -299,7 +274,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			});
 		adjustHaltRequest();
 
-		HorizontalLayout toolbar = new HorizontalLayout(nodeTypeSelector, addNodeButton, delNodeButton, clearListButton,
+		HorizontalLayout toolbar = new HorizontalLayout(nodeTypeSelector, addNodeButton, duplicateNodeButton, delNodeButton,
 		                                                moveUp, moveDown, promote, demote,
 		                                                directionButton, saveAllButton,
 		                                                downloadFileButton, uploadFile,
@@ -350,13 +325,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 		this.tree.addComponentHierarchyColumn(node -> {
 				Node.State state = node.getState();
-				String stateText = StateLabelProvider.getStateLabel(state);
-				String classSuffix = state.name(); // will yield class names icon-<classSuffix> and label-<classSuffix> - used to style these red/orange/green
-				switch (state) {
-				case FAILED:   return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, stateText, classSuffix); // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
-				case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING,      stateText, classSuffix); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
-				case OK:       return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, stateText, classSuffix); // alternatives: SMILEY_O, THUMBS_UP
-				default: throw new IllegalArgumentException("illegal state: " + state); //$NON-NLS-1$
+				if (state != null) {
+					String stateText = StateLabelProvider.getStateLabel(state);
+					String classSuffix = state.name(); // will yield class names icon-<classSuffix> and label-<classSuffix> - used to style these red/orange/green
+					switch (state) {
+					case FAILED:   return new LabelWithIcon(VaadinIcon.CLOSE_CIRCLE, stateText, classSuffix); // alternatives: BAN, BOLT, FROWN_O, THUMBS_DOWN?
+					case DEGRADED: return new LabelWithIcon(VaadinIcon.WARNING,      stateText, classSuffix); // alternatives: EXCLAMATION_CIRCLE, QUESTION_CIRCLE
+					case OK:       return new LabelWithIcon(VaadinIcon.CHECK_CIRCLE, stateText, classSuffix); // alternatives: SMILEY_O, THUMBS_UP
+					default: throw new IllegalArgumentException("illegal state: " + state); //$NON-NLS-1$
+					}
+				} else {
+					return new LabelWithIcon(VaadinIcon.MINUS, "<undefined>", ""); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			})
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$
@@ -529,6 +508,53 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.select(node);
 	}
 
+	private void addNode(VisibleNodeType type) {
+		log.info("add node (nodeType={})", type); //$NON-NLS-1$
+		if (type == VisibleNodeType.RootNode) {
+			createNewRootNode();
+		} else {
+			ifIntermediateNodeSelectedDo((selectedNode) ->
+				{
+					N newNode = createNewChildNode(type, selectedNode); // in the first step we only create a new node
+					if (newNode != null) {
+						// We don't hook the newly defined node into the tree, yet, but before we allow a user to
+						// edit it we need to provide it with an upstream properties-set or else the user will get
+						// "property not found"-errors during validation when entering a placeholder into a field:
+						newNode.getProperties().setParentProperties(selectedNode.getProperties());
+						editNode(newNode, selectedNode);
+					}
+				});
+		}
+	}
+
+	private void duplicateNode() {
+		ifSingleNodeSelectedDo((selectedNode) -> duplicateNode(selectedNode));
+	}
+
+	private void deleteNode() {
+		ifSingleNodeSelectedDo((selectedNode) -> removeNodes(Collections.singletonList(selectedNode)));
+	}
+
+	private void duplicateNode(Node selectedNode) {
+		if (selectedNode instanceof LeafNode) {
+			VisibleNodeType nodeType = VisibleNodeType.valueOf(selectedNode.getClass().getSimpleName());
+			log.info("duplicating node of type '{}':", nodeType); //$NON-NLS-1$
+			IntermediateNode parent = selectedNode.getParent();
+//			N newNode = createNewChildNode(nodeType, parent); // in the first step we only create a new node
+			@SuppressWarnings("unchecked")
+			N newNode = (N)NodeService.deepCloneNode(selectedNode);
+			if (newNode != null) { // cloning worked ok:
+				// hook the newly created node into the tree
+				addNewNode(newNode, parent);
+				// and directly allow to edit it:
+				editNode(newNode, parent);
+			}
+		} else {
+			UsageError("Can only duplicate leaf nodes, yet."); //$NON-NLS-1$
+		}
+	}
+
+
 	private void saveNodeAfterEditing(NodeForm.SaveEvent event, IntermediateNode parentNode) {
 		Node node = event.getNode();
 		log.debug("NodeView.saveNode[SaveEvent] '{}'", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -588,18 +614,18 @@ public class NodeView <N extends Node> extends VerticalLayout
 		}
 	}
 
-	private void IfSuitableNodeSelectedForAddition(Consumer<IntermediateNode> action) {
+	private void ifIntermediateNodeSelectedDo(Consumer<IntermediateNode> action) {
 		ifSingleNodeSelectedDo((selectedNode) ->
 		{
 			if (selectedNode instanceof IntermediateNode) {
 				action.accept((IntermediateNode)selectedNode);
 			} else {
-				UsageError(Messages.getString("NodeView.ErrorMsg.AddChildNodeOnlyForIntermediateNodes")); //$NON-NLS-1$
+				UsageError(Messages.getString("NodeView.ErrorMsg.OnlyForIntermediateNodes")); //$NON-NLS-1$
 			}
 		});
 	}
 
-	void createNewChildNode(VisibleNodeType nodeType, IntermediateNode parentNode) {
+	private N createNewChildNode(VisibleNodeType nodeType, IntermediateNode parentNode) {
 		log.info("createNewChildNode(type={}, parentNode='{}')", nodeType, parentNode.getName()); //$NON-NLS-1$
 		// this.tree.asSingleSelect().clear();
 		N newNode;
@@ -608,13 +634,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException | NoSuchMethodException | SecurityException ex) {
 			ExecutionError(String.format("Exception creating node of type '%s':", nodeType), ex); //$NON-NLS-1$
-			return;
+			return null;
 		}
-		// We don't hook the newly defined node into the tree, yet, but before we allow a user to
-		// edit it we need to provide it with an upstream properties-set or else the user will get
-		// "property not found"-errors during validation when entering a placeholder into a field:
-		newNode.getProperties().setParentProperties(parentNode.getProperties());
-		editNode(newNode, parentNode);
+		return newNode;
 	}
 
 	private void updateNode(Node node) {
@@ -677,8 +699,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 			if (SecurityUtils.isAdminUser()) {
 				this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
 				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-				this.form.addListener(NodeForm.CloseEvent.class, e -> closeEditor());
-				this.form.addListener(NodeForm.UpdateEvent.class, e -> updateNode(e.getNode()));
+				this.form.addListener(NodeForm.CloseEvent.class, (event) -> closeEditor());
+				this.form.addListener(NodeForm.UpdateEvent.class, (event) -> updateNode(event.getNode()));
 				addClassName(ViewClassEditing);
 			} else {
 				addClassName(ViewClassViewing);
@@ -705,32 +727,40 @@ public class NodeView <N extends Node> extends VerticalLayout
 		}
 	}
 
+	/**
+	 * This removes nodes or subtrees
+	 * @param nodes
+	 */
+	@SuppressWarnings("unused")
 	private void removeNodes(Collection<Node> nodes) {
 		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
-//		String question = nodes.stream()
-//			.map(node -> node.getName())
-//			.collect(Collectors.joining(", ", "Are you sure you want to delete node(s) [", "]?")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-//		log.info("removeNodes: question: '{}'.", question); //$NON-NLS-1$
-//		new ConfirmDialog("Confirm deletion", question, //$NON-NLS-1$
-//		                  "Delete", evt -> { log.info("delete '{}':", nodes); //$NON-NLS-1$ //$NON-NLS-2$
-//		                                     deleteNodes(nodes); },
-//		                  "Cancel", evt -> { log.info("cancel '{}':", nodes); } //$NON-NLS-1$ //$NON-NLS-2$
-//		                 );
-		deleteNodes(nodes);
-	}
-
-	@SuppressWarnings("unused")
-	private void removeList(Collection<Node> nodes) {
-		log.info("removeList {}.", nodes); //$NON-NLS-1$
 		String question = nodes.stream()
-			.map(node -> NodeService.getCorrespondingRootNode(node).getName())
+			.map(node -> node.getName())
 			.collect(Collectors.joining(Messages.getString("NodeView.Deletion.Question.ListSeparator"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
+		log.info("removeNodes: question: '{}'.", question); //$NON-NLS-1$
 		new ConfirmDialog(Messages.getString("NodeView.Deletion.Header"), question, //$NON-NLS-1$
-		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())), //$NON-NLS-1$
-		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> {/**/}); //$NON-NLS-1$
+		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> { log.info("delete '{}':", nodes); deleteNodes(nodes); }, //$NON-NLS-1$ //$NON-NLS-2$
+		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> { log.info("cancel '{}':", nodes); } //$NON-NLS-1$ //$NON-NLS-2$
+		                 );
 	}
+
+//	/**
+//	 * This removes entire (root)lists - which is not yet really supported...
+//	 * @param nodes
+//	 */
+//	private void removeList(Collection<N> nodes) {
+//		log.info("removeList {}.", nodes); //$NON-NLS-1$
+//		String question = nodes.stream()
+//			.map(node -> NodeService.getCorrespondingRootNode(node).getName())
+//			.collect(Collectors.joining(Messages.getString("NodeView.Deletion.Question.ListSeparator"), //$NON-NLS-1$
+//			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
+//			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
+//		new ConfirmDialog(Messages.getString("NodeView.Deletion.Header"), question, //$NON-NLS-1$
+//		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> nodes.forEach(node -> deleteNodes(NodeService.getCorrespondingRootNode(node).getChildren())), //$NON-NLS-1$
+//		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> {/**/}); //$NON-NLS-1$
+//	}
 
 	private void saveNode(Node node) {
 		this.nodeService.save(node);
@@ -849,7 +879,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void reportUploadResult(RootNode rootNode, String sourceName) {
 		if (rootNode != null) { // new root was read: update UI
 			updateTree();
-		} else { // reading failed:
 			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
 			log.info(msg);
 			new Notification(msg, 0).open();
