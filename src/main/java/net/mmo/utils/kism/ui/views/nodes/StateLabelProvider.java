@@ -15,6 +15,9 @@ public class StateLabelProvider
 	static HashMap<Node.State, String> labels = new HashMap<>();
 
 	public static String getStateLabel(Node.State state) {
+		if (state == null) {
+			return Messages.getString("Node.State.Label.NULL"); //$NON-NLS-1$
+		}
 		String label = labels.get(state);
 		if (label == null) {
 			label = Messages.getString("Node.State.Label." + state.name()); //$NON-NLS-1$
