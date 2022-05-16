@@ -3,12 +3,17 @@ package net.mmo.utils.kism.backend.service;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -267,7 +272,37 @@ public class NodeService
 //	public void delete(Collection<Node> nodes) {
 //		delete(nodes, true);
 //	}
-//
+
+	/**
+	 * Clones an object 1:1 but assigns it a new name
+	 * @param node
+	 * @return cloned object
+	 */
+	public static Node deepCloneNode(Node node) {
+		Node clone = deepClone(node);
+		clone.setName(node.getName() + "-Copy"); //$NON-NLS-1$
+		return clone;
+	}
+
+	/** generic deep clone method using serialization to guarantee that no references are shared
+	 * @param <T>
+	 * @param t
+	 * @return cloned object
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Serializable> T deepClone(T t) {
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		     ObjectOutputStream oos = new ObjectOutputStream(baos);) {
+			oos.writeObject(t);
+			byte[] bytes = baos.toByteArray();
+			try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+				return (T)ois.readObject();
+			}
+		} catch (IOException | ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 //	// make all children a child of the parent-node:
 //	public void deleteAll(Collection<Node> nodes) {
 //		delete(nodes, false);
