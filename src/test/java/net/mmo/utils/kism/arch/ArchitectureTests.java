@@ -18,16 +18,14 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.CompositeArchRule;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.Architectures;
 import com.tngtech.archunit.library.Architectures.LayeredArchitecture;
-
-import com.tngtech.archunit.lang.CompositeArchRule;
 import com.tngtech.archunit.library.GeneralCodingRules;
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
-
-import static com.tngtech.archunit.lang.conditions.ArchPredicates.are;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo;
+// import static com.tngtech.archunit.lang.conditions.ArchPredicates.are;
+// import static com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo;
 // import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 import net.mmo.utils.kism.ui.views.nodes.FormFactory;
 
@@ -112,14 +110,14 @@ public class ArchitectureTests
 
 	@ArchTest
 	public void classes_should_adhere_to_general_coding_rules(JavaClasses classes) {
-		
+
 		JavaClasses allExcludingExceptions = classes
 //			.that(are(not(equivalentTo(Main.class)))
 //				// .and(that(not(belongToAnyOf(foobar.class)))
 //				// ...
 //				)
 			;
-			
+
 		CompositeArchRule.of(GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS)
 			.and(GeneralCodingRules.NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING)
 			// the others we *do* use - so disabled:
