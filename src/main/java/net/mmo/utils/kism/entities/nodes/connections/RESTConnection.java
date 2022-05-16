@@ -21,6 +21,4 @@ public class RESTConnection extends HTTPConnection
 	public RESTConnection(String name, String description) {
 		super(name, description);
 	}
-
-
 }

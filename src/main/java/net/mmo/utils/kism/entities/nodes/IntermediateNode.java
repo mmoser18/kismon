@@ -38,8 +38,7 @@ public class IntermediateNode extends ActionableNode
 	/**
 	 * Container for this IntermediateNode's children:
 	 */
-	protected ArrayList<Node>	children = new ArrayList<>();
-
+	protected ArrayList<Node> children = new ArrayList<>();
 	/**
 	 * This flag mirror's the UI's current state whether an item is expanded or collapsed:
 	 * It allows to expand/collapse the exact same nodes when restarting the GUI.
