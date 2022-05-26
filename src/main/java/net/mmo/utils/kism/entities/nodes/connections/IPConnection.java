@@ -57,11 +57,14 @@ abstract public class IPConnection extends CheckableNode
 	}
 
 	protected void updateResultingHostAddress() {
-		updateResultingValue(getHostAddress(), (str) -> setResultingHostAddress(str));
+		updateResultingValue(getHostAddress(),
+		                     (str) -> setResultingHostAddress(str));
 	}
 
 	public String resultingHostAddressResolved() throws Exception {
-		return resultingFieldResolved(getHostAddress(), () -> getResultingHostAddress(), (str) -> setResultingHostAddress(str));
+		return resultingFieldResolved(getHostAddress(),
+		                              () -> getResultingHostAddress(),
+		                              (str) -> setResultingHostAddress(str));
 	}
 
 	@Override

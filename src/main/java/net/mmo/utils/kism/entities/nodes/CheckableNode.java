@@ -25,7 +25,6 @@ abstract public class CheckableNode extends LeafNode
 	@JoinColumn(name = "result_checker_id")
 	protected ResultChecker resultChecker;
 
-
 	protected CheckableNode() { // required for deserialization
 		super();
 	}

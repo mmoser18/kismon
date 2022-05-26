@@ -63,5 +63,4 @@ public abstract class ActionableNode extends Node
 			.append(", action:").append(getActionCheck()) //$NON-NLS-1$
 			.toString();
 	}
-
 }
