@@ -63,12 +63,12 @@ import org.springframework.stereotype.Component;
  * Defines the application's main view, routed to via the base URL
  * @param <N> the node-type
  */
-@SuppressWarnings("javadoc")
 @Route(value="", layout = MainLayout.class)
 @PageTitle("Nodes | " + CommonConstants.ApplicationFullName)
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
+@SuppressWarnings("javadoc")
 // This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
 // see https://github.com/vaadin/vaadin-grid/issues/1934
 // With this annotation one has to click the *twisty* to collapse/expand, not the column.
@@ -262,7 +262,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					RootNode rootNode = this.nodeService.readStream(is, fileName);
 					reportUploadResult(rootNode, fileName);
 				} catch (Throwable t) {
-					reportException(fileName, t);
+					reportFileReadException(fileName, t);
 				}
 			});
 
@@ -285,7 +285,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	protected void adjustHaltRequest() {
 		boolean halted = LeafNode.isHaltAllRequests();
-		log.info("Requests are now " + (halted ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		// make sure the checkbox (and its coloring) and the actual value are in sync:
 		if (this.haltRequests.getValue() != halted) this.haltRequests.setValue(halted);
 		this.haltRequests.setLabel(Messages.getString(halted ? "NodeView.HaltAllRequests.Halted" : "NodeView.HaltAllRequests.Enabled")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -545,7 +544,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 			N newNode = (N)NodeService.deepCloneNode(selectedNode);
 			if (newNode != null) { // cloning worked ok:
 				// hook the newly created node into the tree
-				addNewNode(newNode, parent);
+				List<Node> siblings = parent.getChildren();
+				int pos = siblings.indexOf(selectedNode) + 1;
+				addNewNode(newNode, parent, pos);
 				// and directly allow to edit it:
 				editNode(newNode, parent);
 			}
@@ -559,7 +560,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		Node node = event.getNode();
 		log.debug("NodeView.saveNode[SaveEvent] '{}'", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
-			addNewNode(node, parentNode);
+			addNewNode(node, parentNode, -1); // -1: append at end
 		} else { // updating an existing node:
 			updateNode(node);
 		}
@@ -586,7 +587,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		UsageError("Sorry, additional RootNode(s) not supported, yet."); //$NON-NLS-1$
 	}
 
-	private void addNewNode(Node newNode, IntermediateNode parentNode) {
+	private void addNewNode(Node newNode, IntermediateNode parentNode, int pos) {
 		if (newNode == null) {
 			log.error("newNode can not be null in addNode() - when adding child of {}", parentNode); return; //$NON-NLS-1$
 		}
@@ -594,12 +595,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 			log.error("parentNode can not be null in addNode() - when adding node {}", newNode.getName()); return; //$NON-NLS-1$
 		}
 		log.info("addNewNode '{}' to parent '{}'", newNode.getName(), parentNode.getName()); //$NON-NLS-1$
-		this.nodeService.addChild(parentNode, newNode);
+		this.nodeService.addChild(parentNode, newNode, pos);
 		parentNode.expanded = true; // make sure the newly added child gets visible
 		if (NodeView.alwaysSave) saveNode(newNode);
 		updateTree();
 		select(newNode); // and select it
-		this.form.setUiChanges(false);
+		if (this.form != null) {
+			this.form.setUiChanges(false);
+		}
 	}
 
 	private void ifSingleNodeSelectedDo(Consumer<Node> action) {
@@ -673,8 +676,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				return;
 			}
 			this.form.clearListeners();
-			removeClassName(ViewClassEditing);
-			removeClassName(ViewClassViewing);
+			removeClassNames(ViewClassEditing, ViewClassViewing);
 		}
 		try {
 			NodeForm<N> newForm;
@@ -739,11 +741,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 			.collect(Collectors.joining(Messages.getString("NodeView.Deletion.Question.ListSeparator"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
-		log.info("removeNodes: question: '{}'.", question); //$NON-NLS-1$
 		new ConfirmDialog(Messages.getString("NodeView.Deletion.Header"), question, //$NON-NLS-1$
 		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> { log.info("delete '{}':", nodes); deleteNodes(nodes); }, //$NON-NLS-1$ //$NON-NLS-2$
 		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> { log.info("cancel '{}':", nodes); } //$NON-NLS-1$ //$NON-NLS-2$
-		                 );
+		                 ).open();
 	}
 
 //	/**
@@ -872,7 +873,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 //			RootNode rootNode = this.nodeService.read(file);
 //			reportResult(rootNode, file.getAbsolutePath());
 //		} catch (Throwable t) {
-//			reportException(fileName, t);
+//			reportReadException(fileName, t);
 //		}
 //	}
 //
@@ -957,10 +958,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	@SuppressWarnings("static-method")
-	private void reportException(String sourceName, Throwable t) {
+	private void reportFileReadException(String sourceName, Throwable t) {
+		String hdr = "Exception:"; //$NON-NLS-1$
 		String msg = String.format(Messages.getString("NodeView.ErrorMsg.ExceptionReading"), sourceName, t); //$NON-NLS-1$
-		log.info(msg, t);
-		openDialog(msg, t);
+		log.info(hdr + ": " + msg, t); //$NON-NLS-1$
+		openDialog(hdr, msg, t);
 	}
 
 	/**
@@ -989,40 +991,44 @@ public class NodeView <N extends Node> extends VerticalLayout
 			new Notification(msg, 5000).open();
 		}
 		updateTree();
-		parents.forEach((node) -> this.tree.select(node));
+		// do we want to select (all) parent node(s) after a deletion:
+		// parents.forEach((node) -> this.tree.select(node));
+		// or rather:
+		this.tree.select(null);
+		this.form.setNode(null, true);
 	}
 
 	/* User operation error - this CAN happen but does no harm */
 	public static void UsageError(String msg) {
-		String text =  String.format(Messages.getString("NodeView.Notification.UsageError"), msg); //$NON-NLS-1$
-		log.info(text);
-		openDialog(text, null);
+		String hdr =  Messages.getString("NodeView.Notification.UsageError"); //$NON-NLS-1$
+		log.info(hdr + ": " + msg); //$NON-NLS-1$
+		openDialog(hdr, msg, null);
 	}
 
 	public static void ConfigError(String msg, Throwable t) {
-		String text = String.format(Messages.getString("NodeView.Notification.ConfigError"), msg); //$NON-NLS-1$
-		log.warn(text, t);
-		openDialog(text, t);
+		String hdr = Messages.getString("NodeView.Notification.ConfigError"); //$NON-NLS-1$
+		log.warn(hdr + ": " + msg, t); //$NON-NLS-1$
+		openDialog(hdr, msg, t);
 	}
 
 	public static void ExecutionError(String msg, Throwable t) {
-		String text = String.format(Messages.getString("NodeView.Notification.ExecutionError"), msg); //$NON-NLS-1$
-		log.warn(msg, t);
-		openDialog(text, t);
+		String hdr = Messages.getString("NodeView.Notification.ExecutionError"); //$NON-NLS-1$
+		log.warn(hdr + ": " + msg, t); //$NON-NLS-1$
+		openDialog(hdr, msg, t);
 	}
 
 	/* This should of course never happen... ;-) */
 	public static void ProgrammingError(String msg, Throwable t) {
-		String text = String.format(Messages.getString("NodeView.Notification.ProgrammingError"), msg); //$NON-NLS-1$
-		log.error(text, t);
-		openDialog(text, t);
+		String hdr = Messages.getString("NodeView.Notification.ProgrammingError"); //$NON-NLS-1$
+		log.error(hdr + ": " + msg, t); //$NON-NLS-1$
+		openDialog(hdr, msg, t);
 	}
 
-	private static void openDialog(String msg, Throwable t) {
+	private static void openDialog(String header, String message, Throwable t) {
 		UI ui = UI.getCurrent();
 		ui.access(() ->
 			{
-				new ConfirmDialog(null, msg + "\n" + ExceptionUtils.exceptionCauseSummary(t),  //$NON-NLS-1$
+				new ConfirmDialog(header, message + "\n" + ExceptionUtils.exceptionCauseSummary(t),  //$NON-NLS-1$
 				                  Messages.getString("NodeView.Notification.Close.Label"), null) //$NON-NLS-1$
 					.open();
 			});

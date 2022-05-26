@@ -232,9 +232,15 @@ public class NodeService
 		return newRoot;
 	}
 
-	public Node addChild(IntermediateNode parent, Node child) {
+	/**
+	 * Add a child at the desired position of the parent's list.
+	 * @param parent the to-be parent of the child
+	 * @param child to be added
+	 * @param pos desired position within list. -1 to signal to append.
+	 */
+	public Node addChild(IntermediateNode parent, Node child, int pos) {
 		if (parent == null) throw new IllegalArgumentException("parent must not be null for addChild"); //$NON-NLS-1$
-		parent.addChild(child);
+		parent.addChildAtPos(pos, child);
 		if (log.isTraceEnabled()) log.trace("added child '{}': \n{}", child, PrettyPrint.prettyPrinted(parent)); //$NON-NLS-1$
 		return child;
 	}
