@@ -13,13 +13,16 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * provides misc. variants of confirmation dialogs
  */
+@Slf4j
 public class ConfirmDialog extends Dialog
 {
 	private static final long serialVersionUID = -3151200601662024616L;
+
 
 	/**
 	 * @param header
@@ -80,6 +83,7 @@ public class ConfirmDialog extends Dialog
 		HorizontalLayout buttons = new HorizontalLayout();
 		Button confirmButton = new Button(confirmLabel, event ->
 			{
+				log.info("confirm-button pressed on " + this); //$NON-NLS-1$
 				close();
 				if (confirmListener != null) confirmListener.onComponentEvent(event);
 			});
@@ -88,6 +92,7 @@ public class ConfirmDialog extends Dialog
 		if (rejectLabel != null) {
 			Button rejectButton = new Button(rejectLabel, event ->
 				{
+					log.info("reject-button pressed on " + this); //$NON-NLS-1$
 					close();
 					if (rejectListener != null) rejectListener.onComponentEvent(event);
 				});
@@ -96,11 +101,14 @@ public class ConfirmDialog extends Dialog
 		if (cancelLabel != null) {
 			Button cancelButton = new Button(cancelLabel, event ->
 				{
+					log.info("cancel-button pressed on " + this); //$NON-NLS-1$
 					close();
 					if (cancelListener != null) cancelListener.onComponentEvent(event);
 				});
 			buttons.add(cancelButton);
 		}
 		add(msgLane, buttons);
+
+		log.info("ConfirmDialog('{}','{}')", header, question);  //$NON-NLS-1$
 	}
 }
