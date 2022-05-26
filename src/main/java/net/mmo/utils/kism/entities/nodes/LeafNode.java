@@ -118,6 +118,7 @@ abstract public class LeafNode extends ActionableNode
 	}
 	public static void setHaltAllRequests(boolean haltAllRequests) {
 		LeafNode.haltAllRequests = haltAllRequests;
+		log.info("All requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/** required for deserialization only */
@@ -181,6 +182,9 @@ abstract public class LeafNode extends ActionableNode
 
 	abstract public void sendRequest() throws Exception;
 
+	/**
+	 * Note that this allows to execute individual requests even when they are globally halted!
+	 */
 	@Override
 	public void executeRequest() throws Exception {
 		if (asyncRequests) {
