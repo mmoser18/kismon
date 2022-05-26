@@ -200,14 +200,20 @@ abstract public class HTTPConnection extends TCPConnection
 
 	@Override
 	public void setResultingUrl(String resultingUrl) {
-		super.setResultingUrl(resultingUrl);
-		setHttpRequest(null); // trigger a recreation of the request if the URL changed
+		String oldUrl = this.getResultingUrl();
+		if (!Objects.equals(resultingUrl, oldUrl)) {
+			super.setResultingUrl(resultingUrl);
+			setHttpRequest(null); // trigger a recreation of the request if the URL changed
+		}
 	}
 
 	@Override
 	public void setTimeout(int timeout) {
-		super.setTimeout(timeout);
-		setHttpClient(null); // trigger a recreation of the connection if the timeout changes
+		int oldTimeout = this.getTimeout();
+		if (timeout != oldTimeout) {
+			super.setTimeout(timeout);
+			setHttpClient(null); // trigger a recreation of the connection if the timeout changes
+		}
 	}
 
 	public void setMethod(HTTP_Method method) {
@@ -226,9 +232,20 @@ abstract public class HTTPConnection extends TCPConnection
 		this.targetUid = targetUid;
 		setHttpClient(null); // trigger a recreation of the connection if the dbUid changes
 	}
+
+	@JsonIgnore
+	public String getResolvedTargetUid() throws Exception {
+		return resolveProperties(getTargetUid());
+	}
+
 	public void setTargetPwd(String targetPwd) {
 		this.targetPwd = targetPwd;
 		setHttpClient(null); // trigger a recreation of the connection if the dbPwd changes
+	}
+
+	@JsonIgnore
+	public String getResolvedTargetPwd() throws Exception {
+		return resolveProperties(getTargetPwd());
 	}
 
 	public void setHeaders(String headers) {
@@ -348,8 +365,8 @@ abstract public class HTTPConnection extends TCPConnection
 					@Override
 					protected PasswordAuthentication getPasswordAuthentication() {
 						try {
-							return new PasswordAuthentication(resolveProperties(getTargetUid()),
-							                                  resolveProperties(getTargetPwd()).toCharArray());
+							return new PasswordAuthentication(getResolvedTargetUid(),
+							                                  getResolvedTargetPwd().toCharArray());
 						} catch (Exception ex) {
 							log.error("uid and/or password resolved to null - no authentication possible", ex); //$NON-NLS-1$
 							return null;
@@ -376,9 +393,9 @@ abstract public class HTTPConnection extends TCPConnection
 		if (this.includeBasicAuthHeader) {
 			builder.setHeader("Authorization", //$NON-NLS-1$
 			                  "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
-			                                              .encode((resolveProperties(getTargetUid())
+			                                              .encode((getResolvedTargetUid()
 			                                                      + ":" //$NON-NLS-1$
-			                                                      + resolveProperties(getTargetPwd()))
+			                                                      + getResolvedTargetPwd())
 			                                              .getBytes()),
 			                                        DEFAULT_CHARSET));
 		}
