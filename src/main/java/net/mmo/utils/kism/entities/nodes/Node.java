@@ -180,7 +180,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		String value = getter.get();
 		if (value == null || value.isBlank()) {
 			setter.accept(value = resolveProperties(originalValue));
-			if (value == null || value.isBlank()) throw new IllegalArgumentException("Error resolving '" + originalValue + "' - must not yield null or blank value"); //$NON-NLS-1$ //$NON-NLS-2$
+			if (value == null || value.isBlank()) {
+				throw new IllegalArgumentException("Error resolving '" + originalValue + "' - must not yield null or blank value"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
 		}
 		return value;
 	}
