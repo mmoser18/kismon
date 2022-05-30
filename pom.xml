@@ -45,7 +45,9 @@
 		
 		<h2.version>2.0.204</h2.version>
 		<archunit-junit5.version>0.22.0</archunit-junit5.version>
+		
 		<sshj.version>0.32.0</sshj.version>
+		<mail.version>1.4</mail.version>
 	</properties>
 
 	<parent>
@@ -208,6 +210,13 @@
 			<artifactId>sshj</artifactId>
 			<version>${sshj.version}</version>
 		</dependency>
+
+	<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+	<dependency>
+		<groupId>javax.mail</groupId>
+		<artifactId>mail</artifactId>
+		<version>${mail.version}</version>
+	</dependency>
 
 		<!-- dependency already included in SpringBoot: ->
 		<!- jackson-core ->
