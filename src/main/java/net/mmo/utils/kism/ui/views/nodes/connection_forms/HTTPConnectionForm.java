@@ -29,6 +29,7 @@ import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
+import net.mmo.utils.kism.utils.StringUtils;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
 @SuppressWarnings("javadoc")
@@ -124,7 +125,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 								String resolvedUid = this.node.resolveProperties(this.node.getTargetUid());
 								@SuppressWarnings("unused")
 								String resolvedPwd = this.node.resolveProperties(this.node.getTargetPwd());
-								if ((resolvedUid == null) || resolvedUid.isBlank()) { // No check on pwd! Pwd CAN resolve to empty - an account without password is possible and legal!
+								if (StringUtils.isEmpty(resolvedUid)) { // We only check the uid. No check on pwd! pwd CAN resolve to empty - an account without password is possible and legal!
 									return ValidationResult.error(Messages.getString("HTTPConnectionForm.Validator.IncludeBasicAuth.UidPwdNotSet")); //$NON-NLS-1$
 								}
 							} catch (Exception ex) { // exception in resolveProperties:

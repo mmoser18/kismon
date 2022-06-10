@@ -353,7 +353,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	/**
-	 * to be extended by subclasses
+	 * This is meant for fields/forms that are to be added to the bottom of the list.
+	 * To be extended by subclasses...
 	 */
 	protected void appendFurtherFields(NodeService nodeService) {
 		this.fields.setSizeFull();

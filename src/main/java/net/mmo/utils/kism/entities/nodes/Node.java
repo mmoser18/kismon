@@ -23,6 +23,7 @@ import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
+import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.util.Assert;
 
 @SuppressWarnings("javadoc")
@@ -178,9 +179,9 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 
 	public String resultingFieldResolved(String originalValue, Supplier<String> getter, Consumer<String> setter) throws Exception {
 		String value = getter.get();
-		if (value == null || value.isBlank()) {
+		if (StringUtils.isEmpty(value)) {
 			setter.accept(value = resolveProperties(originalValue));
-			if (value == null || value.isBlank()) {
+			if (StringUtils.isEmpty(value)) {
 				throw new IllegalArgumentException("Error resolving '" + originalValue + "' - must not yield null or blank value"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}

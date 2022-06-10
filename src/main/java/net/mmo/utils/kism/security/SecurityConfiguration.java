@@ -13,6 +13,7 @@ import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -75,8 +76,8 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 	public UserDetailsService userDetailsService() {
 		log.info("userDetailsService");
 		String userNames = AppProperties.getProperties().getProperty("user.names");
-		if (userNames == null || userNames.isBlank()) {
-			throw new IllegalArgumentException("user.names entry not found in application.properties");
+		if (StringUtils.isEmpty(userNames)) {
+			throw new IllegalArgumentException("'user.names' entry not found in application.properties");
 		}
 		List<UserDetails> userDetails = new ArrayList<>();
 		for (String userNameEntry: userNames.split(",")) {
@@ -88,8 +89,8 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 			String role = uidAndRole[1];
 			String pwdPropertyName = "user.pwd." + uid;
 			String pwd  = AppProperties.getProperties().getProperty(pwdPropertyName);
-			if (pwd == null || pwd.isBlank()) {
-				throw new IllegalArgumentException("No entry for '" + pwdPropertyName + "' found in application.properties");
+			if (StringUtils.isEmpty(pwd)) {
+				throw new IllegalArgumentException("No value for '" + pwdPropertyName + "' found in application.properties");
 			}
 			userDetails.add(User
 			                .withUsername(uid)

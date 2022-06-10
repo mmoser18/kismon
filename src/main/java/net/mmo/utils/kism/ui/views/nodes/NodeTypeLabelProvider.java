@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
+import net.mmo.utils.kism.utils.StringUtils;
 
 @SuppressWarnings("javadoc")
 public class NodeTypeLabelProvider
@@ -32,7 +33,7 @@ public class NodeTypeLabelProvider
 
 	// this is the inverse of the above to determine the node type from the UI-Label
 	public static VisibleNodeType getNodeType(String label) {
-		if (label != null && !label.isBlank()) {
+		if (!StringUtils.isEmpty(label)) {
 			for (VisibleNodeType value: VisibleNodeType.values()) {
 				if (getNodeTypeLabel(value).equals(label)) return value;
 			}

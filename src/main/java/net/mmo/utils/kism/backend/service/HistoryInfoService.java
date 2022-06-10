@@ -13,6 +13,7 @@ import net.mmo.utils.kism.backend.repositories.HistoryInfoRepository;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 import net.mmo.utils.kism.utils.OffsetLimitPageable;
+import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
 @SuppressWarnings("javadoc")
@@ -137,7 +138,7 @@ public class HistoryInfoService
 	}
 
 	private static String nameFilterSanitized(String nameFilterValue) {
-		return (nameFilterValue == null || nameFilterValue.isBlank() ? null : nameFilterValue.replaceAll("\\*", "%")); //$NON-NLS-1$ //$NON-NLS-2$
+		return (StringUtils.isEmpty(nameFilterValue) ? null : nameFilterValue.replaceAll("\\*", "%")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 //	public Map<String, Integer> getStats() {

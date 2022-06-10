@@ -11,6 +11,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -98,9 +99,9 @@ public class Application extends SpringBootServletInitializer
 				                          "changeit"); //$NON-NLS-1$
 
 			log.info("Truststore path: '{}' / nodeType: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
-			if (nonBlank(trustStoreType)) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
-			if (nonBlank(trustStorePath)) System.setProperty("javax.net.ssl.trustStore", trustStorePath); //$NON-NLS-1$
-			if (nonBlank(trustStorePwd))  System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(trustStoreType)) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(trustStorePath)) System.setProperty("javax.net.ssl.trustStore", trustStorePath); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(trustStorePwd))  System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
 
 			// the keystore we use to connect to other systems:
 			String keyStoreType =
@@ -114,12 +115,12 @@ public class Application extends SpringBootServletInitializer
 				                          "password"); //$NON-NLS-1$
 
 			log.info("Keystore path: '{}' / nodeType: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
-			if (nonBlank(keyStoreType)) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
-			if (nonBlank(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
-			if (nonBlank(keyStorePwd))  System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(keyStoreType)) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(keyStorePwd))  System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
 
 			String localeStr = appProperties.getProperty("Locale"); //$NON-NLS-1$
-			if (nonBlank(localeStr)) {
+			if (!StringUtils.isEmpty(localeStr)) {
 				Locale locale = Locale.forLanguageTag(localeStr);
 				log.info("Setting Locale: given '{}' -> found: '{}' / language: '{}'", //$NON-NLS-1$
 				         localeStr, locale, (locale != null ? locale.getLanguage() : null));
@@ -143,10 +144,6 @@ public class Application extends SpringBootServletInitializer
 			}
 		}
 		log.info("main() ended."); //$NON-NLS-1$
-	}
-
-	private static boolean nonBlank(String str) {
-		return str != null && !str.isBlank();
 	}
 
 	/** Java 1.8u61(?) disabled TLSv1 and TLSv1.1, so - if we want to allow that - we

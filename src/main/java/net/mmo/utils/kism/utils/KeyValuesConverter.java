@@ -64,7 +64,7 @@ public class KeyValuesConverter
 				if (m.matches()) {
 					String key   = m.group(1);
 					String value = m.group(2);
-					if (key == null || key.isBlank()) {
+					if (StringUtils.isEmpty(key)) {
 						log.error("convertStringToMap(\"{}\"): entry:\"{}\") -> key is null or blank", values, entry); //$NON-NLS-1$
 						throw new IllegalArgumentException(String.format(Messages.getString("KeyValuesConverter.IllegalKeyName"), key)); //$NON-NLS-1$
 					}

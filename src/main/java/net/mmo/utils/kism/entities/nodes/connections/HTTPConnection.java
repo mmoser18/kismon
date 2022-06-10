@@ -47,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
+import net.mmo.utils.kism.utils.StringUtils;
 
 @SuppressWarnings("javadoc")
 @Setter
@@ -359,21 +360,28 @@ abstract public class HTTPConnection extends TCPConnection
 			if (sslContext != null) builder.sslContext(sslContext);
 		}
 
-		if (getTargetUid() != null && getTargetPwd() != null) {
-			builder.authenticator(new Authenticator()
-				{
-					@Override
-					protected PasswordAuthentication getPasswordAuthentication() {
-						try {
-							return new PasswordAuthentication(getResolvedTargetUid(),
-							                                  getResolvedTargetPwd().toCharArray());
-						} catch (Exception ex) {
-							log.error("uid and/or password resolved to null - no authentication possible", ex); //$NON-NLS-1$
-							return null;
+		if (!StringUtils.isEmpty(getTargetUid()) && !StringUtils.isEmpty(getTargetPwd())) {
+			try {
+				String resolvedUid = getResolvedTargetUid();
+				String resolvedPwd = getResolvedTargetPwd();
+				if (!StringUtils.isEmpty(resolvedUid) && !StringUtils.isEmpty(resolvedPwd)) {
+					builder.authenticator(new Authenticator()
+					{
+						@Override
+						protected PasswordAuthentication getPasswordAuthentication() {
+							return new PasswordAuthentication(resolvedUid, resolvedPwd.toCharArray());
 						}
-					}
-				});
+					});
+				} else {
+					log.error("uid and/or password resolved to blank - no authentication possible"); //$NON-NLS-1$
+				}
+			} catch (Exception ex) {
+				log.error("uid and/or password resolved to blank - no authentication possible", ex); //$NON-NLS-1$
+			}
+		} else {
+			log.debug("uid and/or password defined as blank - no authentication."); //$NON-NLS-1$
 		}
+
 		// TODO implement proxied access
 //		if (this.proxyHost != null) {
 //			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
@@ -393,11 +401,11 @@ abstract public class HTTPConnection extends TCPConnection
 		if (this.includeBasicAuthHeader) {
 			builder.setHeader("Authorization", //$NON-NLS-1$
 			                  "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
-			                                              .encode((getResolvedTargetUid()
-			                                                      + ":" //$NON-NLS-1$
-			                                                      + getResolvedTargetPwd())
-			                                              .getBytes()),
-			                                        DEFAULT_CHARSET));
+			                                               .encode((getResolvedTargetUid()
+			                                                       + ":" //$NON-NLS-1$
+			                                                       + getResolvedTargetPwd()
+			                                                      ).getBytes()),
+			                                               DEFAULT_CHARSET));
 		}
 		switch (getMethod()) {
 		case GET:
@@ -510,7 +518,7 @@ abstract public class HTTPConnection extends TCPConnection
 		if (isCheckResults()) {
 			String acceptableCodes = resolveProperties(getAcceptableReturnCodes());
 			log.trace("deriveState '{}': acceptableCodes:{}", name, acceptableCodes); //$NON-NLS-1$
-			if (acceptableCodes != null && !acceptableCodes.isBlank()) {
+			if (!StringUtils.isEmpty(acceptableCodes)) {
 				String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
 				log.trace("deriveState '{}': responseStatusCode:{} - responseStatusCodeStr:{}", name, getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
 				search: {
