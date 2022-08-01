@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
+import net.mmo.utils.kism.utils.StringUtils;
 
 @SuppressWarnings("javadoc")
 @ToString(includeFieldNames = true, callSuper = true)
@@ -57,8 +58,8 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 
 			if (this.mailSession == null) {
 				Properties properties = System.getProperties();
-				if (this.mailUser != null && !this.mailUser.isBlank() &&
-					this.mailPwd != null && !this.mailPwd.isBlank()) {
+				if (!StringUtils.isEmpty(this.mailUser) &&
+					!StringUtils.isEmpty(this.mailPwd)) {
 					properties.setProperty("mail.user", this.mailUser); //$NON-NLS-1$
 					properties.setProperty("mail.password", this.mailPwd); //$NON-NLS-1$
 				}
