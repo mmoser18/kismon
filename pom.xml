@@ -27,17 +27,17 @@
 	 -->
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- some local settings: -->
-		<user.home>${USERPROFILE}</user.home>
+		<user.home>${env.USERPROFILE}</user.home>
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
 		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1, but did NOT work with v19.0.x..v21.0.4: -->
-		<vaadin.version>22.0.2</vaadin.version>
+		<vaadin.version>23.1.1</vaadin.version>
 		<!-- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
@@ -48,6 +48,7 @@
 		
 		<sshj.version>0.32.0</sshj.version>
 		<mail.version>1.4</mail.version>
+		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
 	</properties>
 
 	<parent>
@@ -156,11 +157,13 @@
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.vaadin.addons</groupId>
 			<artifactId>sizereporter</artifactId>
 			<version>0.1.4</version>
 		</dependency>
+		-->
 		<!-- non-declared dependency of the above -->
 		<dependency>
 			<groupId>javax.websocket</groupId>
@@ -211,12 +214,12 @@
 			<version>${sshj.version}</version>
 		</dependency>
 
-	<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
-	<dependency>
-		<groupId>javax.mail</groupId>
-		<artifactId>mail</artifactId>
-		<version>${mail.version}</version>
-	</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>${mail.version}</version>
+		</dependency>
 
 		<!-- dependency already included in SpringBoot: ->
 		<!- jackson-core ->
@@ -391,7 +394,7 @@
 		</dependency>
 		<!- -->
 	</dependencies>
-
+	
 	<developers>
 		<developer>
 			<id>mmo</id>
@@ -401,6 +404,47 @@
 	</developers>
 
 	<build>
+	
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.22.2</version>
+				</plugin>
+				
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.cxf</groupId>
+										<artifactId>cxf-codegen-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>generate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore/> <!-- ignored while the execution of this plugin on a Java>v8-JRE always yields:
+												Execution generate-sources of goal org.apache.cxf:cxf-codegen-plugin:3.1.5:wsdl2java failed:
+												A required class was missing while executing org.apache.cxf:cxf-codegen-plugin:3.1.5:wsdl2java:
+												javax/xml/bind/annotation/adapters/HexBinaryAdapter
+											-->
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		
 		<defaultGoal>spring-boot:run</defaultGoal>
 		<plugins>
 			<plugin>
@@ -450,6 +494,17 @@
 				</executions>
 			</plugin>
 
+			<plugin> <!-- according to Vaadin docs required for Java v9+ - but it doesn't tell which version :-( -->
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<dependencies>
+					<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+					<dependency>
+						<groupId>com.sun.xml.bind</groupId>
+						<artifactId>jaxb-impl</artifactId>
+						<version>${jaxb.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 		</plugins>
 	</build>
 
