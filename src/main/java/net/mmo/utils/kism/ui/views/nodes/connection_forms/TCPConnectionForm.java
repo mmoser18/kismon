@@ -9,12 +9,10 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 public abstract class TCPConnectionForm <N extends TCPConnection> extends CheckableNodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
@@ -39,12 +37,12 @@ public abstract class TCPConnectionForm <N extends TCPConnection> extends Checka
 		this.url.setEnabled(this.isAdminUser);
 		this.url.addValueChangeListener(event ->
 			{
-				log.debug("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				this.log.debug("url value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
 						updateResultingUrl(event.getValue());
 					} catch (Exception ex) {
-						log.error("Error updating URL", ex); //$NON-NLS-1$
+						this.log.error("Error updating URL", ex); //$NON-NLS-1$
 					}
 				}
 			});

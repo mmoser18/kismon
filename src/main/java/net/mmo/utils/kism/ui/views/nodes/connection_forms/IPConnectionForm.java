@@ -9,13 +9,11 @@ import static net.mmo.utils.kism.ui.UIConstants.LabelPaddingTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.textfield.TextField;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 public abstract class IPConnectionForm <N extends IPConnection> extends CheckableNodeForm<N>
 {
 	private static final long serialVersionUID = 5772018540738340331L;
@@ -38,12 +36,12 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 		this.hostAddress.setEnabled(this.isAdminUser);
 		this.hostAddress.addValueChangeListener(event ->
 			{
-				log.debug("hostAddress value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				this.log.debug("hostAddress value changed to from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
 						updateResultingHostAddress(event.getValue());
 					} catch (Exception ex) {
-						log.error("Error updating URL", ex); //$NON-NLS-1$
+						this.log.error("Error updating URL", ex); //$NON-NLS-1$
 					}
 				}
 			});
@@ -58,7 +56,7 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 
 	@Override
 	public boolean setNode(N node, boolean abandonChanges) {
-		log.info("setNode node={}", node); //$NON-NLS-1$
+		this.log.info("setNode node={}", node); //$NON-NLS-1$
 		boolean res = super.setNode(node, abandonChanges);
 		adaptResultCheckerVisibility((node != null ? node.isCheckResults() : false), node);
 		return res;

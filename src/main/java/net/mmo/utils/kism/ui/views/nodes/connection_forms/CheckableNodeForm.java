@@ -18,17 +18,17 @@ import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.CheckableNode;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.entities.nodes.ResultChecker.Condition;
 import net.mmo.utils.kism.ui.views.nodes.LeafNodeForm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-@Slf4j
 public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNodeForm<N>
 {
 	private static final long serialVersionUID = -6625293976700949063L;
@@ -62,7 +62,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		this.checkResults.setEnabled(this.isAdminUser);
 		this.checkResults.addValueChangeListener(event ->
 		{
-			log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				adaptResultCheckerVisibility(event.getValue(), this.node);
 			}
@@ -70,8 +70,9 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 
 //		this.resultChecker = new ResultCheckerForm();
 //		this.resultChecker.setClassName(ResultCheckerClassName);
-		this.condition = new Select<Condition>(Condition.values());
+		this.condition = new Select<Condition>();
 		this.condition.setLabel(Messages.getString("ResultChecker.Condition.Label")); //$NON-NLS-1$
+		this.condition.setItems(Condition.values());
 		this.condition.setItemLabelGenerator(cond -> (cond != null
 		                                             ? Messages.getString("ResultChecker.Condition.Value." + cond.name())  //$NON-NLS-1$
 		                                             : Messages.getString("ResultChecker.Condition.Value.None"))); //$NON-NLS-1$
@@ -82,7 +83,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		this.binder.forField(this.condition).bind(CheckableNodeForm::getCondition, CheckableNodeForm::setCondition);
 		this.condition.addValueChangeListener(event ->
 		{
-			log.debug("condition value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.debug("condition value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				adaptResultCheckerVisibility(this.checkResults.getValue(), this.node);
 			}
@@ -96,22 +97,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		this.binder.forField(this.operand1)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator(new OperandValidator(this, 1))
-//			.withValidator((value, context) -> {
-//				//TODO: make this into an own class
-//				// if the nr of required args is smaller than 1 then this operand is irrelevant, so we always validate it as OK
-//				Condition condValue = this.condition.getValue();
-//				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-//				log.debug("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
-//				if (condValue == null || nrArgs < 1) return ValidationResult.ok();
-//				Class<?> clazz = condValue.getArgClasses()[0];
-//				if (clazz == String.class) {
-//					return this.nonEmptyStringValidator.apply(value, context);
-//				} else if (clazz == Integer.class) {
-//					return this.nonEmptyNumberValidator.apply(value, context);
-//				}
-//				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
-//			})
-			.bind(CheckableNodeForm::getOperand1, CheckableNodeForm::setOperand1);
+			.bind((n) -> getOperandN(n, 1), (n, operand) -> setOperandN(n, 1, operand));
 
 		this.operand2 = new TextArea(Messages.getString("ResultChecker.Operand.Label2")); //$NON-NLS-1$
 		this.operand2.addClassName(OperandClassName);
@@ -121,22 +107,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		this.binder.forField(this.operand2)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator(new OperandValidator(this, 2))
-//			.withValidator((value, context) -> {
-//				//TODO: make this into an own class
-//				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
-//				Condition condValue = this.condition.getValue();
-//				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-//				log.debug("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
-//				if (condValue == null || nrArgs < 2) return ValidationResult.ok();
-//				Class<?> clazz = condValue.getArgClasses()[1];
-//				if (clazz == String.class) {
-//					return this.nonEmptyStringValidator.apply(value, context);
-//				} else if (clazz == Integer.class) {
-//					return this.nonEmptyNumberValidator.apply(value, context);
-//				}
-//				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
-//			})
-			.bind(CheckableNodeForm::getOperand2, CheckableNodeForm::setOperand2);
+			.bind((n) -> getOperandN(n, 2), (n, operand) -> setOperandN(n, 2, operand));
 
 		this.operand3 = new TextArea(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
 		this.operand3.addClassName(OperandClassName);
@@ -146,22 +117,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		this.binder.forField(this.operand3)
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator(new OperandValidator(this, 3))
-//			.withValidator((value, context) -> {
-//				//TODO: make this into an own class
-//				// if the nr of required args is smaller than 2 then this operand is irrelevant, so we always validate it as OK
-//				Condition condValue = this.condition.getValue();
-//				int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-//				log.info("condition: {}, value: {}, nrArgs: {}", this.condition, condValue, nrArgs); //$NON-NLS-1$
-//				if (condValue == null || nrArgs < 3) return ValidationResult.ok();
-//				Class<?> clazz = condValue.getArgClasses()[2];
-//				if (clazz == String.class) {
-//					return this.nonEmptyStringValidator.apply(value, context);
-//				} else if (clazz == Integer.class) {
-//					return this.nonEmptyNumberValidator.apply(value, context);
-//				}
-//				throw new IllegalArgumentException("Unexpected argument type: " + clazz); //$NON-NLS-1$
-//			})
-			.bind(CheckableNodeForm::getOperand3, CheckableNodeForm::setOperand3);
+			.bind((n) -> getOperandN(n, 3), (n, operand) -> setOperandN(n, 3, operand));
 
 		this.validationDetails = new Accordion();
 		this.validationDetails.close(); // initially closed
@@ -181,13 +137,14 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 			this.form = form;
 			this.operandNr = operandNr;
 		}
+		@SuppressWarnings("synthetic-access")
 		@Override
 		public ValidationResult apply(String value, ValueContext context) {
 			//TODO: make this into an own class
 			// if the nr of required args is smaller than operandNr then this operand is irrelevant, so we always validate it as OK
 			Condition condValue = this.form.condition.getValue();
 			int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-			log.info("condition: {}, value: {}, nrArgs: {}", this.form.condition, condValue, nrArgs); //$NON-NLS-1$
+			CheckableNodeForm.this.log.info("condition: {}, value: {}, nrArgs: {}", this.form.condition, condValue, nrArgs); //$NON-NLS-1$
 			if (condValue == null || nrArgs < this.operandNr) return ValidationResult.ok();
 			Class<?> clazz = condValue.getArgClasses()[this.operandNr-1];
 			if (clazz == String.class) {
@@ -200,10 +157,10 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 	}
 
 	@Override
-	public boolean setNode(N node, boolean abandonChanges) {
-		log.info("setNode node={}", node); //$NON-NLS-1$
-		boolean res = super.setNode(node, abandonChanges);
-		adaptResultCheckerVisibility((node != null ? node.isCheckResults() : false), node);
+	public boolean setNode(N n, boolean abandonChanges) {
+		this.log.info("setNode node={}", n); //$NON-NLS-1$
+		boolean res = super.setNode(n, abandonChanges);
+		adaptResultCheckerVisibility((n != null ? n.isCheckResults() : false), n);
 		return res;
 	}
 
@@ -283,16 +240,17 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		if (n != null) {
 			ResultChecker resultChecker = n.getResultChecker();
 			if (resultChecker != null) {
-				Condition condition = resultChecker.getCondition();
-				if (condition != null) {
-					int nrExpectedArgs = condition.getNrArgs();
+				Condition rcCondition = resultChecker.getCondition();
+				if (rcCondition != null) {
+					int nrExpectedArgs = rcCondition.getNrArgs();
 					int index = opNr-1;
 					if (index < nrExpectedArgs) {
 						try {
-							return n.getResultChecker().getOperandN(index);
+							return resultChecker.getOperandN(index);
 						} catch (Exception ex) {
+							Logger log = LoggerFactory.getLogger(CheckableNode.class);
 							log.error(String.format("Something went wrong getting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
-							                        opNr, condition, n.getName()),
+							                        opNr, rcCondition, n.getName()),
 							          ex);
 						}
 					} // the others are simply ignored
@@ -303,21 +261,22 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 	}
 
 	// Note: This method gets called by the binder for ALL fields (i.e. also those that are hidden).
-	// The binder isn't aware of that So we need to ignore those that are not valid!
+	// The binder isn't aware of that so we need to ignore those that are not valid!
 	static <N extends CheckableNode> void setOperandN(N n, int opNr, String operand) {
 		if (n != null) {
 			ResultChecker resultChecker = n.getResultChecker();
 			if (resultChecker != null) {
-				Condition condition = resultChecker.getCondition();
-				if (condition != null) {
-					int nrExpectedArgs = condition.getNrArgs();
+				Condition rcCondition = resultChecker.getCondition();
+				if (rcCondition != null) {
+					int nrExpectedArgs = rcCondition.getNrArgs();
 					int index = opNr-1;
 					if (index < nrExpectedArgs) {
 						try {
-							n.getResultChecker().setOperandN(index, operand);
+							resultChecker.setOperandN(index, operand);
 						} catch (Exception ex) {
+							Logger log = LoggerFactory.getLogger(CheckableNode.class);
 							log.error(String.format("Something went wrong setting the result-check operand %d (condition: '%s') for Node '%s'", //$NON-NLS-1$
-							                        opNr, condition, n.getName()),
+							                        opNr, rcCondition, n.getName()),
 							          ex);
 						}
 					} // the others are simply ignored
@@ -326,31 +285,10 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 		}
 	}
 
-	static <N extends CheckableNode> void setOperand1(N n, String operand) {
-		setOperandN(n, 1, operand);
-	}
-	static <N extends CheckableNode> String getOperand1(N n) {
-		return getOperandN(n, 1);
-	}
-
-	static <N extends CheckableNode> void setOperand2(N n, String operand) {
-		setOperandN(n, 2, operand);
-	}
-	static <N extends CheckableNode> String getOperand2(N n) {
-		return getOperandN(n, 2);
-	}
-
-	static <N extends CheckableNode> void setOperand3(N n, String operand) {
-		setOperandN(n, 3, operand);
-	}
-	static <N extends CheckableNode> String getOperand3(N n) {
-		return getOperandN(n, 3);
-	}
-
 	protected void adaptResultCheckerVisibility(boolean check, N n) {
 		if (n != null) {
 			if (check && n.getResultChecker() == null) {
-				log.info("Creating {}:", ResultChecker.class.getSimpleName()); //$NON-NLS-1$
+				this.log.info("Creating {}:", ResultChecker.class.getSimpleName()); //$NON-NLS-1$
 				n.setResultChecker(new ResultChecker());
 // attempt to bind the ResultChecker in via a child-form:
 //				// if checkResults is active we need to add the validity of the resultChecker's binder to this one:
@@ -373,7 +311,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 				op3Visible = check && nrArgs >= 3;
 			}
 			this.operand1.setVisible(op1Visible);
-			if (op1Visible) this.operand1.setLabel(Messages.getString( op1Visible && op2Visible
+			if (op1Visible) this.operand1.setLabel(Messages.getString(op1Visible && op2Visible
 			                                                          ? "ResultChecker.Operand.Label1" //$NON-NLS-1$
 			                                                          : "ResultChecker.Operand.Label")); //$NON-NLS-1$
 			this.operand2.setVisible(op2Visible);
@@ -381,7 +319,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 			this.operand3.setVisible(op3Visible);
 			if (op3Visible) this.operand3.setLabel(Messages.getString("ResultChecker.Operand.Label3")); //$NON-NLS-1$
 		} else { // we leave the resultChecker attached to the node - in case the user clicks the check-button again.
-			log.debug("removing ResultChecker from view:"); //$NON-NLS-1$
+			this.log.debug("removing ResultChecker from view:"); //$NON-NLS-1$
 //			this.resultChecker.setResultChecker(null);
 //			this.resultChecker.setVisible(false);
 			this.condition.setVisible(false);

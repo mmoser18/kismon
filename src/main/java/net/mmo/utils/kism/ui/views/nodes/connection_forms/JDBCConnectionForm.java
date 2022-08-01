@@ -18,14 +18,12 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.JDBCConnection;
 import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.ui.CommonConstants;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 @PreserveOnRefresh
 public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 {
@@ -107,12 +105,12 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.query.setEnabled(this.isAdminUser);
 		this.query.addValueChangeListener(event ->
 			{
-				log.debug("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+				this.log.debug("query value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					try {
 						updateResultingQuery(event.getValue());
 					} catch (Exception ex) {
-						log.error("Exception updating query", ex); //$NON-NLS-1$
+						this.log.error("Exception updating query", ex); //$NON-NLS-1$
 					}
 				}
 			});

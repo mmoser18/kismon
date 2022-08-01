@@ -21,7 +21,6 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.IPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.SSHConnection;
@@ -30,7 +29,6 @@ import net.mmo.utils.kism.entities.nodes.connections.TCPConnection;
 import net.mmo.utils.kism.ui.CommonConstants;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 @PreserveOnRefresh
 public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 {
@@ -93,16 +91,17 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 //				}
 //			});
 
-		this.authMethod = new Select<>(Auth_Method.values());
+		this.authMethod = new Select<>();
 		this.authMethod.setClassName(AuthMethodClassName);
 		this.authMethod.setLabel(Messages.getString("SSHConnectionForm.AuthMethod.Label")); //$NON-NLS-1$
+		this.authMethod.setItems(Auth_Method.values());
 		this.authMethod.setItemLabelGenerator(item -> {
 				return Messages.getString("SSHConnectionForm.AuthMethod.Item." + item.name()); //$NON-NLS-1$
 			});
 		this.authMethod.setEnabled(this.isAdminUser);
 		this.authMethod.addValueChangeListener(event -> {
 				if (event.isFromClient()) {
-					log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+					this.log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 					this.authArg.setLabel(Messages.getString("SSHConnectionForm.AuthArg.Label." + event.getValue().name())); //$NON-NLS-1$
 				}
 			});
@@ -156,7 +155,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.command.addValueChangeListener(event ->
 			{
 				if (event.isFromClient()) {
-					log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+					this.log.info("command value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				}
 			});
 

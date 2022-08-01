@@ -22,7 +22,6 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
@@ -33,7 +32,6 @@ import net.mmo.utils.kism.utils.StringUtils;
 import net.mmo.utils.kism.utils.XmlPrettyPrinter;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPConnectionForm<N>
 {
 	private static final long serialVersionUID = 7200842663851555372L;
@@ -50,7 +48,6 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 	static final String ResponseHeadersClassName       = NodeFormField + "response-headers"; //$NON-NLS-1$
 	static final String ResponseBodyClassName          = NodeFormField + "response-body"; //$NON-NLS-1$
 	static final String AcceptableReturnCodesClassName = NodeFormField + "acceptable-return-codes"; //$NON-NLS-1$
-
 	protected TextField targetUid;
 	protected PasswordField targetPwd;
 	protected Checkbox includeBasicAuthHeader;
@@ -138,15 +135,16 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 				})
 			.bind(HTTPConnection::isIncludeBasicAuthHeader, HTTPConnection::setIncludeBasicAuthHeader);
 
-		this.method = new Select<>(HTTP_Method.values());
+		this.method = new Select<>();
 		this.method.setLabel(Messages.getString("HTTPConnectionForm.Method.Label")); //$NON-NLS-1$
+		this.method.setItems(HTTP_Method.values());
 		this.method.setClassName(MethodClassName);
 		this.method.setEnabled(this.isAdminUser);
 		// this.method.setItemLabelGenerator(meth -> Messages.getString("HTTPConnectionForm.Method." + meth.name())); //$NON-NLS-1$
 		this.method.addValueChangeListener(event ->
 			{
 				if (event.isFromClient()) {
-					log.info("method changed from {} to {}", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+					this.log.info("method changed from {} to {}", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 					adaptPayloadVisibility(event.getValue()); // Note: this is called BEFORE the Save button has been pressed!
 				}
 			});
@@ -160,7 +158,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.headers.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
-				log.info("headers value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+				this.log.info("headers value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				// this.node.setHeaders(event.getValue());
 				initRequestData();
 			}
@@ -187,7 +185,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.payload.addValueChangeListener(event ->
 		{
 			if (event.isFromClient()) {
-				log.info("payload value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
+				this.log.info("payload value changed from '{}' to '{}'", event.getOldValue(), event.getValue()); //$NON-NLS-1$
 				// this.node.setPayload(event.getValue());
 				initRequestData();
 			}
@@ -255,7 +253,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 				.withValidator(this.propertiesResolvableValidator)
 				.withValidator(text -> {
 									boolean valid = text.matches("\\d{1,3}(\\s*,\\s*\\d{1,3})*") || (!this.checkResults.getValue() && text.isEmpty()); //$NON-NLS-1$
-									log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
+									this.log.trace("acceptableReturnCodes-validator: {}", valid); //$NON-NLS-1$
 									return valid;
 								},
 				               Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.ValidationErrorMsg")) //$NON-NLS-1$
@@ -263,7 +261,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 
 		this.checkResults.addValueChangeListener(event ->
 		{
-			log.info("checkResults value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.info("checkResults value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				adaptAcceptableReturnCodesVisibility(event.getValue());
 				acceptableReturnCodesBinding.validate();
@@ -349,7 +347,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 			try {
 				this.node.createRequest();
 			} catch (Exception ex) {
-				log.error("Exception preparing/reporting httpRequest: ", ex); //$NON-NLS-1$
+				this.log.error("Exception preparing/reporting httpRequest: ", ex); //$NON-NLS-1$
 				this.node.setRequestBody(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorCreatingRequest"), ex).getBytes()); //$NON-NLS-1$
 			}
 		} else {

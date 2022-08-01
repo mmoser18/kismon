@@ -11,13 +11,11 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.HTTP_Method;
 import net.mmo.utils.kism.entities.nodes.connections.SOAPConnection;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 @PreserveOnRefresh
 public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 {
@@ -45,7 +43,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 			.withValidator(this.propertiesResolvableValidator)
 			.withValidator((value, context) ->
 			{ // Explicit validator instance:
-				log.trace("validating soapAction: '{}'", value); //$NON-NLS-1$
+				this.log.trace("validating soapAction: '{}'", value); //$NON-NLS-1$
 				String errMsg = checkSoapAction(value); // no error message -> OK
 				return (errMsg != null ? ValidationResult.error(errMsg) : ValidationResult.ok());
 			})

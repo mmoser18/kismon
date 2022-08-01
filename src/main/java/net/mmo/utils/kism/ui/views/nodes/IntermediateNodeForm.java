@@ -12,14 +12,12 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
 
 @SuppressWarnings("javadoc")
-@Slf4j
 @PreserveOnRefresh
 public class IntermediateNodeForm extends ActionForm<IntermediateNode>
 {
@@ -51,7 +49,7 @@ public class IntermediateNodeForm extends ActionForm<IntermediateNode>
 		this.activateAllChildren.setEnabled(this.isAdminUser);
 		this.activateAllChildren.addClickListener(event ->
 			{
-				log.info("activateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
+				this.log.info("activateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					this.node.trickleDown(n -> {
 						if (n instanceof LeafNode) {
@@ -67,7 +65,7 @@ public class IntermediateNodeForm extends ActionForm<IntermediateNode>
 		this.deactivateAllChildren.setEnabled(this.isAdminUser);
 		this.deactivateAllChildren.addClickListener(event ->
 			{
-				log.info("deactivateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
+				this.log.info("deactivateAllChildren clicked on '{}'", this.node.getName()); //$NON-NLS-1$
 				if (event.isFromClient()) {
 					this.node.trickleDown(n -> {
 						if (n instanceof LeafNode) {
@@ -80,8 +78,9 @@ public class IntermediateNodeForm extends ActionForm<IntermediateNode>
 		HorizontalLayout childrenOps = new HorizontalLayout(this.execute, this.activateAllChildren, this.deactivateAllChildren);
 		childrenOps.addClassName(CombinedClassName);
 
-		this.condition = new Select<>(IntermediateNode.ChildrenCondition.values());
+		this.condition = new Select<>();
 		this.condition.addClassName(OperationClassName);
+		this.condition.setItems(IntermediateNode.ChildrenCondition.values());
 		this.condition.setLabel(Messages.getString("IntermediateNode.ChildCondition.Label")); //$NON-NLS-1$
 		this.condition.setItemLabelGenerator((cond) -> Messages.getString("IntermediateNode.ChildCondition." + cond.name())); //$NON-NLS-1$
 		this.condition.setEnabled(this.isAdminUser);
