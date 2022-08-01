@@ -254,6 +254,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 			.append(", parent(name):").append(this.parent != null ? this.parent.getName() : "-null-") //$NON-NLS-1$ //$NON-NLS-2$
 			.append(", applicable:").append(isApplicable()) //$NON-NLS-1$
 			.append(", properties: {").append(KeyValuesConverter.convertMapToString(getProperties(), ", ")).append('}') //$NON-NLS-1$ //$NON-NLS-2$
+			.append('}')
 			.toString();
 	}
 }
