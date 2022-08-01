@@ -733,7 +733,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 	 * This removes nodes or subtrees
 	 * @param nodes
 	 */
-	@SuppressWarnings("unused")
 	private void removeNodes(Collection<Node> nodes) {
 		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
 		String question = nodes.stream()
