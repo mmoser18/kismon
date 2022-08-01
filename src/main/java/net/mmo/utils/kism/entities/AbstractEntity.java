@@ -50,7 +50,7 @@ public abstract class AbstractEntity
 		StringBuilder buf = new StringBuilder(this.getClass().getSimpleName());
 		return buf
 			.append("{id:").append(getId()) //$NON-NLS-1$
-			.append("}") //$NON-NLS-1$
+			.append('}')
 			.toString();
 	}
 }
