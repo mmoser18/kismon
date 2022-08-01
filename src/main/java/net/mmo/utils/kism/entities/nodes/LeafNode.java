@@ -71,9 +71,6 @@ abstract public class LeafNode extends ActionableNode
 	@JsonIgnore
 	protected transient LocalDateTime timestamp;
 
-	// result stuff:`
-	protected boolean checkResults = false;
-
 	// TODO: the below should be kept into some kind of "history"-list:
 	//	transient protected history = new ArrayList();
 
@@ -283,7 +280,6 @@ abstract public class LeafNode extends ActionableNode
 			.append(", timeout:").append(this.timeout) //$NON-NLS-1$
 			.append(", timestamp:").append(this.timestamp) //$NON-NLS-1$
 			.append(", duration:").append(this.duration) //$NON-NLS-1$
-			.append(", checkResults:").append(this.checkResults) //$NON-NLS-1$
 			.append("}") //$NON-NLS-1$
 			.toString();
 	}

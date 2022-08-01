@@ -21,6 +21,9 @@ abstract public class CheckableNode extends LeafNode
 {
 	private static final long serialVersionUID = -7861536138222066083L;
 
+	// result stuff:`
+	protected boolean checkResults = false;
+
 	@OneToOne
 	@JoinColumn(name = "result_checker_id")
 	protected ResultChecker resultChecker;
@@ -38,8 +41,9 @@ abstract public class CheckableNode extends LeafNode
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
+			.append(", checkResults:").append(this.checkResults) //$NON-NLS-1$
 			.append(", resultChecker:").append(this.resultChecker) //$NON-NLS-1$
-			.append("}") //$NON-NLS-1$
+			.append('}')
 			.toString();
 	}
 }

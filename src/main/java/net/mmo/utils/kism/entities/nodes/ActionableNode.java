@@ -60,7 +60,8 @@ public abstract class ActionableNode extends Node
 		buf.setLength(buf.length()-1);
 		return buf
 			.append(", sameStateSince:").append(getSameStateSince()) //$NON-NLS-1$
-			.append(", action:").append(getActionCheck()) //$NON-NLS-1$
+			.append(", actionCheck:").append(getActionCheck()) //$NON-NLS-1$
+			.append('}')
 			.toString();
 	}
 }

@@ -6,6 +6,7 @@
 package net.mmo.utils.kism.entities.nodes.actions;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -89,7 +90,7 @@ public class ActionCheck extends AbstractEntity implements Cloneable, Serializab
 		StringBuilder buf = new StringBuilder(super.toString());
 		buf.setLength(buf.length()-1);
 		return buf
-			.append(", triggerThresholds:").append(getTriggerThresholds()) //$NON-NLS-1$
+			.append(", triggerThresholds:").append(Arrays.toString(getTriggerThresholds())) //$NON-NLS-1$
 			.append(", previousActionState:").append(getPreviousActionState()) //$NON-NLS-1$
 			.append('}')
 			.toString();

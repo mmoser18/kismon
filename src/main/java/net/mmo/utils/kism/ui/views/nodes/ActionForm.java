@@ -16,7 +16,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
@@ -26,10 +25,9 @@ import net.mmo.utils.kism.entities.nodes.actions.ActionFactory.ActionType;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 
 /**
- * extends NodeForem with Action-Details
+ * extends NodeForm with Action-Details
  * @param <N>
  */
-@Slf4j
 public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 {
 	private static final long serialVersionUID = 7104996696515821143L;
@@ -39,18 +37,20 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	static final String DoActionClassName = NodeFormField + "doAction"; //$NON-NLS-1$
 	static final String ThresholdClassName = NodeFormField + "threshold"; //$NON-NLS-1$
 	static final String ActionTypeClassName = NodeFormField + "actionType"; //$NON-NLS-1$
-	static final String ActionParameterClassName = NodeFormField + "actionParameter"; //$NON-NLS-1$
+	static final String ActionParametersClassName = NodeFormField + "actionParameters"; //$NON-NLS-1$
 
-	protected Accordion actionDetails;
-
-	protected VerticalLayout actionDetailsPanel;
 	protected Checkbox doAction;
+	protected Accordion actionDetails;
+	protected VerticalLayout actionDetailsPanel;
 
 	protected TextField[] triggerThreshold = new TextField[State.values().length];
-
 	protected Select<ActionFactory.ActionType> actionType;
 
 	protected Validator<String> thresholdValidator;
+//	protected Component actionDetailsForm;
+
+//	private ActionDetailsFormFactory<N> actionDetailsFormFactory = new ActionDetailsFormFactory<>();
+
 
 	@Override
 	protected void appendFurtherFields(NodeService nodeService) {
@@ -58,14 +58,14 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		this.actionDetails.close(); // initially closed
 		this.actionDetailsPanel = new VerticalLayout();
 		this.actionDetailsPanel.setClassName(ActionDetailsClassName);
-		this.actionDetails.add(Messages.getString("ActionCheckForm.ActionDetails.Label"), this.actionDetailsPanel); //$NON-NLS-1$
+		this.actionDetails.add(Messages.getString("ActionForm.ActionDetails.Label"), this.actionDetailsPanel); //$NON-NLS-1$
 
-		this.doAction = new Checkbox(Messages.getString("ActionCheckForm.DoAction.Label")); //$NON-NLS-1$
+		this.doAction = new Checkbox(Messages.getString("ActionForm.DoAction.Label")); //$NON-NLS-1$
 		this.doAction.setClassName(DoActionClassName);
 		this.doAction.setEnabled(this.isAdminUser);
 		this.doAction.addValueChangeListener(event ->
 		{
-			log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				boolean visible = event.getValue();
 				if (visible) {
@@ -75,59 +75,61 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 						this.node.setActionCheck(ac);
 					}
 					for (State state: State.values()) {
-						log.info("actionCheck: {}", ac); //$NON-NLS-1$
+						this.log.debug("threshold[{}]: {}", state, ac); //$NON-NLS-1$
 						this.triggerThreshold[state.ordinal()].setValue(ac.getTriggerThresholds()[state.ordinal()]);
 					}
 					IAction<ActionableNode> action = ac.getAction();
 					this.actionType.setValue(ActionFactory.getActionType(action));
 				} else {
 					// We don't immediately remove the actionCheck in case the user changes his mind.
-					// this.node.setActionCheck(null);
+					this.node.setActionCheck(null);
 					// instead we do the cleanup in the validateAndSave
 				}
-				adaptActionCheckParametersVisibility(visible);
+				adaptActionTypeAndDetailsVisibility(visible, this.node);
 			}
 		});
 
 		for (State state: State.values()) {
 			TextField tf = new TextField();
-			tf.setLabel(Messages.getString("ActionCheckForm.Threshold." + state.name() + ".Label")); //$NON-NLS-1$ //$NON-NLS-2$
+			tf.setLabel(Messages.getString("ActionForm.Threshold." + state.name() + ".Label")); //$NON-NLS-1$ //$NON-NLS-2$
 			tf.setClassName(ThresholdClassName);
 			tf.setEnabled(this.isAdminUser);
-			this.binder.forField(tf)
-				.withValidator(this.thresholdValidator)
-				.bind((n) -> getThreshold(n, state), (n, value) -> setThreshold(n, state, value));
+//			this.binder.forField(tf)
+//				.withValidator(this.thresholdValidator)
+//				.bind((n) -> getThreshold(n, state), (n, value) -> setThreshold(n, state, value));
 			this.triggerThreshold[state.ordinal()] = tf;
 		}
 		HorizontalLayout thresholds = new HorizontalLayout(this.triggerThreshold);
 
-		this.actionType = new Select<ActionType>(ActionFactory.ActionType.values());
-		this.actionType.setLabel(Messages.getString("ActionCheckForm.ActionType.Label")); //$NON-NLS-1$
-//		this.actionType.setItemLabelGenerator(action -> (action != null
-//                        ? Messages.getString("ActionCheckForm.ActionType.Value." + action.name())  //$NON-NLS-1$
-//                        : Messages.getString("ActionCheckForm.ActionType.Value.None"))); //$NON-NLS-1$
+		this.actionType = new Select<ActionType>();
+		this.actionType.setLabel(Messages.getString("ActionForm.ActionType.Label")); //$NON-NLS-1$
+		this.actionType.setItems(ActionFactory.ActionType.values());
 		this.actionType.setEmptySelectionAllowed(true);
-		this.actionType.setEmptySelectionCaption(Messages.getString("ActionCheckForm.ActionType.Value.None")); //$NON-NLS-1$
+		this.actionType.setEmptySelectionCaption(Messages.getString("ActionForm.ActionType.Value.None")); //$NON-NLS-1$
 		this.actionType.setItemLabelGenerator(action -> (action != null
-		                                                ? Messages.getString("ActionCheckForm.ActionType.Value." + action.name()) //$NON-NLS-1$
-		                                                : Messages.getString("ActionCheckForm.ActionType.Value.None"))); //$NON-NLS-1$
+		                                                ? Messages.getString("ActionForm.ActionType.Value." + action.name()) //$NON-NLS-1$
+		                                                : Messages.getString("ActionForm.ActionType.Value.None"))); //$NON-NLS-1$
 		this.actionType.addClassName(ActionClassName);
 		this.actionType.setEnabled(this.isAdminUser);
-		this.binder.forField(this.actionType).bind(ActionForm::getActionType, ActionForm::setActionType);
+//		this.binder.forField(this.actionType).bind((n) -> getActionType(n), (n, value) -> setActionType(n, value));
 		this.actionType.addValueChangeListener(event ->
 		{
-			log.debug("condition value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.debug("action type value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
-				adaptActionParametersVisibility(this.doAction.getValue(), this.node);
+				adaptActionDetailsVisibility(this.doAction.getValue(), this.node);
 			}
 		});
 		this.actionDetailsPanel.add(this.doAction, thresholds, this.actionType);
+		adaptActionTypeAndDetailsVisibility(hasAction(this.node), this.node);
+
 		this.fields.add(this.actionDetails);
 
-		adaptActionCheckParametersVisibility(this.node != null && this.node.getActionCheck() != null);
 		super.appendFurtherFields(nodeService);
 	}
 
+	private boolean hasAction(N n) {
+		return (n != null ? n.getActionCheck() != null && n.getActionCheck().getAction() != null : false);
+	}
 	@Override
 	protected void createValidators() {
 		super.createValidators();
@@ -140,8 +142,8 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				if (ActionForm.this.node != null) {
 					ActionCheck ac = ActionForm.this.node.getActionCheck();
 					if (ac == null // nothing to check...
-					    || ac.getTriggerThresholds() == null // no thresholds
-					    || ac.getAction() == null) { // no action - thresholds are irrelevant and will be removed
+					   || ac.getTriggerThresholds() == null // no thresholds
+					   || ac.getAction() == null) { // no action - thresholds are irrelevant and will be removed
 						return ValidationResult.ok();
 					}
 					return ActionForm.this.positiveNumberValidator.apply(value, context);
@@ -154,52 +156,77 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	private String getThreshold(N n, State state) {
 		ActionCheck ac = n.getActionCheck();
 
-		return ac != null ? ac.getTriggerThresholds()[state.ordinal()] : Messages.getString("ActionCheckForm.Threshold.Value.Undefined"); //$NON-NLS-1$
+		return ac != null ? ac.getTriggerThresholds()[state.ordinal()] : Messages.getString("ActionForm.Threshold.Value.Undefined"); //$NON-NLS-1$
 	}
 	private void setThreshold(N n, State state, String value) {
 		ActionCheck ac = n.getActionCheck();
 		if (ac != null) {
 			ac.getTriggerThresholds()[state.ordinal()] = value;
-		} else {
-			log.error("This should never happen - setThreshold called with value {} for state {} for non-existent ActionCheck in node {}", //$NON-NLS-1$
-			          value, state, n);
+		} else if (!value.equals(Messages.getString("ActionForm.Threshold.Value.Undefined"))) { //$NON-NLS-1$
+			this.log.error("This should never happen - setThreshold called with value {} for state {} for non-existent ActionCheck in node {}", //$NON-NLS-1$
+			               value, state, n);
 		}
 	}
 
-	static <N extends ActionableNode> ActionType getActionType(N n) {
+	/**
+	 * @param n
+	 * @return the actionType of the passed node
+	 */
+	public ActionType getActionType(N n) {
 		try {
-			if (n != null && n.getActionCheck() != null) {
+			if ((n != null) && (n.getActionCheck() != null)) {
 				return ActionFactory.getActionType(n.getActionCheck().getAction());
 			}
 		} catch (Exception ex) {
-			log.error("Error deriving action-type from action", ex); //$NON-NLS-1$
+			this.log.error("Error deriving action-type from action", ex); //$NON-NLS-1$
 		}
 		return null;
 	}
 
-	static <N extends ActionableNode> void setActionType(N n, ActionType actionType) {
+	void setActionType(N n, ActionType actionType) {
 		if (n != null && n.getActionCheck() != null) {
 			try {
 				n.getActionCheck().setAction(actionType != null ? ActionFactory.createActionOfType(actionType) : null);
 			} catch (Exception ex) {
-				log.error("Error setting action from type '" + actionType + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
+				this.log.error("Error setting action from type '" + actionType + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 	}
 
-	private void adaptActionCheckParametersVisibility(boolean visible) {
+	protected void adaptActionTypeAndDetailsVisibility(boolean actionVisible, N n) {
+		this.doAction.setValue(actionVisible);
 		for (State state: State.values()) {
-			this.triggerThreshold[state.ordinal()].setVisible(visible);
+			this.triggerThreshold[state.ordinal()].setVisible(actionVisible);
 		}
-		this.actionType.setVisible(visible);
+		this.actionType.setVisible(actionVisible);
+		adaptActionDetailsVisibility(actionVisible, n);
 	}
 
-	private void adaptActionParametersVisibility(boolean visible, N n) {
-		// TODO: to be completed
+	private void adaptActionDetailsVisibility(boolean visible, N n) {
+//		Component newActionHandlerForm = this.actionDetailsFormFactory.createActionDetailsForm(n, ActionFactory.getActionType(node));
+//		if (newActionHandlerForm != this.actionDetailsForm) {
+//			if (this.actionDetailsForm != null) {
+//				this.actionDetailsPanel.remove(this.actionDetailsForm);
+//			}
+//			if (newActionHandlerForm != null) {
+//				this.actionDetailsPanel.add(this.actionDetailsForm = newActionHandlerForm);
+//				this.actionDetailsForm.setVisible(visible);
+//			}
+//			this.binder.forField(this.actionDetailsForm).bind();
+//		}
+	}
+
+	@Override
+	public boolean setNode(N n, boolean abandonChanges) {
+		this.log.info("setNode node={}", n); //$NON-NLS-1$
+		boolean res = super.setNode(n, abandonChanges);
+		adaptActionTypeAndDetailsVisibility(hasAction(n), n);
+		return res;
 	}
 
 	/**
-	 * If the use has selected "None" action when saving then we reset the doAction to false
+	 * If the use has selected "None" action when saving then we reset the doAction-checkbox to false
+	 * and the node's actionCheck to null.
 	 */
 	@Override
 	protected void validateAndSave() {
