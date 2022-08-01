@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.StringUtils;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
@@ -139,7 +140,7 @@ public class SSHConnection extends IPConnection
 				this.sshClient = new SSHClient();
 				String resolvedFingerprint = resolveProperties(getFingerprint());
 				log.debug("accaptable fingerprint is '{}'", resolvedFingerprint); //$NON-NLS-1$
-				if (resolvedFingerprint == null || resolvedFingerprint.isBlank()) {
+				if (StringUtils.isEmpty(resolvedFingerprint)) {
 					log.trace("using PromiscuousVerifier"); //$NON-NLS-1$
 					this.sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 				} else {
