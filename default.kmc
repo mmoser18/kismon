@@ -27,13 +27,14 @@
 			"applicable" : true,
 			"properties" : {
 				"app_uid" : "mms",
-				"mock_port" : "8090",
+				"mock_port" : ":8090",
 				"app_url" : "${app_prot}${app_host}${app_port}${app_path}",
 				"app_port" : "",
+				"mock_prot" : "http://",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "zhquest",
 				"mock_host" : "${app_host}",
-				"mock_url" : "http://${mock_host}:${mock_port}/zhquest-mock-external-services/",
+				"mock_url" : "${mock_prot}${mock_host}${mock_port}/zhquest-mock-external-services",
 				"app_host" : "---",
 				"svc_url" : "${app_url}services/",
 				"db_uid" : "---",
@@ -44,7 +45,7 @@
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQ DEV",
+				"name" : "ZHQ DEV (old)",
 				"description" : "ZHQuest DEV environment (server: ksta-zhquest-int3.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
@@ -94,31 +95,6 @@
 					"query" : "select TEXT from REF_ANREDE",
 					"driverName" : "${db_default_driver}"
 				}, {
-					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ DEV Mock",
-					"description" : "Mock for ZHQuest DEV",
-					"applicable" : true,
-					"properties" : { },
-					"actionCheck" : null,
-					"active" : true,
-					"period" : 60,
-					"timeout" : 15,
-					"checkResults" : true,
-					"resultChecker" : {
-						"condition" : "Contains",
-						"operands" : [ "<wsdl:definitions name=\"person\"" ]
-					},
-					"url" : "${mock_url}/mockpersonSOAP?WSDL",
-					"method" : "GET",
-					"targetUid" : "",
-					"targetPwd" : "",
-					"includeBasicAuthHeader" : false,
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
-					"headers" : "",
-					"payload" : "",
-					"acceptableReturnCodes" : "200"
-				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DEV Mock SAM",
 					"description" : "Mock SecurityTokenServiceBinding for DEV",
@@ -133,10 +109,10 @@
 						"condition" : "Contains",
 						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
 					},
-					"url" : "${mock_url}mockSecurityTokenServiceBinding",
+					"url" : "${mock_url}/mockSecurityTokenServiceBinding",
 					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
+					"targetUid" : "",
+					"targetPwd" : "",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -144,6 +120,31 @@
 					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ DEV Mock",
+					"description" : "Mock for ZHQuest DEV",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"person\"" ]
+					},
+					"url" : "${mock_url}/mockPersonServiceBinding?WSDL",
+					"method" : "GET",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ DEV Application UI",
@@ -223,10 +224,10 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQ QA",
+				"name" : "ZHQ QA (old)",
 				"description" : "ZHQuest QA Environment (server: ksta-zh-zhquest.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
@@ -276,6 +277,32 @@
 					"query" : "select TEXT from REF_ANREDE",
 					"driverName" : "${db_default_driver}"
 				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "ZHQ QA Mock SAM",
+					"description" : "Mock SecurityTokenServiceBinding for ZHQuest QA",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
+					},
+					"url" : "${mock_url}/mockSecurityTokenServiceBinding",
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
+				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ QA Mock",
 					"description" : "Mock for ZHQuest QA",
@@ -300,32 +327,6 @@
 					"headers" : "",
 					"payload" : "",
 					"acceptableReturnCodes" : "200"
-				}, {
-					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-					"name" : "ZHQ QA Mock SAM",
-					"description" : "Mock SecurityTokenServiceBinding for ZHQuest QA",
-					"applicable" : true,
-					"properties" : { },
-					"actionCheck" : null,
-					"active" : true,
-					"period" : 60,
-					"timeout" : 15,
-					"checkResults" : true,
-					"resultChecker" : {
-						"condition" : "Contains",
-						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
-					},
-					"url" : "${mock_url}mockSecurityTokenServiceBinding",
-					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
-					"includeBasicAuthHeader" : false,
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
-					"headers" : "",
-					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
-					"acceptableReturnCodes" : "200",
-					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ QA Application UI",
@@ -403,11 +404,11 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQ DEV (NEU)",
-				"description" : "ZHQuest DEV environment (NEU) (server: ksta-zh-zhq-dev.elcadev.local)",
+				"name" : "ZHQ DEV (new)",
+				"description" : "ZHQuest DEV environment (new) (server: ksta-zh-zhq-dev.elcadev.local)",
 				"applicable" : false,
 				"properties" : {
 					"app_host" : "ksta-zh-zhq-dev.elcadev.local",
@@ -430,7 +431,7 @@
 						"condition" : "Contains",
 						"operands" : [ "It works!" ]
 					},
-					"url" : "http://${app_host}",
+					"url" : "${app_prot}${app_host}${app_port}",
 					"method" : "GET",
 					"targetUid" : "",
 					"targetPwd" : "",
@@ -442,8 +443,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ Mock Server (new)",
-					"description" : "ZHQ Mock Server (Tomcat)",
+					"name" : "ZHQ DEV Mock Server (new)",
+					"description" : "ZHQ DEV Mock Server (Tomcat)",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -455,7 +456,58 @@
 						"condition" : "Contains",
 						"operands" : [ "<h1>Apache Tomcat/9." ]
 					},
-					"url" : "http://${app_host}:8090",
+					"url" : "${mock_prot}${mock_host}${mock_port}",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "ZHQ DEV Mock SAM (new)",
+					"description" : "Mock SecurityTokenServiceBinding for DEV",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
+					},
+					"url" : "${mock_url}/mockSecurityTokenServiceBinding",
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ DEV Mock Services (new)",
+					"description" : "Mock Services for ZHQuest DEV",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"person\"" ]
+					},
+					"url" : "${mock_url}/mockPersonServiceBinding?WSDL",
 					"method" : "GET",
 					"targetUid" : "",
 					"targetPwd" : "",
@@ -505,57 +557,6 @@
 					"dbPwd" : "${db_pwd}",
 					"query" : "select TEXT from REF_ANREDE",
 					"driverName" : "${db_default_driver}"
-				}, {
-					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "ZHQ DEV Mock (new)",
-					"description" : "Mock for ZHQuest DEV",
-					"applicable" : true,
-					"properties" : { },
-					"actionCheck" : null,
-					"active" : true,
-					"period" : 60,
-					"timeout" : 15,
-					"checkResults" : true,
-					"resultChecker" : {
-						"condition" : "Contains",
-						"operands" : [ "<wsdl:definitions name=\"person\"" ]
-					},
-					"url" : "${mock_url}/mockpersonSOAP?WSDL",
-					"method" : "GET",
-					"targetUid" : "",
-					"targetPwd" : "",
-					"includeBasicAuthHeader" : true,
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
-					"headers" : "",
-					"payload" : "",
-					"acceptableReturnCodes" : "200"
-				}, {
-					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-					"name" : "ZHQ DEV Mock SAM (new)",
-					"description" : "Mock SecurityTokenServiceBinding for DEV",
-					"applicable" : true,
-					"properties" : { },
-					"actionCheck" : null,
-					"active" : true,
-					"period" : 60,
-					"timeout" : 15,
-					"checkResults" : true,
-					"resultChecker" : {
-						"condition" : "Contains",
-						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
-					},
-					"url" : "${mock_url}mockSecurityTokenServiceBinding",
-					"method" : "POST",
-					"targetUid" : "mms",
-					"targetPwd" : "secret",
-					"includeBasicAuthHeader" : false,
-					"httpVersion" : "HTTP_1_1",
-					"redirectBehavior" : "NORMAL",
-					"headers" : "",
-					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
-					"acceptableReturnCodes" : "200",
-					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 					"name" : "ZHQ DEV Application UI (new)",
@@ -612,6 +613,470 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
 					"name" : "ZHQ DEV Service Call (new)",
 					"description" : "ZHQuest Application Server DEV service call",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<aktuelleZeit>" ]
+					},
+					"url" : "${svc_url}EQuestService",
+					"method" : "POST",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/zhquest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : ""
+				} ],
+				"expanded" : false
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "ZHQ QA (new)",
+				"description" : "ZHQuest DEV environment (new) (server: ksta-zh-zhq-dev.elcadev.local)",
+				"applicable" : false,
+				"properties" : {
+					"app_host" : "ksta-zh-zhq-qa.elcadev.local",
+					"db_uid" : "ZHQUEST_QA"
+				},
+				"actionCheck" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ QA Proxy (new)",
+					"description" : "ZHQuest QA Apache Server",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "It works!" ]
+					},
+					"url" : "${app_prot}${app_host}${app_port}",
+					"method" : "GET",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ QA Mock Server (new)",
+					"description" : "ZHQ QA Mock Server (Tomcat)",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<h1>Apache Tomcat/9." ]
+					},
+					"url" : "${mock_prot}${mock_host}${mock_port}",
+					"method" : "GET",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "ZHQ QA Mock SAM (new)",
+					"description" : "Mock SecurityTokenServiceBinding for DEV",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
+					},
+					"url" : "${mock_url}/mockSecurityTokenServiceBinding",
+					"method" : "POST",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ QA Mock Services (new)",
+					"description" : "Mock Services for ZHQuest QA",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"person\"" ]
+					},
+					"url" : "${mock_url}/mockPersonServiceBinding?WSDL",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "ZHQ QA DB-ping (new)",
+					"description" : "ping DB for ZHQuest QA Environment",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "DUMMY" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "ZHQ QA DB-query (new)",
+					"description" : "send specific query to ZHQuest QA DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operands" : [ "FRAU" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select TEXT from REF_ANREDE",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ QA Application UI (new)",
+					"description" : "ZHQuest Application Server QA UI",
+					"applicable" : true,
+					"properties" : {
+						"cookie" : "JSESSIONID=35527D565D216DEB8F156ED2635D884F"
+					},
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<title>ZHQuest</title>" ]
+					},
+					"url" : "${app_url}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bW1zOnpocXVlc3Q=",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ QA Services WSDL (new)",
+					"description" : "ZHQuest Application Server QA services WSDL",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Available SOAP services:" ]
+					},
+					"url" : "${svc_url}?WSDL",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "ZHQ QA Service Call (new)",
+					"description" : "ZHQuest Application Server QA service call",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<aktuelleZeit>" ]
+					},
+					"url" : "${svc_url}EQuestService",
+					"method" : "POST",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhquest.ksta.zh.ch/xmlns/zhquest/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:pingRequestType/>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : ""
+				} ],
+				"expanded" : false
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "ZHQ PRE (new)",
+				"description" : "ZHQuest PRE environment (new) (server: ksta-zh-zhq-pre.elcadev.local)",
+				"applicable" : false,
+				"properties" : {
+					"app_host" : "ksta-zh-zhq-pre.elcadev.local",
+					"db_uid" : "ZHQUEST_PRE"
+				},
+				"actionCheck" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ PRE Proxy (new)",
+					"description" : "ZHQuest PRE Apache Server",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "It works!" ]
+					},
+					"url" : "${app_prot}${app_host}${app_port}",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ PRE Mock Server (new)",
+					"description" : "ZHQ PRE Mock Server (Tomcat)",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<h1>Apache Tomcat/9." ]
+					},
+					"url" : "${mock_prot}${mock_host}${mock_port}",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "ZHQ PRE Mock SAM (new)",
+					"description" : "Mock SecurityTokenServiceBinding for PRE",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<ns:RequestSecurityTokenResponse Context=\"?\">" ]
+					},
+					"url" : "${mock_url}/mockSecurityTokenServiceBinding",
+					"method" : "POST",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\" xmlns:oas=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\" xmlns:oas1=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\" xmlns:pol=\"http://schemas.xmlsoap.org/ws/2004/09/policy\" xmlns:urn=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:xd=\"http://www.w3.org/2000/09/xmldsig#\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:RequestSecurityToken Context=\"?\">\n         <!--Optional:-->\n         <ns:TokenType>?</ns:TokenType>\n         <!--Optional:-->\n         <ns:RequestType>?</ns:RequestType>\n         <!--Optional:-->\n         <ns:OnBehalfOf>\n            <!--Optional:-->\n            <oas:UsernameToken oas1:Id=\"?\">\n               <oas:Username oas1:Id=\"?\">?</oas:Username>\n               <!--Optional:-->\n               <oas:Password oas1:Id=\"?\" Type=\"?\">?</oas:Password>\n               <!--Optional:-->\n               <oas:Nonce oas1:Id=\"?\" EncodingType=\"?\">?</oas:Nonce>\n            </oas:UsernameToken>\n            <!--Optional:-->\n            <oas:BinarySecurityToken oas1:Id=\"?\" EncodingType=\"?\" ValueType=\"?\">?</oas:BinarySecurityToken>\n         </ns:OnBehalfOf>\n         <!--Optional:-->\n         <pol:AppliesTo>\n            <!--You may enter ANY elements at this point-->\n         </pol:AppliesTo>\n         <!--Optional:-->\n         <ns:ValidateTarget>\n            <!--Optional:-->\n            <urn:Assertion Version=\"?\" ID=\"?\" IssueInstant=\"?\">\n               <urn:Issuer NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:Issuer>\n               <!--Optional:-->\n               <xd:Signature Id=\"?\">\n                  <xd:SignedInfo Id=\"?\">\n                     <xd:CanonicalizationMethod Algorithm=\"?\">\n                        e\n                        <!--You may enter ANY elements at this point-->\n                        gero\n                     </xd:CanonicalizationMethod>\n                     <xd:SignatureMethod Algorithm=\"?\">\n                        cum\n                        <!--Optional:-->\n                        <xd:HMACOutputLength>?</xd:HMACOutputLength>\n                        sonoras\n                        <!--You may enter ANY elements at this point-->\n                        aeoliam\n                     </xd:SignatureMethod>\n                     <!--1 or more repetitions:-->\n                     <xd:Reference Id=\"?\" URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              quae\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              ventos\n                           </xd:Transform>\n                        </xd:Transforms>\n                        <xd:DigestMethod Algorithm=\"?\">\n                           verrantque\n                           <!--You may enter ANY elements at this point-->\n                           temperat\n                        </xd:DigestMethod>\n                        <xd:DigestValue>cid:1071045921313</xd:DigestValue>\n                     </xd:Reference>\n                  </xd:SignedInfo>\n                  <xd:SignatureValue Id=\"?\">cid:1293555919135</xd:SignatureValue>\n                  <!--Optional:-->\n                  <xd:KeyInfo Id=\"?\">\n                     per\n                     <!--You have a CHOICE of the next 8 items at this level-->\n                     <xd:KeyName>?</xd:KeyName>\n                     <xd:KeyValue>\n                        turbine\n                        <!--You have a CHOICE of the next 3 items at this level-->\n                        <xd:DSAKeyValue>\n                           <xd:P>cid:375132566643</xd:P>\n                           <xd:Q>cid:1211272691493</xd:Q>\n                           <!--Optional:-->\n                           <xd:G>cid:776964427670</xd:G>\n                           <xd:Y>cid:218901872367</xd:Y>\n                           <!--Optional:-->\n                           <xd:J>cid:1135066014896</xd:J>\n                           <xd:Seed>cid:649696132764</xd:Seed>\n                           <xd:PgenCounter>cid:1126716125001</xd:PgenCounter>\n                        </xd:DSAKeyValue>\n                        <xd:RSAKeyValue>\n                           <xd:Modulus>cid:437889782882</xd:Modulus>\n                           <xd:Exponent>cid:282416929774</xd:Exponent>\n                        </xd:RSAKeyValue>\n                        <!--You may enter ANY elements at this point-->\n                        circum\n                     </xd:KeyValue>\n                     <xd:RetrievalMethod URI=\"?\" Type=\"?\">\n                        <!--Optional:-->\n                        <xd:Transforms>\n                           <!--1 or more repetitions:-->\n                           <xd:Transform Algorithm=\"?\">\n                              regemque\n                              <!--You have a CHOICE of the next 2 items at this level-->\n                              <!--You may enter ANY elements at this point-->\n                              <xd:XPath>?</xd:XPath>\n                              nimborum\n                           </xd:Transform>\n                        </xd:Transforms>\n                     </xd:RetrievalMethod>\n                     <xd:X509Data>\n                        <!--You have a CHOICE of the next 6 items at this level-->\n                        <xd:X509IssuerSerial>\n                           <xd:X509IssuerName>?</xd:X509IssuerName>\n                           <xd:X509SerialNumber>?</xd:X509SerialNumber>\n                        </xd:X509IssuerSerial>\n                        <xd:X509SKI>cid:225689901754</xd:X509SKI>\n                        <xd:X509SubjectName>?</xd:X509SubjectName>\n                        <xd:X509Certificate>cid:381687849948</xd:X509Certificate>\n                        <xd:X509CRL>cid:937746564141</xd:X509CRL>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:X509Data>\n                     <xd:PGPData>\n                        <!--You have a CHOICE of the next 2 items at this level-->\n                        <xd:PGPKeyID>cid:693547376563</xd:PGPKeyID>\n                        <!--Optional:-->\n                        <xd:PGPKeyPacket>cid:833447075249</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                        <xd:PGPKeyPacket>cid:1205349750673</xd:PGPKeyPacket>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:PGPData>\n                     <xd:SPKIData>\n                        <xd:SPKISexp>cid:422846437128</xd:SPKISexp>\n                        <!--You may enter ANY elements at this point-->\n                     </xd:SPKIData>\n                     <xd:MgmtData>?</xd:MgmtData>\n                     <!--You may enter ANY elements at this point-->\n                     fremunt\n                  </xd:KeyInfo>\n                  <!--Zero or more repetitions:-->\n                  <xd:Object Id=\"?\" MimeType=\"?\" Encoding=\"?\">\n                     foedere\n                     <!--You may enter ANY elements at this point-->\n                     ferant\n                  </xd:Object>\n               </xd:Signature>\n               <!--Optional:-->\n               <urn:Subject>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <!--You have a CHOICE of the next 3 items at this level-->\n                  <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                  <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                  <urn:EncryptedID/>\n                  <!--Zero or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        profundum\n                        <!--You may enter ANY elements at this point-->\n                        sceptra\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n                  <!--1 or more repetitions:-->\n                  <urn:SubjectConfirmation Method=\"?\">\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:BaseID NameQualifier=\"?\" SPNameQualifier=\"?\"/>\n                     <urn:NameID NameQualifier=\"?\" SPNameQualifier=\"?\" Format=\"?\" SPProvidedID=\"?\">?</urn:NameID>\n                     <urn:EncryptedID/>\n                     <!--Optional:-->\n                     <urn:SubjectConfirmationData NotBefore=\"?\" NotOnOrAfter=\"?\" Recipient=\"?\" InResponseTo=\"?\" Address=\"?\">\n                        et\n                        <!--You may enter ANY elements at this point-->\n                        turbine\n                     </urn:SubjectConfirmationData>\n                  </urn:SubjectConfirmation>\n               </urn:Subject>\n               <!--Optional:-->\n               <urn:Conditions NotBefore=\"?\" NotOnOrAfter=\"?\">\n                  <!--You have a CHOICE of the next 4 items at this level-->\n                  <urn:Condition/>\n                  <urn:AudienceRestriction>\n                     <!--1 or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:AudienceRestriction>\n                  <urn:OneTimeUse/>\n                  <urn:ProxyRestriction Count=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:Audience>?</urn:Audience>\n                  </urn:ProxyRestriction>\n               </urn:Conditions>\n               <!--Optional:-->\n               <urn:Advice>\n                  <!--You have a CHOICE of the next 5 items at this level-->\n                  <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                  <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                  <urn:Assertion/>\n                  <urn:EncryptedAssertion/>\n                  <!--You may enter ANY elements at this point-->\n               </urn:Advice>\n               <!--You have a CHOICE of the next 4 items at this level-->\n               <urn:Statement/>\n               <urn:AuthnStatement AuthnInstant=\"?\" SessionIndex=\"?\" SessionNotOnOrAfter=\"?\">\n                  <!--Optional:-->\n                  <urn:SubjectLocality Address=\"?\" DNSName=\"?\"/>\n                  <urn:AuthnContext>\n                     <!--You have a CHOICE of the next 3 items at this level-->\n                     <urn:AuthnContextClassRef>?</urn:AuthnContextClassRef>\n                     <!--You have a CHOICE of the next 2 items at this level-->\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <urn:AuthnContextDecl>?</urn:AuthnContextDecl>\n                     <urn:AuthnContextDeclRef>?</urn:AuthnContextDeclRef>\n                     <!--Zero or more repetitions:-->\n                     <urn:AuthenticatingAuthority>?</urn:AuthenticatingAuthority>\n                  </urn:AuthnContext>\n               </urn:AuthnStatement>\n               <urn:AuthzDecisionStatement Resource=\"?\" Decision=\"?\">\n                  <!--1 or more repetitions:-->\n                  <urn:Action Namespace=\"?\">?</urn:Action>\n                  <!--Optional:-->\n                  <urn:Evidence>\n                     <!--You have a CHOICE of the next 4 items at this level-->\n                     <urn:AssertionIDRef>?</urn:AssertionIDRef>\n                     <urn:AssertionURIRef>?</urn:AssertionURIRef>\n                     <urn:Assertion/>\n                     <urn:EncryptedAssertion/>\n                  </urn:Evidence>\n               </urn:AuthzDecisionStatement>\n               <urn:AttributeStatement>\n                  <!--You have a CHOICE of the next 2 items at this level-->\n                  <urn:Attribute Name=\"?\" NameFormat=\"?\" FriendlyName=\"?\">\n                     <!--Zero or more repetitions:-->\n                     <urn:AttributeValue>?</urn:AttributeValue>\n                  </urn:Attribute>\n                  <urn:EncryptedAttribute/>\n               </urn:AttributeStatement>\n            </urn:Assertion>\n         </ns:ValidateTarget>\n      </ns:RequestSecurityToken>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "http://schemas.xmlsoap.org/ws/2005/02/trust/wsdl/RequestSecurityToken"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ PRE Mock Services (new)",
+					"description" : "Mock Services for ZHQuest PRE",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"person\"" ]
+					},
+					"url" : "${mock_url}/mockPersonServiceBinding?WSDL",
+					"method" : "GET",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "ZHQ PRE DB-ping (new)",
+					"description" : "ping DB for ZHQuest PRE Environment",
+					"applicable" : false,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "DUMMY" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "ZHQ PRE DB-query (new)",
+					"description" : "send specific query to ZHQuest PRE DB",
+					"applicable" : false,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operands" : [ "FRAU" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select TEXT from REF_ANREDE",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ PRE Application UI (new)",
+					"description" : "ZHQuest Application Server PRE UI",
+					"applicable" : true,
+					"properties" : {
+						"cookie" : "JSESSIONID=35527D565D216DEB8F156ED2635D884F"
+					},
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<title>ZHQuest</title>" ]
+					},
+					"url" : "${app_url}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bW1zOnpocXVlc3Q=",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHQ PRE Services WSDL (new)",
+					"description" : "ZHQuest Application Server PRE services WSDL",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Available SOAP services:" ]
+					},
+					"url" : "${svc_url}?WSDL",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "ZHQ PRE Service Call (new)",
+					"description" : "ZHQuest Application Server PRE service call",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -792,7 +1257,7 @@
 					"acceptableReturnCodes" : "200",
 					"soapAction" : ""
 				} ],
-				"expanded" : true
+				"expanded" : false
 			} ],
 			"expanded" : true
 		} ],
@@ -1376,10 +1841,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "power",
 				"app_prot_ext" : "https://",
-				"mock_prot_ext" : "https://",
+				"app_uid" : "power",
 				"mock_port" : ":8080",
+				"mock_prot_ext" : "https://",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -1679,8 +2144,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "ROLF",
+				"app_prot_ext" : "https://",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -2279,7 +2744,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : false
+			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RegisterJP VMs",
@@ -2433,7 +2898,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : false
+			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-sst-mnt",
@@ -3014,10 +3479,7 @@
 			"properties" : {
 				"xxx" : "yyy"
 			},
-			"actionCheck" : {
-				"triggerThresholds" : [ "1", "1", "1" ],
-				"action" : null
-			},
+			"actionCheck" : null,
 			"active" : false,
 			"period" : 30,
 			"timeout" : 15,
