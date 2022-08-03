@@ -78,14 +78,18 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.driverName.setThemeName(LabelPaddingTheme);
 		this.driverName.setClearButtonVisible(this.clearButtonsVisible);
 		this.driverName.setEnabled(this.isAdminUser);
-		this.binder.forField(this.driverName).withValidator(this.propertiesResolvableValidator);
+		this.binder.forField(this.driverName)
+			.withValidator(this.propertiesResolvableValidator)
+			.bind(JDBCConnection::getDriverName, JDBCConnection::setDriverName);
 
 		this.dbUid = new TextField(Messages.getString("JDBCConnectionForm.DbUid.Label")); //$NON-NLS-1$
 		this.dbUid.setClassName(UidClassName);
 		this.dbUid.setThemeName(LabelPaddingTheme);
 		this.dbUid.setClearButtonVisible(this.clearButtonsVisible);
 		this.dbUid.setEnabled(this.isAdminUser);
-		this.binder.forField(this.dbUid).withValidator(this.propertiesResolvableValidator);
+		this.binder.forField(this.dbUid)
+			.withValidator(this.propertiesResolvableValidator)
+			.bind(JDBCConnection::getDbUid, JDBCConnection::setDbUid);
 
 		this.dbPwd = new PasswordField(Messages.getString("JDBCConnectionForm.DbPwd.Label")); //$NON-NLS-1$
 		this.dbPwd.setClassName(PwdClassName);
@@ -94,10 +98,14 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.dbPwd.setEnabled(this.isAdminUser);
 		this.dbPwd.setRevealButtonVisible(this.isAdminUser);
 		if (this.isAdminUser) {
-			this.binder.forField(this.dbPwd).withValidator(this.propertiesResolvableValidator);
+			this.binder.forField(this.dbPwd)
+				.withValidator(this.propertiesResolvableValidator)
+				.bind(JDBCConnection::getDbPwd, JDBCConnection::setDbPwd);
 		} else { // we don't want to send the pwd to the client - not even hidden - if (s)he is not an admin user!
-			this.binder.forField(this.dbPwd).bind(CommonConstants::suppressedPassword, null);
+			this.binder.forField(this.dbPwd)
+				.bind(CommonConstants::suppressedPassword, null);
 		}
+
 		this.query = new TextField(Messages.getString("JDBCConnectionForm.Query.Label")); //$NON-NLS-1$
 		this.query.setClassName(QueryClassName);
 		this.query.setThemeName(LabelPaddingTheme);
@@ -123,21 +131,24 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		this.resultingQuery.setThemeName(LabelPaddingTheme);
 		this.resultingQuery.setVisible(false);
 		this.resultingQuery.setReadOnly(true);
-		this.binder.forField(this.resultingQuery).bind(JDBCConnection::getResultingQuery, null);
+		this.binder.forField(this.resultingQuery)
+			.bind(JDBCConnection::getResultingQuery, null);
 
 		this.responseStatus = new TextField(Messages.getString("JDBCConnectionForm.ResponseStatus.Label")); //$NON-NLS-1$
 		this.responseStatus.setClassName(DbResponseClassName);
 		this.responseStatus.setThemeName(LabelPaddingTheme);
 		this.responseStatus.addThemeName(MonospaceTheme);
 		this.responseStatus.setReadOnly(true);
-		this.binder.forField(this.responseStatus).bind(JDBCConnection::getResponseStatus, null);
+		this.binder.forField(this.responseStatus)
+			.bind(JDBCConnection::getResponseStatus, null);
 
 		this.responsePayload = new TextArea(Messages.getString("JDBCConnectionForm.ResponsePayload.Label")); //$NON-NLS-1$
 		this.responsePayload.setClassName(DbResponseClassName);
 		this.responsePayload.setThemeName(LabelPaddingTheme);
 		this.responsePayload.addThemeName(MonospaceTheme);
 		this.responsePayload.setReadOnly(true);
-		this.binder.forField(this.responsePayload).bind(JDBCConnection::getResponsePayload, null);
+		this.binder.forField(this.responsePayload)
+			.bind(JDBCConnection::getResponsePayload, null);
 
 		// combining and grouping bits and pieces:
 		HorizontalLayout uidAndPwd = new HorizontalLayout(this.dbUid, this.dbPwd);

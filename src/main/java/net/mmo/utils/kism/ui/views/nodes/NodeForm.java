@@ -120,12 +120,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.binder = new BeanValidationBinder<>(clazz);
 
 		// this creates the majority of the fields:
+		this.log.debug("calling createFormFields(...)"); //$NON-NLS-1$
 		createFormFields(nodeService);
 
 		// here we append stuff at the very end of the form:
+		this.log.debug("calling appendFurtherFields(...)"); //$NON-NLS-1$
 		appendFurtherFields(nodeService);
 
 		// we bind the binder to our node-beans:
+		this.log.debug("calling bindInstanceFields(...)"); //$NON-NLS-1$
 		this.binder.bindInstanceFields(this); // this binder-setup has to be AFTER creation of the form fields
 		                                      // or else the later readBean/writeBean won't work!
 		                                      // Took me a day to find out why the binding was a No-Op... ||-(
@@ -484,13 +487,17 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	protected void readBean(N n) {
 		this.log.debug("readBean node={}", n); //$NON-NLS-1$
-		this.binder.readBean(n);
+		if (n != null) {
+			this.binder.readBean(n);
+		}
 		setUiChanges(false);
 	}
 
 	protected void writeBean(N n) throws ValidationException {
 		this.log.debug("writeBean node={}", n); //$NON-NLS-1$
-		this.binder.writeBean(n);
+		if (n != null) {
+			this.binder.writeBean(n);
+		}
 	}
 
 

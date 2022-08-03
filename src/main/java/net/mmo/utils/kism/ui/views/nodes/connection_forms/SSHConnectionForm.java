@@ -111,7 +111,9 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.username.setThemeName(LabelPaddingTheme);
 		this.username.setClearButtonVisible(this.clearButtonsVisible);
 		this.username.setEnabled(this.isAdminUser);
-		this.binder.forField(this.username).withValidator(this.propertiesResolvableValidator);
+		this.binder.forField(this.username)
+			.withValidator(this.propertiesResolvableValidator)
+			.bind(SSHConnection::getUsername, SSHConnection::setUsername);
 
 		this.authArg = new PasswordField(Messages.getString("SSHConnectionForm.AuthArg.Label." + Auth_Method.PWD.name())); //$NON-NLS-1$
 		this.authArg.setClassName(AuthArgClassName);
@@ -120,9 +122,12 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.authArg.setEnabled(this.isAdminUser);
 		this.authArg.setRevealButtonVisible(this.isAdminUser);
 		if (this.isAdminUser) {
-			this.binder.forField(this.authArg).withValidator(this.propertiesResolvableValidator);
+			this.binder.forField(this.authArg)
+				.withValidator(this.propertiesResolvableValidator)
+				.bind(SSHConnection::getAuthArg, SSHConnection::setAuthArg);
 		} else { // we don't want to send the pwd to the client - not even hidden - if (s)he is not an admin user!
-			this.binder.forField(this.authArg).bind(CommonConstants::suppressedPassword, null);
+			this.binder.forField(this.authArg)
+				.bind(CommonConstants::suppressedPassword, null);
 		}
 		this.fingerprint = new TextField(Messages.getString("SSHConnectionForm.Fingerprint.Label")); //$NON-NLS-1$
 		this.fingerprint.setClassName(CommandClassName);
@@ -143,8 +148,8 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 					return fp.isBlank() || fp.matches(SERVER_FINGERPRINT_PATTERN)
 						? ValidationResult.ok()
 						: ValidationResult.error("Not a legal fingerprint string - must match pattern '{" + SERVER_FINGERPRINT_PATTERN + "}'"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-			).bind(SSHConnection::getFingerprint, SSHConnection::setFingerprint);
+				})
+			.bind(SSHConnection::getFingerprint, SSHConnection::setFingerprint);
 
 		this.command = new TextField(Messages.getString("SSHConnectionForm.Command.Label")); //$NON-NLS-1$
 		this.command.setClassName(CommandClassName);

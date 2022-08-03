@@ -191,7 +191,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 			}
 		});
 		this.binder.forField(this.payload)
-			.withValidator(this.propertiesResolvableValidator);
+			.withValidator(this.propertiesResolvableValidator)
+			.bind(HTTPConnection::getPayload, HTTPConnection::setPayload);
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
@@ -376,7 +377,6 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		String convertedRequest = n.requestBodyAsString();
 		String requestText = (this.prettyPrintRequestXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedRequest, false) : convertedRequest);
 		return requestText != null ? requestText : ""; //$NON-NLS-1$
-
 	}
 	protected String responseBodyAsString(N n) {
 		String convertedResponse = n.responseBodyAsString();
