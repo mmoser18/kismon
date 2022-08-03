@@ -153,20 +153,20 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		};
 	}
 
-	private String getThreshold(N n, State state) {
-		ActionCheck ac = n.getActionCheck();
-
-		return ac != null ? ac.getTriggerThresholds()[state.ordinal()] : Messages.getString("ActionForm.Threshold.Value.Undefined"); //$NON-NLS-1$
-	}
-	private void setThreshold(N n, State state, String value) {
-		ActionCheck ac = n.getActionCheck();
-		if (ac != null) {
-			ac.getTriggerThresholds()[state.ordinal()] = value;
-		} else if (!value.equals(Messages.getString("ActionForm.Threshold.Value.Undefined"))) { //$NON-NLS-1$
-			this.log.error("This should never happen - setThreshold called with value {} for state {} for non-existent ActionCheck in node {}", //$NON-NLS-1$
-			               value, state, n);
-		}
-	}
+//	private String getThreshold(N n, State state) {
+//		ActionCheck ac = n.getActionCheck();
+//
+//		return ac != null ? ac.getTriggerThresholds()[state.ordinal()] : Messages.getString("ActionForm.Threshold.Value.Undefined"); //$NON-NLS-1$
+//	}
+//	private void setThreshold(N n, State state, String value) {
+//		ActionCheck ac = n.getActionCheck();
+//		if (ac != null) {
+//			ac.getTriggerThresholds()[state.ordinal()] = value;
+//		} else if (!value.equals(Messages.getString("ActionForm.Threshold.Value.Undefined"))) { //$NON-NLS-1$
+//			this.log.error("This should never happen - setThreshold called with value {} for state {} for non-existent ActionCheck in node {}", //$NON-NLS-1$
+//			               value, state, n);
+//		}
+//	}
 
 	/**
 	 * @param n
