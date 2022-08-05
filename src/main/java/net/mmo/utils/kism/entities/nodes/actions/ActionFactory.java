@@ -33,16 +33,18 @@ public class ActionFactory <N extends ActionableNode>
 
 		Class<? extends IAction<?>> actionClass;
 		@SuppressWarnings("unchecked")
-		<N extends ActionableNode>
-		// ActionType(Class<? extends IAction<N>> actionClass) {
 		ActionType(Class<?> actionClass) {
 			// I was unable to convince the compiler to accept this type in the declaration
-			this.actionClass = (Class<? extends IAction<N>>)actionClass;
+			this.actionClass = (Class<? extends IAction<?>>)actionClass;
+		}
+
+		@SuppressWarnings("unchecked")
+		public <N extends ActionableNode> Class<IAction<N>> getActionClass() {
+			return (Class<IAction<N>>)this.actionClass;
 		}
 	}
 
-
-	public static <N extends ActionableNode> ActionType getActionType(IAction<N> action) {
+	public static <N extends ActionableNode> ActionType getActionType(IAction<ActionableNode> action) {
 		if (action != null) {
 			for (ActionType actionType: ActionType.values()) {
 				if (actionType.actionClass.isAssignableFrom(action.getClass())) return actionType;
@@ -51,6 +53,15 @@ public class ActionFactory <N extends ActionableNode>
 		}
 		return null;
 	}
+
+	public static ActionType getActionType(ActionCheck ac) {
+		return (ac != null ? getActionType(ac.getAction()) : null);
+	}
+
+	public static <N extends ActionableNode> ActionType getActionType(N n) {
+		return (n != null ? getActionType(n.getActionCheck()) : null);
+	}
+
 
 	@SuppressWarnings("unchecked")
 	public static <N extends ActionableNode> IAction<N> createActionOfType(ActionType actionType) throws Exception {

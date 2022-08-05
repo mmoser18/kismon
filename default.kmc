@@ -1841,10 +1841,10 @@
 			"description" : "WPS Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_prot_ext" : "https://",
 				"app_uid" : "power",
-				"mock_port" : ":8080",
+				"app_prot_ext" : "https://",
 				"mock_prot_ext" : "https://",
+				"mock_port" : ":8080",
 				"app_port" : ":80",
 				"mock_port_int" : ":8080",
 				"mock_url" : "http://${mock_host}${mock_port}/#mainInfo",
@@ -2144,8 +2144,8 @@
 			"description" : "RW-Tool Development Environments",
 			"applicable" : true,
 			"properties" : {
-				"app_uid" : "ROLF",
 				"app_prot_ext" : "https://",
+				"app_uid" : "ROLF",
 				"app_url" : "${app_prot}${app_host}${app_port}/rwtool/",
 				"app_port" : ":8080",
 				"app_url_int" : "${app_prot_int}${app_host}${app_port_int}/rwtool/",
@@ -3535,7 +3535,12 @@
 				"bar" : "zzz",
 				"foo" : "*"
 			},
-			"actionCheck" : null,
+			"actionCheck" : {
+				"triggerThresholds" : [ "5", "3", "2" ],
+				"action" : {
+					"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction"
+				}
+			},
 			"active" : false,
 			"period" : 60,
 			"timeout" : 10,
@@ -3700,7 +3705,7 @@
 			"fingerprint" : "",
 			"command" : "ping -n 1 www.google.com"
 		} ],
-		"expanded" : false
+		"expanded" : true
 	} ],
 	"expanded" : true
 }

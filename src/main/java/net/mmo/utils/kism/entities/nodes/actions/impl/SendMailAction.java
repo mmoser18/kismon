@@ -14,6 +14,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.html.Label;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
@@ -44,6 +46,11 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 	// we need a public constructor so that the ActionFactory can create this using <class>.newInstance();
 	public SendMailAction() {
 		// Setup mail server
+	}
+
+	@Override
+	public Component getDetailsForm() {
+		return new Label("This action is not yet implemented..."); //$NON-NLS-1$
 	}
 
 	@Override
