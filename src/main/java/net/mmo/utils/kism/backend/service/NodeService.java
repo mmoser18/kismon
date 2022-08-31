@@ -29,6 +29,7 @@ import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
 import net.mmo.utils.kism.utils.AppProperties;
+import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,7 @@ public class NodeService
 
 	public static ApplicationArguments applicationArguments;
 
-	@Value("${config.file:null}") // allow specification via application.properties
+	@Value("${config.file:#{null}}") // allow specification via application.properties
 	protected String configFile;
 
 	private List<RootNode> roots = new ArrayList<>();
@@ -108,7 +109,8 @@ public class NodeService
 		try {
 			readFile(file);
 		} catch (IOException t) {
-			log.warn("File '{}' not found or not a valid configuration (reason: '{}').", file, t); //$NON-NLS-1$
+			log.error("File '{}' not found or not a valid configuration (reason: '{}').", //$NON-NLS-1$
+			          file, ExceptionUtils.exceptionCauseSummary(t));
 		} catch (Throwable t) {
 			log.error("Exception processing file '" + file + ":", t); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -211,8 +213,8 @@ public class NodeService
 				return newRoot;
 			} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 				throw t;
-			} finally {
-				// only to automatically close the above streams
+			// } finally {
+				// only to automatically close the above streams - done automatically...
 			}
 		} else {
 			log.error("File '{}' not found or not readable", file); //$NON-NLS-1$
@@ -287,6 +289,7 @@ public class NodeService
 	public static Node deepCloneNode(Node node) {
 		Node clone = deepClone(node);
 		clone.setName(node.getName() + "-Copy"); //$NON-NLS-1$
+		clone.postClone(node);
 		return clone;
 	}
 

@@ -120,21 +120,21 @@ abstract public class HTTPConnection extends TCPConnection
 	transient protected HttpRequest httpRequest;
 
 	// result stuff:
-	// TODO: the below should be kept into some kind of "history"-list:
+	// TODO: the below should be kept in some kind of "history"-list:
 	//	transient protected history = new ArrayList();
 
 	@JsonIgnore // TODO just for now!
-	protected HttpHeaders requestHeaders;
+	transient protected HttpHeaders requestHeaders;
 	@JsonIgnore
 	protected byte[] requestBody;
 
 	// response:
 	@JsonIgnore
-	protected int responseStatusCode = -1;
+	transient protected int responseStatusCode = -1;
 	@JsonIgnore
-	protected HttpHeaders responseHeaders;
+	transient protected HttpHeaders responseHeaders;
 	@JsonIgnore
-	protected byte[] responseBody;
+	transient protected byte[] responseBody;
 
 
 	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
@@ -373,10 +373,10 @@ abstract public class HTTPConnection extends TCPConnection
 						}
 					});
 				} else {
-					log.error("uid and/or password resolved to blank - no authentication possible"); //$NON-NLS-1$
+					log.error("Node '{}': uid and/or password resolved to blank - no authentication possible", getName()); //$NON-NLS-1$
 				}
 			} catch (Exception ex) {
-				log.error("uid and/or password resolved to blank - no authentication possible", ex); //$NON-NLS-1$
+				log.error(String.format("Node '%s': uid and/or password resolved to blank - no authentication possible", getName()), ex); //$NON-NLS-1$
 			}
 		} else {
 			log.debug("uid and/or password defined as blank - no authentication."); //$NON-NLS-1$

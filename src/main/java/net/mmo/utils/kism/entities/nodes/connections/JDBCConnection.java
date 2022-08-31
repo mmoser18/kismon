@@ -6,16 +6,10 @@
 package net.mmo.utils.kism.entities.nodes.connections;
 
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -42,7 +36,6 @@ public class JDBCConnection extends TCPConnection
 	public static final String RESULTSET_COL_SEPARATOR = AppProperties.getProperties().getProperty("JDBC.ResultSet.Col.Separator", "\t"); //$NON-NLS-1$ //$NON-NLS-2$
 	public static final String RESULTSET_NR_RESULTS = AppProperties.getProperties().getProperty("JDBC.ResultSet.NrRresults", "#results: {}"); //$NON-NLS-1$ //$NON-NLS-2$
 	public static final String RESULTSET_NO_RESULTS = AppProperties.getProperties().getProperty("JDBC.ResultSet.NoResults", "no results"); //$NON-NLS-1$ //$NON-NLS-2$
-
 	protected String dbUid;
 	protected String dbPwd;
 
@@ -55,12 +48,7 @@ public class JDBCConnection extends TCPConnection
 	// transient stuff:
 
 	@JsonIgnore
-	transient protected Driver driver;
-	@JsonIgnore
-	transient protected Connection connection;
-
-	@JsonIgnore
-	transient protected Executor timeoutExecutor = Executors.newFixedThreadPool(3);
+	transient protected JDBCHandling handling;
 
 	// result stuff - later to be collected into some "history"-object:
 
@@ -83,8 +71,9 @@ public class JDBCConnection extends TCPConnection
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void finalize() throws Throwable {
-		if (this.connection != null) {
-			this.connection.close();
+		if (this.handling != null) {
+			this.handling.close();
+			this.handling = null;
 		}
 		super.finalize();
 	}
@@ -132,64 +121,39 @@ public class JDBCConnection extends TCPConnection
 		}
 	}
 
-	private void resetConnection() {
-		synchronized(this) {
-			if (this.connection != null) {
-				try {
-					this.connection.abort(this.timeoutExecutor); // the Oracle-Driver doesn't implement that...
-				} catch (Throwable ex) { // ... and then throws an java.lang.reflect.InvocationTargetException
-					log.trace("Exception aborting connection: " + ex.getMessage()); //$NON-NLS-1$
-				}
-			}
-			setConnection(null);
-		}
-	}
-
-	private void registerDriver() throws Exception {
-		log.debug("registerDriver:"); //$NON-NLS-1$
-		setDriver((Driver)Class.forName(resolveProperties(this.driverName)).getDeclaredConstructor().newInstance());
-		DriverManager.registerDriver(this.driver);
-	}
-
-	private void createConnection() throws Exception {
+	private Connection createConnection() throws Exception {
 		log.debug("createConnection:"); //$NON-NLS-1$
-		if (getDriver() == null) {
-			registerDriver();
+		if (this.handling == null) {
+			this.handling = new JDBCHandling();
 		}
-		if (this.connection == null || this.connection.isClosed() || !this.connection.isValid(15)) {
-			this.connection = DriverManager.getConnection(resultingUrlResolved(), resolveProperties(getDbUid()), resolveProperties(getDbPwd()));
-			try {
-				this.connection.setNetworkTimeout(this.timeoutExecutor, this.timeout * 1000); // sec --> msecs
-			} catch (java.lang.AbstractMethodError ex) { // Oracle driver doesn't implement that method ||-(
-				log.trace("setNetworkTimeout() not supported by {}", this.getDriverName()); //$NON-NLS-1$
-			}
+		return this.handling.createConnection(resolveProperties(this.driverName), resultingUrlResolved(),
+		                                      resolveProperties(this.dbUid), resolveProperties(this.dbPwd),
+		                                      this.timeout);
+	}
+
+	private void resetConnection() {
+		if (this.handling != null) {
+			this.handling.resetConnection(); // trigger a recreation of the connection if the dbUid changes
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public void sendRequest() throws Exception {
 		log.debug("sendRequest {}:", getName()); //$NON-NLS-1$
-		Statement statement = null;
-		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
 		String resQuery = resultingQueryResolved();
-		Connection reqConnection = null;
+		Connection connection = null;
+		Object res = null;
+		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
 		try {
-			synchronized(this) {
-				if (getConnection() == null) createConnection();
-				reqConnection = getConnection();
-			}
-			statement = reqConnection.createStatement();
-			statement.setQueryTimeout(this.timeout);
+			connection = createConnection();
 			setResponseStatus("<waiting>"); //$NON-NLS-1$
 			setResponsePayload("<no response received (yet>"); //$NON-NLS-1$
-			log.trace("statement.execute():", resQuery); //$NON-NLS-1$
 			long startTime = System.nanoTime();
-			boolean isRS = statement.execute(resQuery);
+			res = JDBCHandling.executeQuery(connection, this.timeout, resQuery);
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
 			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
-			responseReceived(statement, isRS);
+			responseReceived(res);
 			setRequestResult(getState().name() + '/' + getResponseStatus());
 		} catch (Exception ex) {
 			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
@@ -200,72 +164,67 @@ public class JDBCConnection extends TCPConnection
 			setState(State.FAILED);
 			setRequestResult(getState().name() + '/' + getResponseStatus());
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
-			if (reqConnection != null) {
-				if (ex instanceof SQLException) setConnection(null); // delete old connection so that a new connection is attempted. Otherwise, if a connection had been terminate no new one will ever be attempted
+			if (connection != null) {
 				throw new Exception(String.format("sending query '%s' to %s: ", resQuery, getResultingUrl()), ex); //$NON-NLS-1$
 			} else {
 				throw new Exception(String.format("creating query to '%s'", getResultingUrl()), ex); //$NON-NLS-1$
 			}
 		} finally {
-			if (statement != null) {
-				statement.close();
+			// As I had to learn keeping our DB connection open between checks can keep that resource busy
+			// and interfere with other usages of the DB (e.g. when the DB is to be dropped before a
+			// DB-dump to be imported).
+			// Since monitoring should never adversely interfere with the normal usage of a monitored
+			// system we need to close our connection again right after each check. Less efficient but
+			// necessary...
+			if (res != null) {
+				JDBCHandling.close(res);
+			}
+			if (connection != null) {
+				connection.close();
 			}
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, System.nanoTime());
 		}
 	}
 
-	private void responseReceived(Statement statement, boolean isRS) throws Exception {
-		if (isRS) { // result is a ResultSet
-			convertResultSet(statement);
+	private void responseReceived(Object res) throws Exception {
+		if (res instanceof ResultSet) {
+			convertResultSet((ResultSet)res);
 			log.debug("response: status={} / payload={} bytes", //$NON-NLS-1$
 			         getResponseStatus(), getResponsePayload().length());
 			log.trace("payload=\"{}\"", //$NON-NLS-1$
 				      getResponsePayload());
 			deriveState();
 		} else { // result is not a ResultSet but an update count or there are no results
-			int updates = statement.getUpdateCount();
+			int updates = (Integer)res;
 			log.debug("Result: #updates:{}", updates); //$NON-NLS-1$
-			State res = updates >= 0 ? State.OK : State.FAILED;
-			setResponseStatus(res.name());
-			setResponsePayload(res == State.OK
+			State state = updates >= 0 ? State.OK : State.FAILED;
+			setResponseStatus(state.name());
+			setResponsePayload(state == State.OK
 							   ? String.format(RESULTSET_NR_RESULTS, updates)
 							   : String.format(RESULTSET_NO_RESULTS));
-			setState(res);
+			setState(state);
 		}
 	}
 
-	private void convertResultSet(Statement statement) {
-		try (ResultSet rs = statement.getResultSet()) {
-			ResultSetMetaData metadata = rs.getMetaData();
+	private void convertResultSet(ResultSet rs) {
+		try {
+			String[] headers = JDBCHandling.getHeaders(rs);
 			StringBuilder buf = new StringBuilder();
-			// add all column names:
-			for (int i = 0; i < metadata.getColumnCount(); i++) {
-				if (i > 0) buf.append(RESULTSET_COL_SEPARATOR);
-				buf.append(metadata.getColumnLabel(i+1));
-			}
+			buf.append(String.join(RESULTSET_COL_SEPARATOR,headers));
 			buf.append(RESULTSET_ROW_SEPARATOR);
 			// add a separator line
-			for (int i = 0; i < metadata.getColumnCount(); i++) {
+			for (int i = 0; i < headers.length; i++) {
 				if (i > 0) buf.append(RESULTSET_COL_SEPARATOR);
-				for (int j = 0; j < metadata.getColumnLabel(i+1).length(); j++) {
-					buf.append('-');
-				}
+				for (int j = 0; j < headers[i].length(); j++) buf.append('-');
 			}
 			// for each row: add all the values:
-			while (rs.next()) {
+			for (String[] line: JDBCHandling.getValues(rs)) {
 				buf.append(RESULTSET_ROW_SEPARATOR);
-				for (int i = 0; i < metadata.getColumnCount(); i++) {
-					if (i > 0) buf.append(RESULTSET_COL_SEPARATOR);
-					Object value = rs.getObject(i+1);
-					if (value == null) {
-						buf.append("null"); //$NON-NLS-1$
-					} else {
-						buf.append(value.toString().trim());
-					}
-				}
+				buf.append(String.join(RESULTSET_COL_SEPARATOR,line));
 			}
-			setResponseStatus(RESPONSE_STATUS_OK);
 			setResponsePayload(buf.toString());
+
+			setResponseStatus(RESPONSE_STATUS_OK);
 		} catch (SQLException ex) {
 			log.error("Exception extracting results:", ex); //$NON-NLS-1$
 			setResponseStatus(extractSqlError(ex));

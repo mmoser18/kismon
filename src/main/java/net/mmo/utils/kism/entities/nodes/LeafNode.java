@@ -138,6 +138,12 @@ abstract public class LeafNode extends ActionableNode
 		initExecutors();
 	}
 
+	@Override
+	public void postClone(Node original) {
+		super.postClone(original);
+		initExecutors();
+	}
+
 	public void setActive(boolean active) {
 		if (this.active != active) {
 			this.active = active;

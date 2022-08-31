@@ -92,6 +92,11 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		}
 	}
 
+	// activities that need to be done after cloning an object - e.g. re-initializing transient fields.
+	public void postClone(Node original) {
+		this.parent = original.parent;
+	}
+
 	public void setProperties(NodeProperties properties) {
 		this.properties = properties;
 		if (!initializing) {
