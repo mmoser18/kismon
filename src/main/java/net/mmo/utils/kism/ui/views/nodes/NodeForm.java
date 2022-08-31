@@ -51,7 +51,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	// package visible to allow access by test classes
 	static final String ViewClassName = "node-form"; //$NON-NLS-1$
 	static final String FieldsClassName = "node-form-fields"; //$NON-NLS-1$
-	static final String NameClassName        = NodeFormField + "name"; //$NON-NLS-1$
+	protected static final String NameClassName = NodeFormField + "name"; //$NON-NLS-1$
 	static final String DescriptionClassName = NodeFormField + "description"; //$NON-NLS-1$
 	static final String StateClassName       = NodeFormField + "state"; //$NON-NLS-1$
 	static final String ApplicableClassName  = NodeFormField + "applicable"; //$NON-NLS-1$

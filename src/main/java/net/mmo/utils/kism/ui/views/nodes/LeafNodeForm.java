@@ -25,6 +25,7 @@ import com.vaadin.flow.data.converter.Converter;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.LeafNode;
 import net.mmo.utils.kism.ui.UIConstants;
+import net.mmo.utils.kism.ui.views.nodes.actions.ActionForm;
 
 @SuppressWarnings("javadoc")
 public abstract class LeafNodeForm <N extends LeafNode> extends ActionForm<N>

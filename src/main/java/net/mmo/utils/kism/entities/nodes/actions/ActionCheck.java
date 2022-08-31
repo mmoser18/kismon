@@ -66,9 +66,9 @@ public class ActionCheck extends AbstractEntity implements Cloneable, Serializab
 		final State oldState = this.previousActionState; // we keep it for logging and in case we trigger the action
 		final int threshold = Integer.parseInt(this.triggerThresholds[newState.ordinal()]);
 		final int stableSince =  node.getSameStateSince();
-		if (threshold > 0 && // if there IS a threshold defined..
-		    newState != oldState && // and the states differ...
-		    stableSince >= threshold) {  // and we have seen this state now often enough..
+		if (threshold > 0 && // if there IS a threshold defined ...
+		    newState != oldState && // ... and the states differ...
+		    stableSince >= threshold) {  // ... and we have seen this state now often enough, then:
 			this.previousActionState = newState;
 			log.info("current state '{}' stable since {} ticks (previous state: {}) -> triggering action '{}':", //$NON-NLS-1$
 			         newState, threshold, oldState, this);

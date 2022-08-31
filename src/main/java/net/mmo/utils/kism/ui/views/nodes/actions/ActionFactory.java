@@ -3,15 +3,21 @@
  * @since 12 Sep 2021
  */
 
-package net.mmo.utils.kism.entities.nodes.actions;
+package net.mmo.utils.kism.ui.views.nodes.actions;
 
+import com.vaadin.flow.component.Component;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
+import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
+import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.entities.nodes.actions.impl.EmitLogAction;
 import net.mmo.utils.kism.entities.nodes.actions.impl.RunScriptAction;
 import net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction;
+import net.mmo.utils.kism.ui.views.nodes.actions.impl.EmitLogForm;
+import net.mmo.utils.kism.ui.views.nodes.actions.impl.RunScriptActionForm;
+import net.mmo.utils.kism.ui.views.nodes.actions.impl.SendMailForm;
 
 /**
  * defines the actions that can be taken after a change state
@@ -26,21 +32,25 @@ public class ActionFactory <N extends ActionableNode>
 	/**
 	 * the types of actions we support
 	 */
+	@SuppressWarnings("rawtypes") // we can't have type arguments in enumerations...
 	public enum ActionType {
-		EmitLogMsg(EmitLogAction.class),
-		SendEmail(SendMailAction.class),
-		RunScript(RunScriptAction.class);
+		EmitLogMsg(EmitLogAction.class, EmitLogForm.class),
+		SendEmail (SendMailAction.class, SendMailForm.class),
+		RunScript (RunScriptAction.class, RunScriptActionForm.class);
 
-		Class<? extends IAction<?>> actionClass;
-		@SuppressWarnings("unchecked")
-		ActionType(Class<?> actionClass) {
+		Class<? extends IAction> actionClass;
+		Class<? extends Component> actionFormClass;
+		ActionType(Class<? extends IAction> actionClass, Class<? extends Component> actionFormClass) {
 			// I was unable to convince the compiler to accept this type in the declaration
-			this.actionClass = (Class<? extends IAction<?>>)actionClass;
+			this.actionClass = actionClass;
+			this.actionFormClass = actionFormClass;
 		}
 
-		@SuppressWarnings("unchecked")
-		public <N extends ActionableNode> Class<IAction<N>> getActionClass() {
-			return (Class<IAction<N>>)this.actionClass;
+		public Class<? extends IAction> getActionClass() {
+			return this.actionClass;
+		}
+		public Class<? extends Component> getActionFormClass() {
+			return this.actionFormClass;
 		}
 	}
 

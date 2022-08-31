@@ -3,13 +3,12 @@
  * @since 06.06.2022
  */
 
-package net.mmo.utils.kism.ui.views.nodes;
+package net.mmo.utils.kism.ui.views.nodes.actions;
 
 import com.vaadin.flow.component.Component;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
-import net.mmo.utils.kism.entities.nodes.actions.ActionFactory.ActionType;
-import net.mmo.utils.kism.entities.nodes.actions.IAction;
+import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 /**
  * creates appropriate form for action handler ...
  * @param <N>
@@ -34,8 +33,7 @@ public class ActionDetailsFormFactory <N extends ActionableNode>
 			Component comp = this.components[actionType.ordinal()];
 			if (comp == null) {
 				try {
-					IAction<ActionableNode> action = actionType.getActionClass().getDeclaredConstructor().newInstance();
-					comp = action.getDetailsForm();
+					comp = actionType.getActionFormClass().getDeclaredConstructor().newInstance();
 				} catch (Exception ex) {
 					log.error("Unexpected/unsupported actiontype '" + actionType + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
 				}

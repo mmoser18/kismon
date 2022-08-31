@@ -5,8 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes.actions.impl;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Label;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
@@ -21,11 +19,6 @@ public class RunScriptAction <N extends ActionableNode> implements IAction<N>
 	// we need a public constructor so that the ActionFactory can create this using <class>.newInstance();
 	public RunScriptAction() {
 		// empty
-	}
-
-	@Override
-	public Component getDetailsForm() {
-		return new Label("This action is not yet implemented..."); //$NON-NLS-1$
 	}
 
 	@Override
