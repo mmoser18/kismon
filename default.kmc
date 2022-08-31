@@ -47,7 +47,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DEV (old)",
 				"description" : "ZHQuest DEV environment (server: ksta-zhquest-int3.elcadev.local)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"app_host" : "ksta-zhquest-int3.elcadev.local",
 					"db_uid" : "ZHQUEST_INT3"
@@ -61,7 +61,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -81,7 +81,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
@@ -101,7 +101,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -127,7 +127,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -154,7 +154,7 @@
 						"cookie" : "JSESSIONID=35527D565D216DEB8F156ED2635D884F"
 					},
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -179,7 +179,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -204,7 +204,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -229,7 +229,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ QA (old)",
 				"description" : "ZHQuest QA Environment (server: ksta-zh-zhquest.elcadev.local)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"app_host" : "ksta-zh-zhquest.elcadev.local",
 					"db_uid" : "ZHQUEST_QA"
@@ -243,7 +243,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -263,7 +263,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 10,
 					"checkResults" : true,
@@ -283,7 +283,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -309,7 +309,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -334,7 +334,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -359,7 +359,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -384,7 +384,7 @@
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -409,7 +409,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ DEV (new)",
 				"description" : "ZHQuest DEV environment (new) (server: ksta-zh-zhq-dev.elcadev.local)",
-				"applicable" : false,
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhq-dev.elcadev.local",
 					"db_uid" : "ZHQUEST_DEV"
@@ -641,7 +641,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ QA (new)",
 				"description" : "ZHQuest DEV environment (new) (server: ksta-zh-zhq-dev.elcadev.local)",
-				"applicable" : false,
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhq-qa.elcadev.local",
 					"db_uid" : "ZHQUEST_QA"
@@ -873,7 +873,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "ZHQ PRE (new)",
 				"description" : "ZHQuest PRE environment (new) (server: ksta-zh-zhq-pre.elcadev.local)",
-				"applicable" : false,
+				"applicable" : true,
 				"properties" : {
 					"app_host" : "ksta-zh-zhq-pre.elcadev.local",
 					"db_uid" : "ZHQUEST_PRE"
@@ -1259,7 +1259,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
 		"expanded" : false
 	}, {
@@ -1284,8 +1284,8 @@
 				"tech_pwd" : "registerJP1",
 				"db_pwd" : "${db_uid}",
 				"app_pwd" : "register",
-				"mock_host" : "zhstregisterjp-dev.elcadev.local",
-				"mock_url" : "http://${mock_host}${mock_port}/zhstregisterjp-mock-external-services/",
+				"mock_host" : "---",
+				"mock_url" : "http://${mock_host}${mock_port}/zhstregisterjp-mock-external-services",
 				"app_host" : "<defined-in-lower-node>",
 				"tech_uid" : "registerJP1",
 				"svc_url" : "${app_url}services/",
@@ -1297,18 +1297,19 @@
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "RJP DEV",
+				"name" : "RJP DEV (old)",
 				"description" : "RegisterJP DEV environment (server: zhstregisterjp-dev.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-dev.elcadev.local",
-					"db_uid" : "REGISTERJP_DEV"
+					"db_uid" : "REGISTERJP_DEV",
+					"mock_host" : "zhstregisterjp-dev.elcadev.local"
 				},
 				"actionCheck" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RJP DEV DB-ping",
+					"name" : "RJP DEV DB-ping (old)",
 					"description" : "ping RegisterJP DEV DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1328,7 +1329,7 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RJP DEV DB query",
+					"name" : "RJP DEV DB query (old)",
 					"description" : "send specific query to RegisterJP DEV DB",
 					"applicable" : true,
 					"properties" : { },
@@ -1348,8 +1349,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "RJP DEV Mock-Server",
-					"description" : "SOAP-UI Mock Server for RegisterJP DEV (actually shared among all RJP Dev-Environments)",
+					"name" : "RJP DEV Mock-Server (old)",
+					"description" : "SOAP-UI Mock Server for RegisterJP DEV (actually shared among all RJP Dev-Environments)\n\nNote: for some reason the Mock-server's WSDL function (\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services?WSDL\") did not work and yields \"404 not found\" only. Had to use a service specific request instead\n(\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services/mockUidPartnerServicesV5?WSDL\")",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1359,9 +1360,9 @@
 					"checkResults" : true,
 					"resultChecker" : {
 						"condition" : "Contains",
-						"operands" : [ "SoapUI MockServices Log for project" ]
+						"operands" : [ "<wsdl:definitions name=\"PartnerServices\" targetNamespace=\"http://www.uid.admin.ch/xmlns/uid-wse\"" ]
 					},
-					"url" : "${mock_url}",
+					"url" : "${mock_url}/mockUidPartnerServicesV5?WSDL",
 					"method" : "GET",
 					"targetUid" : "",
 					"targetPwd" : "",
@@ -1373,7 +1374,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "RJP DEV Application UI",
+					"name" : "RJP DEV Application UI (old)",
 					"description" : "RegisterJP Application Server DEV UI",
 					"applicable" : true,
 					"properties" : { },
@@ -1398,7 +1399,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "RJP DEV Services WSDL",
+					"name" : "RJP DEV Services WSDL (old)",
 					"description" : "RegisterJP Application Server DEV services WSDL\n",
 					"applicable" : true,
 					"properties" : { },
@@ -1413,9 +1414,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "monitor",
-					"targetPwd" : "rotinom",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1423,7 +1424,7 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-					"name" : "RJP DEV Service Call",
+					"name" : "RJP DEV Service Call (old)",
 					"description" : "RegisterJP Application Server DEV service call",
 					"applicable" : true,
 					"properties" : { },
@@ -1449,7 +1450,7 @@
 					"soapAction" : "getRegisterJPLegalPerson"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
-					"name" : "RJP DEV restart app",
+					"name" : "RJP DEV restart app (old)",
 					"description" : "RegisterJP DEV restart server\n\nCaution: On DEV this command produces no output! Use with great care!",
 					"applicable" : false,
 					"properties" : { },
@@ -1470,19 +1471,601 @@
 					"fingerprint" : "",
 					"command" : "${restart_cmd}"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "RJP QA",
+				"name" : "RJP QA (old)",
 				"description" : "RegisterJP QA environment (server: zhstregisterjp-qa.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
 					"app_host" : "zhstregisterjp-qa.elcadev.local",
-					"db_uid" : "REGISTERJP_QA"
+					"db_uid" : "REGISTERJP_QA",
+					"mock_host" : "zhstregisterjp-dev.elcadev.local"
 				},
 				"actionCheck" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "RJP QA DB-ping (old)",
+					"description" : "ping RegisterJP QA DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "DUMMY" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "RJP QA DB-query (old)",
+					"description" : "send specific query to RegisterJP QA DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operands" : [ "Firma" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "${db_query}",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP QA Mock-Server (old)",
+					"description" : "SOAP-UI Mock Server for RegisterJP QA (actually the same as RJP DEV)\n\nNote: for some reason the Mock-server's WSDL function (\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services?WSDL\") did not work and yields \"404 not found\" only. Had to use a service specific request instead\n(\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services/mockUidPartnerServicesV5?WSDL\")",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"PartnerServices\" targetNamespace=\"http://www.uid.admin.ch/xmlns/uid-wse\"" ]
+					},
+					"url" : "${mock_url}/mockUidPartnerServicesV5?WSDL",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP QA Application UI (old)",
+					"description" : "RegisterJP Application Server QA UI",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<title>ZHStRegisterJP</title>" ]
+					},
+					"url" : "${app_url}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP QA Services WSDL (old)",
+					"description" : "RegisterJP Application Server QA services WSDL\n",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Available SOAP services:" ]
+					},
+					"url" : "${svc_url}?WSDL",
+					"method" : "GET",
+					"targetUid" : "mms",
+					"targetPwd" : "secret",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "RJP QA Service Call (old)",
+					"description" : "RegisterJP Application Server QA service call",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "getRegisterJPLegalPersonResponseType" ]
+					},
+					"url" : "${svc_url}C3AdapterService/3",
+					"method" : "POST",
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/3\" xmlns:ns1=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/hrNummerType/3\">\n  <soapenv:Header/>\n    <soapenv:Body>\n      <ns:getRegisterJPLegalPersonRequestType>\n         <registerNrWithoutCheckDigit>J000055214</registerNrWithoutCheckDigit>\n      </ns:getRegisterJPLegalPersonRequestType>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "getRegisterJPLegalPerson"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "RJP QA restart app (old)",
+					"description" : "RegisterJP QA restart server\nUse with great care!",
+					"applicable" : false,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 0,
+					"timeout" : 60,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "EndsWith",
+						"operands" : [ "Tomcat started." ]
+					},
+					"hostAddress" : "${app_host}",
+					"hostPort" : 22,
+					"username" : "root",
+					"authMethod" : "PWD",
+					"authArg" : "P@ssw0rd",
+					"fingerprint" : "",
+					"command" : "${restart_cmd}"
+				} ],
+				"expanded" : false
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "RJP PROD (old)",
+				"description" : "RegisterJP PROD environment (server: zhstregisterjp-prod.elcadev.local)",
+				"applicable" : true,
+				"properties" : {
+					"app_host" : "zhstregisterjp-prod.elcadev.local",
+					"db_uid" : "REGISTERJP_PROD",
+					"mock_host" : "zhstregisterjp-dev.elcadev.local"
+				},
+				"actionCheck" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "RJP PROD DB-ping (old)",
+					"description" : "ping RegisterJP PROD DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "DUMMY" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "RJP PROD DB-query (old)",
+					"description" : "send specific query to RegisterJP PROD DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operands" : [ "Firma" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "${db_query}",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP PROD Mock-Server (old)",
+					"description" : "SOAP-UI Mock Server for RegisterJP PROD (actually the same as RJP DEV)\n\nNote: for some reason the Mock-server's WSDL function (\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services?WSDL\") did not work and yields \"404 not found\" only. Had to use a service specific request instead\n(\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services/mockUidPartnerServicesV5?WSDL\")",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"PartnerServices\" targetNamespace=\"http://www.uid.admin.ch/xmlns/uid-wse\"" ]
+					},
+					"url" : "${mock_url}/mockUidPartnerServicesV5?WSDL",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP PROD Application UI (old)",
+					"description" : "RegisterJP Application Server PROD UI",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<title>ZHStRegisterJP</title>" ]
+					},
+					"url" : "${app_url}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP PROD Services WSDL (old)",
+					"description" : "RegisterJP Application Server PROD services WSDL\n",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Available SOAP services:" ]
+					},
+					"url" : "${svc_url}?WSDL",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "RJP PROD Service Call (old)",
+					"description" : "RegisterJP Application Server PROD service call",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "getRegisterJPLegalPersonResponseType" ]
+					},
+					"url" : "${svc_url}C3AdapterService/3",
+					"method" : "POST",
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/3\" xmlns:ns1=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/hrNummerType/3\">\n\t<soapenv:Header/>\n\t<soapenv:Body>\n\t\t<ns:getRegisterJPLegalPersonRequestType>\n\t\t\t<registerNrWithoutCheckDigit>J000055214</registerNrWithoutCheckDigit>\n\t\t</ns:getRegisterJPLegalPersonRequestType>\n\t</soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "getRegisterJPLegalPerson"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "RJP PROD restart app (old)",
+					"description" : "RegisterJP PROD restart server\nUse with great care!",
+					"applicable" : false,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 0,
+					"timeout" : 60,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "EndsWith",
+						"operands" : [ "Tomcat started." ]
+					},
+					"hostAddress" : "${app_host}",
+					"hostPort" : 22,
+					"username" : "root",
+					"authMethod" : "PWD",
+					"authArg" : "P@ssw0rd",
+					"fingerprint" : "",
+					"command" : "${restart_cmd}"
+				} ],
+				"expanded" : false
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "RJP DEV",
+				"description" : "RegisterJP DEV environment (server: ksta-zh-rjp-dev.elcadev.local)",
+				"applicable" : true,
+				"properties" : {
+					"app_host" : "ksta-zh-rjp-dev.elcadev.local",
+					"db_uid" : "REGISTERJP_DEV",
+					"mock_host" : "${app_host}"
+				},
+				"actionCheck" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP DEV Proxy Server",
+					"description" : "RegisterJP Proxy Server DEV",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "It works!" ]
+					},
+					"url" : "${app_prot}${app_host}${app_port}",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "RJP DEV DB-ping",
+					"description" : "ping RegisterJP DEV DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "DUMMY" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "select * from dual",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+					"name" : "RJP DEV DB-query",
+					"description" : "send specific query to RegisterJP DEV DB",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "ContainsIgnoreCase",
+						"operands" : [ "Firma" ]
+					},
+					"url" : "${db_url}",
+					"dbUid" : "${db_uid}",
+					"dbPwd" : "${db_pwd}",
+					"query" : "${db_query}",
+					"driverName" : "${db_default_driver}"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP DEV Mock-Server",
+					"description" : "SOAP-UI Mock Server for RegisterJP DEV\n\nNote: for some reason the Mock-server's WSDL function (\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services?WSDL\") did not work and yields \"404 not found\" only. Had to use a service specific request instead: \"${mock_url}/mockUidPartnerServicesV5?WSDL\"",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<wsdl:definitions name=\"PartnerServices\" targetNamespace=\"http://www.uid.admin.ch/xmlns/uid-wse\"" ]
+					},
+					"url" : "${mock_url}/mockUidPartnerServicesV5?WSDL",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP DEV Application UI",
+					"description" : "RegisterJP Application Server DEV UI",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "<title>ZHStRegisterJP</title>" ]
+					},
+					"url" : "${app_url}",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP DEV Services WSDL",
+					"description" : "RegisterJP Application Server DEV services WSDL\n",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Available SOAP services:" ]
+					},
+					"url" : "${svc_url}?WSDL",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+					"name" : "RJP DEV Service Call",
+					"description" : "RegisterJP Application Server DEV service call",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "getRegisterJPLegalPersonResponseType" ]
+					},
+					"url" : "${svc_url}C3AdapterService/3",
+					"method" : "POST",
+					"targetUid" : "${tech_uid}",
+					"targetPwd" : "${tech_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/3\" xmlns:ns1=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/hrNummerType/3\">\n\t<soapenv:Header/>\n\t<soapenv:Body>\n\t\t<ns:getRegisterJPLegalPersonRequestType>\n\t\t\t<registerNrWithoutCheckDigit>J000055214</registerNrWithoutCheckDigit>\n\t\t</ns:getRegisterJPLegalPersonRequestType>\n\t</soapenv:Body>\n</soapenv:Envelope>",
+					"acceptableReturnCodes" : "200",
+					"soapAction" : "getRegisterJPLegalPerson"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+					"name" : "RJP DEV restart app",
+					"description" : "RegisterJP DEV restart server\nUse with great care!",
+					"applicable" : false,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : false,
+					"period" : 60,
+					"timeout" : 60,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "EndsWith",
+						"operands" : [ "Tomcat started." ]
+					},
+					"hostAddress" : "${app_host}",
+					"hostPort" : 22,
+					"username" : "root",
+					"authMethod" : "PWD",
+					"authArg" : "P@ssw0rd",
+					"fingerprint" : "",
+					"command" : "${restart_cmd}"
+				} ],
+				"expanded" : false
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "RJP QA",
+				"description" : "RegisterJP QA environment (server: ksta-zh-rjp-qa.elcadev.local)",
+				"applicable" : true,
+				"properties" : {
+					"app_host" : "ksta-zh-rjp-qa.elcadev.local",
+					"db_uid" : "REGISTERJP_QA",
+					"mock_host" : "${app_host}"
+				},
+				"actionCheck" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP QA Proxy Server",
+					"description" : "RegisterJP Proxy Server QA",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "It works!" ]
+					},
+					"url" : "${app_prot}${app_host}${app_port}",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
 					"name" : "RJP QA DB-ping",
 					"description" : "ping RegisterJP QA DB",
@@ -1524,8 +2107,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "(RJP QA Mock-Server)",
-					"description" : "SOAP-UI Mock Server for RegisterJP QA (actually the same as RJP DEV)",
+					"name" : "RJP QA Mock-Server",
+					"description" : "SOAP-UI Mock Server for RegisterJP QA\n\nNote: for some reason the Mock-server's WSDL function (\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services?WSDL\") did not work and yields \"404 not found\" only. Had to use a service specific request instead\n(\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services/mockUidPartnerServicesV5?WSDL\")",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1535,12 +2118,12 @@
 					"checkResults" : true,
 					"resultChecker" : {
 						"condition" : "Contains",
-						"operands" : [ "SoapUI MockServices Log for project" ]
+						"operands" : [ "<wsdl:definitions name=\"PartnerServices\" targetNamespace=\"http://www.uid.admin.ch/xmlns/uid-wse\"" ]
 					},
-					"url" : "${mock_url}",
+					"url" : "${mock_url}/mockUidPartnerServicesV5?WSDL",
 					"method" : "GET",
-					"targetUid" : "user",
-					"targetPwd" : "password",
+					"targetUid" : "",
+					"targetPwd" : "",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -1589,9 +2172,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "monitor",
-					"targetPwd" : "rotinom",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1620,7 +2203,7 @@
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
-					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/3\" xmlns:ns1=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/hrNummerType/3\">\n  <soapenv:Header/>\n    <soapenv:Body>\n      <ns:getRegisterJPLegalPersonRequestType>\n         <registerNrWithoutCheckDigit>J000055214</registerNrWithoutCheckDigit>\n      </ns:getRegisterJPLegalPersonRequestType>\n   </soapenv:Body>\n</soapenv:Envelope>",
+					"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/3\" xmlns:ns1=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/hrNummerType/3\">\n\t<soapenv:Header/>\n\t<soapenv:Body>\n\t\t<ns:getRegisterJPLegalPersonRequestType>\n\t\t\t<registerNrWithoutCheckDigit>J000055214</registerNrWithoutCheckDigit>\n\t\t</ns:getRegisterJPLegalPersonRequestType>\n\t</soapenv:Body>\n</soapenv:Envelope>",
 					"acceptableReturnCodes" : "200",
 					"soapAction" : "getRegisterJPLegalPerson"
 				}, {
@@ -1631,7 +2214,7 @@
 					"properties" : { },
 					"actionCheck" : null,
 					"active" : false,
-					"period" : 0,
+					"period" : 60,
 					"timeout" : 60,
 					"checkResults" : true,
 					"resultChecker" : {
@@ -1649,19 +2232,45 @@
 				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "RJP PROD",
-				"description" : "RegisterJP PROD environment (server: zhstregisterjp-prod.elcadev.local)",
+				"name" : "RJP PRE",
+				"description" : "RegisterJP PRE environment (server: ksta-zh-rjp-pre.elcadev.local)",
 				"applicable" : true,
 				"properties" : {
-					"app_host" : "zhstregisterjp-prod.elcadev.local",
-					"db_uid" : "REGISTERJP_PROD"
+					"app_host" : "ksta-zh-rjp-pre.elcadev.local",
+					"db_uid" : "REGISTERJP_PRE",
+					"mock_host" : "${app_host}"
 				},
 				"actionCheck" : null,
 				"condition" : "ALL_MUST_BE_OK",
 				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "RJP PRE Proxy Server",
+					"description" : "RegisterJP Proxy Server PRE",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 10,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "It works!" ]
+					},
+					"url" : "${app_prot}${app_host}${app_port}",
+					"method" : "GET",
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "Authorization: Basic bnN3OnJlZ2lzdGVy",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RJP PROD DB-ping",
-					"description" : "ping RegisterJP PROD DB",
+					"name" : "RJP PRE DB-ping",
+					"description" : "ping RegisterJP PRE DB",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1680,8 +2289,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
-					"name" : "RJP PROD DB-query",
-					"description" : "send specific query to RegisterJP PROD DB",
+					"name" : "RJP PRE DB-query",
+					"description" : "send specific query to RegisterJP PRE DB",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1700,8 +2309,8 @@
 					"driverName" : "${db_default_driver}"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "(RJP PROD Mock-Server)",
-					"description" : "SOAP-UI Mock Server for RegisterJP PROD (actually the same as RJP DEV)",
+					"name" : "RJP PRE Mock-Server",
+					"description" : "SOAP-UI Mock Server for RegisterJP PRE\n\nNote: for some reason the Mock-server's WSDL function (\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services?WSDL\") did not work and yields \"404 not found\" only. Had to use a service specific request instead\n(\"http://zhstregisterjp-dev.elcadev.local:8090/zhstregisterjp-mock-external-services/mockUidPartnerServicesV5?WSDL\")",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1711,12 +2320,12 @@
 					"checkResults" : true,
 					"resultChecker" : {
 						"condition" : "Contains",
-						"operands" : [ "SoapUI MockServices Log for project" ]
+						"operands" : [ "<wsdl:definitions name=\"PartnerServices\" targetNamespace=\"http://www.uid.admin.ch/xmlns/uid-wse\"" ]
 					},
-					"url" : "${mock_url}",
+					"url" : "${mock_url}/mockUidPartnerServicesV5?WSDL",
 					"method" : "GET",
-					"targetUid" : "user",
-					"targetPwd" : "password",
+					"targetUid" : "",
+					"targetPwd" : "",
 					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
@@ -1725,8 +2334,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "RJP PROD Application UI",
-					"description" : "RegisterJP Application Server PROD UI",
+					"name" : "RJP PRE Application UI",
+					"description" : "RegisterJP Application Server PRE UI",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1750,8 +2359,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
-					"name" : "RJP PROD Services WSDL",
-					"description" : "RegisterJP Application Server PROD services WSDL\n",
+					"name" : "RJP PRE Services WSDL",
+					"description" : "RegisterJP Application Server PRE services WSDL\n",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1765,9 +2374,9 @@
 					},
 					"url" : "${svc_url}?WSDL",
 					"method" : "GET",
-					"targetUid" : "monitor",
-					"targetPwd" : "rotinom",
-					"includeBasicAuthHeader" : true,
+					"targetUid" : "",
+					"targetPwd" : "",
+					"includeBasicAuthHeader" : false,
 					"httpVersion" : "HTTP_1_1",
 					"redirectBehavior" : "NORMAL",
 					"headers" : "",
@@ -1775,8 +2384,8 @@
 					"acceptableReturnCodes" : "200"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
-					"name" : "RJP PROD Service Call",
-					"description" : "RegisterJP Application Server PROD service call",
+					"name" : "RJP PRE Service Call",
+					"description" : "RegisterJP Application Server PRE service call",
 					"applicable" : true,
 					"properties" : { },
 					"actionCheck" : null,
@@ -1801,8 +2410,8 @@
 					"soapAction" : "getRegisterJPLegalPerson"
 				}, {
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
-					"name" : "RJP PROD restart app",
-					"description" : "RegisterJP PROD restart server\nUse with great care!",
+					"name" : "RJP PRE restart app-Copy",
+					"description" : "RegisterJP PRE restart server\nUse with great care!",
 					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
@@ -2398,7 +3007,7 @@
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "SSt TEST",
 				"description" : "SSt TEST environment (server: ksta-zh-sst-mnt.elcadev.local)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"app_uid" : "ADMIN",
 					"app_host" : "ksta-zh-sst-mnt.dev.elca.ch",
@@ -2406,9 +3015,9 @@
 					"app_url_int" : "http://${app_host}${app_port}${app_path}",
 					"db_url" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=ksta-zh-sst-mnt.dev.elca.ch)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=xe)))",
 					"db_uid" : "SSTMNTTEST",
-					"app_url_ext" : "https://${app_host}${app_path}",
 					"db_pwd" : "SSTMNTTEST",
 					"app_path" : "/sst",
+					"app_url_ext" : "https://${app_host}${app_path}",
 					"app_pwd" : "yvON3aZxprnkyz5OF7fEmy"
 				},
 				"actionCheck" : null,
@@ -2582,9 +3191,9 @@
 			"condition" : "DEGRADED_ON_NOT_ALL_OK",
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQuest DEV-VM",
+				"name" : "ZHQuest DEV-VM (old)",
 				"description" : "ksta-zhquest-int3.elcadev.local (ZHQuest QA VM)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"fqdn" : "ksta-zhquest-int3.elcadev.local"
 				},
@@ -2594,10 +3203,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 					"name" : "Ping ksta-zhquest-int3",
 					"description" : "Ping ksta-zhquest-int3.elcaDev.local (ZHQuest DEV)",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -2607,10 +3216,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
 					"name" : "ZHQ DEV check available disk space",
 					"description" : "Check available disk space on ZHQuest DEV VM",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -2626,12 +3235,12 @@
 					"fingerprint" : "",
 					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQuest QA-VM",
+				"name" : "ZHQuest QA-VM (old)",
 				"description" : "ksta-zh-zhquest.elcaDev.local (ZHQuest QA)",
-				"applicable" : true,
+				"applicable" : false,
 				"properties" : {
 					"fqdn" : "ksta-zh-zhquest.elcaDev.local"
 				},
@@ -2641,10 +3250,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 					"name" : "Ping ksta-zh-zhquest",
 					"description" : "Ping ksta-zh-zhquest.elcaDev.local (ZHQuest DEV)",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : false,
@@ -2654,10 +3263,10 @@
 					"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
 					"name" : "ZHQ QA check available disk space",
 					"description" : "Check available disk space on  ZHQuest QA VM",
-					"applicable" : true,
+					"applicable" : false,
 					"properties" : { },
 					"actionCheck" : null,
-					"active" : true,
+					"active" : false,
 					"period" : 60,
 					"timeout" : 15,
 					"checkResults" : true,
@@ -2673,10 +3282,10 @@
 					"fingerprint" : "",
 					"command" : "df -h |  grep -m 1 \"/dev/sda2\" |  awk '{ print $5 }'  | sed -e s/\\%//g"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQuest DEV-VM (new)",
+				"name" : "ZHQuest DEV-VM",
 				"description" : "ZHQuest DEV-VM (ksta-zh-zhq-dev.elcaDev.local)",
 				"applicable" : true,
 				"properties" : { },
@@ -2696,12 +3305,12 @@
 					"resultChecker" : null,
 					"hostAddress" : "ksta-zh-zhq-dev.elcadev.local"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQuest QA-VM (new)",
-				"description" : "Note: server currently powered down - ZHQuest QA-VM (ksta-zh-zhq-qa.elcaDev.local)",
-				"applicable" : false,
+				"name" : "ZHQuest QA-VM",
+				"description" : "ZHQuest QA-VM (ksta-zh-zhq-qa.elcaDev.local)",
+				"applicable" : true,
 				"properties" : { },
 				"actionCheck" : null,
 				"condition" : "ALL_MUST_BE_OK",
@@ -2719,12 +3328,12 @@
 					"resultChecker" : null,
 					"hostAddress" : "ksta-zh-zhq-qa.elcadev.local"
 				} ],
-				"expanded" : false
+				"expanded" : true
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
-				"name" : "ZHQuest PRE-VM (new)",
-				"description" : "Note: server currently powered down - ZHQuest PRE-VM (ksta-zh-zhq-pre.elcaDev.local)",
-				"applicable" : false,
+				"name" : "ZHQuest PRE-VM",
+				"description" : "ZHQuest PRE-VM (ksta-zh-zhq-pre.elcaDev.local)",
+				"applicable" : true,
 				"properties" : { },
 				"actionCheck" : null,
 				"condition" : "ALL_MUST_BE_OK",
@@ -2744,7 +3353,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "RegisterJP VMs",
@@ -2849,7 +3458,7 @@
 					"fingerprint" : "",
 					"command" : "${get_dsk_space}"
 				} ],
-				"expanded" : true
+				"expanded" : false
 			}, {
 				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 				"name" : "RegisterJP PROD-VM",
@@ -2898,7 +3507,7 @@
 				} ],
 				"expanded" : false
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
 			"name" : "Ping ksta-zh-sst-mnt",
@@ -3166,7 +3775,7 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "ZHArchiv",
@@ -3245,9 +3854,11 @@
 			"description" : "ZHDokumente",
 			"applicable" : true,
 			"properties" : {
-				"app_host" : "linux-qfur.elcadev.local",
+				"app_uid" : "admin",
 				"app_url" : "${app_prot}${app_host}${app_port}${app_path}",
 				"app_port" : ":8080",
+				"app_pwd" : "1234567",
+				"app_host" : "linux-qfur.elcadev.local",
 				"app_path" : "/zhdocs/lb-soap/services/DcsLbSoapConnector",
 				"app_prot" : "http://"
 			},
@@ -3256,7 +3867,7 @@
 			"children" : [ {
 				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
 				"name" : "ZHDokumente WebService",
-				"description" : "ZHDokumente WebService",
+				"description" : "ZHDokumente WebService (WSDL)",
 				"applicable" : true,
 				"properties" : { },
 				"actionCheck" : null,
@@ -3270,14 +3881,299 @@
 				},
 				"url" : "${app_url}?WSDL",
 				"method" : "GET",
-				"targetUid" : "${app_url}?WSDL",
-				"targetPwd" : "<password>",
+				"targetUid" : "",
+				"targetPwd" : "",
 				"includeBasicAuthHeader" : false,
 				"httpVersion" : "HTTP_1_1",
 				"redirectBehavior" : "NORMAL",
 				"headers" : "",
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "ZHDokumente isAlive",
+				"description" : "ZHDokumente isAlive",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "StartsWith",
+					"operands" : [ "{\"ResultMessage\":\"Ok\"" ]
+				},
+				"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/restio/services/inv/isAlive/",
+				"method" : "GET",
+				"targetUid" : "admin",
+				"targetPwd" : "1234567",
+				"includeBasicAuthHeader" : true,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "",
+				"payload" : "",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "ZHDokumente getVersion",
+				"description" : "ZHDokumente getVersion",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "StartsWith",
+					"operands" : [ "{\"Version\"" ]
+				},
+				"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/restio/services/inv/getVersion",
+				"method" : "GET",
+				"targetUid" : "admin",
+				"targetPwd" : "1234567",
+				"includeBasicAuthHeader" : true,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "",
+				"payload" : "",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "ZHDokumente Detail Checks",
+				"description" : "ZHDokumente Detail Checks",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente CentralAuthority",
+					"description" : "ZHDokumente detailcheck-CentralAuthority",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "CentralAuthority OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente JobManager",
+					"description" : "ZHDokumente detailcheck-JobManager",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "JobManager OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente LoadBalancer",
+					"description" : "ZHDokumente detailcheck-LoadBalancer",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "LoadBalancer OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente RequirementJira",
+					"description" : "ZHDokumente detailcheck-RequirementJira",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "RequirementJira OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente Spellcheck",
+					"description" : "ZHDokumente detailcheck-Spellcheck",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Spellcheck OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente Workflow Service Camunda",
+					"description" : "ZHDokumente detailcheck-Workflow Service Camunda",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "Workflow Service Camunda OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente TextRepository",
+					"description" : "ZHDokumente detailcheck-TextRepository",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "TextRepository OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente JobManager Server",
+					"description" : "ZHDokumente detailcheck-JobManager Server",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "JobManager Server OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				}, {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "ZHDokumente RessourceManager",
+					"description" : "ZHDokumente detailcheck-RessourceManager",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : null,
+					"active" : true,
+					"period" : 60,
+					"timeout" : 15,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "RessourceManager OK" ]
+					},
+					"url" : "http://linux-qfur.elcadev.local:8080/zhdocs/check/services/check/detailcheck",
+					"method" : "GET",
+					"targetUid" : "${app_uid}",
+					"targetPwd" : "${app_pwd}",
+					"includeBasicAuthHeader" : true,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				} ],
+				"expanded" : true
 			} ],
 			"expanded" : true
 		}, {
@@ -3462,7 +4358,7 @@
 			} ],
 			"expanded" : false
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "test-nodes",
@@ -3705,7 +4601,7 @@
 			"fingerprint" : "",
 			"command" : "ping -n 1 www.google.com"
 		} ],
-		"expanded" : true
+		"expanded" : false
 	} ],
 	"expanded" : true
 }
