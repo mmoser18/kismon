@@ -399,13 +399,18 @@ abstract public class HTTPConnection extends TCPConnection
 			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
 		}
 		if (this.includeBasicAuthHeader) {
-			builder.setHeader("Authorization", //$NON-NLS-1$
-			                  "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
-			                                               .encode((getResolvedTargetUid()
-			                                                       + ":" //$NON-NLS-1$
-			                                                       + getResolvedTargetPwd()
-			                                                      ).getBytes()),
-			                                               DEFAULT_CHARSET));
+			String resolvedUid = getResolvedTargetUid();
+			String resolvedPwd = getResolvedTargetPwd();
+			if (!StringUtils.isEmpty(resolvedUid)) { // the pwd can be empty!
+				if (resolvedPwd == null) resolvedPwd = ""; //$NON-NLS-1$
+				builder.setHeader("Authorization", //$NON-NLS-1$
+				                  "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
+				                                               .encode((resolvedUid
+				                                                       + ":" //$NON-NLS-1$
+				                                                       + resolvedPwd
+				                                                      ).getBytes()),
+				                                               DEFAULT_CHARSET));
+			}
 		}
 		switch (getMethod()) {
 		case GET:
@@ -435,8 +440,9 @@ abstract public class HTTPConnection extends TCPConnection
 
 		setHttpRequest(builder.build());
 		setRequestHeaders(getHttpRequest().headers());
-		// setResponseHeaders(null);
-		// setResponseBody(null);
+
+		setResponseHeaders(null);
+		setResponseBody("<no request sent, yet>".getBytes()); //$NON-NLS-1$
 		logRequestValues();
 	}
 
@@ -477,12 +483,17 @@ abstract public class HTTPConnection extends TCPConnection
 			// ... before executing the actual request:
 			long startTime = System.nanoTime();
 			response = client.send(request, BodyHandlers.ofByteArray());
+			// ... and after executing the actual request:
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
 			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(response);
 		} catch (Exception ex) {
-			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
+			if (log.isTraceEnabled()) { // log with stack trace - this is for hard nuts:
+				log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
+			} else if (log.isDebugEnabled()) {
+				log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
+			}
 			setResponseStatusCode(-1);
 			setResponseHeaders(null);
 			setResponseBody(ExceptionUtils.exceptionCauseSummary(ex).getBytes());
@@ -578,6 +589,16 @@ abstract public class HTTPConnection extends TCPConnection
 		return (headers != null ? KeyValuesConverter.convertHeaderMapToString(headers.map()) : ""); //$NON-NLS-1$
 	}
 
+	public String requestBodyAsString() {
+		return convertBodyToString(getRequestBody(), extractRequestCharset());
+	}
+	public String responseBodyAsString() {
+		return convertBodyToString(getResponseBody(), extractResponseCharset());
+	}
+	private static String convertBodyToString(byte[] body, Charset charset) {
+		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);
+	}
+
 	/** extract character set from httpRequest headers - if there is any...
 	 * @throws Exception */
 	protected Charset extractRequestCharset() {
@@ -607,16 +628,6 @@ abstract public class HTTPConnection extends TCPConnection
 		                                                        	}
 		                                                        },
 		                                                        DEFAULT_CHARSET);
-	}
-
-	public String requestBodyAsString() {
-		return convertBodyToString(getRequestBody(), extractRequestCharset());
-	}
-	public String responseBodyAsString() {
-		return convertBodyToString(getResponseBody(), extractResponseCharset());
-	}
-	private static String convertBodyToString(byte[] body, Charset charset) {
-		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);
 	}
 
 	@Override

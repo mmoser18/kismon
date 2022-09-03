@@ -86,6 +86,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public static final String ViewClassEditing = "editing"; //$NON-NLS-1$
 	public static final String ViewClassViewing = "viewing"; //$NON-NLS-1$
 
+	private static final int MAX_DESCRIPTION_LENGTH =
+		Integer.parseInt(AppProperties.getProperties().getProperty("NodeForm.MaxDescriptionLength", //$NON-NLS-1$
+		                                                           "100")); //$NON-NLS-1$
+
 	private NodeService nodeService;
 	private NodeFactory<N> nodeFactory;
 	private FormFactory<N> formFactory;
@@ -205,25 +209,26 @@ public class NodeView <N extends Node> extends VerticalLayout
 			// You need to use UI.access() if you want to access the UI.
 			new LazyDownloadButton(Messages.getString("NodeView.Button.Download.Label"), //$NON-NLS-1$,
 			                       () -> { // get filename:
-			                       	String filename = getSelectedNodeRootNodeFilename();
-			                       	if (filename == null) return null;
-			                       	File file = new File(filename);
-			                       	return file.getName();
-			                       },
-			                       (filename) -> {
-			                       	if (filename != null) {
-			                       		File file = new File(filename);
-			                       		if (file.exists() && file.isFile() && file.canRead()) {
-			                       			try {
-			                       				return new FileInputStream(file);
-			                       			} catch (Exception ex) {
-			                       				log.error("Exception opening file", ex); //$NON-NLS-1$
-			                       			}
-			                       		} else {
-			                       			log.error("File '{}' not found or not readable", file); //$NON-NLS-1$
-			                       		}
-			                       	}
-			                       	return null;
+			                        	RootNode root = getSelectedNodeRootNode();
+			                        	return (root != null ? new File(root.getFilePath()).getName() : null);
+			                       	},
+			                       () -> { // get file data
+			                        	RootNode root = getSelectedNodeRootNode();
+			                        	if (root != null) { // error message already give in getSelectedNodeRootNodeFilename()
+			                        		File file = new File(root.getFilePath());
+			                        		String fullPath = file.getAbsolutePath();
+			                        		if (file.exists() && file.isFile() && file.canRead()) {
+			                        			try {
+			                        				log.info("Opening file '{}':", fullPath); //$NON-NLS-1$
+			                        				return new FileInputStream(file);
+			                        			} catch (Exception ex) {
+			                        				log.error("Exception opening file ''" + fullPath, ex); //$NON-NLS-1$
+			                        			}
+			                        		} else {
+			                        			log.error("File '{}' not found or not readable", fullPath); //$NON-NLS-1$
+			                        		}
+			                        	}
+			                        	return null;
 			                       })
 			{
 				private static final long serialVersionUID = -948298009586080827L;
@@ -233,30 +238,39 @@ public class NodeView <N extends Node> extends VerticalLayout
 		downloadFileButton.setDisableOnClick(true);
 		downloadFileButton.addClickListener(event -> {
 			// show some feedback to the user, that the download is being prepared in the background
-			event.getSource().setText("Preparing download..."); //$NON-NLS-1$
+			event.getSource().setText(Messages.getString("NodeView.Button.Download.Preparing")); //$NON-NLS-1$
 		});
 		// LDB also provides a "download start" listener - this listener is fired, when the client
 		// side starts the download. Please be aware to NOT remove the button here or its content,
 		// otherwise the download can fail.
 		downloadFileButton.addDownloadStartsListener(event -> {
-			log.info("Download was started by event: {}", event.getClientSideEvent()); //$NON-NLS-1$
+			log.info("Download started..."); //$NON-NLS-1$
+			// reset the download button text:
 			event.getSource().setText(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
 			// restore normal state, so that the user can click to download the content again:
 			downloadFileButton.setEnabled(true);
 		});
 		downloadFileButton.addDownloadAbortedListener(event -> {
-			log.info("Download was aborted - reason: {}", event.getReason()); //$NON-NLS-1$
+			String msg = "Download was aborted - reason: " + event.getReason(); //$NON-NLS-1$
+			log.info(msg);
+			ExecutionError(msg, null);
+			// reset the download button text:
 			event.getSource().setText(Messages.getString("NodeView.Button.Download.Label")); //$NON-NLS-1$
 			// restore normal state, so that the user can click to download the content again:
 			downloadFileButton.setEnabled(true);
 		});
 
-		MemoryBuffer buffer = new MemoryBuffer(); // alternative: new FileBuffer();
+		MemoryBuffer buffer = new MemoryBuffer(); // alternative would be: new FileBuffer();
 		Upload uploadFile = new Upload(buffer);
 		// uploadFile.setI18n(new UploadI18N());
+		uploadFile.addStartedListener(event -> {
+			String fileName = event.getFileName();
+			log.info("Upload of file '{}' started.", fileName); //$NON-NLS-1$
+		});
 		uploadFile.addSucceededListener(event ->
 			{
 				String fileName = event.getFileName();
+				log.info("Upload of file '{}' succeeded.", fileName); //$NON-NLS-1$
 				try (InputStream is = buffer.getInputStream();
 				     BufferedInputStream bis = new BufferedInputStream(is)) {
 					RootNode rootNode = this.nodeService.readStream(is, fileName);
@@ -291,7 +305,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.haltRequests.setClassName(halted ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	private String getSelectedNodeRootNodeFilename() {
+	private RootNode getSelectedNodeRootNode() {
 		RootNode root = null;
 		Set<Node> nodes = this.tree.getSelectedItems();
 		if (nodes.isEmpty()) {
@@ -311,9 +325,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			}
 			log.info("Selected root node of node '{}' for download: '{}'", node.getName(), root.getName()); //$NON-NLS-1$
 		}
-		String filename = root.getFilePath();
-		log.info("Selected filename for download: '{}'", filename); //$NON-NLS-1$
-		return filename;
+		return root;
 	}
 
 	private void configureTree() {
@@ -470,9 +482,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private static String getNodeDescription(Node node) {
+		String description = node.getDescription();
 		return node instanceof RootNode
-			? node.getDescription() + " [" + ((RootNode)node).getFilePath() + "]" //$NON-NLS-1$ //$NON-NLS-2$
-			: node.getDescription();
+			? description + " [" + ((RootNode)node).getFilePath() + "]" //$NON-NLS-1$ //$NON-NLS-2$
+			: description.length() < MAX_DESCRIPTION_LENGTH ? description : description.substring(0, MAX_DESCRIPTION_LENGTH) + "..."; //$NON-NLS-1$
 	}
 
 	/**
@@ -570,7 +583,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
 		log.debug("NodeView.deleteNode[DeleteEvent] '{}'", node.getName()); //$NON-NLS-1$
-		if (!this.form.setNode(null, true)) { // signal that we want to leave that node:
+		if (this.form != null && !this.form.setNode(null, true)) { // signal that we want to leave that node:
 			return; // if there are unsaved changes remain on form's current node
 		}
 		deleteNodes(Collections.singletonList(node));
@@ -734,15 +747,15 @@ public class NodeView <N extends Node> extends VerticalLayout
 	 * @param nodes
 	 */
 	private void removeNodes(Collection<Node> nodes) {
-		log.info("removeNodes {}.", nodes); //$NON-NLS-1$
-		String question = nodes.stream()
-			.map(node -> node.getName())
+		List<String> nodeNames = nodes.stream().map(n -> n.getName()).collect(Collectors.toList());
+		log.info("removeNodes {}.", nodeNames); //$NON-NLS-1$
+		String question = nodeNames.stream()
 			.collect(Collectors.joining(Messages.getString("NodeView.Deletion.Question.ListSeparator"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
 		new ConfirmDialog(Messages.getString("NodeView.Deletion.Header"), question, //$NON-NLS-1$
-		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> { log.info("delete '{}':", nodes); deleteNodes(nodes); }, //$NON-NLS-1$ //$NON-NLS-2$
-		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> { log.info("cancel '{}':", nodes); } //$NON-NLS-1$ //$NON-NLS-2$
+		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> { log.info("delete '{}':", nodeNames); deleteNodes(nodes); }, //$NON-NLS-1$ //$NON-NLS-2$
+		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> { log.info("cancel '{}':", nodeNames); } //$NON-NLS-1$ //$NON-NLS-2$
 		                 ).open();
 	}
 
@@ -751,9 +764,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 //	 * @param nodes
 //	 */
 //	private void removeList(Collection<N> nodes) {
-//		log.info("removeList {}.", nodes); //$NON-NLS-1$
-//		String question = nodes.stream()
-//			.map(node -> NodeService.getCorrespondingRootNode(node).getName())
+//		List<String> nodeNames = nodes.stream().map(n -> NodeService.getCorrespondingRootNode(node).getName()).collect(Collectors.toList());
+//		log.info("removeList {}.", nodeNames); //$NON-NLS-1$
+//		String question = nodeNames.stream()
 //			.collect(Collectors.joining(Messages.getString("NodeView.Deletion.Question.ListSeparator"), //$NON-NLS-1$
 //			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
 //			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
@@ -877,8 +890,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 //	}
 //
 	private void reportUploadResult(RootNode rootNode, String sourceName) {
+		log.info("Reading of file '{}' yielded tree below: '{}'", sourceName, rootNode != null ? rootNode.getName() : null); //$NON-NLS-1$
 		if (rootNode != null) { // new root was read: update UI
 			updateTree();
+		} else {
 			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
 			log.info(msg);
 			new Notification(msg, 0).open();
@@ -969,23 +984,24 @@ public class NodeView <N extends Node> extends VerticalLayout
 	 * @param nodes
 	 */
 	private void deleteNodes(Collection<Node> nodes) {
-		log.info("deleteNodes {}", nodes); //$NON-NLS-1$
+		List<String> nodeNames = nodes.stream().map(n -> n.getName()).collect(Collectors.toList());
+		log.info("deleteNodes {}", nodeNames); //$NON-NLS-1$
 		List<IntermediateNode> parents = new ArrayList<>();
 		try {
 			nodes.forEach((node) -> {
-				log.info("deleting nodes '{}'", node); //$NON-NLS-1$
+				log.info("deleting nodes '{}'", node.getName()); //$NON-NLS-1$
 				if (node instanceof RootNode) {
 					this.nodeService.removeRootNode((RootNode)node);
 				} else {
 					IntermediateNode parent = node.getParent();
 					Node deletedNode = this.nodeService.removeChild(parent, node);
-					log.info("deleted node '{}'", deletedNode); //$NON-NLS-1$
+					log.info("deleted node '{}'", deletedNode.getName()); //$NON-NLS-1$
 					if (NodeView.alwaysSave) saveNode(parent);
 					parents.add(parent);
 				}
 			});
 		} catch (Throwable t) {
-			String msg = String.format("Exception deleting node '%s': %s", nodes, t); //$NON-NLS-1$
+			String msg = String.format("Exception deleting node(s) '%s': %s", nodeNames, t); //$NON-NLS-1$
 			log.error(msg, t);
 			new Notification(msg, 5000).open();
 		}
@@ -994,7 +1010,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// parents.forEach((node) -> this.tree.select(node));
 		// or rather:
 		this.tree.select(null);
-		this.form.setNode(null, true);
+		if (this.form != null) {
+			this.form.setNode(null, true);
+		}
 	}
 
 	/* User operation error - this CAN happen but does no harm */

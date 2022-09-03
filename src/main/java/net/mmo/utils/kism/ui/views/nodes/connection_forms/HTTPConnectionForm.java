@@ -149,7 +149,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 				}
 			});
 
-		this.headers = new TextArea(Messages.getString("HTTPConnectionForm.RequestHeaders.Label")); //$NON-NLS-1$
+		this.headers = new TextArea(Messages.getString("HTTPConnectionForm.Headers.Label")); //$NON-NLS-1$
 		this.headers.setClassName(RequestHeadersClassName);
 		this.headers.setThemeName(LabelPaddingTheme);
 		this.headers.addThemeName(MonospaceTheme);
@@ -176,7 +176,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 				})
 			.bind(HTTPConnection::getHeaders, HTTPConnection::setHeaders);
 
-		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.RequestBody.Label")); //$NON-NLS-1$
+		this.payload = new TextArea(Messages.getString("HTTPConnectionForm.Payload.Label")); //$NON-NLS-1$
 		this.payload.setClassName(RequestBodyClassName);
 		this.payload.setThemeName(LabelPaddingTheme);
 		this.payload.addThemeName(MonospaceTheme);
@@ -362,26 +362,55 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 	protected void updateRequestData() {
 		if (this.node != null) {
 			this.requestHeaders.setValue(this.node.requestHeadersAsString());
-			this.requestBody.setValue(requestBodyAsString(this.node));
+			this.requestBody.setValue(requestBodyAsString());
 		}
 	}
 
 	protected void updateResponseData() {
 		if (this.node != null) {
 			this.responseHeaders.setValue(this.node.responseHeadersAsString());
-			this.responseBody.setValue(responseBodyAsString(this.node));
+			this.responseBody.setValue(responseBodyAsString());
 		}
 	}
 
+	protected String requestBodyAsString() {
+		return requestBodyAsString(this.node);
+	}
 	protected String requestBodyAsString(N n) {
 		String convertedRequest = n.requestBodyAsString();
 		String requestText = (this.prettyPrintRequestXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedRequest, false) : convertedRequest);
 		return requestText != null ? requestText : ""; //$NON-NLS-1$
 	}
+	protected String responseBodyAsString() {
+		return responseBodyAsString(this.node);
+	}
 	protected String responseBodyAsString(N n) {
 		String convertedResponse = n.responseBodyAsString();
 		String responseText = (this.prettyPrintResponseXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedResponse, false) : convertedResponse);
 		return responseText != null ? responseText : ""; //$NON-NLS-1$
+	}
+
+	@Override
+	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+		if (sourceNode == this.node) {
+			switch (propertyName) {
+			case HTTPConnection.PROPERTYNAME_REQUEST_HEADERS:
+				this.requestHeaders.setValue(sourceNode.requestHeadersAsString());
+				break;
+			case HTTPConnection.PROPERTYNAME_REQUEST_BODY:
+				this.requestBody.setValue(requestBodyAsString());
+				break;
+			case HTTPConnection.PROPERTYNAME_RESPONSE_HEADERS:
+				this.responseHeaders.setValue(sourceNode.responseHeadersAsString());
+				break;
+			case HTTPConnection.PROPERTYNAME_RESPONSE_BODY:
+				this.responseBody.setValue(responseBodyAsString());
+			break;
+			default:
+				// ignore
+			}
+		}
 	}
 
 }

@@ -250,12 +250,14 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 * This method can be extended by subclasses that need to react to further field changes.
 	 */
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
-		switch (propertyName) {
-		case Node.PROPERTYNAME_STATE:
-			setState((State)newValue);
-			break;
-		default:
-			// ignore
+		if (sourceNode == this.node) {
+			switch (propertyName) {
+			case Node.PROPERTYNAME_STATE:
+				setState((State)newValue);
+				break;
+			default:
+				// ignore
+			}
 		}
 	}
 

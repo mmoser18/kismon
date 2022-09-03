@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.component.Component;
@@ -23,6 +22,9 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Extension of anchor, that will display a vaadin button as clickable instance
@@ -33,6 +35,9 @@ import com.vaadin.flow.shared.Registration;
  * and then substantially reworked to allow calling the getFilename() only once and to handle exceptions
  * properly.
  */
+@Setter
+@Getter
+@Slf4j
 @SuppressWarnings("javadoc")
 public class LazyDownloadButton extends Button
 {
@@ -41,7 +46,7 @@ public class LazyDownloadButton extends Button
 	private static final String DEFAULT_FILE_NAME = "download"; //$NON-NLS-1$
 	private static final Supplier<String> DEFAULT_FILE_NAME_SUPPLIER = () -> DEFAULT_FILE_NAME;
 	private Supplier<String> fileNameCallback;
-	private Function<String, InputStream> inputStreamCallback;
+	private Supplier<InputStream> inputStreamCallback;
 
 	private Anchor anchor;
 
@@ -58,29 +63,29 @@ public class LazyDownloadButton extends Button
 	}
 
 	public LazyDownloadButton(String text,
-	                          Function<String, InputStream> inputStreamFactory) {
+	                          Supplier<InputStream> inputStreamFactory) {
 		this(text, DEFAULT_FILE_NAME_SUPPLIER, inputStreamFactory);
 	}
 
 	public LazyDownloadButton(Component icon,
-	                          Function<String, InputStream> inputStreamFactory) {
+	                          Supplier<InputStream> inputStreamFactory) {
 		this(icon, DEFAULT_FILE_NAME_SUPPLIER, inputStreamFactory);
 	}
 
 	public LazyDownloadButton(String text, Component icon,
-	                          Function<String, InputStream> inputStreamFactory) {
+	                          Supplier< InputStream> inputStreamFactory) {
 		this(text, icon, DEFAULT_FILE_NAME_SUPPLIER, inputStreamFactory);
 	}
 
 	public LazyDownloadButton(String text,
 	                          Supplier<String> fileNameCallback,
-	                          Function<String, InputStream> inputStreamFactory) {
+	                          Supplier<InputStream> inputStreamFactory) {
 		this(text, null, fileNameCallback, inputStreamFactory);
 	}
 
 	public LazyDownloadButton(Component icon,
 	                          Supplier<String> fileNameCallback,
-	                          Function<String, InputStream> inputStreamFactory) {
+	                          Supplier<InputStream> inputStreamFactory) {
 		this("", icon, fileNameCallback, inputStreamFactory); //$NON-NLS-1$
 	}
 
@@ -112,7 +117,7 @@ public class LazyDownloadButton extends Button
 	 */
 	public LazyDownloadButton(String text, Component icon,
 	                          Supplier<String> fileNameCallback,
-	                          Function<String, InputStream> inputStreamCallback) {
+	                          Supplier<InputStream> inputStreamCallback) {
 		super(text);
 
 		Objects.requireNonNull(fileNameCallback, "File name callback must not be null"); //$NON-NLS-1$
@@ -125,9 +130,13 @@ public class LazyDownloadButton extends Button
 		}
 
 		super.addClickListener(event -> {
-
+			log.info("Download button clicked"); //$NON-NLS-1$
 			String filename = fileNameCallback.get();
-			if (filename != null) {
+			if (filename == null) {
+				log.info("Filename for Download yielded null"); //$NON-NLS-1$
+				fireEvent(new DownloadAbortedEvent(this, false, "No filename obtained.")); //$NON-NLS-1$
+			} else {
+				log.info("Filename for Download: '{}'", filename); //$NON-NLS-1$
 				// we add the anchor to download in the parent of the button - if there are scenarios
 				// where the anchor should be placed somewhere else, this needs to be extended.
 				// Cannot be placed inside of the button since the button might be disabled or invisible
@@ -135,15 +144,19 @@ public class LazyDownloadButton extends Button
 				// The anchor must not be removed by this component, since the download fails otherwise
 				getParent().ifPresent(component -> {
 					if (this.anchor == null) {
+						log.info("Preparing anchor..."); //$NON-NLS-1$
 						this.anchor = new Anchor();
 						Element anchorElement = this.anchor.getElement();
 						anchorElement.setAttribute("download", true); //$NON-NLS-1$
 						anchorElement.getStyle().set("display", "none"); //$NON-NLS-1$ //$NON-NLS-2$
 						component.getElement().appendChild(this.anchor.getElement());
 						anchorElement.addEventListener("click", //$NON-NLS-1$
-						                               event1 -> fireEvent(new DownloadStartsEvent(this,
-						                                                                           true,
-						                                                                           event1)));
+						                               event1 ->
+						                               {
+						                                	fireEvent(new DownloadStartsEvent(this,
+						                                	                                  true,
+						                                	                                  event1));
+						                               });
 					}
 
 					Optional<UI> optionalUI = getUI();
@@ -151,15 +164,18 @@ public class LazyDownloadButton extends Button
 						try {
 							@SuppressWarnings("resource") // Note: the stream must NOT be defined in the // try (...)-clause
 							                              // here, because then it gets closed too early!
-							InputStream inputStream = inputStreamCallback.apply(filename);
+							InputStream inputStream = inputStreamCallback.get();
 							if (inputStream != null) {
+								log.info("Download-Inputstream obtained for '{}'", filename); //$NON-NLS-1$
 								StreamResource href = new StreamResource(filename, () -> inputStream);
 								optionalUI.ifPresent(ui -> ui.access(() -> {
 									href.setCacheTime(0);
 									this.anchor.setHref(href);
+									log.info("Download stream obtained - starting download:"); //$NON-NLS-1$
 									this.anchor.getElement().callJsFunction("click"); //$NON-NLS-1$
 								}));
 							} else {
+								log.info("Download stream yielded null - download aborted..."); //$NON-NLS-1$
 								fireEvent(new DownloadAbortedEvent(this, false, "No file content obtained.")); //$NON-NLS-1$
 							}
 						} catch (Exception e) {
@@ -167,8 +183,6 @@ public class LazyDownloadButton extends Button
 						}
 					});
 				});
-			} else {
-				fireEvent(new DownloadAbortedEvent(this, false, "No filename obtained.")); //$NON-NLS-1$
 			}
 		});
 	}
@@ -192,23 +206,6 @@ public class LazyDownloadButton extends Button
 	public Registration addDownloadAbortedListener(ComponentEventListener<DownloadAbortedEvent> listener) {
 		return addListener(DownloadAbortedEvent.class, listener);
 	}
-
-	public Supplier<String> getFileNameCallback() {
-		return this.fileNameCallback;
-	}
-
-	public void setFileNameCallback(Supplier<String> fileNameCallback) {
-		this.fileNameCallback = fileNameCallback;
-	}
-
-	public Function<String, InputStream> getInputStreamCallback() {
-		return this.inputStreamCallback;
-	}
-
-	public void setInputStreamCallback(Function<String, InputStream> inputStreamCallback) {
-		this.inputStreamCallback = inputStreamCallback;
-	}
-
 
 	public static class DownloadStartsEvent extends ComponentEvent<LazyDownloadButton>
 	{

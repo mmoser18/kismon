@@ -127,6 +127,12 @@ public class Application extends SpringBootServletInitializer
 				Locale.setDefault(locale);
 			}
 
+			// misc. other options I had bumped into:
+			String authRetryLimit = appProperties.getProperty("HttpAuthRetryLimit"); //$NON-NLS-1$
+			if (authRetryLimit != null) System.setProperty("jdk.httpclient.auth.retrylimit", authRetryLimit); //$NON-NLS-1$
+			String redirectsRetryLimit = appProperties.getProperty("HttpRedirectsRetryLimit"); //$NON-NLS-1$
+			if (redirectsRetryLimit != null) System.setProperty("jdk.httpclient.redirects.retrylimit", redirectsRetryLimit); //$NON-NLS-1$
+
 			// we need to set this BEFORE the NodeService is created. If we do this in the Application-c'tor we come to late.
 			NodeService.applicationArguments = new DefaultApplicationArguments(args);
 

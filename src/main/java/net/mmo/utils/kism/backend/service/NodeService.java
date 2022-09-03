@@ -201,12 +201,13 @@ public class NodeService
 	}
 
 	public RootNode readFile(File file) throws IOException {
+		String fullPath = file.getAbsolutePath();
+		log.info("Reading configuration from file '{}':", fullPath); //$NON-NLS-1$
 		if (file.isFile() && file.canRead()) {
-			log.info("Reading configuration from file '{}':", file); //$NON-NLS-1$
 			try (FileInputStream fis = new FileInputStream(file);
 			     BufferedInputStream bis = new BufferedInputStream(fis)) {
-				RootNode newRoot = readStream(bis, file.getAbsolutePath());
-				log.info("rootNode '{}' was read from file '{}'.", newRoot.getName(), file); //$NON-NLS-1$
+				RootNode newRoot = readStream(bis, fullPath);
+				log.info("rootNode '{}' was read from file '{}'.", newRoot.getName(), fullPath); //$NON-NLS-1$
 				if (log.isTraceEnabled()) { // it's on purpose that the following uses log.info(...)!
 					log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
 				}
@@ -217,7 +218,7 @@ public class NodeService
 				// only to automatically close the above streams - done automatically...
 			}
 		} else {
-			log.error("File '{}' not found or not readable", file); //$NON-NLS-1$
+			log.error("File '{}' not found or not readable", fullPath); //$NON-NLS-1$
 			return null;
 		}
 	}

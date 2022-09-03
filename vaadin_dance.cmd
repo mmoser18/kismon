@@ -27,6 +27,7 @@ rem let user see what we do:
 call mvn vaadin:clean-frontend
 rmdir /S /Q .\target
 rmdir /S /Q .\node_modules
+rmdir /S /Q .\node
 rmdir /S /Q .\frontend\generated
 rm package.json
 rm package-lock.json
@@ -36,6 +37,8 @@ rm tsconfig.json
 rm types.d.ts
 rm webpack.config.js
 rm webpack.generated.js
+rm .npmrc
+rm .pnpm-debug.log
 @echo off
 echo project local vaadin-generated stuff removed.
 
@@ -53,9 +56,9 @@ rmdir /S /Q D:\.pnpm-store
 rmdir /S /Q U:\.pnpm-store
 @echo off
 echo global vaadin-installed stuff removed.
-rem clear (and preload) default repository:
 
 :repo_stuff
+rem clear (and preload) default repository:
 echo Step 4: Going to empty m2repository!
 pause
 rem let user see what we do:

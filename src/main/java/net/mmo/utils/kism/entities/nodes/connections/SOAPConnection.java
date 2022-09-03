@@ -42,7 +42,10 @@ public class SOAPConnection extends HTTPConnection
 
 	@Override
 	protected void aditionalRequestPreparations(Builder builder) throws Exception {
-		builder.setHeader("SOAPAction", '"' + resolveProperties(getSoapAction()) + '"'); //$NON-NLS-1$
+		String resolvedSoapAction = resolveProperties(getSoapAction());
+		if (resolvedSoapAction != null && !resolvedSoapAction.isEmpty()) {
+			builder.setHeader("SOAPAction", resolvedSoapAction); //$NON-NLS-1$
+		}
 	}
 
 

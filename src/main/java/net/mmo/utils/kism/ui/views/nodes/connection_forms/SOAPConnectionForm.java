@@ -21,7 +21,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 {
 	private static final long serialVersionUID = 5942900173416889404L;
 
-	static final String SoapActionClassName   = NodeFormField + "soap-operation"; //$NON-NLS-1$
+	static final String SoapActionClassName   = NodeFormField + "soap-action"; //$NON-NLS-1$
 
 	protected TextField soapAction;
 

@@ -134,12 +134,14 @@ public abstract class LeafNodeForm <N extends LeafNode> extends ActionForm<N>
 
 	@Override
 	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
-		switch (propertyName) {
-		case LeafNode.PROPERTYNAME_RESPONSE_COMPLETE:
-			/*if (!this.binderHasChanges())*/ readBean(sourceNode); // we (should) only update the form if the user hasn't changed anything, i.e. is not editing the form right now!
-			break;
-		default:
-			break;
+		if (sourceNode == this.node) {
+			switch (propertyName) {
+			case LeafNode.PROPERTYNAME_RESPONSE_COMPLETE:
+				/*if (!this.binderHasChanges())*/ readBean(sourceNode); // we (should) only update the form if the user hasn't changed anything, i.e. is not editing the form right now!
+				break;
+			default:
+				break;
+			}
 		}
 		super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
 	}
