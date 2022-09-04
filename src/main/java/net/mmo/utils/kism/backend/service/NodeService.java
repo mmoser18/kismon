@@ -15,8 +15,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -49,12 +53,14 @@ public class NodeService
 
 	public static ApplicationArguments applicationArguments;
 
-	@Value("${config.file:#{null}}") // allow specification via application.properties
-	protected String configFile;
+	@Value("${config.files:#{null}}") // allow specification via application.properties
+	protected String configFiles;
+	public static String startupErrors = ""; // Since the GUI does not yet exist while starting up we //$NON-NLS-1$
+	                                         // collect all error here so they can later be displayed
+	                                         // to the user. We also don't want to refer to any GUI here.
 
 	private List<RootNode> roots = new ArrayList<>();
 	private ObjectMapper mapper;
-
 	private Properties commonRootProperties = new NodeProperties();
 	{
 		this.commonRootProperties.putAll(System.getenv()); // per default all Environment variables
@@ -63,10 +69,20 @@ public class NodeService
 	public NodeService() {
 		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+	}
+
+	@PostConstruct // can only be executed after the @Value above has been set.
+	void readConfigFiles() {
 		if (getRootNodes().isEmpty()) {
 			List<String> args = (applicationArguments != null ? applicationArguments.getNonOptionArgs() : null);
-			String fileName = (args == null || args.isEmpty() ? this.configFile : args.get(0)); // cmd-line beats properties
-			init(fileName != null ? fileName : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
+			List<String> fileNames = args == null || args.isEmpty()
+			                         ? this.configFiles != null // specified in application properties
+			                           ? Arrays.asList(this.configFiles.split("[,; ]"))  //$NON-NLS-1$
+			                           : Collections.emptyList()
+			                           : args; // if defined: cmd-line beats properties
+			// fileNames is never null!
+			log.info("files to read initially are: '{}'", fileNames); //$NON-NLS-1$
+			init(fileNames);
 		}
 	}
 
@@ -104,16 +120,25 @@ public class NodeService
 	}
 
 	/* create a new empty RootNode, if none exists */
-	public void init(String fileName) {
-		File file = new File(fileName);
-		try {
-			readFile(file);
-		} catch (IOException t) {
-			log.error("File '{}' not found or not a valid configuration (reason: '{}').", //$NON-NLS-1$
-			          file, ExceptionUtils.exceptionCauseSummary(t));
-		} catch (Throwable t) {
-			log.error("Exception processing file '" + file + ":", t); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+	public void init(List<String> filenames) {
+		filenames.stream().forEach((filename) ->
+		{
+			File file = new File(filename);
+			String fullpath = file.getAbsolutePath();
+			log.info("File to read: '{}'", fullpath); //$NON-NLS-1$
+			try {
+				readFile(file);
+			} catch (IOException t) {
+				String msg = String.format("File '%s' is not a valid configuration (reason: '%s').", //$NON-NLS-1$
+				                           fullpath, ExceptionUtils.exceptionCauseSummary(t));
+				log.error(msg);
+				startupErrors += msg + '\n';
+			} catch (Throwable t) {
+				String msg = "Exception processing file '" + fullpath + ":"; //$NON-NLS-1$ //$NON-NLS-2$
+				log.error(msg, t);
+				startupErrors += msg + t.getMessage() + '\n';
+			}
+		});
 		if (getRootNodes().isEmpty()) { // make sure we always have at least one root node:
 			createDummyRootNode();
 		}
@@ -121,7 +146,7 @@ public class NodeService
 	}
 
 	public void createDummyRootNode() {
-		log.info("Creating dummy root node: {}"); //$NON-NLS-1$
+		log.info("Creating dummy root node:"); //$NON-NLS-1$
 		RootNode rootNode = new RootNode(Messages.getString("km_root_name"), //$NON-NLS-1$
 		                                 Messages.getString("km_root_description")); //$NON-NLS-1$
 		// addSomeSubNodes(rootNode);
@@ -218,8 +243,7 @@ public class NodeService
 				// only to automatically close the above streams - done automatically...
 			}
 		} else {
-			log.error("File '{}' not found or not readable", fullPath); //$NON-NLS-1$
-			return null;
+			throw new IOException("File '" + fullPath + "' not found or not readable"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 

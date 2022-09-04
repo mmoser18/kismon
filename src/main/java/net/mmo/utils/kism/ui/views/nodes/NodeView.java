@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -65,6 +67,7 @@ import org.springframework.stereotype.Component;
  */
 @Route(value="", layout = MainLayout.class)
 @PageTitle("Nodes | " + CommonConstants.ApplicationFullName)
+@RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j

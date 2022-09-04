@@ -5,7 +5,8 @@
 
 package net.mmo.utils.kism.ui.views.login;
 
-import com.vaadin.flow.component.UI;
+import javax.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -16,6 +17,7 @@ import net.mmo.utils.kism.ui.CommonConstants;
 
 @Route(CommonConstants.LogoutURL) // Note: this also acts as @Component annotation!
 @PageTitle("Logout | " + CommonConstants.ApplicationFullName)
+@RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Slf4j
 @SuppressWarnings("javadoc")
 public class LogoutView extends VerticalLayout
@@ -37,7 +39,6 @@ public class LogoutView extends VerticalLayout
 
 			add(new Label(Messages.getString("LogoutView.Label.LogOut.Text"))); //$NON-NLS-1$
 
-			UI.getCurrent().getPage().setLocation(CommonConstants.LogoutSuccessURL);
 			VaadinSession current = VaadinSession.getCurrent();
 			current.getSession().invalidate();
 			current.close();

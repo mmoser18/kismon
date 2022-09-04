@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.AxisTitle;
@@ -45,6 +47,7 @@ import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 @SuppressWarnings("javadoc")
 @Route(value = "history-graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
 @PageTitle("History Graph | " + CommonConstants.ApplicationFullName)
+@RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Slf4j
 public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Object>>
 {

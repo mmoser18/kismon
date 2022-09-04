@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.ui.CommonConstants;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,7 +59,7 @@ public final class SecurityUtils
 					.map((auth) -> auth.getAuthority())
 					.collect(Collectors.toList());
 				log.info("user details: {} / authorities: {}", obj, auths);
-				return auths.contains("ROLE_ADMIN");
+				return auths.contains("ROLE_" + CommonConstants.Role_ADMIN);
 			}
 		}
 		return false;

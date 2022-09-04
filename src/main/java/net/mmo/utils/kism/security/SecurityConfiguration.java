@@ -8,67 +8,42 @@ package net.mmo.utils.kism.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.ui.CommonConstants;
+import net.mmo.utils.kism.ui.views.login.LoginView;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @SuppressWarnings({"nls", "javadoc"})
 @EnableWebSecurity
 @Configuration
 @Slf4j
-// Vaadin <v19.0.x:
-//public class SecurityConfiguration extends WebSecurityConfigurerAdapter
-// Vaadin >= v19.0.x:
 public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 {
-	private static final String LOGIN_URL = '/' + CommonConstants.LoginURL;
-	private static final String LOGIN_PROCESSING_URL = LOGIN_URL;
-	private static final String LOGIN_FAILURE_URL = LOGIN_URL + "?error";
-	private static final String LOGOUT_SUCCESS_URL = '/' + CommonConstants.LogoutSuccessURL;
-
-	// Vaadin <v19.0.x:
-//	CustomRequestCache requestCache;
-	// Vaadin >= v19.0.x:
-	@Autowired
-	VaadinDefaultRequestCache requestCache;
-
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		log.info("configure: http={}", http);
-		http.csrf().disable()  // Disables cross-site httpRequest forgery (CSRF) protection, as Vaadin already has CSRF protection
-			.requestCache()
-			// Vaadin <v19.0.x:
-			// .requestCache(new CustomRequestCache())
-			// Vaadin >= v19.0.x:
-			.requestCache(this.requestCache) // Uses VaadinDefaultRequestCache to track unauthorized requests so that users are redirected appropriately after login.
-			.and().authorizeRequests() // Turns on authorization
-			.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll() // Allows all internal traffic from the Vaadin framework.
-			.requestMatchers(new AntPathRequestMatcher(CommonConstants.LogoutSuccessURL)).permitAll() // Allows all access to the logout-page
-			.anyRequest().authenticated() // Allows all authenticated traffic.
-			.and().formLogin().loginPage(LOGIN_URL).permitAll() // Enables form-based login and permits unauthenticated access to it.
-			.loginProcessingUrl(LOGIN_PROCESSING_URL) // Configures the login page URLs.
-			.failureUrl(LOGIN_FAILURE_URL)
-			.and().logout().permitAll()
-			// commented since these are the defaults:
-			//.invalidateHttpSession(true)
-			.logoutUrl(CommonConstants.LogoutURL)
-			.logoutSuccessUrl(LOGOUT_SUCCESS_URL)
-			.logoutRequestMatcher(new AntPathRequestMatcher(CommonConstants.LogoutURL, "GET")) // allow to logout with a simple GET-request
-			;
+		// Delegating the responsibility of general configurations of http security to the super class.
+		// It is configuring the followings:
+		// Vaadin's CSRF protection by ignoring framework's internal requests,
+		// default request cache,
+		// ignoring public views annotated with @AnonymousAllowed,
+		// restricting access to other views/endpoints, and
+		// enabling ViewAccessChecker authorization.
+		super.configure(http);
+
+		// This is important to register your login view to the view access checker mechanism:
+		setLoginView(http, LoginView.class);
+
+		// You can add any possible extra configurations of your own here
 	}
 
 	@Bean
@@ -92,29 +67,30 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 			if (StringUtils.isEmpty(pwd)) {
 				throw new IllegalArgumentException("No value for '" + pwdPropertyName + "' found in application.properties");
 			}
-			userDetails.add(User
-			                .withUsername(uid)
-			                .password("{noop}" + pwd)
-			                .roles(role)
-			                .build());
+			userDetails.add(User.withUsername(uid)
+			                    .password("{noop}" + pwd)
+			                    .roles(role)
+			                    .build());
 		}
 		return new InMemoryUserDetailsManager(userDetails);
 	}
 
-	/* exclude Vaadin-framework communication and static assets from Spring Security. */
-	@Override
-	public void configure(WebSecurity web) {
-		log.info("configure: web={}", web);
-		web.ignoring()
-			.antMatchers("/VAADIN/**",
-			             "/favicon.ico",
-			             "/robots.txt",
-			             "/manifest.webmanifest",
-			             "/sw.js",
-			             "/offline.html",
-			             "/icons/**",
-			             "/images/**",
-			             "/styles/**",
-			             "/h2-console/**");
-	}
+//	/* exclude Vaadin-framework communication and static assets from Spring Security. */
+// disabled since this leads to warnings...
+//	@Override
+//	public void configure(WebSecurity web) throws Exception {
+//		log.info("configure: web={}", web);
+////		web.ignoring()
+////			.antMatchers("/VAADIN/**",
+////			             "/favicon.ico",
+////			             "/robots.txt",
+////			             "/manifest.webmanifest",
+////			             "/sw.js",
+////			             "/offline.html",
+////			             "/icons/**",
+////			             "/images/**",
+////			             "/styles/**",
+////			             "/h2-console/**");
+//		super.configure(web);
+//	}
 }

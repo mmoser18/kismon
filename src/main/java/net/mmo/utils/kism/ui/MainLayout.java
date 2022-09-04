@@ -10,11 +10,14 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.backend.service.NodeService;
+import net.mmo.utils.kism.security.SecurityUtils;
 import net.mmo.utils.kism.ui.views.history.HistoryInfoGraph;
 import net.mmo.utils.kism.ui.views.history.HistoryInfoTable;
 import net.mmo.utils.kism.ui.views.nodes.NodeView;
@@ -42,6 +45,7 @@ public class MainLayout extends AppLayout
 	public static final String TitleClassName = "main-title"; //$NON-NLS-1$
 	public static final String HeaderClassName = "main-header"; //$NON-NLS-1$
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
+	public static final String StartupErrorMessageClassName = "startup-error"; //$NON-NLS-1$
 
 	public MainLayout() {
 		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
@@ -63,7 +67,18 @@ public class MainLayout extends AppLayout
 //		header.expand(appTitle);
 //		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-		addToNavbar(header);
+		log.info("startup errors: '{}'", NodeService.startupErrors); //$NON-NLS-1$
+		if (SecurityUtils.isAdminUser() && !NodeService.startupErrors.isEmpty()) {
+			VerticalLayout panel = new VerticalLayout(header);
+			for (String msg: NodeService.startupErrors.split("\n")) { //$NON-NLS-1$
+				Label label = new Label(msg);
+				label.setClassName(StartupErrorMessageClassName);
+				panel.add(label);
+			}
+			addToNavbar(panel);
+		} else {
+			addToNavbar(header);
+		}
 	}
 
 	private void createDrawer() {

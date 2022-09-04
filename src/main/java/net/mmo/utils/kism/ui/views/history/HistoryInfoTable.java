@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("javadoc")
 @Route(value="history-table", layout = MainLayout.class)
 @PageTitle("History Table | " + CommonConstants.ApplicationFullName)
+@RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
