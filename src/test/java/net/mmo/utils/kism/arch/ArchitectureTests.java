@@ -86,7 +86,7 @@ public class ArchitectureTests
 			.layer("Service").definedBy("..backend.service..")
 			.layer("Entities").definedBy("..entities..")
 			.layer("Security").definedBy("..security")
-			.layer("UI").definedBy("..ui..")
+			.layer("UI").definedBy("..ui..") // ALL in and below ..ui
 			.layer("UINodes").definedBy("..ui.views.nodes")
 			.layer("UIHistory").definedBy("..ui.views.history")
 			.layer("UINodesConnections").definedBy("..ui.views.nodes.connection_forms..")
@@ -96,7 +96,7 @@ public class ArchitectureTests
 			.whereLayer("Main").mayNotBeAccessedByAnyLayer()
 			.whereLayer("UI").mayOnlyBeAccessedByLayers("UINodes", "UIHistory", "Security")
 			.whereLayer("UINodes").mayOnlyBeAccessedByLayers("UINodesConnections", "UIHistory", "UI")
-			.whereLayer("Security").mayOnlyBeAccessedByLayers("UINodes")
+			.whereLayer("Security").mayOnlyBeAccessedByLayers("UI")
 			.whereLayer("Backend").mayOnlyBeAccessedByLayers("Main", "UI","Entities")
 			;
 		rule.check(classes);
