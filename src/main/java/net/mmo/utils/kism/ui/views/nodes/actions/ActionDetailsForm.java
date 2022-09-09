@@ -14,9 +14,11 @@ public interface ActionDetailsForm <N extends ActionableNode> {
 	static final long serialVersionUID = 1766004450436880716L;
 
 	default void setNode(N node, Runnable dataHasChanged) {/*empty*/}
+	@SuppressWarnings("unused")
+	default void validate() throws ValidationException { /*empty*/}
 
-	default void readBean() {/*empty*/}
+	default void readBean(N node) {/*empty*/}
 
 	@SuppressWarnings("unused")
-	default void writeBean() throws ValidationException {/*empty*/}
+	default void writeBean(N node) throws ValidationException {/*empty*/}
 }

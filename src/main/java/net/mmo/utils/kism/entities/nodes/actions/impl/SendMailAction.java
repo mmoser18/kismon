@@ -43,12 +43,12 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 {
 	@NotEmpty
 	@Email
-	String mailTo = "michael.moser@freesurf.ch"; //$NON-NLS-1$
+	String mailTo = "foo@bar.com"; //$NON-NLS-1$
 	@Email
 	String mailCc = null;
 	@NotEmpty
 	@Email
-	String mailFrom = "michael.moser@freesurf.ch"; //$NON-NLS-1$
+	String mailFrom = "bar@foo.com"; //$NON-NLS-1$
 	@NotEmpty
 	@NotBlank
 	String mailSubject = "Notification for Node '${NodeName}': ${NodeStatusTo}"; //$NON-NLS-1$
@@ -78,6 +78,11 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 	// we need a public constructor so that the ActionFactory can create this using <class>.newInstance();
 	public SendMailAction() {
 		// empty
+	}
+
+	public void setMailTo(String mailTo) {
+		log.info("setMailTo:{}", mailTo); //$NON-NLS-1$
+		this.mailTo = mailTo;
 	}
 
 	@Override

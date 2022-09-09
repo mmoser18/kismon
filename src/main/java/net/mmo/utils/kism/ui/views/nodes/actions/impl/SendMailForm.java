@@ -47,6 +47,7 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 	/**
 	 * must be public to be accessible by the factory
 	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public SendMailForm() {
 		addClassName(FormClassName);
 
@@ -73,32 +74,41 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 		this.mailContent.setThemeName(UIConstants.LabelPaddingTheme);
 
 		add(this.mailTo, this.mailCc, this.mailFrom, this.mailSubject, this.mailContent);
-}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+		this.binder = new BeanValidationBinder(SendMailAction.class);
+		this.binder.addValueChangeListener(event ->
+		{
+			if (event.isFromClient()) {
+				SendMailForm.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
+				if (this.dataHasChanged != null) this.dataHasChanged.run();
+			}
+		});
+		this.binder.bindInstanceFields(this);
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setNode(N node, Runnable dataHasChanged) {
-		if (this.binder == null) {
-			this.binder = new BeanValidationBinder(SendMailAction.class);
-			this.binder.bindInstanceFields(this);
-			this.binder.addValueChangeListener(event ->
-			{
-				if (event.isFromClient()) {
-					SendMailForm.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
-					dataHasChanged.run();
-				}
-			});
+		SendMailForm.log.debug("setNode node={}", node); //$NON-NLS-1$
+		if (node != null) {
+			this.action = (SendMailAction<N>)node.getAction();
+			this.binder.setBean(this.action);
+			this.dataHasChanged = dataHasChanged;
+		} else {
+			this.action = null;
+			this.binder.removeBean();
+			this.dataHasChanged = null;
 		}
-		this.action = node != null ? (SendMailAction)node.getAction() : null;
-		this.binder.setBean(this.action);
 	}
 
 	@Override
-	public void readBean() {
+	public void readBean(N node) {
+		SendMailForm.log.debug("readBean node={}", node); //$NON-NLS-1$
 		this.binder.readBean(this.action);
 	}
 	@Override
-	public void writeBean() throws ValidationException {
+	public void writeBean(N node) throws ValidationException {
+		SendMailForm.log.debug("writeBean node={}", node); //$NON-NLS-1$
 		this.binder.writeBean(this.action);
 	}
 }

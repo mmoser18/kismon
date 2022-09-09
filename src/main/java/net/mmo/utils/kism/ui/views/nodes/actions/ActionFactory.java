@@ -63,10 +63,6 @@ public class ActionFactory <N extends ActionableNode>
 		return null;
 	}
 
-//	public static ActionType getActionType(ActionCheck ac) {
-//		return (ac != null ? getActionType(ac.getAction()) : null);
-//	}
-
 	public static <N extends ActionableNode> ActionType getActionType(N n) {
 		return (n != null ? getActionType(n.getAction()) : null);
 	}

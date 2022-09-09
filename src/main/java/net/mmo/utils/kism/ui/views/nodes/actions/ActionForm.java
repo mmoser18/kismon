@@ -47,10 +47,10 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	protected Accordion actionDetails;
 	protected VerticalLayout actionDetailsPanel;
 
-	protected TextField[] triggerThreshold = new TextField[State.values().length];
+	protected TextField[] triggerThresholdFields = new TextField[State.values().length];
 	protected Validator<String> thresholdValidator;
 	protected Select<ActionFactory.ActionType> actionType;
-	protected Button resetSameStateCounter;
+	protected Button resetSameStateCounterButton;
 
 	protected Component actionDetailsForm;
 	private ActionDetailsFormFactory<N> actionDetailsFormFactory = new ActionDetailsFormFactory<>();
@@ -80,7 +80,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 						}
 						for (State state: State.values()) {
 							this.log.debug("threshold[{}]: {}", state, ac); //$NON-NLS-1$
-							this.triggerThreshold[state.ordinal()].setValue(ac.getTriggerThresholds()[state.ordinal()]);
+							this.triggerThresholdFields[state.ordinal()].setValue(ac.getTriggerThresholds()[state.ordinal()]);
 						}
 						this.actionType.setValue(ActionFactory.getActionType(this.node));
 					} else {
@@ -101,13 +101,13 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 			this.binder.forField(tf)
 				.withValidator(this.thresholdValidator)
 				.bind((n) -> getThreshold(n, state), (n, value) -> setThreshold(n, state, value));
-			this.triggerThreshold[state.ordinal()] = tf;
+			this.triggerThresholdFields[state.ordinal()] = tf;
 		}
-		HorizontalLayout thresholds = new HorizontalLayout(this.triggerThreshold);
+		HorizontalLayout thresholds = new HorizontalLayout(this.triggerThresholdFields);
 
-		this.resetSameStateCounter = new Button(Messages.getString("ActionForm.ResetStateCounter.Label")); //$NON-NLS-1$
-		this.resetSameStateCounter.addClassName(ActionResetStateCounterClassName);
-		this.resetSameStateCounter.addClickListener(event ->
+		this.resetSameStateCounterButton = new Button(Messages.getString("ActionForm.ResetStateCounter.Label")); //$NON-NLS-1$
+		this.resetSameStateCounterButton.addClassName(ActionResetStateCounterClassName);
+		this.resetSameStateCounterButton.addClickListener(event ->
 		{
 			if (this.node != null) {
 				this.node.setSameStateSince(0);
@@ -115,7 +115,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				if (actionCheck != null) actionCheck.setPreviousActionState(null);
 			}
 		});
-		thresholds.add(this.resetSameStateCounter);
+		thresholds.add(this.resetSameStateCounterButton);
 
 		this.actionType = new Select<ActionType>();
 		this.actionType.setLabel(Messages.getString("ActionForm.ActionType.Label")); //$NON-NLS-1$
@@ -208,7 +208,9 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	void setActionType(N n, ActionType actionType) {
 		if (n != null && n.getActionCheck() != null) {
 			try {
-				n.setAction(actionType != null ? ActionFactory.createActionOfType(actionType) : null);
+				if (getActionType(n) != actionType) {
+					n.setAction(actionType != null ? ActionFactory.createActionOfType(actionType) : null);
+				}
 			} catch (Exception ex) {
 				this.log.error("Error setting action from type '" + actionType + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
 			}
@@ -216,10 +218,11 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	}
 
 	protected void adaptActionType(boolean actionVisible, N n) {
-		this.log.debug("adaptActionTypeAndDetailsVisibility(visible:{},n:{}",actionVisible, n); //$NON-NLS-1$
+		this.log.debug("adaptActionTypeAndDetailsVisibility(visible:{},n:{})",actionVisible, n); //$NON-NLS-1$
 		this.actionEnabled.setValue(actionVisible);
 		for (State state: State.values()) {
-			this.triggerThreshold[state.ordinal()].setVisible(actionVisible);
+			this.triggerThresholdFields[state.ordinal()].setVisible(actionVisible);
+			this.resetSameStateCounterButton.setVisible(actionVisible);
 		}
 		this.actionType.setVisible(actionVisible);
 		adaptActionDetailsVisibility(actionVisible, n, ActionFactory.getActionType(n));
@@ -229,28 +232,29 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	private void adaptActionDetailsVisibility(boolean visible, N n, ActionType at) {
 		Runnable dataHasChanged = () -> setUiChanges(true);
 		Component newActionHandlerForm =
-			this.actionDetailsFormFactory.createActionDetailsForm(n, at, dataHasChanged);
+			this.actionDetailsFormFactory.createActionDetailsForm(n, at);
+
 		this.log.debug("adaptActionDetailsVisibility: form={}", newActionHandlerForm); //$NON-NLS-1$
 		if (newActionHandlerForm != this.actionDetailsForm) {
 			this.log.debug("different form"); //$NON-NLS-1$
 			if (this.actionDetailsForm != null) {
-				this.actionDetailsPanel.remove(this.actionDetailsForm);
 				this.actionDetailsForm.setVisible(false);
+				this.actionDetailsPanel.remove(this.actionDetailsForm);
 				((ActionDetailsForm<N>)this.actionDetailsForm).setNode(null, null);
 				this.actionDetailsForm = null;
 			}
 			if (newActionHandlerForm != null) {
 				this.actionDetailsPanel.add(newActionHandlerForm);
-				newActionHandlerForm.setVisible(visible);
 				((ActionDetailsForm<N>)newActionHandlerForm).setNode(n, dataHasChanged);
-//				this.actionDetailsForm = newActionHandlerForm;
+				this.actionDetailsForm = newActionHandlerForm;
+				newActionHandlerForm.setVisible(visible);
 			}
 		}
 	}
 
 	@Override
 	public boolean setNode(N n, boolean abandonChanges) {
-		this.log.info("setNode node={}", n); //$NON-NLS-1$
+		this.log.info("setNode node={}", (n != null ? n.getName() : null)); //$NON-NLS-1$
 		boolean res = super.setNode(n, abandonChanges);
 		adaptActionType(hasAction(n), n);
 		return res;
@@ -259,14 +263,14 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void readBean(N n) {
-		if (this.actionDetailsForm != null) ((ActionDetailsForm<N>)this.actionDetailsForm).readBean();
+		if (this.actionDetailsForm != null) ((ActionDetailsForm<N>)this.actionDetailsForm).readBean(n);
 		super.readBean(n);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void writeBean(N n) throws ValidationException {
-		if (this.actionDetailsForm != null) ((ActionDetailsForm<N>)this.actionDetailsForm).writeBean();
+		if (this.actionDetailsForm != null) ((ActionDetailsForm<N>)this.actionDetailsForm).writeBean(n);
 		super.writeBean(n);
 	}
 	/**
