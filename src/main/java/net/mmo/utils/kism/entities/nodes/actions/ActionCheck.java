@@ -54,13 +54,7 @@ public class ActionCheck extends AbstractEntity implements Cloneable, Serializab
 	@JsonIgnore
 	transient private State previousActionState;
 
-	/**
-	 * The actual action
-	 */
-	@NotNull
-	protected IAction<ActionableNode> action;
-
-	public void checkForAction(ActionableNode node) {
+	public void checkForAction(@NotNull ActionableNode node) {
 		// the aim of the following is to NOT trigger an action right away but only if it the state has been stable for a given number of checks
 		final State newState = node.getState();
 		final State oldState = this.previousActionState; // we keep it for logging and in case we trigger the action
@@ -70,18 +64,23 @@ public class ActionCheck extends AbstractEntity implements Cloneable, Serializab
 		    newState != oldState && // ... and the states differ...
 		    stableSince >= threshold) {  // ... and we have seen this state now often enough, then:
 			this.previousActionState = newState;
-			log.info("current state '{}' stable since {} ticks (previous state: {}) -> triggering action '{}':", //$NON-NLS-1$
+			log.info("Current state '{}' stable since {} ticks (previous state: {}) -> triggering action '{}':", //$NON-NLS-1$
 			         newState, threshold, oldState, this);
 			node.informOnPropertyChange(PROPERTYNAME_ACTION, oldState, newState);
 			// the actual action is handled in a different thread:
 			ThreadSupport.executeLater(0, () ->
-				{
-					log.info("executing action '{}':", this); //$NON-NLS-1$
-					this.action.doAction(node, oldState, newState);
-					log.info("action '{}' done.", this); //$NON-NLS-1$
-				});
+			{
+				IAction<ActionableNode> action = node.getAction();
+				log.info("Executing action '{}':", action); //$NON-NLS-1$
+				try {
+					action.doAction(node, oldState, newState, this);
+					log.info("Action '{}' done.", action); //$NON-NLS-1$
+				} catch (Exception ex) {
+					log.error("Error executing action " + action + ":", ex); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			});
 		} else {
-			log.trace("new state '{}' stable since {} / threshold={} / oldState={} -> no action taken.", //$NON-NLS-1$
+			log.trace("New state '{}' stable since {} / threshold={} / oldState={} -> no action taken.", //$NON-NLS-1$
 			          newState, stableSince, threshold, oldState);
 		}
 	}

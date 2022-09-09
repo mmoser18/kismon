@@ -9,6 +9,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
+import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 
 @SuppressWarnings("javadoc")
@@ -22,7 +23,7 @@ public class RunScriptAction <N extends ActionableNode> implements IAction<N>
 	}
 
 	@Override
-	public void doAction(N node, State oldState, State newState) {
+	public void doAction(N node, State oldState, State newState, ActionCheck check) {
 		log.info("run script here..."); //$NON-NLS-1$
 //		if (newState == FAILED) {
 //			restartSystem();

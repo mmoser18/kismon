@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.entities.nodes.actions;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
@@ -20,6 +22,8 @@ public interface IAction <N extends ActionableNode>
 	 * @param node which has changed
 	 * @param previousState
 	 * @param newState
+	 * @param check
+	 * @throws Exception
 	 */
-	void doAction(N node, State previousState, State newState);
+	void doAction(@NotNull N node, State previousState, @NotNull State newState, @NotNull ActionCheck check) throws Exception;
 }

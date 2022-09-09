@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
+import net.mmo.utils.kism.entities.nodes.actions.IAction;
 
 /**
  * defines a node that support actions
@@ -24,6 +25,12 @@ public abstract class ActionableNode extends Node
 	transient private int sameStateSince = 0;
 
 	private ActionCheck actionCheck;
+
+	/**
+	 * The actual action
+	 */
+	protected IAction<ActionableNode> action;
+
 
 	public ActionableNode() {
 		super();
@@ -49,7 +56,7 @@ public abstract class ActionableNode extends Node
 		} else {
 			this.sameStateSince++;
 		}
-		if (this.actionCheck != null) {
+		if (this.actionCheck != null && state != null) { // the latter happens if we manually reset the state to undefined
 			this.actionCheck.checkForAction(this);
 		}
 	}
@@ -61,6 +68,7 @@ public abstract class ActionableNode extends Node
 		return buf
 			.append(", sameStateSince:").append(getSameStateSince()) //$NON-NLS-1$
 			.append(", actionCheck:").append(getActionCheck()) //$NON-NLS-1$
+			.append(", action:").append(getAction()) //$NON-NLS-1$
 			.append('}')
 			.toString();
 	}
