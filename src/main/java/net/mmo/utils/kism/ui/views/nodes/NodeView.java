@@ -899,7 +899,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} else {
 			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
 			log.info(msg);
-			new Notification(msg, 0).open();
+			createNotification(msg);
 		}
 	}
 
@@ -1006,7 +1006,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node(s) '%s': %s", nodeNames, t); //$NON-NLS-1$
 			log.error(msg, t);
-			new Notification(msg, 5000).open();
+			createNotification(msg, 5000);
 		}
 		updateTree();
 		// do we want to select (all) parent node(s) after a deletion:
@@ -1047,11 +1047,25 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private static void openDialog(String header, String message, Throwable t) {
 		UI ui = UI.getCurrent();
 		ui.access(() ->
-			{
-				new ConfirmDialog(header, message + "\n" + ExceptionUtils.exceptionCauseSummary(t),  //$NON-NLS-1$
-				                  Messages.getString("NodeView.Notification.Close.Label"), null) //$NON-NLS-1$
-					.open();
-			});
+		{
+			new ConfirmDialog(header, message + "\n" + ExceptionUtils.exceptionCauseSummary(t),  //$NON-NLS-1$
+			                  Messages.getString("NodeView.Notification.Close.Label"), null) //$NON-NLS-1$
+				.open();
+		});
+	}
+
+	private static void createNotification(String msg) {
+		createNotification(msg, 0);
+	}
+
+	private static void createNotification(String msg, int duration) {
+		Notification notif = new Notification(msg, duration);
+		notif.addAttachListener(evt ->
+		{
+			log.info("Notification clicked."); //$NON-NLS-1$
+			notif.close();
+		});
+		notif.open();
 	}
 
 	private static class LabelWithIcon extends HorizontalLayout
