@@ -43,7 +43,7 @@
 		<vaadin.version>23.0.2</vaadin.version>
 		<!- -->
 		<!-- not working: -->
-		<vaadin.version>23.1.2</vaadin.version>
+		<vaadin.version>23.1.7</vaadin.version>
 		<!-- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
