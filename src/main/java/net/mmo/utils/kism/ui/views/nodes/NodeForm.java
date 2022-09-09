@@ -56,7 +56,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	static final String StateClassName       = NodeFormField + "state"; //$NON-NLS-1$
 	static final String ApplicableClassName  = NodeFormField + "applicable"; //$NON-NLS-1$
 	static final String PropertiesClassName  = NodeFormField + "properties"; //$NON-NLS-1$
-	static final String ExecuteClassName     = NodeFormField + "execute"; //$NON-NLS-1$
+	static final String ExecuteClassName     = NodeFormField + "executeButton"; //$NON-NLS-1$
 
 	protected final Logger log = LoggerFactory.getLogger(this.getClass());
 	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
@@ -68,13 +68,13 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected TextArea properties;
 
 	// this is not yet added to the form to allow subclasses to include them at appropriate places:
-	protected Button execute;
+	protected Button executeButton;
 	protected VerticalLayout fields;
 
-	private Button save   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
-	private Button delete = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
-	private Button reset  = new Button(Messages.getString("NodeForm.Button.Reset.Label")); //$NON-NLS-1$
-	private Button close  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
+	private Button saveButton   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
+	private Button deleteButton = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
+	private Button resetButton  = new Button(Messages.getString("NodeForm.Button.Reset.Label")); //$NON-NLS-1$
+	private Button closeButton  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
 
 	protected N node;
 	protected Binder<N> binder; // a Binder that is aware of bean validation annotations
@@ -339,12 +339,12 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				}
 			});
 
-		this.execute = new Button(Messages.getString("NodeForm.Execute.Label")); //$NON-NLS-1$
-		this.execute.setClassName(ExecuteClassName);
-		this.execute.setThemeName(UIConstants.LabelPaddingTheme);
-		this.execute.addClickListener(event ->
+		this.executeButton = new Button(Messages.getString("NodeForm.Execute.Label")); //$NON-NLS-1$
+		this.executeButton.setClassName(ExecuteClassName);
+		this.executeButton.setThemeName(UIConstants.LabelPaddingTheme);
+		this.executeButton.addClickListener(event ->
 			{
-				this.log.info("execute clicked"); //$NON-NLS-1$
+				this.log.info("executeButton clicked"); //$NON-NLS-1$
 				if (SecurityUtils.isAdminUser() && hasUiChanges()) {
 					validateAndSave();
 				}
@@ -512,20 +512,21 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	}
 
 	protected void updateSaveButtonState() {
-		boolean enableSave = hasUiChanges() && binderIsValid();
-		this.log.debug("binder status change -> [save] enabled:{}", enableSave); //$NON-NLS-1$
-		this.save.setEnabled(enableSave);
+		boolean binderIsValid = binderIsValid();
+		boolean enableSave = hasUiChanges() && binderIsValid;
+		this.log.debug("binder status change -> [saveButton] enabled:{}", enableSave); //$NON-NLS-1$
+		this.saveButton.setEnabled(enableSave);
 
-		this.execute.setText(Messages.getString(hasUiChanges() && SecurityUtils.isAdminUser()
-		                                        ? (this instanceof IntermediateNodeForm
-		                                          ? "IntermediateNodeForm.SaveAndExecute.Label" //$NON-NLS-1$
-		                                          : "LeafNodeForm.SaveAndExecute.Label") //$NON-NLS-1$
-		                                        : (this instanceof IntermediateNodeForm
-		                                          ? "IntermediateNodeForm.Execute.Label" //$NON-NLS-1$
-		                                          : "LeafNodeForm.Execute.Label"))); //$NON-NLS-1$
-		boolean enableExecute = binderIsValid();
-		this.log.debug("binder status change -> [execute] active:{}", enableExecute); //$NON-NLS-1$
-		this.execute.setEnabled(enableExecute);
+		this.executeButton.setText(Messages.getString(hasUiChanges() && SecurityUtils.isAdminUser()
+		                                              ? (this instanceof IntermediateNodeForm
+		                                                 ? "IntermediateNodeForm.SaveAndExecute.Label" //$NON-NLS-1$
+		                                                 : "LeafNodeForm.SaveAndExecute.Label") //$NON-NLS-1$
+		                                              : (this instanceof IntermediateNodeForm
+		                                                 ? "IntermediateNodeForm.Execute.Label" //$NON-NLS-1$
+		                                                 : "LeafNodeForm.Execute.Label"))); //$NON-NLS-1$
+		boolean enableExecute = binderIsValid;
+		this.log.debug("binder status change -> [executeButton] enabled:{}", enableExecute); //$NON-NLS-1$
+		this.executeButton.setEnabled(enableExecute);
 	}
 
 	protected void updateResolvableValues() {
@@ -582,29 +583,29 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	private HorizontalLayout createButtonsLayout() {
 		// saves all changes values of the current node
-		this.save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-		this.save.setId("nodeform-save-button"); //$NON-NLS-1$
-		this.save.addClickShortcut(Key.ENTER);
-		this.save.addClickListener(event -> validateAndSave());
-		this.save.setEnabled(false);
+		this.saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		this.saveButton.setId("nodeform-saveButton-button"); //$NON-NLS-1$
+		this.saveButton.addClickShortcut(Key.ENTER);
+		this.saveButton.addClickListener(event -> validateAndSave());
+		this.saveButton.setEnabled(false);
 
 		// deletes the current node - sent as event to the top NodeView
-		this.delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-		this.delete.setId("nodeform-delete-button"); //$NON-NLS-1$
-		this.delete.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
+		this.deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		this.deleteButton.setId("nodeform-deleteButton-button"); //$NON-NLS-1$
+		this.deleteButton.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
 
 		// Updates the fields again with the previously saved values
-		this.reset.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
-		this.reset.setId("nodeform-reset-button"); //$NON-NLS-1$
-		this.reset.addClickListener(event -> readBean(this.node));
+		this.resetButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+		this.resetButton.setId("nodeform-resetButton-button"); //$NON-NLS-1$
+		this.resetButton.addClickListener(event -> readBean(this.node));
 
-		// close the node details form
-		this.close.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-		this.close.setId("nodeform-close-button"); //$NON-NLS-1$
-		this.close.addClickShortcut(Key.ESCAPE);
-		this.close.addClickListener(event -> fireEvent(new CloseEvent(this)));
+		// closeButton the node details form
+		this.closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		this.closeButton.setId("nodeform-closeButton-button"); //$NON-NLS-1$
+		this.closeButton.addClickShortcut(Key.ESCAPE);
+		this.closeButton.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
-		return new HorizontalLayout(this.save, this.delete, this.reset, this.close);
+		return new HorizontalLayout(this.saveButton, this.deleteButton, this.resetButton, this.closeButton);
 	}
 
 	protected void validateAndSave() {
@@ -615,8 +616,10 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					validate(); // throws ValidationException if data not valid
 					writeBean(this.node);
 					fireEvent(new SaveEvent(this, this.node));
+					setUiChanges(false);
+				} else {
+					readBean(this.node);
 				}
-				readBean(this.node);
 			} catch (ValidationException e) {
 				this.log.warn("Validation failed: {}: bean: {} / fields: {}", //$NON-NLS-1$
 				         e.getMessage(),
@@ -704,6 +707,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		Registration reg = this.registrations.get(eventType);
 		if (reg != null) reg.remove();
 	}
+
 	@SuppressWarnings("unchecked")
 	public <T extends ComponentEvent<?>> void clearListeners() {
 		this.registrations.keySet().forEach((key) -> removeListener((Class<T>)key));

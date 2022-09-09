@@ -244,7 +244,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 		return (str != null ? PropertyResolver.resolveProperties(str, getProperties()) : null);
 	}
 
-	// this is the code being executed when clicking "execute" manually:
+	// this is the code being executed when clicking "executeButton" manually:
 	public abstract void executeRequest() throws Exception;
 
 	@Override

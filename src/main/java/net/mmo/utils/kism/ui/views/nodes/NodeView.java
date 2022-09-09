@@ -97,7 +97,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private NodeFactory<N> nodeFactory;
 	private FormFactory<N> formFactory;
 
-	Checkbox haltRequests;
+	Checkbox haltRequestsCheckbox;
 
 	SplitLayout content;
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
@@ -187,17 +187,17 @@ public class NodeView <N extends Node> extends VerticalLayout
 				CommonConstants.setClassName(this.content, this.contentDirection);
 			});
 
-		Button moveUp = new Button(Messages.getString("NodeView.Button.MoveUp.Label")); //$NON-NLS-1$
-		moveUp.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveUp(node)));
+		Button moveUpButton = new Button(Messages.getString("NodeView.Button.MoveUp.Label")); //$NON-NLS-1$
+		moveUpButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveUp(node)));
 
-		Button moveDown = new Button(Messages.getString("NodeView.Button.MoveDown.Label")); //$NON-NLS-1$
-		moveDown.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveDown(node)));
+		Button moveDownButton = new Button(Messages.getString("NodeView.Button.MoveDown.Label")); //$NON-NLS-1$
+		moveDownButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveDown(node)));
 
-		Button promote = new Button(Messages.getString("NodeView.Button.Promote.Label")); //$NON-NLS-1$
-		promote.addClickListener(click -> ifSingleNodeSelectedDo(node -> promote(node)));
+		Button promoteButton = new Button(Messages.getString("NodeView.Button.Promote.Label")); //$NON-NLS-1$
+		promoteButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> promote(node)));
 
-		Button demote = new Button(Messages.getString("NodeView.Button.Demote.Label")); //$NON-NLS-1$
-		demote.addClickListener(click -> ifSingleNodeSelectedDo(node -> demote(node)));
+		Button demoteButton = new Button(Messages.getString("NodeView.Button.Demote.Label")); //$NON-NLS-1$
+		demoteButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> demote(node)));
 
 		Button saveAllButton = new Button(Messages.getString("NodeView.Button.SaveAll.Label")); //$NON-NLS-1$
 		saveAllButton.addClickListener(click ->
@@ -283,8 +283,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 				}
 			});
 
-		this.haltRequests = new Checkbox(Messages.getString("NodeView.HaltAllRequests.Label")); //$NON-NLS-1$
-		this.haltRequests.addValueChangeListener(event ->
+		this.haltRequestsCheckbox = new Checkbox(Messages.getString("NodeView.HaltAllRequests.Label")); //$NON-NLS-1$
+		this.haltRequestsCheckbox.addValueChangeListener(event ->
 			{
 				LeafNode.setHaltAllRequests(event.getValue());
 				adjustHaltRequest();
@@ -292,10 +292,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 		adjustHaltRequest();
 
 		HorizontalLayout toolbar = new HorizontalLayout(nodeTypeSelector, addNodeButton, duplicateNodeButton, delNodeButton,
-		                                                moveUp, moveDown, promote, demote,
+		                                                moveUpButton, moveDownButton, promoteButton, demoteButton,
 		                                                directionButton, saveAllButton,
 		                                                downloadFileButton, uploadFile,
-		                                                this.haltRequests);
+		                                                this.haltRequestsCheckbox);
 		toolbar.addClassName(ViewToolbarClassName);
 		return toolbar;
 	}
@@ -303,9 +303,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 	protected void adjustHaltRequest() {
 		boolean halted = LeafNode.isHaltAllRequests();
 		// make sure the checkbox (and its coloring) and the actual value are in sync:
-		if (this.haltRequests.getValue() != halted) this.haltRequests.setValue(halted);
-		this.haltRequests.setLabel(Messages.getString(halted ? "NodeView.HaltAllRequests.Halted" : "NodeView.HaltAllRequests.Enabled")); //$NON-NLS-1$ //$NON-NLS-2$
-		this.haltRequests.setClassName(halted ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
+		if (this.haltRequestsCheckbox.getValue() != halted) this.haltRequestsCheckbox.setValue(halted);
+		this.haltRequestsCheckbox.setLabel(Messages.getString(halted ? "NodeView.HaltAllRequests.Halted" : "NodeView.HaltAllRequests.Enabled")); //$NON-NLS-1$ //$NON-NLS-2$
+		this.haltRequestsCheckbox.setClassName(halted ? "halted" : "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private RootNode getSelectedNodeRootNode() {
@@ -572,9 +572,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 
-	private void saveNodeAfterEditing(NodeForm.SaveEvent event, IntermediateNode parentNode) {
-		Node node = event.getNode();
-		log.debug("NodeView.saveNode[SaveEvent] '{}'", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
+	private void saveNodeAfterEditing(Node node, IntermediateNode parentNode) {
+		log.debug("saveNode[SaveEvent] '{}' as child of '{}'", node.getName(), (parentNode != null ? parentNode.getName() : "-no parent-")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (node.getParent() == null && !(node instanceof RootNode)) { // adding a new node:
 			addNewNode(node, parentNode, -1); // -1: append at end
 		} else { // updating an existing node:
@@ -667,8 +666,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 //				dataProvider.refreshItem(n);
 //				if (NodeView.alwaysSave) saveNode(n);
 //			});
-		refreshNode(node, false);
 		if (NodeView.alwaysSave) saveNode(node);
+		refreshNode(node, false);
 	}
 
 	protected void refreshNode(Node node, boolean refreshChildren) {
@@ -677,7 +676,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		if (refreshChildren && node instanceof IntermediateNode) {
 			// does not work :-(
 			((IntermediateNode)node).getChildren().forEach(n -> refreshNode(n, refreshChildren));
-			NodeView.this.tree.getDataProvider().refreshAll();
+			// NodeView.this.tree.getDataProvider().refreshAll();
 		}
 	}
 
@@ -715,7 +714,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				this.content.setSplitterPosition(50);
 			}
 			if (SecurityUtils.isAdminUser()) {
-				this.form.addListener(NodeForm.SaveEvent.class, (event) -> { saveNodeAfterEditing(event, parentNode); } );
+				this.form.addListener(NodeForm.SaveEvent.class, (event) -> saveNodeAfterEditing(event.getNode(), parentNode));
 				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
 				this.form.addListener(NodeForm.CloseEvent.class, (event) -> closeEditor());
 				this.form.addListener(NodeForm.UpdateEvent.class, (event) -> updateNode(event.getNode()));

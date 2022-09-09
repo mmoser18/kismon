@@ -76,7 +76,7 @@ public class IntermediateNodeForm extends ActionForm<IntermediateNode>
 				}
 			});
 
-		HorizontalLayout childrenOps = new HorizontalLayout(this.execute, this.activateAllChildren, this.deactivateAllChildren);
+		HorizontalLayout childrenOps = new HorizontalLayout(this.executeButton, this.activateAllChildren, this.deactivateAllChildren);
 		childrenOps.addClassName(CombinedClassName);
 
 		this.condition = new Select<>();

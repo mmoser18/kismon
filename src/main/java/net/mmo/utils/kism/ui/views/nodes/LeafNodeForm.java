@@ -120,7 +120,7 @@ public abstract class LeafNodeForm <N extends LeafNode> extends ActionForm<N>
 		this.connnectionDetailsPanel.setClassName(ConnectionDetailsClassName);
 		this.connnectionDetails.add(Messages.getString("LeafNodeForm.ConnectionDetails.Label"), this.connnectionDetailsPanel); //$NON-NLS-1$
 
-		this.fields.add(activeAndPeriod, this.connnectionDetails, this.execute);
+		this.fields.add(activeAndPeriod, this.connnectionDetails, this.executeButton);
 	}
 
 	// convenience method to convert duration in nano-seconds to milli-sec's
