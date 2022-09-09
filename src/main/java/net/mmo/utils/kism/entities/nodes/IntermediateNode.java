@@ -180,10 +180,10 @@ public class IntermediateNode extends ActionableNode
 
 	// spread down the branch:
 	@Override
-	public void trickleDown(Consumer<Node> action) {
-		super.trickleDown(action);
+	public void trickleDown(Consumer<Node> activity) {
+		super.trickleDown(activity);
 		for (Node child: getChildren()) {
-			child.trickleDown(action);
+			child.trickleDown(activity);
 		}
 	}
 
