@@ -144,7 +144,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		});
 	}
 
-	protected void setUiChanges(boolean hasUIchanges) {
+	public void setUiChanges(boolean hasUIchanges) {
 		this.uiChanges = hasUIchanges;
 		updateSaveButtonState();
 	}
