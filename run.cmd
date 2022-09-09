@@ -11,5 +11,5 @@ for %%f in (application.properties banner.txt logback.xml) do copy src\main\reso
 for %%f in (logback-test.xml) do copy src\test\resources\%%f target\
 
 cd target
-"%JAVA_HOME%\bin\java" -cp . -jar kis-monitoring-1.0-SNAPSHOT.jar U:\Documents\eclipse\workspace_Vaadin\KIS-Monitoring\default.kmc
+"%JAVA_HOME%\bin\java" -cp . -jar kis-monitoring-1.0-SNAPSHOT.jar U:\Documents\eclipse\workspace_Vaadin\KIS-Monitoring\ksta.kmc U:\Documents\eclipse\workspace_Vaadin\KIS-Monitoring\test.kmc
 cd ..
