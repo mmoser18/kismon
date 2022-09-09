@@ -35,6 +35,8 @@ rm pnpm-lock.yaml
 rm pnpmfile.js
 rm tsconfig.json
 rm types.d.ts
+rm vite.config.ts
+rm vite.generated.ts
 rm webpack.config.js
 rm webpack.generated.js
 rm .npmrc
