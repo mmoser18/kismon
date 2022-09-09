@@ -204,12 +204,13 @@ public class NodeService
 	}
 
 	public void writeFile(Object obj, String name, File file) throws IOException {
-		log.info("saving monitoredApplication '{}' to file '{}':",name, file); //$NON-NLS-1$
+		log.info("saving configuration '{}' to file '{}':'",name, file, obj); //$NON-NLS-1$
+		log.debug("object: '{}'", obj); //$NON-NLS-1$
 		try (OutputStream fos = new FileOutputStream(file);
 		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
 			writeStream(obj, bos);
 			bos.flush(); // this one proofed essential!
-			log.info("monitoredApplication '{}' successfully written to file '{}'.", name, file.getCanonicalPath()); //$NON-NLS-1$
+			log.info("'{}' successfully written to file '{}'.", name, file.getCanonicalPath()); //$NON-NLS-1$
 		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 			throw t;
 		} finally {
@@ -232,9 +233,9 @@ public class NodeService
 			try (FileInputStream fis = new FileInputStream(file);
 			     BufferedInputStream bis = new BufferedInputStream(fis)) {
 				RootNode newRoot = readStream(bis, fullPath);
-				log.info("rootNode '{}' was read from file '{}'.", newRoot.getName(), fullPath); //$NON-NLS-1$
-				if (log.isTraceEnabled()) { // it's on purpose that the following uses log.info(...)!
-					log.info("created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
+				log.info("RootNode '{}' was read from file '{}'.", newRoot.getName(), fullPath); //$NON-NLS-1$
+				if (log.isTraceEnabled()) { // it's on purpose that the following uses log.debug(...)!
+					log.debug("Created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
 				}
 				return newRoot;
 			} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
