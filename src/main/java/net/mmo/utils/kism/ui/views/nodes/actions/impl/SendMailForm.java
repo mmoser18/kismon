@@ -9,11 +9,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.ValidationException;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
-import net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionDetailsForm;
 import net.mmo.utils.kism.utils.StringUtils;
@@ -21,7 +17,6 @@ import net.mmo.utils.kism.utils.StringUtils;
  * the form for the SendMail-parameters
  */
 @SuppressWarnings("javadoc")
-@Slf4j
 public class SendMailForm <N extends ActionableNode> extends VerticalLayout implements ActionDetailsForm<N>
 {
 	private static final long serialVersionUID = 7901853154069994172L;
@@ -39,15 +34,9 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 	protected TextField mailFrom;
 	protected TextField mailSubject;
 	protected TextArea mailContent;
-	protected BeanValidationBinder<SendMailAction<N>> binder;
-	protected SendMailAction<N> action;
-
-	protected Runnable dataHasChanged;
-
 	/**
 	 * must be public to be accessible by the factory
 	 */
-	@SuppressWarnings({"unchecked", "rawtypes"})
 	public SendMailForm() {
 		addClassName(FormClassName);
 
@@ -74,41 +63,5 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 		this.mailContent.setThemeName(UIConstants.LabelPaddingTheme);
 
 		add(this.mailTo, this.mailCc, this.mailFrom, this.mailSubject, this.mailContent);
-
-		this.binder = new BeanValidationBinder(SendMailAction.class);
-		this.binder.addValueChangeListener(event ->
-		{
-			if (event.isFromClient()) {
-				SendMailForm.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
-				if (this.dataHasChanged != null) this.dataHasChanged.run();
-			}
-		});
-		this.binder.bindInstanceFields(this);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void setNode(N node, Runnable dataHasChanged) {
-		SendMailForm.log.debug("setNode node={}", node); //$NON-NLS-1$
-		if (node != null) {
-			this.action = (SendMailAction<N>)node.getAction();
-			this.binder.setBean(this.action);
-			this.dataHasChanged = dataHasChanged;
-		} else {
-			this.action = null;
-			this.binder.removeBean();
-			this.dataHasChanged = null;
-		}
-	}
-
-	@Override
-	public void readBean(N node) {
-		SendMailForm.log.debug("readBean node={}", node); //$NON-NLS-1$
-		this.binder.readBean(this.action);
-	}
-	@Override
-	public void writeBean(N node) throws ValidationException {
-		SendMailForm.log.debug("writeBean node={}", node); //$NON-NLS-1$
-		this.binder.writeBean(this.action);
 	}
 }

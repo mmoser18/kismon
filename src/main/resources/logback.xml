@@ -48,6 +48,7 @@
 	-->
 	<logger name="net.mmo.utils.kism.entities.nodes.actions" level="trace"/>
 	<logger name="net.mmo.utils.kism.ui.views.nodes" level="debug"/>
+	<logger name="net.mmo.utils.kism.backend.service.NodeService" level="debug"/>
 
 	<logger name="net.mmo.utils.kism" level="info"/>
 

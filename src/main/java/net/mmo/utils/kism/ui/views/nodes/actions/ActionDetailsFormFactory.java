@@ -6,8 +6,10 @@
 package net.mmo.utils.kism.ui.views.nodes.actions;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
+import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 /**
  * creates appropriate form for action handler ...
@@ -17,14 +19,17 @@ import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 public class ActionDetailsFormFactory <N extends ActionableNode>
 {
 	private Component[] components = new Component[ActionType.values().length];
+
+	protected BeanValidationBinder<IAction<N>> binder;
+	protected Runnable dataHasChanged;
 	/**
 	 * creates appropriate form for passed-in action handler
-	 * @param node
 	 * @param actionType
 	 * @return the created form
 	 */
-	public Component createActionDetailsForm(N node, ActionType actionType) {
-		log.info("createActionDetailsForm(node:{}, actionType:{})", node, actionType); //$NON-NLS-1$
+	@SuppressWarnings({})
+	public Component createActionDetailsForm(ActionType actionType) {
+		log.info("createActionDetailsForm(actionType:{})", actionType); //$NON-NLS-1$
 		if (actionType != null) {
 			try {
 				Component comp = this.components[actionType.ordinal()];

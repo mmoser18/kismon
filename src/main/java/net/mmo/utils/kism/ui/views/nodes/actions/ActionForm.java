@@ -15,6 +15,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
@@ -23,6 +25,7 @@ import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
+import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 
@@ -52,7 +55,9 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	protected Select<ActionFactory.ActionType> actionType;
 	protected Button resetSameStateCounterButton;
 
+	protected IAction<ActionableNode> action;
 	protected Component actionDetailsForm;
+	protected Binder<IAction<ActionableNode>> actionBinder;
 	private ActionDetailsFormFactory<N> actionDetailsFormFactory = new ActionDetailsFormFactory<>();
 
 	@Override
@@ -122,9 +127,9 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		this.actionType.setItems(ActionFactory.ActionType.values());
 		this.actionType.setEmptySelectionAllowed(true);
 		this.actionType.setEmptySelectionCaption(Messages.getString("ActionForm.ActionType.Value.None")); //$NON-NLS-1$
-		this.actionType.setItemLabelGenerator(action -> (action != null
-		                                                ? Messages.getString("ActionForm.ActionType.Value." + action.name()) //$NON-NLS-1$
-		                                                : Messages.getString("ActionForm.ActionType.Value.None"))); //$NON-NLS-1$
+		this.actionType.setItemLabelGenerator(at -> (at != null
+		                                            ? Messages.getString("ActionForm.ActionType.Value." + at.name()) //$NON-NLS-1$
+		                                            : Messages.getString("ActionForm.ActionType.Value.None"))); //$NON-NLS-1$
 		this.actionType.addClassName(ActionClassName);
 		this.actionType.setEnabled(this.isAdminUser);
 		this.binder.forField(this.actionType).bind((n) -> getActionType(n), (n, value) -> setActionType(n, value));
@@ -138,7 +143,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				} catch (Exception ex) {
 					this.log.error("Error creating action", ex); //$NON-NLS-1$
 				}
-				adaptActionDetailsVisibility(this.actionEnabled.getValue(), this.node, event.getValue());
+				adaptActionDetailsVisibility(this.actionEnabled.getValue(), this.node, at);
 			}
 		});
 		this.actionDetailsPanel.add(this.actionEnabled, thresholds, this.actionType);
@@ -228,26 +233,32 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		adaptActionDetailsVisibility(actionVisible, n, ActionFactory.getActionType(n));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void adaptActionDetailsVisibility(boolean visible, N n, ActionType at) {
-		Runnable dataHasChanged = () -> setUiChanges(true);
-		Component newActionHandlerForm =
-			this.actionDetailsFormFactory.createActionDetailsForm(n, at);
+		Component newActionDetailsForm = this.actionDetailsFormFactory.createActionDetailsForm(at);
 
-		this.log.debug("adaptActionDetailsVisibility: form={}", newActionHandlerForm); //$NON-NLS-1$
-		if (newActionHandlerForm != this.actionDetailsForm) {
+		this.log.debug("adaptActionDetailsVisibility: form={}", newActionDetailsForm); //$NON-NLS-1$
+		if (newActionDetailsForm != this.actionDetailsForm) {
 			this.log.debug("different form"); //$NON-NLS-1$
 			if (this.actionDetailsForm != null) {
 				this.actionDetailsForm.setVisible(false);
 				this.actionDetailsPanel.remove(this.actionDetailsForm);
-				((ActionDetailsForm<N>)this.actionDetailsForm).setNode(null, null);
 				this.actionDetailsForm = null;
 			}
-			if (newActionHandlerForm != null) {
-				this.actionDetailsPanel.add(newActionHandlerForm);
-				((ActionDetailsForm<N>)newActionHandlerForm).setNode(n, dataHasChanged);
-				this.actionDetailsForm = newActionHandlerForm;
-				newActionHandlerForm.setVisible(visible);
+			if (newActionDetailsForm != null) {
+				this.actionBinder = new BeanValidationBinder(at.getActionClass());
+				this.actionBinder.addValueChangeListener(event ->
+				{
+					if (event.isFromClient()) {
+						this.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
+						setUiChanges(true);
+					}
+				});
+				this.actionBinder.bindInstanceFields(newActionDetailsForm);
+				this.actionBinder.setBean(n.getAction());
+				this.actionDetailsPanel.add(newActionDetailsForm);
+				this.actionDetailsForm = newActionDetailsForm;
+				newActionDetailsForm.setVisible(visible);
 			}
 		}
 	}
@@ -257,20 +268,33 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		this.log.info("setNode node={}", (n != null ? n.getName() : null)); //$NON-NLS-1$
 		boolean res = super.setNode(n, abandonChanges);
 		adaptActionType(hasAction(n), n);
+
+		if (n != null) {
+			this.action = n.getAction();
+			this.actionBinder.setBean(this.action);
+		} else {
+			this.action = null;
+			this.actionBinder.removeBean();
+		}
+
 		return res;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void readBean(N n) {
-		if (this.actionDetailsForm != null) ((ActionDetailsForm<N>)this.actionDetailsForm).readBean(n);
+		if (this.actionDetailsForm != null && n != null) {
+			this.action = n.getAction();
+			this.actionBinder.readBean(this.action);
+		}
 		super.readBean(n);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void writeBean(N n) throws ValidationException {
-		if (this.actionDetailsForm != null) ((ActionDetailsForm<N>)this.actionDetailsForm).writeBean(n);
+		if (this.actionDetailsForm != null && n != null) {
+			this.action = n.getAction();
+			this.actionBinder.readBean(this.action);
+		}
 		super.writeBean(n);
 	}
 	/**
