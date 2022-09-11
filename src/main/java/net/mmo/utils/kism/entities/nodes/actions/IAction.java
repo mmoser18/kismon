@@ -25,5 +25,5 @@ public interface IAction <N extends ActionableNode>
 	 * @param check
 	 * @throws Exception
 	 */
-	void doAction(@NotNull N node, State previousState, @NotNull State newState, @NotNull ActionCheck check) throws Exception;
+	public void doAction(@NotNull N node, State previousState, @NotNull State newState, @NotNull ActionCheck check) throws Exception;
 }

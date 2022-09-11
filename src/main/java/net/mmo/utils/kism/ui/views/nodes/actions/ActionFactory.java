@@ -12,10 +12,12 @@ import lombok.ToString;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.entities.nodes.actions.impl.EmitLogAction;
-import net.mmo.utils.kism.entities.nodes.actions.impl.RunScriptAction;
+import net.mmo.utils.kism.entities.nodes.actions.impl.RunLocalScriptAction;
+import net.mmo.utils.kism.entities.nodes.actions.impl.RunRemoteScriptAction;
 import net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction;
 import net.mmo.utils.kism.ui.views.nodes.actions.impl.EmitLogForm;
-import net.mmo.utils.kism.ui.views.nodes.actions.impl.RunScriptActionForm;
+import net.mmo.utils.kism.ui.views.nodes.actions.impl.RunLocalScriptActionForm;
+import net.mmo.utils.kism.ui.views.nodes.actions.impl.RunRemoteScriptActionForm;
 import net.mmo.utils.kism.ui.views.nodes.actions.impl.SendMailForm;
 
 /**
@@ -28,14 +30,16 @@ import net.mmo.utils.kism.ui.views.nodes.actions.impl.SendMailForm;
 @ToString
 public class ActionFactory <N extends ActionableNode>
 {
+	// TODO: Instead of the fixed enum we should search for and collect matching classes...
 	/**
 	 * the types of actions we support
 	 */
-	@SuppressWarnings("rawtypes") // we can't have type arguments in enumerations...
+	@SuppressWarnings("rawtypes") // enums don't support type arguments
 	public enum ActionType {
 		EmitLogMsg(EmitLogAction.class, EmitLogForm.class),
-		SendEmail (SendMailAction.class, SendMailForm.class),
-		RunScript (RunScriptAction.class, RunScriptActionForm.class);
+		SendEmail(SendMailAction.class, SendMailForm.class),
+		RunLocalScript(RunLocalScriptAction.class, RunLocalScriptActionForm.class),
+		RunRemoteScript(RunRemoteScriptAction.class, RunRemoteScriptActionForm.class);
 
 		private Class<? extends IAction> actionClass;
 		private Class<? extends Component> actionFormClass;

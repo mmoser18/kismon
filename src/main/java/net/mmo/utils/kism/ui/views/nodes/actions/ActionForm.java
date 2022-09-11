@@ -15,7 +15,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
@@ -27,6 +26,7 @@ import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.ui.views.nodes.NodeForm;
+import net.mmo.utils.kism.ui.views.nodes.NodeView;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 
 /**
@@ -42,6 +42,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	static final String ActionEnabledClassName = NodeFormField + "actionEnabled"; //$NON-NLS-1$
 	static final String ActionThresholdClassName = NodeFormField + "actionThreshold"; //$NON-NLS-1$
 	static final String ActionResetStateCounterClassName = NodeFormField + "actionResetStateCounter"; //$NON-NLS-1$
+	static final String ActionTriggerClassName = NodeFormField + "actionTrigger"; //$NON-NLS-1$
 
 	static final String ActionTypeClassName = NodeFormField + "actionType"; //$NON-NLS-1$
 	static final String ActionParametersClassName = NodeFormField + "actionParameters"; //$NON-NLS-1$
@@ -54,10 +55,9 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	protected Validator<String> thresholdValidator;
 	protected Select<ActionFactory.ActionType> actionType;
 	protected Button resetSameStateCounterButton;
+	protected Button triggerActionButton;
 
-	protected IAction<ActionableNode> action;
-	protected Component actionDetailsForm;
-	protected Binder<IAction<ActionableNode>> actionBinder;
+	protected ActionDetailsForm actionDetailsForm; // Note: this must also be a Component!
 	private ActionDetailsFormFactory<N> actionDetailsFormFactory = new ActionDetailsFormFactory<>();
 
 	@Override
@@ -110,6 +110,8 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		}
 		HorizontalLayout thresholds = new HorizontalLayout(this.triggerThresholdFields);
 
+		VerticalLayout buttons = new VerticalLayout();
+
 		this.resetSameStateCounterButton = new Button(Messages.getString("ActionForm.ResetStateCounter.Label")); //$NON-NLS-1$
 		this.resetSameStateCounterButton.addClassName(ActionResetStateCounterClassName);
 		this.resetSameStateCounterButton.addClickListener(event ->
@@ -120,7 +122,24 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				if (actionCheck != null) actionCheck.setPreviousActionState(null);
 			}
 		});
-		thresholds.add(this.resetSameStateCounterButton);
+		buttons.add(this.resetSameStateCounterButton);
+
+		this.triggerActionButton = new Button(Messages.getString("ActionForm.TriggerAction.Label")); //$NON-NLS-1$
+		this.triggerActionButton.addClassName(ActionResetStateCounterClassName);
+		this.triggerActionButton.addClickListener(event ->
+		{
+			if (this.node != null) {
+				IAction<ActionableNode> action = this.node.getAction();
+				try {
+					action.doAction(this.node, null, null, null);
+				} catch (Exception ex) {
+					NodeView.createNotification(String.format(Messages.getString("ActionForm.TriggerActionError.Message"), ex.getMessage())); //$NON-NLS-1$
+				}
+			}
+		});
+		buttons.add(this.triggerActionButton);
+
+		thresholds.add(buttons);
 
 		this.actionType = new Select<ActionType>();
 		this.actionType.setLabel(Messages.getString("ActionForm.ActionType.Label")); //$NON-NLS-1$
@@ -223,7 +242,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	}
 
 	protected void adaptActionType(boolean actionVisible, N n) {
-		this.log.debug("adaptActionTypeAndDetailsVisibility(visible:{},n:{})",actionVisible, n); //$NON-NLS-1$
+		this.log.debug("adaptActionType(visible:{},n:{})",actionVisible, n); //$NON-NLS-1$
 		this.actionEnabled.setValue(actionVisible);
 		for (State state: State.values()) {
 			this.triggerThresholdFields[state.ordinal()].setVisible(actionVisible);
@@ -233,32 +252,34 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		adaptActionDetailsVisibility(actionVisible, n, ActionFactory.getActionType(n));
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void adaptActionDetailsVisibility(boolean visible, N n, ActionType at) {
-		Component newActionDetailsForm = this.actionDetailsFormFactory.createActionDetailsForm(at);
+		ActionDetailsForm newActionDetailsForm = this.actionDetailsFormFactory.createActionDetailsForm(at);
 
 		this.log.debug("adaptActionDetailsVisibility: form={}", newActionDetailsForm); //$NON-NLS-1$
 		if (newActionDetailsForm != this.actionDetailsForm) {
 			this.log.debug("different form"); //$NON-NLS-1$
 			if (this.actionDetailsForm != null) {
-				this.actionDetailsForm.setVisible(false);
-				this.actionDetailsPanel.remove(this.actionDetailsForm);
+				Component comp = (Component)this.actionDetailsForm;
+				comp.setVisible(false);
+				this.actionDetailsPanel.remove(comp);
 				this.actionDetailsForm = null;
 			}
 			if (newActionDetailsForm != null) {
-				this.actionBinder = new BeanValidationBinder(at.getActionClass());
-				this.actionBinder.addValueChangeListener(event ->
-				{
-					if (event.isFromClient()) {
-						this.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
-						setUiChanges(true);
-					}
-				});
-				this.actionBinder.bindInstanceFields(newActionDetailsForm);
-				this.actionBinder.setBean(n.getAction());
-				this.actionDetailsPanel.add(newActionDetailsForm);
+				Binder<IAction<ActionableNode>> actionBinder = newActionDetailsForm.getBinder();
+				if (actionBinder != null) {
+					actionBinder.addValueChangeListener(event ->
+					{
+						if (event.isFromClient()) {
+							this.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
+							setUiChanges(true);
+						}
+					});
+				}
+				newActionDetailsForm.setAction(n.getAction());
 				this.actionDetailsForm = newActionDetailsForm;
-				newActionDetailsForm.setVisible(visible);
+				Component comp = (Component)this.actionDetailsForm;
+				this.actionDetailsPanel.add(comp);
+				comp.setVisible(visible);
 			}
 		}
 	}
@@ -269,31 +290,25 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		boolean res = super.setNode(n, abandonChanges);
 		adaptActionType(hasAction(n), n);
 
-		if (n != null) {
-			this.action = n.getAction();
-			this.actionBinder.setBean(this.action);
-		} else {
-			this.action = null;
-			this.actionBinder.removeBean();
+		if (this.actionDetailsForm != null) {
+			IAction<ActionableNode> action = (n != null ? n.getAction() : null);
+			this.actionDetailsForm.setAction(action);
 		}
-
 		return res;
 	}
 
 	@Override
 	protected void readBean(N n) {
-		if (this.actionDetailsForm != null && n != null) {
-			this.action = n.getAction();
-			this.actionBinder.readBean(this.action);
+		if (n != null && this.actionDetailsForm != null) {
+			this.actionDetailsForm.readAction(n.getAction());
 		}
 		super.readBean(n);
 	}
 
 	@Override
 	protected void writeBean(N n) throws ValidationException {
-		if (this.actionDetailsForm != null && n != null) {
-			this.action = n.getAction();
-			this.actionBinder.readBean(this.action);
+		if (n != null && this.actionDetailsForm != null) {
+			this.actionDetailsForm.writeAction(n.getAction());
 		}
 		super.writeBean(n);
 	}

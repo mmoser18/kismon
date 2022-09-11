@@ -7,18 +7,19 @@ package net.mmo.utils.kism.ui.views.nodes.actions.impl;
 
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import net.mmo.utils.kism.ui.views.nodes.actions.ActionDetailsForm;
 
 /**
  * the form for the RunScript-parameters
  */
-public class RunScriptActionForm extends VerticalLayout
+public class RunLocalScriptActionForm extends VerticalLayout implements ActionDetailsForm
 {
 	private static final long serialVersionUID = 919750045304284045L;
 
 	/**
 	 * must be public to be accessible by the factory
 	 */
-	public RunScriptActionForm() {
+	public RunLocalScriptActionForm() {
 		add(new Label("This action is not yet implemented...")); //$NON-NLS-1$
 	}
 

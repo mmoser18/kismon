@@ -7,11 +7,12 @@ package net.mmo.utils.kism.ui.views.nodes.actions.impl;
 
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import net.mmo.utils.kism.ui.views.nodes.actions.ActionDetailsForm;
 
 /**
  * the form for the EmitgLog-parameters
  */
-public class EmitLogForm extends VerticalLayout
+public class EmitLogForm extends VerticalLayout implements ActionDetailsForm
 {
 	private static final long serialVersionUID = 3854742967701361528L;
 

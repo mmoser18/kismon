@@ -34,7 +34,11 @@ import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
 import net.mmo.utils.kism.utils.StringUtils;
 
-@SuppressWarnings("javadoc")
+
+/**
+ * class description here...
+ * @param <N>
+ */
 @ToString(includeFieldNames = true, callSuper = true)
 @Setter
 @Getter
@@ -75,7 +79,9 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 
 	@JsonIgnore
 	Session mailSession;
-	// we need a public constructor so that the ActionFactory can create this using <class>.newInstance();
+	/**
+	 * we need a public parameterless constructor so that the ActionFactory can create this using <class>.newInstance();
+	 */
 	public SendMailAction() {
 		// empty
 	}

@@ -12,13 +12,18 @@ import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 
-@SuppressWarnings("javadoc")
+/**
+ * class description here...
+ * @param <N>
+ */
 @ToString(includeFieldNames = true, callSuper = true)
 @Slf4j
-public class RunScriptAction <N extends ActionableNode> implements IAction<N>
+public class RunLocalScriptAction <N extends ActionableNode> implements IAction<N>
 {
-	// we need a public constructor so that the ActionFactory can create this using <class>.newInstance();
-	public RunScriptAction() {
+	/**
+	 * we need a public parameterless constructor so that the ActionFactory can create this using <class>.newInstance();
+	 */
+	public RunLocalScriptAction() {
 		// empty
 	}
 

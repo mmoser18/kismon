@@ -1053,11 +1053,11 @@ public class NodeView <N extends Node> extends VerticalLayout
 		});
 	}
 
-	private static void createNotification(String msg) {
+	public static void createNotification(String msg) {
 		createNotification(msg, 0);
 	}
 
-	private static void createNotification(String msg, int duration) {
+	public static void createNotification(String msg, int duration) {
 		Notification notif = new Notification(msg, duration);
 		notif.addAttachListener(evt ->
 		{

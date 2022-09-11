@@ -18,26 +18,33 @@ import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 @Slf4j
 public class ActionDetailsFormFactory <N extends ActionableNode>
 {
-	private Component[] components = new Component[ActionType.values().length];
+	private ActionDetailsForm[] components = new ActionDetailsForm[ActionType.values().length];
 
 	protected BeanValidationBinder<IAction<N>> binder;
 	protected Runnable dataHasChanged;
 	/**
-	 * creates appropriate form for passed-in action handler
+	 * creates appropriate form for passed-in actionType.
 	 * @param actionType
-	 * @return the created form
+	 * @return the created form. Note that the created Object also extends Component so that it can be added to the view!
 	 */
 	@SuppressWarnings({})
-	public Component createActionDetailsForm(ActionType actionType) {
+	public ActionDetailsForm createActionDetailsForm(ActionType actionType) {
 		log.info("createActionDetailsForm(actionType:{})", actionType); //$NON-NLS-1$
 		if (actionType != null) {
 			try {
-				Component comp = this.components[actionType.ordinal()];
-				if (comp == null) {
-					comp = actionType.getActionFormClass().getDeclaredConstructor().newInstance();
-					this.components[actionType.ordinal()] = comp;
+				ActionDetailsForm form = this.components[actionType.ordinal()];
+				if (form == null) {
+					form = (ActionDetailsForm)actionType.getActionFormClass().getDeclaredConstructor().newInstance();
+					// sanity check:
+					if (!Component.class.isAssignableFrom(form.getClass())) {
+						throw new Exception("Programming-Error: The object created by " + //$NON-NLS-1$
+						                    ActionDetailsFormFactory.class.getSimpleName() +
+						                    " must be a subclass of " + Component.class); //$NON-NLS-1$
+					}
+					this.components[actionType.ordinal()] = form;
 				}
-				return comp;
+				log.debug("form is:{}", form); //$NON-NLS-1$
+				return form;
 			} catch (Exception ex) {
 				log.error("Error creating new instance of '" + actionType.getActionFormClass().getName() + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
 			}

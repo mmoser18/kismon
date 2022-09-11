@@ -9,7 +9,10 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
+import net.mmo.utils.kism.entities.nodes.actions.IAction;
+import net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionDetailsForm;
 import net.mmo.utils.kism.utils.StringUtils;
@@ -17,7 +20,7 @@ import net.mmo.utils.kism.utils.StringUtils;
  * the form for the SendMail-parameters
  */
 @SuppressWarnings("javadoc")
-public class SendMailForm <N extends ActionableNode> extends VerticalLayout implements ActionDetailsForm<N>
+public class SendMailForm <N extends ActionableNode> extends VerticalLayout implements ActionDetailsForm
 {
 	private static final long serialVersionUID = 7901853154069994172L;
 
@@ -34,9 +37,13 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 	protected TextField mailFrom;
 	protected TextField mailSubject;
 	protected TextArea mailContent;
+
+	Binder<IAction<ActionableNode>> binder;
+
 	/**
 	 * must be public to be accessible by the factory
 	 */
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public SendMailForm() {
 		addClassName(FormClassName);
 
@@ -63,5 +70,13 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 		this.mailContent.setThemeName(UIConstants.LabelPaddingTheme);
 
 		add(this.mailTo, this.mailCc, this.mailFrom, this.mailSubject, this.mailContent);
+
+		this.binder = new Binder(SendMailAction.class);
+		this.binder.bindInstanceFields(this);
+	}
+
+	@Override
+	public Binder<IAction<ActionableNode>> getBinder() {
+		return this.binder;
 	}
 }
