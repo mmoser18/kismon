@@ -45,7 +45,6 @@ public class ActionCheck extends AbstractEntity implements Cloneable, Serializab
 	@NotNull
 	@NotEmpty
 	@NotBlank
-	// Threshold fields are define as TextField (instead of IntegerField) to allow for placeholders
 	private String[] triggerThresholds =
 		AppProperties.getProperties().getProperty("ActionCheck.DefaultThresholdValues", "5,2,1").split(",");  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
 	/**

@@ -41,10 +41,12 @@
 		<vaadin.version>22.0.2</vaadin.version>
 		<vaadin.version>23.0.1</vaadin.version>
 		<vaadin.version>23.0.2</vaadin.version>
-		<!- -->
-		<!-- not working: -->
 		<vaadin.version>23.1.7</vaadin.version>
-		<!-- -->
+		<!- -->
+		<vaadin.version>23.1.7</vaadin.version> <!-- last version that does NOT validate the Chart licenses during build time -->
+		<!-- not working / refuses to build without license: ->
+		<vaadin.version>23.2.0</vaadin.version>
+		<!- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>

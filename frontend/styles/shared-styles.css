@@ -34,12 +34,31 @@
 /* main level of node-form fields: */
 .node-view .node-form .node-form-fields {
 	padding: 2px;
-	margin-top: 15px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
+	margin-top: 5px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
 	margin-bottom: 0px;
 	align-items: stretch;
 	width: 100%;
 }
 
+.node-form-field-action-Thresholds {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.node-form-field-action-StateResetAndTrigger {
+	align-items: flex-end;
+	justify-content: space-between;
+}
+
+.node-form-field-action-SameStateCounter {
+	width: 12em;
+}
+.node-form-field-action-ResetStateCounter {
+	width: 12em;
+}
+.node-form-field-action-TriggerAction {
+	width: 12em;
+}
+	
 /* main level of node-form fields: */
 .node-form-field-execute {
 	align-items: flex-start;
@@ -48,7 +67,7 @@
 /* stretch ResultCheckerForm inside node-form fields to full width: */
 .node-view .node-form .node-form-fields vaadin-vertical-layout {
 	padding: 2px;
-	margin-top: 15px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
+	margin-top: 5px; /* need to leave more space for the header - for some reason the first input-fields label is outside the vertical-layout */
 	margin-bottom: 0px;
 	align-items: stretch;
 	width: 100%;
@@ -108,8 +127,8 @@ vaadin-form-layout {
 
 vaadin-button {
 	margin: 5px;
-	padding-top: 5px;
-	padding-bottom: 5px;	
+	padding-top: 0px;
+	padding-bottom: 0px;	
 	padding-left: 2px;
 	padding-right: 2px;
 }

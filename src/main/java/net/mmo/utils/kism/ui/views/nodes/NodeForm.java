@@ -71,10 +71,10 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected Button executeButton;
 	protected VerticalLayout fields;
 
-	private Button saveButton   = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
-	private Button deleteButton = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
-	private Button resetButton  = new Button(Messages.getString("NodeForm.Button.Reset.Label")); //$NON-NLS-1$
-	private Button closeButton  = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
+	private Button saveButton;
+	private Button deleteButton;
+	private Button revertButton;
+	private Button closeButton;
 
 	protected N node;
 	protected Binder<N> binder; // a Binder that is aware of bean validation annotations
@@ -138,7 +138,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		// we need to keep track of user-changes ourselves - see explanation at "uiChanges"
 		this.binder.addValueChangeListener(event -> {
 			if (event.isFromClient()) {
-				this.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
+				this.log.debug("Nodeform-binder: valueChangeEvent from Client:"); //$NON-NLS-1$
 				setUiChanges(true);
 			}
 		});
@@ -200,7 +200,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		}
 		this.node = newNode;
 		this.log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
-		// this.binder.setBean(node);
 		if (newNode != null) {
 			this.setHeader(Messages.getString(newNode instanceof RootNode || newNode.getParent() != null
 			                                  ? "NodeForm.Header.EditOrDeleteNode" //$NON-NLS-1$
@@ -210,7 +209,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			this.log.info("changeListener set on node '{}'", newNode.getName()); //$NON-NLS-1$
 			updateResolvableValues();
 		}
-		// Note: readBean() copies the values from the bean to an internal model, that way we don’t accidentally overwrite values if we cancel editing.
+		// Note: readBean() copies the values from the bean to an internal model.
+		// That way we don’t accidentally overwrite values if we "Revert" (cancel editing).
 		readBean(newNode); // to update the form values from the new node to the UI fields.
 		this.uiChanges = false; // when we have a new node this is initially always the case!
 		return true;
@@ -583,29 +583,44 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	private HorizontalLayout createButtonsLayout() {
 		// saves all changes values of the current node
+		this.saveButton = new Button(Messages.getString("NodeForm.Button.Save.Label")); //$NON-NLS-1$
 		this.saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		this.saveButton.setId("nodeform-saveButton-button"); //$NON-NLS-1$
 		this.saveButton.addClickShortcut(Key.ENTER);
-		this.saveButton.addClickListener(event -> validateAndSave());
+		this.saveButton.addClickListener(event -> {
+			this.log.info("saveButton clicked."); //$NON-NLS-1$
+			validateAndSave();
+		});
 		this.saveButton.setEnabled(false);
 
 		// deletes the current node - sent as event to the top NodeView
+		this.deleteButton = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
 		this.deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.deleteButton.setId("nodeform-deleteButton-button"); //$NON-NLS-1$
-		this.deleteButton.addClickListener(event -> fireEvent(new DeleteEvent(this, this.node)));
-
-		// Updates the fields again with the previously saved values
-		this.resetButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
-		this.resetButton.setId("nodeform-resetButton-button"); //$NON-NLS-1$
-		this.resetButton.addClickListener(event -> readBean(this.node));
+		this.deleteButton.addClickListener(event -> {
+			this.log.info("deleteButton clicked."); //$NON-NLS-1$
+			fireEvent(new DeleteEvent(this, this.node));
+		});
+		// Restores the fields again with the previously saved values
+		this.revertButton = new Button(Messages.getString("NodeForm.Button.Revert.Label")); //$NON-NLS-1$
+		this.revertButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+		this.revertButton.setId("nodeform-revertButton-button"); //$NON-NLS-1$
+		this.revertButton.addClickListener(event -> {
+			this.log.info("revertButton clicked."); //$NON-NLS-1$
+			readBean(this.node);
+		});
 
 		// closeButton the node details form
+		this.closeButton = new Button(Messages.getString("NodeForm.Button.Cancel.Label")); //$NON-NLS-1$
 		this.closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.closeButton.setId("nodeform-closeButton-button"); //$NON-NLS-1$
 		this.closeButton.addClickShortcut(Key.ESCAPE);
-		this.closeButton.addClickListener(event -> fireEvent(new CloseEvent(this)));
+		this.closeButton.addClickListener(event -> {
+			this.log.info("closeButton clicked."); //$NON-NLS-1$
+			fireEvent(new CloseEvent(this));
+		});
 
-		return new HorizontalLayout(this.saveButton, this.deleteButton, this.resetButton, this.closeButton);
+		return new HorizontalLayout(this.saveButton, this.deleteButton, this.revertButton, this.closeButton);
 	}
 
 	protected void validateAndSave() {

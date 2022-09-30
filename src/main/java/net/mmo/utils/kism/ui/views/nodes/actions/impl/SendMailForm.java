@@ -10,15 +10,18 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionDetailsForm;
 import net.mmo.utils.kism.utils.StringUtils;
+import org.slf4j.Logger;
 /**
  * the form for the SendMail-parameters
  */
+@Slf4j
 @SuppressWarnings("javadoc")
 public class SendMailForm <N extends ActionableNode> extends VerticalLayout implements ActionDetailsForm
 {
@@ -78,5 +81,10 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 	@Override
 	public Binder<IAction<ActionableNode>> getBinder() {
 		return this.binder;
+	}
+
+	@Override
+	public Logger getLogger() {
+		return log;
 	}
 }

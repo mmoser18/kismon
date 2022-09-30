@@ -21,6 +21,8 @@ public abstract class ActionableNode extends Node
 {
 	private static final long serialVersionUID = 161328878290221608L;
 
+	public final static String PROPERTYNAME_SAME_STATE = "same_state";  //$NON-NLS-1$
+
 	@JsonIgnore
 	transient private int sameStateSince = 0;
 
@@ -48,13 +50,21 @@ public abstract class ActionableNode extends Node
 		super(name, description, state, parent);
 	}
 
+	public void setSameStateSince(int sameStateSince) {
+		if (sameStateSince != this.sameStateSince) {
+			int oldSameStateSince = this.sameStateSince;
+			this.sameStateSince = sameStateSince;
+			informOnPropertyChange(PROPERTYNAME_SAME_STATE, oldSameStateSince, sameStateSince);
+		}
+	}
+
 	@Override
 	public void setState(State state) {
 		if (this.getState() != state) {
 			super.setState(state);
-			this.sameStateSince = 1;
+			setSameStateSince(1);
 		} else {
-			this.sameStateSince++;
+			setSameStateSince(getSameStateSince()+1);
 		}
 		if (this.actionCheck != null && state != null) { // the latter happens if we manually reset the state to undefined
 			this.actionCheck.checkForAction(this);

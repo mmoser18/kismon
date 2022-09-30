@@ -47,16 +47,16 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 {
 	@NotEmpty
 	@Email
-	String mailTo = "foo@bar.com"; //$NON-NLS-1$
+	String mailTo;
 	@Email
-	String mailCc = null;
+	String mailCc;
 	@NotEmpty
 	@Email
-	String mailFrom = "bar@foo.com"; //$NON-NLS-1$
+	String mailFrom;
 	@NotEmpty
 	@NotBlank
-	String mailSubject = "Notification for Node '${NodeName}': ${NodeStatusTo}"; //$NON-NLS-1$
-	String mailContent = "Notification for Node '${NodeName}': Status-change: ${NodeStatusFrom} => ${NodeStatusTo}"; //$NON-NLS-1$
+	String mailSubject;
+	String mailContent;
 
 	// Assuming you are sending email from localhost:
 	static String mailHost;
@@ -83,13 +83,23 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 	 * we need a public parameterless constructor so that the ActionFactory can create this using <class>.newInstance();
 	 */
 	public SendMailAction() {
-		// empty
+		Properties appProperties = AppProperties.getProperties();
+		this.mailTo   = appProperties.getProperty("SendMailForm.To.Default", //$NON-NLS-1$
+		                                          "foobar@example.com"); //$NON-NLS-1$ // $NON-NLS-2$
+		this.mailCc   = appProperties.getProperty("SendMailForm.Cc.Default"); //$NON-NLS-1$
+		this.mailFrom = appProperties.getProperty("SendMailForm.Sender.Default", //$NON-NLS-1$
+		                                          "barfoo@example.com"); //$NON-NLS-1$ // $NON-NLS-2$
+		this.mailSubject = appProperties.getProperty("SendMailForm.Subject.Default", //$NON-NLS-1$
+		                                             "Notification for Node '${NodeName}': ${NodeStatusTo}"); //$NON-NLS-1$
+		this.mailContent = appProperties.getProperty("SendMailForm.Content.Default", //$NON-NLS-1$
+		                                             "Notification for Node '${NodeName}': Status-change: ${NodeStatusFrom} => ${NodeStatusTo}"); //$NON-NLS-1$
 	}
 
-	public void setMailTo(String mailTo) {
-		log.info("setMailTo:{}", mailTo); //$NON-NLS-1$
-		this.mailTo = mailTo;
-	}
+//	@SuppressWarnings("javadoc")
+//	public void setMailTo(String mailTo) {
+//		log.info("setMailTo:{}", mailTo); //$NON-NLS-1$
+//		this.mailTo = mailTo;
+//	}
 
 	@Override
 	public void doAction(N node, State oldState, State newState, ActionCheck check) throws Exception {

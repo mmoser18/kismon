@@ -14,6 +14,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -37,15 +38,21 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 {
 	private static final long serialVersionUID = 7104996696515821143L;
 
-	static final String ActionClassName = NodeFormField + "action"; //$NON-NLS-1$
-	static final String ActionDetailsClassName = NodeFormField + "actionDetails"; //$NON-NLS-1$
-	static final String ActionEnabledClassName = NodeFormField + "actionEnabled"; //$NON-NLS-1$
-	static final String ActionThresholdClassName = NodeFormField + "actionThreshold"; //$NON-NLS-1$
-	static final String ActionResetStateCounterClassName = NodeFormField + "actionResetStateCounter"; //$NON-NLS-1$
-	static final String ActionTriggerClassName = NodeFormField + "actionTrigger"; //$NON-NLS-1$
+	static final String ActionClassName = NodeFormField + "action-"; //$NON-NLS-1$
+	static final String ActionDetailsClassName = ActionClassName + "Details"; //$NON-NLS-1$
+	static final String ActionEnabledClassName = ActionClassName + "Enabled"; //$NON-NLS-1$
+	static final String ActionThresholdsClassName = ActionClassName + "Thresholds"; //$NON-NLS-1$
+	static final String ActionThresholdClassName = ActionClassName + "Threshold"; //$NON-NLS-1$
 
-	static final String ActionTypeClassName = NodeFormField + "actionType"; //$NON-NLS-1$
-	static final String ActionParametersClassName = NodeFormField + "actionParameters"; //$NON-NLS-1$
+	static final String ActionStateResetAndTriggerClassName = ActionClassName + "StateResetAndTrigger"; //$NON-NLS-1$
+	static final String ActionSameStateCounterClassName = ActionClassName + "SameStateCounter"; //$NON-NLS-1$
+	static final String ActionResetStateCounterClassName = ActionClassName + "ResetStateCounter"; //$NON-NLS-1$
+
+	static final String ActionTriggerClassName = ActionClassName + "TriggerAction"; //$NON-NLS-1$
+
+	static final String ActionTypeClassName = ActionClassName + "Type"; //$NON-NLS-1$
+
+	static final String ActionParametersClassName = ActionClassName + "Parameters"; //$NON-NLS-1$
 
 	protected Checkbox actionEnabled;
 	protected Accordion actionDetails;
@@ -54,6 +61,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	protected TextField[] triggerThresholdFields = new TextField[State.values().length];
 	protected Validator<String> thresholdValidator;
 	protected Select<ActionFactory.ActionType> actionType;
+	protected IntegerField sameStateSince;
 	protected Button resetSameStateCounterButton;
 	protected Button triggerActionButton;
 
@@ -109,8 +117,14 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 			this.triggerThresholdFields[state.ordinal()] = tf;
 		}
 		HorizontalLayout thresholds = new HorizontalLayout(this.triggerThresholdFields);
+		thresholds.setClassName(ActionThresholdsClassName);
 
-		VerticalLayout buttons = new VerticalLayout();
+		HorizontalLayout stateResetAndTrigger = new HorizontalLayout();
+		stateResetAndTrigger.setClassName(ActionStateResetAndTriggerClassName);
+
+		this.sameStateSince = new IntegerField(Messages.getString("ActionForm.StateCounter.Label")); //$NON-NLS-1$
+		this.sameStateSince.addClassName(ActionSameStateCounterClassName);
+		stateResetAndTrigger.add(this.sameStateSince);
 
 		this.resetSameStateCounterButton = new Button(Messages.getString("ActionForm.ResetStateCounter.Label")); //$NON-NLS-1$
 		this.resetSameStateCounterButton.addClassName(ActionResetStateCounterClassName);
@@ -122,7 +136,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				if (actionCheck != null) actionCheck.setPreviousActionState(null);
 			}
 		});
-		buttons.add(this.resetSameStateCounterButton);
+		stateResetAndTrigger.add(this.resetSameStateCounterButton);
 
 		this.triggerActionButton = new Button(Messages.getString("ActionForm.TriggerAction.Label")); //$NON-NLS-1$
 		this.triggerActionButton.addClassName(ActionResetStateCounterClassName);
@@ -137,9 +151,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				}
 			}
 		});
-		buttons.add(this.triggerActionButton);
-
-		thresholds.add(buttons);
+		stateResetAndTrigger.add(this.triggerActionButton);
 
 		this.actionType = new Select<ActionType>();
 		this.actionType.setLabel(Messages.getString("ActionForm.ActionType.Label")); //$NON-NLS-1$
@@ -165,7 +177,8 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				adaptActionDetailsVisibility(this.actionEnabled.getValue(), this.node, at);
 			}
 		});
-		this.actionDetailsPanel.add(this.actionEnabled, thresholds, this.actionType);
+
+		this.actionDetailsPanel.add(this.actionEnabled, thresholds, stateResetAndTrigger, this.actionType);
 		adaptActionType(hasAction(this.node), this.node);
 
 		this.fields.add(this.actionDetails);
@@ -256,31 +269,34 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		ActionDetailsForm newActionDetailsForm = this.actionDetailsFormFactory.createActionDetailsForm(at);
 
 		this.log.debug("adaptActionDetailsVisibility: form={}", newActionDetailsForm); //$NON-NLS-1$
-		if (newActionDetailsForm != this.actionDetailsForm) {
-			this.log.debug("different form"); //$NON-NLS-1$
+		if (this.actionDetailsForm != newActionDetailsForm) { // we got a new/different form: "disconnect" the old action form:
+			this.log.debug("got different form: new:{} (old:{})", newActionDetailsForm, this.actionDetailsForm); //$NON-NLS-1$
 			if (this.actionDetailsForm != null) {
+				this.actionDetailsForm.setAction(null);
 				Component comp = (Component)this.actionDetailsForm;
 				comp.setVisible(false);
+				// disconnect from component tree:
 				this.actionDetailsPanel.remove(comp);
 				this.actionDetailsForm = null;
 			}
-			if (newActionDetailsForm != null) {
-				Binder<IAction<ActionableNode>> actionBinder = newActionDetailsForm.getBinder();
-				if (actionBinder != null) {
-					actionBinder.addValueChangeListener(event ->
-					{
-						if (event.isFromClient()) {
-							this.log.debug("valueChangeEvent from Client:"); //$NON-NLS-1$
-							setUiChanges(true);
-						}
-					});
-				}
-				newActionDetailsForm.setAction(n.getAction());
-				this.actionDetailsForm = newActionDetailsForm;
-				Component comp = (Component)this.actionDetailsForm;
-				this.actionDetailsPanel.add(comp);
-				comp.setVisible(visible);
+		}
+		if (newActionDetailsForm != null) { // then connect the new one action form:
+			Binder<IAction<ActionableNode>> actionBinder = newActionDetailsForm.getBinder();
+			if (actionBinder != null) {
+				actionBinder.addValueChangeListener(event ->
+				{
+					if (event.isFromClient()) {
+						this.log.debug("actionBinder:valueChangeEvent from Client:"); //$NON-NLS-1$
+						setUiChanges(true);
+					}
+				});
 			}
+			newActionDetailsForm.setAction(n.getAction());
+			this.actionDetailsForm = newActionDetailsForm;
+			// connect to component tree:
+			Component comp = (Component)this.actionDetailsForm;
+			this.actionDetailsPanel.add(comp);
+			comp.setVisible(visible);
 		}
 	}
 
@@ -326,4 +342,19 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		}
 		super.validateAndSave();
 	}
+
+	@Override
+	protected void handleChangeEvent(N sourceNode, String propertyName, Object oldValue, Object newValue) {
+		if (sourceNode == this.node) {
+			switch (propertyName) {
+			case ActionableNode.PROPERTYNAME_SAME_STATE:
+				/*if (!this.binderHasChanges())*/ readBean(sourceNode); // we (should) only update the form if the user hasn't changed anything, i.e. is not editing the form right now!
+				break;
+			default:
+				break;
+			}
+		}
+		super.handleChangeEvent(sourceNode, propertyName, oldValue, newValue);
+	}
+
 }

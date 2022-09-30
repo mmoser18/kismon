@@ -9,7 +9,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
-
+import org.slf4j.Logger;
 
 /**
  * The interface that action details forms have to implement.
@@ -23,18 +23,21 @@ public interface ActionDetailsForm {
 	}
 
 	/**
+	 * @return logger
+	 */
+	Logger getLogger();
+	/**
 	 * @param action
 	 * @return whether the validation is OK.
 	 */
 	default boolean setAction(IAction<ActionableNode> action) {
+		getLogger().debug("setAction: {}", action); //$NON-NLS-1$
 		Binder<IAction<ActionableNode>> binder = getBinder();
 		if (binder != null) {
-			if (action != null) {
-				binder.setBean(action);
-			} else {
-				binder.removeBean();
-			}
-			return binder.isValid();
+			binder.readBean(action);
+			boolean valid = binder.isValid();
+			getLogger().debug("setAction-binder valid: {}", valid); //$NON-NLS-1$
+			return valid;
 		}
 		return true;
 	}
@@ -44,9 +47,10 @@ public interface ActionDetailsForm {
 	 * @param action
 	 */
 	default void readAction(IAction<ActionableNode> action) {
+		getLogger().debug("readAction: {}", action); //$NON-NLS-1$
 		Binder<IAction<ActionableNode>> binder = getBinder();
 		if (binder != null) {
-			getBinder().readBean(action);
+			binder.readBean(action);
 		}
 	}
 
@@ -56,9 +60,10 @@ public interface ActionDetailsForm {
 	 * @throws ValidationException
 	 */
 	default void writeAction(IAction<ActionableNode> action) throws ValidationException {
+		getLogger().debug("writeAction: {}", action); //$NON-NLS-1$
 		Binder<IAction<ActionableNode>> binder = getBinder();
 		if (binder != null) {
-			getBinder().writeBean(action);
+			binder.writeBean(action);
 		}
 	}
 }
