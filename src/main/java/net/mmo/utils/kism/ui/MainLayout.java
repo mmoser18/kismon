@@ -67,7 +67,9 @@ public class MainLayout extends AppLayout
 //		header.expand(appTitle);
 //		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-		log.info("startup errors: '{}'", NodeService.startupErrors); //$NON-NLS-1$
+		log.info(NodeService.startupErrors.length() > 0
+		         ? String.format("startup errors: '{}'", NodeService.startupErrors) //$NON-NLS-1$
+		         : "no startup errors"); //$NON-NLS-1$
 		if (SecurityUtils.isAdminUser() && !NodeService.startupErrors.isEmpty()) {
 			VerticalLayout panel = new VerticalLayout(header);
 			for (String msg: NodeService.startupErrors.split("\n")) { //$NON-NLS-1$

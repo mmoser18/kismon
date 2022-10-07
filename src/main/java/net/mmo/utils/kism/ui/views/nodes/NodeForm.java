@@ -633,7 +633,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					fireEvent(new SaveEvent(this, this.node));
 					setUiChanges(false);
 				} else {
-					readBean(this.node);
+					readBean(this.node); // reset whatever changes the user may have entered
 				}
 			} catch (ValidationException e) {
 				this.log.warn("Validation failed: {}: bean: {} / fields: {}", //$NON-NLS-1$

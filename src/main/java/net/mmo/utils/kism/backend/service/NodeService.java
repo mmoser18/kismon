@@ -124,17 +124,15 @@ public class NodeService
 		filenames.stream().forEach((filename) ->
 		{
 			File file = new File(filename);
-			String fullpath = file.getAbsolutePath();
-			log.info("File to read: '{}'", fullpath); //$NON-NLS-1$
 			try {
 				readFile(file);
 			} catch (IOException t) {
 				String msg = String.format("File '%s' is not a valid configuration (reason: '%s').", //$NON-NLS-1$
-				                           fullpath, ExceptionUtils.exceptionCauseSummary(t));
+				                           file, ExceptionUtils.exceptionCauseSummary(t));
 				log.error(msg);
 				startupErrors += msg + '\n';
 			} catch (Throwable t) {
-				String msg = "Exception processing file '" + fullpath + ":"; //$NON-NLS-1$ //$NON-NLS-2$
+				String msg = "Exception processing file '" + file + ":"; //$NON-NLS-1$ //$NON-NLS-2$
 				log.error(msg, t);
 				startupErrors += msg + t.getMessage() + '\n';
 			}
@@ -233,7 +231,7 @@ public class NodeService
 			try (FileInputStream fis = new FileInputStream(file);
 			     BufferedInputStream bis = new BufferedInputStream(fis)) {
 				RootNode newRoot = readStream(bis, fullPath);
-				log.info("RootNode '{}' was read from file '{}'.", newRoot.getName(), fullPath); //$NON-NLS-1$
+				log.info("Tree for root-node '{}' successfully read from file '{}'.", newRoot.getName(), fullPath); //$NON-NLS-1$
 				if (log.isTraceEnabled()) { // it's on purpose that the following uses log.debug(...)!
 					log.debug("Created root: \n{}", PrettyPrint.prettyPrinted(newRoot)); //$NON-NLS-1$
 				}
