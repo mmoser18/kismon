@@ -707,6 +707,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			if (newForm != this.form) { // new or different form assigned:
 				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
 				this.form = newForm;
+				this.formWrapper.getChildren().forEach((child) -> child.getElement().removeFromTree());
 				this.formWrapper.removeAll();
 				this.formWrapper.add(newForm);
 				this.formWrapper.setSizeFull();
