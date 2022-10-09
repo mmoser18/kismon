@@ -7,7 +7,6 @@
 	--lumo-primary-color: green;
 }
 
-/*
 :host(.halted) [part="checkbox"] {
 	--lumo-primary-color: red;
 }

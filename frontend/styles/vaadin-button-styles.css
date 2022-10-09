@@ -1,0 +1,4 @@
+:host([class~="highlight"]) {
+	color: green;
+	background: yellow;
+}
