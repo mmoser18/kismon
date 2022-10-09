@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
@@ -74,7 +75,7 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 
 		add(this.mailTo, this.mailCc, this.mailFrom, this.mailSubject, this.mailContent);
 
-		this.binder = new Binder(SendMailAction.class);
+		this.binder = new BeanValidationBinder(SendMailAction.class);
 		this.binder.bindInstanceFields(this);
 	}
 

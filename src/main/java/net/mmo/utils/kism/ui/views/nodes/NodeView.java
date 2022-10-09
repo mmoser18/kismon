@@ -88,6 +88,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	public static final String ViewClassEditing = "editing"; //$NON-NLS-1$
 	public static final String ViewClassViewing = "viewing"; //$NON-NLS-1$
+	public static final String ViewClassHighlight = "highlight"; //$NON-NLS-1$
 
 	private static final int MAX_DESCRIPTION_LENGTH =
 		Integer.parseInt(AppProperties.getProperties().getProperty("NodeForm.MaxDescriptionLength", //$NON-NLS-1$
@@ -97,8 +98,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private NodeFactory<N> nodeFactory;
 	private FormFactory<N> formFactory;
 
-	Checkbox haltRequestsCheckbox;
-
+	private Checkbox haltRequestsCheckbox;
+	private Button saveAllButton;
+	// this is so that NodeForm can access the saveButton
+	static NodeView<?> nodeView;
 	SplitLayout content;
 	TreeGrid<Node> tree; // package visible for UTs - is there no other way?
 	Div formWrapper;
@@ -109,7 +112,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 	protected static boolean alwaysSave = Boolean.getBoolean(AppProperties.getProperties().getProperty("NodeView.alwaysSaveAfterEdit", "false")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	protected PropertyChangeListener nodeRefreshListener;
-
 
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
@@ -153,6 +155,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		this.tree.getDataProvider().refreshAll();
 		recalculateColumnWidths(1000); // make sure the column widths are adjusted
 
+		nodeView = this;
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
@@ -199,11 +202,18 @@ public class NodeView <N extends Node> extends VerticalLayout
 		Button demoteButton = new Button(Messages.getString("NodeView.Button.Demote.Label")); //$NON-NLS-1$
 		demoteButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> demote(node)));
 
-		Button saveAllButton = new Button(Messages.getString("NodeView.Button.SaveAll.Label")); //$NON-NLS-1$
-		saveAllButton.addClickListener(click ->
+		this.saveAllButton = new Button(Messages.getString("NodeView.Button.SaveAll.Label")); //$NON-NLS-1$
+		this.saveAllButton.addClickListener(click ->
 			{
 				log.info("saveAllButton clicked"); //$NON-NLS-1$
-				saveAllRootNodes();
+				if (saveAllRootNodes()) { // saving was successful:
+					createNotification(Messages.getString("NodeView.Button.SaveAll.Success"), 2000); //$NON-NLS-1$
+					if (!NodeView.alwaysSave) {
+						highlightSaveButton(false);
+					}
+				} else {
+					createNotification(Messages.getString("NodeView.Button.SaveAll.Error")); //$NON-NLS-1$
+				}
 			});
 
 		LazyDownloadButton downloadFileButton =
@@ -293,7 +303,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 		HorizontalLayout toolbar = new HorizontalLayout(nodeTypeSelector, addNodeButton, duplicateNodeButton, delNodeButton,
 		                                                moveUpButton, moveDownButton, promoteButton, demoteButton,
-		                                                directionButton, saveAllButton,
+		                                                directionButton, this.saveAllButton,
 		                                                downloadFileButton, uploadFile,
 		                                                this.haltRequestsCheckbox);
 		toolbar.addClassName(ViewToolbarClassName);
@@ -612,7 +622,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.info("addNewNode '{}' to parent '{}'", newNode.getName(), parentNode.getName()); //$NON-NLS-1$
 		this.nodeService.addChild(parentNode, newNode, pos);
 		parentNode.expanded = true; // make sure the newly added child gets visible
-		if (NodeView.alwaysSave) saveNode(newNode);
+		saveNode(newNode);
 		updateTree();
 		select(newNode); // and select it
 		if (this.form != null) {
@@ -664,9 +674,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 //		node.bubbleUp(n ->
 //			{
 //				dataProvider.refreshItem(n);
-//				if (NodeView.alwaysSave) saveNode(n);
+//				saveNode(n);
 //			});
-		if (NodeView.alwaysSave) saveNode(node);
+		saveNode(node);
 		refreshNode(node, false);
 	}
 
@@ -779,11 +789,15 @@ public class NodeView <N extends Node> extends VerticalLayout
 //	}
 
 	private void saveNode(Node node) {
-		this.nodeService.save(node);
+		if (NodeView.alwaysSave) {
+			this.nodeService.save(node);
+		} else {
+			NodeView.nodeView.highlightSaveButton(true);
+		}
 	}
 
-	private void saveAllRootNodes() {
-		this.nodeService.saveAllRootNodes();
+	private boolean saveAllRootNodes() {
+		return this.nodeService.saveAllRootNodes();
 	}
 
 	private void moveUp(Node node) {
@@ -801,7 +815,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					siblings.remove(node);
 					siblings.add(currentIdx-1, node);
 				}
-				if (NodeView.alwaysSave) saveNode(node);
+				saveNode(node);
 				updateSubTree(parent);
 			}
 		}
@@ -823,7 +837,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					siblings.remove(node);
 					siblings.add(currentIdx+1, node);
 				}
-				if (NodeView.alwaysSave) saveNode(node);
+				saveNode(node);
 				updateSubTree(parent);
 			}
 		}
@@ -845,7 +859,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				log.info("promote '{}' old parent '{}' -> new parent: '{}'", //$NON-NLS-1$
 				         node.getName(), parent.getName(), grandParent.getName());
 				grandParent.addChildAtPos(parentPos+1, node);
-				if (NodeView.alwaysSave) saveNode(node);
+				saveNode(node);
 				updateTree();
 			}
 		}
@@ -867,7 +881,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					IntermediateNode newParent = (IntermediateNode)sibling;
 					newParent.addChild(node);
 					// node.setParent(newParent);
-					if (NodeView.alwaysSave) saveNode(node);
+					saveNode(node);
 					updateTree();
 					break;
 				}
@@ -982,6 +996,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 		openDialog(hdr, msg, t);
 	}
 
+	void highlightSaveButton(boolean value) {
+		if (value) {
+			this.saveAllButton.addClassName(ViewClassHighlight);
+		} else {
+			this.saveAllButton.removeClassName(ViewClassHighlight);
+		}
+	}
+
 	/**
 	 * The method could handle multiple nodes, but we currently allow selection of one node only
 	 * @param nodes
@@ -999,7 +1021,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					IntermediateNode parent = node.getParent();
 					Node deletedNode = this.nodeService.removeChild(parent, node);
 					log.info("deleted node '{}'", deletedNode.getName()); //$NON-NLS-1$
-					if (NodeView.alwaysSave) saveNode(parent);
+					saveNode(parent);
 					parents.add(parent);
 				}
 			});
@@ -1062,8 +1084,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 		Notification notif = new Notification(msg, duration);
 		notif.addAttachListener(evt ->
 		{
-			log.info("Notification clicked."); //$NON-NLS-1$
-			notif.close();
+			log.info("Notification attach-event: {}", evt); //$NON-NLS-1$
+			// notif.close();
 		});
 		notif.open();
 	}

@@ -90,21 +90,25 @@ public class NodeService
 		return this.roots;
 	}
 
-	public void save(Node node) {
+	public boolean save(Node node) {
 		//save to repo:
 		if (node == null) {
 			log.error("Node is null. Are you sure you have connected your form to the application?"); //$NON-NLS-1$
-			return;
+			return false;
 		}
 		// save to file:
 		RootNode rootNode = getCorrespondingRootNode(node);
 		String path = rootNode.getFilePath();
 		path = saveToFile(rootNode, rootNode.getName(), path != null ? path : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
-		if (path != null) rootNode.setFilePath(path);
+		if (path != null) {
+			rootNode.setFilePath(path);
+			return true;
+		}
+		return false;
 	}
 
-	public void saveAllRootNodes() {
-		getRootNodes().forEach(node -> save(node));
+	public boolean saveAllRootNodes() {
+		return getRootNodes().stream().map(node -> save(node)).allMatch((res -> res));
 	}
 
 	private void addNewRootNode(RootNode newRootNode) {

@@ -146,6 +146,13 @@ vaadin-combo-box {
 	--lumo-contrast-20pct: green;
 }
 
+/* for high-lighting buttons:
+.highlight {
+	color: green;
+	--lumo-contrast-20pct: green;
+}
+*/
+
 vaadin-upload {
 	margin-left: 5px;
 	margin-right: 5px;

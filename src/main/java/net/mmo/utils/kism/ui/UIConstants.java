@@ -21,9 +21,9 @@ public class UIConstants
 	/** class name to mark combined fields */
 	public static final String CombinedClassName = "fields-combined"; //$NON-NLS-1$
 	/** theme use for fields that should have its label closer to the value field than default */
-	public final static String LabelPaddingTheme    = "label-padding"; //$NON-NLS-1$
+	public final static String LabelPaddingTheme = "label-padding"; //$NON-NLS-1$
 	/** theme use for fields that should be displayed in monospaced font */
-	public final static String MonospaceTheme   = "monospace"; //$NON-NLS-1$
+	public final static String MonospaceTheme = "monospace"; //$NON-NLS-1$
 
 	public final static DateTimeFormatter dateTimeFormatter =
 		DateTimeFormatter.ofPattern(AppProperties.getProperties().getProperty("LocalDateTimeStamp.Format", //$NON-NLS-1$

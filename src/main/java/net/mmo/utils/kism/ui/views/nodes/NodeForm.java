@@ -81,7 +81,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 	/** Unfortunately the Vaadin binder not only considers changes via the UI but also programmatically
 	 * updated fields as changes. Its hasCHanges()-method is thus not properly reflecting whether the
-	 * *user* has changed anything. We need to keep track of that ourselves.
+	 * *user* has changed anything. We need to keep track of that ourselves:
 	 */
 	protected boolean uiChanges = false;
 	protected boolean isAdminUser;
@@ -516,7 +516,6 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		boolean enableSave = hasUiChanges() && binderIsValid;
 		this.log.debug("binder status change -> [saveButton] enabled:{}", enableSave); //$NON-NLS-1$
 		this.saveButton.setEnabled(enableSave);
-
 		this.executeButton.setText(Messages.getString(hasUiChanges() && SecurityUtils.isAdminUser()
 		                                              ? (this instanceof IntermediateNodeForm
 		                                                 ? "IntermediateNodeForm.SaveAndExecute.Label" //$NON-NLS-1$

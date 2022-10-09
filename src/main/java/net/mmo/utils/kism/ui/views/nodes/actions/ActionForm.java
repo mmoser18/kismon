@@ -26,10 +26,10 @@ import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
 import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
+import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.views.nodes.NodeForm;
 import net.mmo.utils.kism.ui.views.nodes.NodeView;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
-
 /**
  * extends NodeForm with Action-Details
  * @param <N>
@@ -74,6 +74,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		this.actionDetails.close(); // initially closed
 		this.actionDetailsPanel = new VerticalLayout();
 		this.actionDetailsPanel.setClassName(ActionDetailsClassName);
+
 		this.actionDetails.add(Messages.getString("ActionForm.ActionDetails.Label"), this.actionDetailsPanel); //$NON-NLS-1$
 
 		this.actionEnabled = new Checkbox(Messages.getString("ActionForm.ActionEnabled.Label")); //$NON-NLS-1$
@@ -110,6 +111,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 			TextField tf = new TextField();
 			tf.setLabel(Messages.getString("ActionForm.Threshold." + state.name() + ".Label")); //$NON-NLS-1$ //$NON-NLS-2$
 			tf.setClassName(ActionThresholdClassName);
+			tf.setThemeName(UIConstants.LabelPaddingTheme);
 			tf.setEnabled(this.isAdminUser);
 			this.binder.forField(tf)
 				.withValidator(this.thresholdValidator)

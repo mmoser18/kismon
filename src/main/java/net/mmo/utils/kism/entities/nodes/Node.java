@@ -69,7 +69,7 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	// required for deserialization
 	protected Node() {
 		super();
-		log.info("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
+		log.debug("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	protected Node(String name, String description) {
 		this(name, description, State.OK);
@@ -77,7 +77,6 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	protected Node(String name, String description, State state) {
 		Assert.notNull(name, "node name must not be null");  //$NON-NLS-1$
 		Assert.notNull(state, "node state must not be null");  //$NON-NLS-1$
-		log.info("Creating new {} {}.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 		this.name = name;
 		this.description = description;
 		this.state = state;
