@@ -4,6 +4,10 @@
 	padding-bottom: 1px;
 }
 */
+:host([theme~="label-padding"]) {
+	padding-top: 2px;
+	padding-bottom: 1px;
+}
 
 [part="label"] {
 	padding-top: 2px;
