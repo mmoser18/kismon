@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.VaadinSession;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.ThreadSupport;
 
@@ -51,7 +52,10 @@ public class UIHandlerSupport
 						                            	uiActivity.accept(result);
 						                            	log.debug("uiActivity done."); //$NON-NLS-1$
 						                             }),
-						                             () -> log.warn("unable to obtain UI-handle - output dropped")); //$NON-NLS-1$
+						                             () -> {
+						                            	 log.warn("unable to obtain UI-handle - output dropped"); //$NON-NLS-1$
+						                            	 logout();
+						                             });
 					} else {
 						try {
 							log.debug("uiActivity start:"); //$NON-NLS-1$
@@ -63,6 +67,12 @@ public class UIHandlerSupport
 					}
 				}
 			});
+	}
+
+	private static void logout() {
+		VaadinSession current = VaadinSession.getCurrent();
+		current.getSession().invalidate();
+		current.close();
 	}
 
 	/**
