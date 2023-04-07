@@ -346,7 +346,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 	protected void initRequestData() {
 		if (this.node != null) {
 			try {
-				this.node.createRequest();
+				this.node.ensureValidRequest();
 			} catch (Exception ex) {
 				this.log.error("Exception preparing/reporting httpRequest: ", ex); //$NON-NLS-1$
 				this.node.setRequestBody(String.format(Messages.getString("HTTPConnectionForm.RequestHeaders.ErrorCreatingRequest"), ex).getBytes()); //$NON-NLS-1$
