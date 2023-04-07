@@ -58,9 +58,13 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	protected Accordion actionDetails;
 	protected VerticalLayout actionDetailsPanel;
 
+	HorizontalLayout triggerThresholds;
+
 	protected TextField[] triggerThresholdFields = new TextField[State.values().length];
 	protected Validator<String> thresholdValidator;
 	protected Select<ActionFactory.ActionType> actionType;
+
+	HorizontalLayout stateResetAndTrigger;
 	protected IntegerField sameStateSince;
 	protected Button resetSameStateCounterButton;
 	protected Button triggerActionButton;
@@ -118,15 +122,14 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				.bind((n) -> getThreshold(n, state), (n, value) -> setThreshold(n, state, value));
 			this.triggerThresholdFields[state.ordinal()] = tf;
 		}
-		HorizontalLayout thresholds = new HorizontalLayout(this.triggerThresholdFields);
-		thresholds.setClassName(ActionThresholdsClassName);
+		this.triggerThresholds = new HorizontalLayout(this.triggerThresholdFields);
+		this.triggerThresholds.setClassName(ActionThresholdsClassName);
 
-		HorizontalLayout stateResetAndTrigger = new HorizontalLayout();
-		stateResetAndTrigger.setClassName(ActionStateResetAndTriggerClassName);
+		this.stateResetAndTrigger = new HorizontalLayout();
+		this.stateResetAndTrigger.setClassName(ActionStateResetAndTriggerClassName);
 
 		this.sameStateSince = new IntegerField(Messages.getString("ActionForm.StateCounter.Label")); //$NON-NLS-1$
 		this.sameStateSince.addClassName(ActionSameStateCounterClassName);
-		stateResetAndTrigger.add(this.sameStateSince);
 
 		this.resetSameStateCounterButton = new Button(Messages.getString("ActionForm.ResetStateCounter.Label")); //$NON-NLS-1$
 		this.resetSameStateCounterButton.addClassName(ActionResetStateCounterClassName);
@@ -138,22 +141,22 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				if (actionCheck != null) actionCheck.setPreviousActionState(null);
 			}
 		});
-		stateResetAndTrigger.add(this.resetSameStateCounterButton);
 
 		this.triggerActionButton = new Button(Messages.getString("ActionForm.TriggerAction.Label")); //$NON-NLS-1$
-		this.triggerActionButton.addClassName(ActionResetStateCounterClassName);
+		this.triggerActionButton.addClassName(ActionTriggerClassName);
 		this.triggerActionButton.addClickListener(event ->
 		{
 			if (this.node != null) {
 				IAction<ActionableNode> action = this.node.getAction();
 				try {
-					action.doAction(this.node, null, null, null);
+					action.doAction(this.node, this.node.getState(), null);
 				} catch (Exception ex) {
+					this.log.error("error executing action " + action, ex); //$NON-NLS-1$
 					NodeView.createNotification(String.format(Messages.getString("ActionForm.TriggerActionError.Message"), ex.getMessage())); //$NON-NLS-1$
 				}
 			}
 		});
-		stateResetAndTrigger.add(this.triggerActionButton);
+		this.stateResetAndTrigger.add(this.sameStateSince, this.resetSameStateCounterButton, this.triggerActionButton);
 
 		this.actionType = new Select<ActionType>();
 		this.actionType.setLabel(Messages.getString("ActionForm.ActionType.Label")); //$NON-NLS-1$
@@ -180,7 +183,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 			}
 		});
 
-		this.actionDetailsPanel.add(this.actionEnabled, thresholds, stateResetAndTrigger, this.actionType);
+		this.actionDetailsPanel.add(this.actionEnabled, this.triggerThresholds, this.stateResetAndTrigger, this.actionType);
 		adaptActionType(hasAction(this.node), this.node);
 
 		this.fields.add(this.actionDetails);
@@ -203,8 +206,8 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				if (ActionForm.this.node != null) {
 					ActionCheck ac = ActionForm.this.node.getActionCheck();
 					if (ac == null // nothing to check...
-					   || ac.getTriggerThresholds() == null // ... or no thresholds ...
-					   || ActionForm.this.node.getAction() == null) { // ... or no action: thresholds are irrelevant (and will be removed on save)
+					   || ac.getTriggerThresholds() == null // ... or no triggerThresholds ...
+					   || ActionForm.this.node.getAction() == null) { // ... or no action: triggerThresholds are irrelevant (and will be removed on save)
 						return ValidationResult.ok();
 					}
 					return ActionForm.this.positiveNumberValidator.apply(value, context);
@@ -259,11 +262,9 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 	protected void adaptActionType(boolean actionVisible, N n) {
 		this.log.debug("adaptActionType(visible:{},n:{})",actionVisible, n); //$NON-NLS-1$
 		this.actionEnabled.setValue(actionVisible);
-		for (State state: State.values()) {
-			this.triggerThresholdFields[state.ordinal()].setVisible(actionVisible);
-			this.resetSameStateCounterButton.setVisible(actionVisible);
-		}
 		this.actionType.setVisible(actionVisible);
+		this.triggerThresholds.setVisible(actionVisible);
+		this.stateResetAndTrigger.setVisible(actionVisible);
 		adaptActionDetailsVisibility(actionVisible, n, ActionFactory.getActionType(n));
 	}
 
@@ -279,6 +280,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 				comp.setVisible(false);
 				// disconnect from component tree:
 				this.actionDetailsPanel.remove(comp);
+				comp.getElement().removeFromTree(); // make sure there is no more reference into the active tree
 				this.actionDetailsForm = null;
 			}
 		}
@@ -304,7 +306,6 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 
 	@Override
 	public boolean setNode(N n, boolean abandonChanges) {
-		this.log.info("setNode node={}", (n != null ? n.getName() : null)); //$NON-NLS-1$
 		boolean res = super.setNode(n, abandonChanges);
 		adaptActionType(hasAction(n), n);
 
