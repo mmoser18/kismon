@@ -183,7 +183,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 *         changes and the user responded with "cancel/stayOnNode"
 	 */
 	public boolean setNode(N newNode, boolean abandonChanges) {
-		this.log.info("NodeForm.setNode({}) - UI has changes: {}", newNode, hasUiChanges()); //$NON-NLS-1$
+		this.log.info("setNode({}) - UI has changes: {}", newNode, hasUiChanges()); //$NON-NLS-1$
 		if (this.node != null) {
 			if (hasUiChanges() && !abandonChanges) {
 				this.log.info("we have unsaved UI changes!"); //$NON-NLS-1$
@@ -196,22 +196,24 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 				return false;
 			}
 			this.node.removeChangeListener(this.nodeRefreshListener);
-			this.log.info("changeListener removed on node {}", this.node); //$NON-NLS-1$
+			this.log.debug("changeListener removed from node {}",  //$NON-NLS-1$
+			               (this.log.isTraceEnabled() ? this.node.toString() : this.node.getName()));
 		}
 		this.node = newNode;
-		this.log.debug("NodeForm.setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
+		this.log.debug("setNode({}) - new node accepted!", (newNode != null ? newNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (newNode != null) {
 			this.setHeader(Messages.getString(newNode instanceof RootNode || newNode.getParent() != null
 			                                  ? "NodeForm.Header.EditOrDeleteNode" //$NON-NLS-1$
 			                                  : "NodeForm.Header.NewNode")); //$NON-NLS-1$
 			if (this.nodeRefreshListener == null) createNodeRefreshListener(); // make sure we have one...
-			newNode.addChangeListener(this.nodeRefreshListener);
-			this.log.info("changeListener set on node '{}'", newNode.getName()); //$NON-NLS-1$
+			this.node.addChangeListener(this.nodeRefreshListener);
+			this.log.debug("changeListener set on node '{}'", //$NON-NLS-1$
+			               (this.log.isTraceEnabled() ? this.node.toString() : this.node.getName()));
 			updateResolvableValues();
 		}
 		// Note: readBean() copies the values from the bean to an internal model.
 		// That way we don’t accidentally overwrite values if we "Revert" (cancel editing).
-		readBean(newNode); // to update the form values from the new node to the UI fields.
+		readBean(this.node); // to update the form values from the new node to the UI fields.
 		this.uiChanges = false; // when we have a new node this is initially always the case!
 		return true;
 	}
@@ -238,7 +240,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 			// for better log-messages:
 			@Override
 			public String toString() {
-				return "ChangeListener_on_" + NodeForm.this.getClass().getSimpleName() + "_for_" + (NodeForm.this.getNode() != null ? NodeForm.this.getNode().getName() : "<no_node>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				return "ChangeListener on form " + NodeForm.this.getClass().getSimpleName() + " for node '"  //$NON-NLS-1$ //$NON-NLS-2$
+					+ (NodeForm.this.getNode() != null ? NodeForm.this.getNode().getName() : "<no_node>") + "'."; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 
 		};

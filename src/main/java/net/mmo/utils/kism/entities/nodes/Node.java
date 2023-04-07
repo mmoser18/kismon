@@ -46,7 +46,16 @@ public abstract class Node extends AbstractEntity implements Cloneable, Serializ
 	public enum State {
 		FAILED,
 		DEGRADED,
-		OK
+		OK;
+
+		/**
+		 * Like valueOf() but returns null if the value is blank or "null"/"NULL"
+		 * @param str
+		 * @return
+		 */
+		public static State nullTolerantValueOf(String str) {
+			return (str == null || str.isBlank() || str.equalsIgnoreCase("null")) ? null : State.valueOf(str);  //$NON-NLS-1$
+		}
 	}
 
 	@NotNull
