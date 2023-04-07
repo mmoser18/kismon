@@ -21,9 +21,8 @@ public interface IAction <N extends ActionableNode>
 	/**
 	 * @param node which has changed
 	 * @param previousState
-	 * @param newState
-	 * @param check
+	 * @param newState  (if this is null then this is a manually triggered test only)
 	 * @throws Exception
 	 */
-	public void doAction(@NotNull N node, State previousState, @NotNull State newState, @NotNull ActionCheck check) throws Exception;
+	public void doAction(@NotNull N node, State previousState, @NotNull State newState) throws Exception;
 }

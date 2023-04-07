@@ -9,7 +9,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
-import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 
 
@@ -29,8 +28,9 @@ public class EmitLogAction <N extends ActionableNode> implements IAction<N>
 	}
 
 	@Override
-	public void doAction(N node, State oldState, State newState, ActionCheck check) {
-		log.info("State for node '{}' has changed from {} to {}.", //$NON-NLS-1$
-		         node.getName(), oldState, newState);
+	public void doAction(N node, State oldState, State newState) {
+		String test = newState == null ? " (manually triggered test)" : ""; //$NON-NLS-1$ //$NON-NLS-2$
+		log.info("State for node '{}' has changed from {} to {}.{}", //$NON-NLS-1$
+		         node.getName(), oldState, newState, test);
 	}
 }
