@@ -16,6 +16,7 @@ import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -75,22 +76,21 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 		return new InMemoryUserDetailsManager(userDetails);
 	}
 
-//	/* exclude Vaadin-framework communication and static assets from Spring Security. */
-// disabled since this leads to warnings...
-//	@Override
-//	public void configure(WebSecurity web) throws Exception {
-//		log.info("configure: web={}", web);
-////		web.ignoring()
-////			.antMatchers("/VAADIN/**",
-////			             "/favicon.ico",
-////			             "/robots.txt",
-////			             "/manifest.webmanifest",
-////			             "/sw.js",
-////			             "/offline.html",
-////			             "/icons/**",
-////			             "/images/**",
-////			             "/styles/**",
-////			             "/h2-console/**");
-//		super.configure(web);
-//	}
+	/* exclude Vaadin-framework communication and static assets from Spring Security. */
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		log.info("configure: web={}", web);
+		web.ignoring()
+			.antMatchers("/VAADIN/**",
+			             "/favicon.ico",
+			             "/robots.txt",
+			             "/manifest.webmanifest",
+			             "/sw.js",
+			             "/offline.html",
+			             "/icons/**",
+			             "/images/**",
+			             "/styles/**",
+			             "/h2-console/**");
+		super.configure(web);
+	}
 }
