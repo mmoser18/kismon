@@ -32,3 +32,6 @@ webpack.generated.js
 /.pnpm-debug.log
 /default_old.kmc
 /default_2022_03_15.kmc
+/ksta.kmc_bak
+/ksta.kmc
+/ksta-old-VMs.kmc
