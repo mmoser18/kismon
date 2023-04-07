@@ -402,10 +402,14 @@ public class NodeView <N extends Node> extends VerticalLayout
 							} else {
 								closeEditor();
 							}
+						} else {
+							log.info("form not visible"); //$NON-NLS-1$
 						}
 						if (this.form != null) { // editNode() may change that, so need to check again!
 							this.form.setUiChanges(false);
 						}
+					} else {
+						log.info("form is null"); //$NON-NLS-1$
 					}
 				}
 			});
@@ -594,7 +598,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private void deleteNode(NodeForm.DeleteEvent event) {
 		Node node = event.getNode();
-		log.debug("NodeView.deleteNode[DeleteEvent] '{}'", node.getName()); //$NON-NLS-1$
+		log.debug("deleteNode[DeleteEvent] '{}'", node.getName()); //$NON-NLS-1$
 		if (this.form != null && !this.form.setNode(null, true)) { // signal that we want to leave that node:
 			return; // if there are unsaved changes remain on form's current node
 		}
@@ -1085,7 +1089,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		notif.addAttachListener(evt ->
 		{
 			log.info("Notification attach-event: {}", evt); //$NON-NLS-1$
-			// notif.close();
+			notif.close();
 		});
 		notif.open();
 	}
