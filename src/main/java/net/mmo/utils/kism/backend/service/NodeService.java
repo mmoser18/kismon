@@ -185,15 +185,27 @@ public class NodeService
 		return (RootNode)node;
 	}
 
-	public String saveToFile(Object obj, String name, String fileName) {
+	public String saveToFile(Object obj, String rootNodeName, String fileName) {
 		try {
-			// TODO : provide some file selection box...
-			File file = new File(fileName);
-			if ((!file.exists() && file.createNewFile()) || file.canWrite()) {
-				this.writeFile(obj, name, file);
-				return file.getCanonicalPath();
+			// TODO : provide some file selection box?
+			File finalFile = new File(fileName);
+			if ((!finalFile.exists() && finalFile.createNewFile()) || finalFile.canWrite()) {
+				File tmpFile = new File(fileName + "_$temp$"); //$NON-NLS-1$
+				if ((!tmpFile.exists() && tmpFile.createNewFile()) || tmpFile.canWrite()) {
+					this.writeFile(obj, rootNodeName, tmpFile);
+					// still here: the writing succeeded
+					File backupFile = new File(fileName + ".bak"); //$NON-NLS-1$
+					if (backupFile.exists()) backupFile.delete(); // delete old backup file - if exists
+					if (finalFile.exists()) finalFile.renameTo(backupFile); // old file renamed to backup filename
+					tmpFile.renameTo(finalFile); // newly written file gets original filename
+					return finalFile.getCanonicalPath();
+				} else {
+					String msg = String.format("File '%s' is not writable!", tmpFile); //$NON-NLS-1$
+					log.info(msg);
+					new Notification(msg, 10000).open();
+				}
 			} else {
-				String msg = String.format("File '%s' is not writable!", file); //$NON-NLS-1$
+				String msg = String.format("File '%s' is not writable!", finalFile); //$NON-NLS-1$
 				log.info(msg);
 				new Notification(msg, 10000).open();
 			}
@@ -205,14 +217,14 @@ public class NodeService
 		return null;
 	}
 
-	public void writeFile(Object obj, String name, File file) throws IOException {
-		log.info("saving configuration '{}' to file '{}':'",name, file, obj); //$NON-NLS-1$
+	public void writeFile(Object obj, String rootNodeName, File file) throws IOException {
+		log.info("saving configuration '{}' to file '{}':'",rootNodeName, file, obj); //$NON-NLS-1$
 		log.debug("object: '{}'", obj); //$NON-NLS-1$
 		try (OutputStream fos = new FileOutputStream(file);
 		     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
 			writeStream(obj, bos);
 			bos.flush(); // this one proofed essential!
-			log.info("'{}' successfully written to file '{}'.", name, file.getCanonicalPath()); //$NON-NLS-1$
+			log.info("'{}' successfully written to file '{}'.", rootNodeName, file.getCanonicalPath()); //$NON-NLS-1$
 		} catch (IOException t) { // try must have a catch to make the Frontend-Compiler happy... ||-(
 			throw t;
 		} finally {
