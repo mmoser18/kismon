@@ -9,7 +9,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ActionableNode;
 import net.mmo.utils.kism.entities.nodes.Node.State;
-import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 
 /**
@@ -28,8 +27,9 @@ public class RunLocalScriptAction <N extends ActionableNode> implements IAction<
 	}
 
 	@Override
-	public void doAction(N node, State oldState, State newState, ActionCheck check) {
-		log.info("run script here..."); //$NON-NLS-1$
+	public void doAction(N node, State oldState, State newState) {
+		String test = newState == null ? " (manually triggered test)" : ""; //$NON-NLS-1$ //$NON-NLS-2$
+		log.info("run local script here... {}", test); //$NON-NLS-1$
 //		if (newState == FAILED) {
 //			restartSystem();
 //		}
