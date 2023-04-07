@@ -158,7 +158,6 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 
 	@Override
 	public boolean setNode(N n, boolean abandonChanges) {
-		this.log.info("setNode node={}", n); //$NON-NLS-1$
 		boolean res = super.setNode(n, abandonChanges);
 		adaptResultCheckerVisibility((n != null ? n.isCheckResults() : false), n);
 		return res;

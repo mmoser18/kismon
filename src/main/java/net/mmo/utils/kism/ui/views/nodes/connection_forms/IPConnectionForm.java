@@ -56,7 +56,6 @@ public abstract class IPConnectionForm <N extends IPConnection> extends Checkabl
 
 	@Override
 	public boolean setNode(N node, boolean abandonChanges) {
-		this.log.info("setNode node={}", node); //$NON-NLS-1$
 		boolean res = super.setNode(node, abandonChanges);
 		adaptResultCheckerVisibility((node != null ? node.isCheckResults() : false), node);
 		return res;
