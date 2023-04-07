@@ -47,40 +47,52 @@ public class ActionCheck extends AbstractEntity implements Cloneable, Serializab
 	@NotBlank
 	private String[] triggerThresholds =
 		AppProperties.getProperties().getProperty("ActionCheck.DefaultThresholdValues", "5,2,1").split(",");  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
+
+	public String getTriggerThresholdString(State state) {
+		return this.triggerThresholds[state.ordinal()];
+	}
+	public int getTriggerThresholdNumeric(State state) {
+		return Integer.parseInt(getTriggerThresholdString(state));
+	}
+
 	/**
 	 * This keeps the previous state for which an action was triggered
 	 */
 	@JsonIgnore
-	transient private State previousActionState;
+	transient private State previousActionState = State.nullTolerantValueOf(AppProperties.getProperties().getProperty("ActionCheck.AssumedInitialState", "OK")); //$NON-NLS-1$ //$NON-NLS-2$
 
 	public void checkForAction(@NotNull ActionableNode node) {
 		// the aim of the following is to NOT trigger an action right away but only if it the state has been stable for a given number of checks
 		final State newState = node.getState();
-		final State oldState = this.previousActionState; // we keep it for logging and in case we trigger the action
-		final int threshold = Integer.parseInt(this.triggerThresholds[newState.ordinal()]);
 		final int stableSince =  node.getSameStateSince();
+		final State oldActionState = this.previousActionState; // we keep it for logging and in case we trigger the action
+		final int threshold = getTriggerThresholdNumeric(newState);
 		if (threshold > 0 && // if there IS a threshold defined ...
-		    newState != oldState && // ... and the states differ...
+			oldActionState != null && // ... the previous state has been initialized
+		    newState != oldActionState && // ... and the states differ...
 		    stableSince >= threshold) {  // ... and we have seen this state now often enough, then:
 			this.previousActionState = newState;
 			log.info("Current state '{}' stable since {} ticks (previous state: {}) -> triggering action '{}':", //$NON-NLS-1$
-			         newState, threshold, oldState, this);
-			node.informOnPropertyChange(PROPERTYNAME_ACTION, oldState, newState);
+			         newState, threshold, oldActionState, this);
+			node.informOnPropertyChange(PROPERTYNAME_ACTION, oldActionState, newState);
 			// the actual action is handled in a different thread:
 			ThreadSupport.executeLater(0, () ->
 			{
 				IAction<ActionableNode> action = node.getAction();
 				log.info("Executing action '{}':", action); //$NON-NLS-1$
 				try {
-					action.doAction(node, oldState, newState, this);
+					action.doAction(node, oldActionState, newState);
 					log.info("Action '{}' done.", action); //$NON-NLS-1$
 				} catch (Exception ex) {
 					log.error("Error executing action " + action + ":", ex); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			});
+		} else if (oldActionState == null) {  // if this is still uninitialized:
+			setPreviousActionState(newState); // ... we memorize the first seen state as previous state.
+			                                  // This prevents the triggering of the actions on first check
 		} else {
 			log.trace("New state '{}' stable since {} / threshold={} / oldState={} -> no action taken.", //$NON-NLS-1$
-			          newState, stableSince, threshold, oldState);
+			          newState, stableSince, threshold, oldActionState);
 		}
 	}
 	@Override

@@ -58,13 +58,18 @@ public abstract class ActionableNode extends Node
 		}
 	}
 
+	public void incSameStateSince() {
+		setSameStateSince(this.sameStateSince+1);
+	}
+
 	@Override
 	public void setState(State state) {
 		if (this.getState() != state) {
 			super.setState(state);
+			// we got a new state - reset the counter:
 			setSameStateSince(1);
 		} else {
-			setSameStateSince(getSameStateSince()+1);
+			incSameStateSince();
 		}
 		if (this.actionCheck != null && state != null) { // the latter happens if we manually reset the state to undefined
 			this.actionCheck.checkForAction(this);
