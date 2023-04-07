@@ -1,5 +1,5 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
+- * @author Michael Moser (michael.moser@freesurf.ch)
  * @since 27.11.2020
  */
 
@@ -11,9 +11,11 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vaadin.flow.component.UIDetachedException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.ExceptionUtils;
 
 @SuppressWarnings("javadoc")
 @Setter
@@ -73,7 +75,20 @@ public class RootNode extends IntermediateNode
 		this.getChangeListeners().forEach((listener) ->
 		{
 			log.trace("Calling listener {}: {}", listener, evt); //$NON-NLS-1$
-			listener.propertyChange(evt);
+			try {
+				listener.propertyChange(evt);
+			} catch (Exception ex) {
+				if (log.isDebugEnabled()) { // we log the entire stack trace:
+					log.debug("Exception calling listener {}:", listener, ex); //$NON-NLS-1$
+				} else { // we just log the message:
+					log.error("Exception calling listener {}: {}", listener, ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+				}
+				if (ex instanceof UIDetachedException) { // I hate that his reference pulls Vaadin flow into the application core! These should be distinct!
+					// the UI is not available any longer - remove this listener to stop this exception happening again and again and hogging the log..:
+					log.info("UIDetachedException -> removing listener {} from node {}:", listener, node.getName()); //$NON-NLS-1$
+					this.getChangeListeners().remove(listener);
+				}
+			}
 		});
 	}
 
