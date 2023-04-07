@@ -138,7 +138,8 @@ abstract public class HTTPConnection extends TCPConnection
 
 
 	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
-	protected final static TrustManager[] trustAllCerts =
+	@JsonIgnore
+	transient protected final TrustManager[] trustAllCerts =
 		new TrustManager[] {
 			new X509TrustManager() {
 				@Override
@@ -155,14 +156,6 @@ abstract public class HTTPConnection extends TCPConnection
 				}
 			}
 		};
-
-	protected final static CookieHandler cookieHandler =
-		new CookieManager(null, // CookieStore to be used by cookie manager. If null, cookie manager
-		                        // will use a default one, which is an in-memory CookieStore implementation.
-		                  CookiePolicy.ACCEPT_ALL); // CookiePolicy instance to be used by cookie
-		                                            // manager as policy callback.
-		                                            // If null, ACCEPT_ORIGINAL_SERVER will be used.
-
 
 	public HTTPConnection() { // required for deserialization
 		super();
@@ -274,7 +267,7 @@ abstract public class HTTPConnection extends TCPConnection
 		try {
 			if (!initializing) createRequest(); // this sets the requestHeaders as side-effect
 		} catch (Exception ex) {
-			log.error("Error resolving '{}':", ex); //$NON-NLS-1$
+			log.error("Error in createRequest", ex.getMessage()); //$NON-NLS-1$
 			this.requestHeaders = null;
 		}
 	}
@@ -339,7 +332,7 @@ abstract public class HTTPConnection extends TCPConnection
 			.newBuilder()
 			.version(getHttpVersion())
 			.followRedirects(getRedirectBehavior())
-			.cookieHandler(HTTPConnection.cookieHandler)
+			.cookieHandler(createCookieHandler())
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
@@ -353,7 +346,7 @@ abstract public class HTTPConnection extends TCPConnection
 			SSLContext sslContext = null;
 			try {
 				sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$
-				sslContext.init(null, HTTPConnection.trustAllCerts, new java.security.SecureRandom());
+				sslContext.init(null, this.trustAllCerts, new java.security.SecureRandom());
 			} catch (NoSuchAlgorithmException | KeyManagementException ex) {
 				log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
 			}
@@ -390,9 +383,39 @@ abstract public class HTTPConnection extends TCPConnection
 		setHttpClient(builder.build());
 	}
 
+	@JsonIgnore
+	protected CookieHandler createCookieHandler() {
+		return new CookieManager(null, // CookieStore to be used by cookie manager. If null, cookie manager
+		                         // will use a default one, which is an in-memory CookieStore implementation.
+		                         // Note: must be per connection or else session-cookies will get mixed up!
+		                         CookiePolicy.ACCEPT_ALL); // CookiePolicy instance to be used by cookie
+		                                                   // manager as policy callback.
+		                                                   // If null, ACCEPT_ORIGINAL_SERVER will be used.
+	}
+
+	public void ensureValidClient() {
+		if (getHttpClient() == null) {
+			createClient();
+		}
+	}
+
 	public void createRequest() throws Exception {
+		String resultingUrlResolved;
+		try { // trying to get better error logs
+			resultingUrlResolved = resultingUrlResolved();
+		} catch (Exception ex) {
+			log.error("createRequest: error resolving URL '{}': {}", this.getUrl(), ex.getMessage()); //$NON-NLS-1$
+			throw ex;
+		}
+		URI uri;
+		try { // trying to get better error logs
+			uri = URI.create(resultingUrlResolved);
+		} catch (Exception ex) {
+			log.error("createRequest: error creating URI from '{}': {}", resultingUrlResolved, ex.getMessage()); //$NON-NLS-1$
+			throw ex;
+		}
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
-			.uri(URI.create(resultingUrlResolved()))
+			.uri(uri)
 			.timeout(Duration.ofSeconds(getTimeout()));
 		if (getHeaders() != null) {
 			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(getHeaders()));
@@ -446,6 +469,12 @@ abstract public class HTTPConnection extends TCPConnection
 		logRequestValues();
 	}
 
+	public void ensureValidRequest() throws Exception {
+		if (getHttpRequest() == null) {
+			createRequest();
+		}
+	}
+
 	/**
 	 * Hook allowing to add e.g. additional request headers or add additional request parameters, etc.
 	 * @param builder
@@ -466,15 +495,11 @@ abstract public class HTTPConnection extends TCPConnection
 		try {
 			setTimestamp(LocalDateTime.now());
 			synchronized(this) {
-				if (getHttpClient() == null) {
-					createClient();
-				}
+				ensureValidClient();
 				client = getHttpClient();
 			}
 			synchronized(this) {
-				if (getHttpRequest() == null) {
-					createRequest();
-				}
+				ensureValidRequest();
 				request = getHttpRequest();
 			}
 			// signal response pending:
