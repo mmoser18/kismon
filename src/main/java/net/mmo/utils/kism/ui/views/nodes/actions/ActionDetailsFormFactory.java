@@ -29,7 +29,7 @@ public class ActionDetailsFormFactory <N extends ActionableNode>
 	 */
 	@SuppressWarnings({})
 	public ActionDetailsForm createActionDetailsForm(ActionType actionType) {
-		log.info("createActionDetailsForm(actionType:{})", actionType); //$NON-NLS-1$
+		log.debug("createActionDetailsForm(actionType:{})", actionType); //$NON-NLS-1$
 		if (actionType != null) {
 			try {
 				ActionDetailsForm form = this.components[actionType.ordinal()];
@@ -42,6 +42,8 @@ public class ActionDetailsFormFactory <N extends ActionableNode>
 						                    " must be a subclass of " + Component.class); //$NON-NLS-1$
 					}
 					this.components[actionType.ordinal()] = form;
+//				} else {
+//					((Component)form).getElement().removeFromTree(); // make sure this is not attached to any old tree anymore.
 				}
 				log.debug("form is:{}", form); //$NON-NLS-1$
 				return form;
