@@ -40,7 +40,7 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 	protected TextField mailCc;
 	protected TextField mailFrom;
 	protected TextField mailSubject;
-	protected TextArea mailContent;
+	protected TextArea  mailContent;
 
 	Binder<IAction<ActionableNode>> binder;
 
