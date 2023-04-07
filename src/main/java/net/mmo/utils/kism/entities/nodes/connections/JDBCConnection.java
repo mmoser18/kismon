@@ -208,7 +208,7 @@ public class JDBCConnection extends TCPConnection
 
 	private void convertResultSet(ResultSet rs) {
 		try {
-			String[] headers = JDBCHandling.getHeaders(rs);
+			String[] headers = JDBCHandling.getColumnHeaders(rs);
 			StringBuilder buf = new StringBuilder();
 			buf.append(String.join(RESULTSET_COL_SEPARATOR,headers));
 			buf.append(RESULTSET_ROW_SEPARATOR);
@@ -218,7 +218,7 @@ public class JDBCConnection extends TCPConnection
 				for (int j = 0; j < headers[i].length(); j++) buf.append('-');
 			}
 			// for each row: add all the values:
-			for (String[] line: JDBCHandling.getValues(rs)) {
+			for (String[] line: JDBCHandling.getColumnValues(rs)) {
 				buf.append(RESULTSET_ROW_SEPARATOR);
 				buf.append(String.join(RESULTSET_COL_SEPARATOR,line));
 			}

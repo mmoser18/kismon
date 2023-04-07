@@ -105,7 +105,13 @@ public class JDBCHandling implements Closeable
 		}
 	}
 
-	static String[] getHeaders(ResultSet rs) throws SQLException {
+	/**
+	 * Extract the column names from the result set
+	 * @param rs
+	 * @return an array of column headers
+	 * @throws SQLException
+	 */
+	public static String[] getColumnHeaders(ResultSet rs) throws SQLException {
 		ResultSetMetaData metadata = rs.getMetaData();
 		String[] headers = new String[metadata.getColumnCount()];
 		for (int i = 0; i < metadata.getColumnCount(); i++) {
@@ -114,7 +120,14 @@ public class JDBCHandling implements Closeable
 		return headers;
 	}
 
-	static List<String[]> getValues(ResultSet rs) throws SQLException {
+
+	/**
+	 * Extract a list of string arrays, each contains a row's values
+	 * @param rs
+	 * @return list of string arrays, each string array contains a row's values (as strings)
+	 * @throws SQLException
+	 */
+	public static List<String[]> getColumnValues(ResultSet rs) throws SQLException {
 		ResultSetMetaData metadata = rs.getMetaData();
 		int nrColumns = metadata.getColumnCount();
 		List<String[]> values = new ArrayList<>();
