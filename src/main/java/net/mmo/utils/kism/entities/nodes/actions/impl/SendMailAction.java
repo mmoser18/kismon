@@ -66,17 +66,19 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 	static String auth;
 	static String starttls;
 	static String debug;
+	static String mailAddrDelims;
 
 	static {
 		Properties appProperties = AppProperties.getProperties();
-		mailHost = appProperties.getProperty("SendMailAction.mailHost"); //$NON-NLS-1$
-		mailPort = appProperties.getProperty("SendMailAction.mailPort"); //$NON-NLS-1$
-		mailProt = appProperties.getProperty("SendMailAction.mailProtocol"); //$NON-NLS-1$
-		mailUser = appProperties.getProperty("SendMailAction.mailUser"); //$NON-NLS-1$
-		mailPwd  = appProperties.getProperty("SendMailAction.mailPwd"); //$NON-NLS-1$
-		auth     = appProperties.getProperty("SendMailAction.auth", Boolean.toString(false)); //$NON-NLS-1$
-		starttls = appProperties.getProperty("SendMailAction.starttls", Boolean.toString(false)); //$NON-NLS-1$
-		debug    = appProperties.getProperty("SendMailAction.debug", Boolean.toString(true)); //$NON-NLS-1$
+		mailHost		= appProperties.getProperty("SendMailAction.mailHost");							//$NON-NLS-1$
+		mailPort		= appProperties.getProperty("SendMailAction.mailPort");							//$NON-NLS-1$
+		mailProt		= appProperties.getProperty("SendMailAction.mailProtocol");						//$NON-NLS-1$
+		mailUser		= appProperties.getProperty("SendMailAction.mailUser");							//$NON-NLS-1$
+		mailPwd			= appProperties.getProperty("SendMailAction.mailPwd");							//$NON-NLS-1$
+		auth			= appProperties.getProperty("SendMailAction.auth", Boolean.toString(false));	//$NON-NLS-1$
+		starttls		= appProperties.getProperty("SendMailAction.starttls", Boolean.toString(false));	//$NON-NLS-1$
+		debug			= appProperties.getProperty("SendMailAction.debug", Boolean.toString(true));	//$NON-NLS-1$
+		mailAddrDelims	= appProperties.getProperty("SendMailAction.mailAddrDelims", "[,; ]");		//$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	@JsonIgnore
@@ -144,11 +146,14 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 			message.setFrom(new InternetAddress(value));
 
 			value = resolveMailProperties(node,this.mailTo);
-			message.addRecipient(Message.RecipientType.TO, new InternetAddress(value));
-
+			for (String recipient: value.split(mailAddrDelims)) {
+				message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+			}
 			value = resolveMailProperties(node,this.mailCc);
 			if (!StringUtils.isEmpty(value)) { // Cc is optional:
-				message.addRecipient(Message.RecipientType.CC, new InternetAddress(value));
+				for (String recipient: value.split(mailAddrDelims)) {
+					message.addRecipient(Message.RecipientType.CC, new InternetAddress(recipient));
+				}
 			}
 			if (!StringUtils.isEmpty(subject)) message.setSubject(subject);
 			if (!StringUtils.isEmpty(content)) message.setText(content);
