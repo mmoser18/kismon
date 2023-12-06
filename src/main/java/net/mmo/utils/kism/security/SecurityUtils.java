@@ -58,7 +58,7 @@ public final class SecurityUtils
 				Collection<String> auths = authentication.getAuthorities().stream()
 					.map((auth) -> auth.getAuthority())
 					.collect(Collectors.toList());
-				log.info("user details: {} / authorities: {}", obj, auths);
+				log.debug("user details: {} / authorities: {}", obj, auths);
 				return auths.contains("ROLE_" + CommonConstants.Role_ADMIN);
 			}
 		}

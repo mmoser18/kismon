@@ -5,6 +5,7 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
+import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -29,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -126,7 +128,7 @@ abstract public class HTTPConnection extends TCPConnection
 	@JsonIgnore // TODO just for now!
 	transient protected HttpHeaders requestHeaders;
 	@JsonIgnore
-	protected byte[] requestBody;
+	transient protected byte[] requestBody;
 
 	// response:
 	@JsonIgnore
@@ -135,7 +137,6 @@ abstract public class HTTPConnection extends TCPConnection
 	transient protected HttpHeaders responseHeaders;
 	@JsonIgnore
 	transient protected byte[] responseBody;
-
 
 	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
 	@JsonIgnore
@@ -258,22 +259,27 @@ abstract public class HTTPConnection extends TCPConnection
 
 	private synchronized void setHttpClient(HttpClient httpClient) {
 		this.httpClient = httpClient;
+		this.httpRequest = null; // setting a new client invalidates old request
 	}
 	private synchronized void setHttpRequest(HttpRequest httpRequest) {
 		this.httpRequest = httpRequest;
 	}
 
 	protected void updateRequestHeaders() {
-		try {
-			if (!initializing) createRequest(); // this sets the requestHeaders as side-effect
-		} catch (Exception ex) {
-			log.error("Error in createRequest", ex.getMessage()); //$NON-NLS-1$
-			this.requestHeaders = null;
+		if (!initializing) {
+			try {
+				createRequest(); // this sets the requestHeaders as side-effect
+			} catch (Exception ex) {
+				log.error("Error in createRequest", ex.getMessage()); //$NON-NLS-1$
+				this.requestHeaders = null;
+			}
 		}
 	}
 
 	protected void updateRequestBody() {
-		if (!initializing) updateResultingValue(getPayload(), (str) -> setRequestBody(str));
+		if (!initializing) {
+			updateResultingValue(getPayload(), (str) -> setRequestBody(str));
+		}
 	}
 
 	public void setRequestHeaders(HttpHeaders requestHeaders) {
@@ -326,7 +332,7 @@ abstract public class HTTPConnection extends TCPConnection
 
 	// the functional part:
 
-	public void createClient() {
+	public HttpClient createClient() {
 
 		HttpClient.Builder builder = HttpClient
 			.newBuilder()
@@ -380,7 +386,7 @@ abstract public class HTTPConnection extends TCPConnection
 //			builder.proxy(ProxySelector.of(new InetSocketAddress(this.proxyHost, this.proxyPort)));
 //			... what to do with proxy-uid and proxy-pwd?
 //		}
-		setHttpClient(builder.build());
+		return builder.build();
 	}
 
 	@JsonIgnore
@@ -395,11 +401,11 @@ abstract public class HTTPConnection extends TCPConnection
 
 	public void ensureValidClient() {
 		if (getHttpClient() == null) {
-			createClient();
+			setHttpClient(createClient());
 		}
 	}
 
-	public void createRequest() throws Exception {
+	public HttpRequest createRequest() throws Exception {
 		String resultingUrlResolved;
 		try { // trying to get better error logs
 			resultingUrlResolved = resultingUrlResolved();
@@ -460,18 +466,13 @@ abstract public class HTTPConnection extends TCPConnection
 			throw new IllegalArgumentException("Unsupported HTTP method: " + getMethod()); //$NON-NLS-1$
 		}
 		aditionalRequestPreparations(builder);
-
-		setHttpRequest(builder.build());
-		setRequestHeaders(getHttpRequest().headers());
-
-		setResponseHeaders(null);
-		setResponseBody("<no request sent, yet>".getBytes()); //$NON-NLS-1$
-		logRequestValues();
+		return builder.build(); // Note: returns an immutable request which can be sent multiple times.
 	}
 
 	public void ensureValidRequest() throws Exception {
-		if (getHttpRequest() == null) {
-			createRequest();
+		HttpRequest request = getHttpRequest();
+		if (request == null) {
+			setHttpRequest(createRequest());
 		}
 	}
 
@@ -497,14 +498,14 @@ abstract public class HTTPConnection extends TCPConnection
 			synchronized(this) {
 				ensureValidClient();
 				client = getHttpClient();
-			}
-			synchronized(this) {
 				ensureValidRequest();
 				request = getHttpRequest();
 			}
+			setRequestHeaders(request.headers());
 			// signal response pending:
 			setResponseHeaders(null);
 			setResponseBody("<no response received (yet)>".getBytes()); //$NON-NLS-1$
+			logRequestValues();
 			// ... before executing the actual request:
 			long startTime = System.nanoTime();
 			response = client.send(request, BodyHandlers.ofByteArray());
@@ -513,11 +514,12 @@ abstract public class HTTPConnection extends TCPConnection
 			setDuration(callDuration);
 			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(response);
+
 		} catch (Exception ex) {
 			if (log.isTraceEnabled()) { // log with stack trace - this is for hard nuts:
 				log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
-			} else if (log.isDebugEnabled()) {
-				log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
+			} else {
+				log.info("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
 			}
 			setResponseStatusCode(-1);
 			setResponseHeaders(null);
@@ -580,12 +582,18 @@ abstract public class HTTPConnection extends TCPConnection
 		setState(res);
 	}
 
-	public void logRequestValues() {
-		Optional<BodyPublisher> optional = getHttpRequest().bodyPublisher();
-		log.debug("{}-httpRequest to '{}' / headers: {} / body: {} bytes", //$NON-NLS-1$
-		          getHttpRequest().method(), getHttpRequest().uri(), (optional.isEmpty() ? 0 : getRequestBody().length));
-		if (!optional.isEmpty()) {
-			log.trace("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
+	public void logRequestValues() throws IOException {
+		if (log.isDebugEnabled()) {
+			HttpRequest request = getHttpRequest();
+			Optional<BodyPublisher> optional = request.bodyPublisher();
+			log.debug("{}-httpRequest to '{}' / headers: {} / body: {} bytes / cookies: {}", //$NON-NLS-1$
+			         request.method(), request.uri(), request.headers().map(),
+			          (optional.isEmpty() ? 0 : getRequestBody().length),
+			          getHttpClient().cookieHandler().get().get(request.uri(), Collections.emptyMap()));
+
+			if (log.isTraceEnabled() && !optional.isEmpty()) {
+				log.trace("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
+			}
 		}
 	}
 

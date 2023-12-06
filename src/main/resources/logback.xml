@@ -29,7 +29,7 @@
 	
 	<!-- silence the LogBacks startup mumbling : -->
 	<logger name="ch.qos.logback" level="info"/>
-	<logger name="net.schmizz.sshj.transport" level="warn"/>
+	<logger name="net.schmizz.sshj" level="warn"/> <!-- why does this have no influence? info messages still appear ||-(  -->
 
 	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn"/>
 	<!-- 
