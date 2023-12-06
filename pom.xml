@@ -696,6 +696,26 @@
 							<!- -->
 						</configuration>
 					</plugin>
+					
+					<plugin>
+						<groupId>org.owasp</groupId>
+						<artifactId>dependency-check-maven</artifactId>
+						<version>${dependency-check-maven.version}</version>
+						<configuration>
+							<formats>
+								<format>html</format>
+								<format>json</format>
+							</formats>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					
 				</plugins>
 			</build>
 		</profile>
