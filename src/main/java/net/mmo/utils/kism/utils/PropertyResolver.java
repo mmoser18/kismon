@@ -53,7 +53,7 @@ public class PropertyResolver
 			}
 			if (i <= 0) return tmpStr; // no (more) placeholder found - done!
 			buf.append(tmpStr.substring(i)); // add remainder of string
-			tmpStr = buf.toString();
+			tmpStr = buf.toString().translateEscapes();
 		}
 	}
 
