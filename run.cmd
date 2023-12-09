@@ -9,8 +9,9 @@ rem we need the properties file HERE:
 echo copying required resources to right place:
 for %%f in (application.properties banner.txt logback.xml) do copy src\main\resources\%%f target\
 for %%f in (logback-test.xml) do copy src\test\resources\%%f target\
+for %%f in (*.kmc) do copy %%f target\
 rem TLS logging utility:
-for %%f in (ksta.kmc test.kmc jSSLKeyLog.jar) do copy %%f target\
+for %%f in (jSSLKeyLog.jar) do copy %%f target\
 
 cd target
 
