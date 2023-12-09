@@ -198,6 +198,7 @@ public class NodeService
 					if (backupFile.exists()) backupFile.delete(); // delete old backup file - if exists
 					if (finalFile.exists()) finalFile.renameTo(backupFile); // old file renamed to backup filename
 					tmpFile.renameTo(finalFile); // newly written file gets original filename
+					log.info("'{}' successfully renamed to '{}'.", tmpFile, finalFile); //$NON-NLS-1$
 					return finalFile.getCanonicalPath();
 				} else {
 					String msg = String.format("File '%s' is not writable!", tmpFile); //$NON-NLS-1$
