@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
@@ -36,6 +38,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -600,7 +605,6 @@ abstract public class HTTPConnection extends TCPConnection
 	public void logResponseValues() {
 		log.debug("response: status={} / payload-length={} / headers:{} / body: {} bytes", //$NON-NLS-1$
 		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), getResponseBody().length);
-		log.trace("response: body: \"{}\"", responseBodyAsString()); //$NON-NLS-1$
 	}
 
 	// utility methods:
@@ -625,8 +629,59 @@ abstract public class HTTPConnection extends TCPConnection
 	public String requestBodyAsString() {
 		return convertBodyToString(getRequestBody(), extractRequestCharset());
 	}
+
+	enum Decompression {
+		ZIP,
+		GZIP,
+		DEFLATE
+	}
 	public String responseBodyAsString() {
-		return convertBodyToString(getResponseBody(), extractResponseCharset());
+		byte[] body = getResponseBody();
+		Charset charset = extractResponseCharset();
+		HttpHeaders respHdrs = getResponseHeaders();
+		if (respHdrs != null) {
+			List<String> encodingList = respHdrs.map().get("content-encoding"); //$NON-NLS-1$
+			if (encodingList != null) {
+				Decompression decompression = null;
+				try {
+					if (encodingList.contains("zip")) { //$NON-NLS-1$
+						decompression = Decompression.ZIP;
+					} else if (encodingList.contains("gzip")) { //$NON-NLS-1$
+						decompression = Decompression.GZIP;
+					} else if (encodingList.contains("deflate")) { //$NON-NLS-1$
+						decompression = Decompression.DEFLATE;
+					}
+					if (decompression != null) {
+						body = unzip(body, decompression);
+						return "[>> Decompressed (using " + decompression+ "): <<]\n" + convertBodyToString(body, charset); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+				} catch (IOException ex) {
+					String errMsg = "Error inflating response-body (using " + decompression + "): " + ExceptionUtils.exceptionCauseSummary(ex); //$NON-NLS-1$ //$NON-NLS-2$
+					log.error(errMsg);
+					return errMsg + '\n' + convertBodyToString(body, charset);
+				}
+			}
+		}
+		return convertBodyToString(body, charset);
+	}
+	protected byte[] unzip(byte[] bytes, Decompression decompression) throws IOException {
+		if (bytes == null) return null;
+		if (bytes.length == 0) return new byte[0];
+		try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+		     InflaterInputStream inflaterInputStream =
+		    	switch (decompression) {
+		    	case ZIP -> new ZipInputStream(byteArrayInputStream);
+		    	case GZIP -> new GZIPInputStream(byteArrayInputStream);
+		    	case DEFLATE ->  new InflaterInputStream(byteArrayInputStream);
+		    	default -> throw new IllegalArgumentException("Unknown decompression: " + decompression); //$NON-NLS-1$
+		     };
+		     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+			int read;
+			while ((read = inflaterInputStream.read()) != -1) {
+				byteArrayOutputStream.write(read);
+			}
+			return byteArrayOutputStream.toByteArray();
+		}
 	}
 	private static String convertBodyToString(byte[] body, Charset charset) {
 		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);

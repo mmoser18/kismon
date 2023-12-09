@@ -210,9 +210,10 @@ public class ResultChecker extends AbstractEntity implements Cloneable, Serializ
 			try {
 				resolvedValue = operand.isEmpty() ? operand : contextNode.resolveProperties(operand);
 				log.trace("ResultChecker.resolveOperands(): operand {}: '{}', resolved value:'{}'", idx, operand, resolvedValue); //$NON-NLS-1$
-				if (Integer.class.isAssignableFrom(this.condition.argClasses[idx])) {
+				Class<?> argClass = this.condition.argClasses[idx];
+				if (Integer.class.isAssignableFrom(argClass)) {
 					resolvedValue = Integer.valueOf((String)resolvedValue);
-				} else if (Double.class.isAssignableFrom(this.condition.argClasses[idx])) {
+				} else if (Double.class.isAssignableFrom(argClass)) {
 					resolvedValue = Double.valueOf((String)resolvedValue);
 				}
 			} catch (Exception ex) {
