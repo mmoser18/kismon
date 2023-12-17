@@ -26,8 +26,6 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -42,6 +40,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipInputStream;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
@@ -112,7 +112,7 @@ abstract public class HTTPConnection extends TCPConnection
 
 	// these two we don't support via the UI (yet):
 	protected Version httpVersion = Version.HTTP_1_1;
-	protected Redirect redirectBehavior = Redirect.NORMAL; // NORMAL: allow redirection except from https to http-URLs
+	protected Redirect redirectBehavior = Redirect.NORMAL; // "NORMAL" means: allow redirection except from https to http-URLs
 
 	protected String headers;
 	protected String payload;
@@ -121,6 +121,8 @@ abstract public class HTTPConnection extends TCPConnection
 	protected String acceptableReturnCodes = "200"; //$NON-NLS-1$
 
 	// transient stuff:
+	@JsonIgnore
+	transient protected URI resolvedURI;
 	@JsonIgnore
 	transient protected HttpClient httpClient;
 	@JsonIgnore
@@ -145,21 +147,19 @@ abstract public class HTTPConnection extends TCPConnection
 
 	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
 	@JsonIgnore
-	transient protected final TrustManager[] trustAllCerts =
-		new TrustManager[] {
-			new X509TrustManager() {
-				@Override
-				public X509Certificate[] getAcceptedIssuers() {
-					return new X509Certificate[0];
-				}
-				@Override
-				public void checkClientTrusted(X509Certificate[] certs, String authType) {
-					// empty
-				}
-				@Override
-				public void checkServerTrusted(X509Certificate[] certs, String authType) {
-					// empty
-				}
+	transient protected final TrustManager trustAllCerts =
+		new X509TrustManager() {
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[0];
+			}
+			@Override
+			public void checkClientTrusted(X509Certificate[] certs, String authType) {
+				// empty
+			}
+			@Override
+			public void checkServerTrusted(X509Certificate[] certs, String authType) {
+				// empty
 			}
 		};
 
@@ -347,23 +347,39 @@ abstract public class HTTPConnection extends TCPConnection
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
-		if (acceptableSSLVersions != null && acceptableSSLVersions.length > 0) {
-			SSLParameters sslParameters = new SSLParameters();
-			sslParameters.setProtocols(acceptableSSLVersions);
-			builder.sslParameters(sslParameters);
-		}
-
-		if (trustAllCertificates) {
-			SSLContext sslContext = null;
-			try {
-				sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$
-				sslContext.init(null, this.trustAllCerts, new java.security.SecureRandom());
-			} catch (NoSuchAlgorithmException | KeyManagementException ex) {
-				log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
+		if (this.resolvedURI.getScheme().equals("https")) { //$NON-NLS-1$
+			// for SSL/TLS we need to jump through a few extra-loops:
+			if (acceptableSSLVersions != null && acceptableSSLVersions.length > 0) {
+				SSLParameters sslParameters = new SSLParameters();
+				sslParameters.setProtocols(acceptableSSLVersions);
+				builder.sslParameters(sslParameters);
 			}
-			if (sslContext != null) builder.sslContext(sslContext);
-		}
 
+			KeyManager kms [] = null;
+			TrustManager tms [] = null;
+
+			KeyManagerFactory kmf =
+				this.getRootNode()
+					.getCertificateHandling()
+					.getKeyManagerFactory(this.resolvedURI.getHost()); // extract only the host part from the URL
+			if (kmf != null) {
+				kms = kmf.getKeyManagers();
+			}
+
+			if (trustAllCertificates) {
+				tms = new TrustManager[] { this.trustAllCerts };
+			}
+			if (kms != null || tms != null) {
+				SSLContext sslContext = null;
+				try {
+					sslContext = SSLContext.getInstance("TLS"); //$NON-NLS-1$
+					sslContext.init(kms, tms, new java.security.SecureRandom());
+					builder.sslContext(sslContext);
+				} catch (Exception ex) {
+					log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
+				}
+			}
+		}
 		if (!StringUtils.isEmpty(getTargetUid()) && !StringUtils.isEmpty(getTargetPwd())) {
 			try {
 				String resolvedUid = getResolvedTargetUid();
@@ -410,68 +426,79 @@ abstract public class HTTPConnection extends TCPConnection
 		}
 	}
 
+	/**
+	 * As side-effect this sets resolvedURIs
+	 * @return
+	 * @throws Exception
+	 */
 	public HttpRequest createRequest() throws Exception {
 		String resultingUrlResolved;
-		try { // trying to get better error logs
+		try { // trying to get better error logs when the URL does not properly resolve:
 			resultingUrlResolved = resultingUrlResolved();
 		} catch (Exception ex) {
 			log.error("createRequest: error resolving URL '{}': {}", this.getUrl(), ex.getMessage()); //$NON-NLS-1$
 			throw ex;
 		}
-		URI uri;
-		try { // trying to get better error logs
-			uri = URI.create(resultingUrlResolved);
+		try { // trying to get better error logs if this fails:
+			this.resolvedURI = URI.create(resultingUrlResolved);
 		} catch (Exception ex) {
 			log.error("createRequest: error creating URI from '{}': {}", resultingUrlResolved, ex.getMessage()); //$NON-NLS-1$
 			throw ex;
 		}
-		HttpRequest.Builder builder = HttpRequest.newBuilder()
+		return createRequest(this.resolvedURI);
+	}
+
+	/*
+	 * This method is parameterized with a uri (and not taking resolvedURI) because it is also used for redirections
+	 */
+	public HttpRequest createRequest(URI uri) throws Exception {
+		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 			.uri(uri)
 			.timeout(Duration.ofSeconds(getTimeout()));
 		if (getHeaders() != null) {
 			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(getHeaders()));
-			map.forEach((key, value) -> builder.setHeader(key, value.toString()));
+			map.forEach((key, value) -> httpRequestBuilder.setHeader(key, value.toString()));
 		}
 		if (this.includeBasicAuthHeader) {
 			String resolvedUid = getResolvedTargetUid();
 			String resolvedPwd = getResolvedTargetPwd();
 			if (!StringUtils.isEmpty(resolvedUid)) { // the pwd can be empty!
 				if (resolvedPwd == null) resolvedPwd = ""; //$NON-NLS-1$
-				builder.setHeader("Authorization", //$NON-NLS-1$
-				                  "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
-				                                               .encode((resolvedUid
-				                                                       + ":" //$NON-NLS-1$
-				                                                       + resolvedPwd
-				                                                      ).getBytes()),
-				                                               DEFAULT_CHARSET));
+				httpRequestBuilder.setHeader("Authorization", //$NON-NLS-1$
+				                             "Basic " + new String(Base64.getEncoder() //$NON-NLS-1$
+				                                                                .encode((resolvedUid
+				                                                                         + ":" //$NON-NLS-1$
+				                                                                         + resolvedPwd
+				                                                                        ).getBytes()),
+				                                                          DEFAULT_CHARSET));
 			}
 		}
 		switch (getMethod()) {
 		case GET:
 			setRequestBody(EMPTY_BODY);
-			builder.GET();
+			httpRequestBuilder.GET();
 			break;
 		case POST: {
 			setRequestBody(resolveProperties(getPayload()));
 			byte[] body = getRequestBody();
-			builder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
+			httpRequestBuilder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
 		}
 		case PUT: {
 			setRequestBody(resolveProperties(getPayload()));
 			byte[] body = getRequestBody();
-			builder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
+			httpRequestBuilder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
 		}
 		case DELETE:
 			setRequestBody(EMPTY_BODY);
-			builder.DELETE();
+			httpRequestBuilder.DELETE();
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported HTTP method: " + getMethod()); //$NON-NLS-1$
 		}
-		aditionalRequestPreparations(builder);
-		return builder.build(); // Note: returns an immutable request which can be sent multiple times.
+		aditionalRequestPreparations(httpRequestBuilder);
+		return httpRequestBuilder.build(); // Note: returns an immutable request which can be sent multiple times.
 	}
 
 	public void ensureValidRequest() throws Exception {
@@ -501,24 +528,46 @@ abstract public class HTTPConnection extends TCPConnection
 		try {
 			setTimestamp(LocalDateTime.now());
 			synchronized(this) {
-				ensureValidClient();
-				client = getHttpClient();
 				ensureValidRequest();
 				request = getHttpRequest();
+				ensureValidClient();
+				client = getHttpClient();
 			}
-			setRequestHeaders(request.headers());
-			// signal response pending:
-			setResponseHeaders(null);
-			setResponseBody("<no response received (yet)>".getBytes()); //$NON-NLS-1$
-			logRequestValues();
-			// ... before executing the actual request:
-			long startTime = System.nanoTime();
-			response = client.send(request, BodyHandlers.ofByteArray());
-			// ... and after executing the actual request:
-			long callDuration = System.nanoTime() - startTime;
-			setDuration(callDuration);
-			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
-			responseReceived(response);
+			int nrRedirections = 0;
+			do {
+				setRequestHeaders(request.headers());
+				// signal response pending:
+				setResponseHeaders(null);
+				setResponseBody("<no response received (yet)>".getBytes()); //$NON-NLS-1$
+				logRequestValues();
+				// ... before executing the actual request:
+				long startTime = System.nanoTime();
+				// send the request / receive response:
+				response = client.send(request, BodyHandlers.ofByteArray());
+				// ... and after executing the actual request:
+				long callDuration = System.nanoTime() - startTime;
+				setDuration(callDuration);
+				log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+				int statusCode = response.statusCode();
+				if (statusCode < 300 || statusCode >= 400) break; // no redirection
+				// if still here: we got a redirection - process it:
+				String location = response.headers().firstValue("Location").orElseGet(null); //$NON-NLS-1$
+				log.info("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
+				if (location == null || location.length() <= 0) {
+					throw new Exception(String.format("received redirect response %d without Location headers", statusCode)); //$NON-NLS-1$
+				}
+				try {
+					request = createRequest(new URI(location));
+				} catch (Exception ex) {
+					String errMsg = String.format("error creating new request from received redirection location '%s'", getName(), location); //$NON-NLS-1$
+					log.error(errMsg, ex);
+					throw ex;
+				}
+				if (++nrRedirections >= 10) {
+					throw new Exception(String.format("Too many redirections")); //$NON-NLS-1$
+				}
+			} while (true); // exit via break or exception...
+			processResponseReceived(response);
 
 		} catch (Exception ex) {
 			if (log.isTraceEnabled()) { // log with stack trace - this is for hard nuts:
@@ -534,19 +583,22 @@ abstract public class HTTPConnection extends TCPConnection
 			setRequestResult(getState().name() + '/' + ExceptionUtils.exceptionRootCauseMsg(ex));
 			if (response != null) {
 				throw new Exception(String.format("Error for '%s' processing response from '%s': ", //$NON-NLS-1$
-				                                  getName(), request.uri()), ex);
+				                                  getName(), request.uri()),
+				                    ex);
 			} else if (request != null) {
-				throw new Exception(String.format("Error for '%s' sending request to '%s':", //$NON-NLS-1$
-				                                  getName(), request.uri()), ex);
+				throw new Exception(String.format("Error for '%s' sending request '%s':", //$NON-NLS-1$
+				                                  getName(), request.uri()),
+				                    ex);
 			} else {
-				throw new Exception(String.format("Error for '%s' creating request", getName()), ex); //$NON-NLS-1$
+				throw new Exception(String.format("Error for '%s' creating request", getName()) ,//$NON-NLS-1$
+				                    ex);
 			}
 		} finally {
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_COMPLETE, null, response);
 		}
 	}
 
-	public void responseReceived(HttpResponse<byte[]> response) throws Exception {
+	public void processResponseReceived(HttpResponse<byte[]> response) throws Exception {
 		setResponseStatusCode(response.statusCode());
 		setResponseHeaders(response.headers());
 		setResponseBody(response.body());
@@ -630,7 +682,7 @@ abstract public class HTTPConnection extends TCPConnection
 		return convertBodyToString(getRequestBody(), extractRequestCharset());
 	}
 
-	enum Decompression {
+	enum Encodings {
 		ZIP,
 		GZIP,
 		DEFLATE
@@ -642,21 +694,21 @@ abstract public class HTTPConnection extends TCPConnection
 		if (respHdrs != null) {
 			List<String> encodingList = respHdrs.map().get("content-encoding"); //$NON-NLS-1$
 			if (encodingList != null) {
-				Decompression decompression = null;
+				Encodings encoding = null;
 				try {
 					if (encodingList.contains("zip")) { //$NON-NLS-1$
-						decompression = Decompression.ZIP;
+						encoding = Encodings.ZIP;
 					} else if (encodingList.contains("gzip")) { //$NON-NLS-1$
-						decompression = Decompression.GZIP;
+						encoding = Encodings.GZIP;
 					} else if (encodingList.contains("deflate")) { //$NON-NLS-1$
-						decompression = Decompression.DEFLATE;
+						encoding = Encodings.DEFLATE;
 					}
-					if (decompression != null) {
-						body = unzip(body, decompression);
-						return "[>> Decompressed (using " + decompression+ "): <<]\n" + convertBodyToString(body, charset); //$NON-NLS-1$ //$NON-NLS-2$
+					if (encoding != null) {
+						body = unzip(body, encoding);
+						return "[>> Decompressed (using " + encoding+ "): <<]\n" + convertBodyToString(body, charset); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				} catch (IOException ex) {
-					String errMsg = "Error inflating response-body (using " + decompression + "): " + ExceptionUtils.exceptionCauseSummary(ex); //$NON-NLS-1$ //$NON-NLS-2$
+					String errMsg = "Error inflating response-body (using " + encoding + "): " + ExceptionUtils.exceptionCauseSummary(ex); //$NON-NLS-1$ //$NON-NLS-2$
 					log.error(errMsg);
 					return errMsg + '\n' + convertBodyToString(body, charset);
 				}
@@ -664,7 +716,7 @@ abstract public class HTTPConnection extends TCPConnection
 		}
 		return convertBodyToString(body, charset);
 	}
-	protected byte[] unzip(byte[] bytes, Decompression decompression) throws IOException {
+	protected byte[] unzip(byte[] bytes, Encodings decompression) throws IOException {
 		if (bytes == null) return null;
 		if (bytes.length == 0) return new byte[0];
 		try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);

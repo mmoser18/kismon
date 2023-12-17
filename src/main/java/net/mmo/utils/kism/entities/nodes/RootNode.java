@@ -15,6 +15,7 @@ import com.vaadin.flow.component.UIDetachedException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.CertificateHandling;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 
 @SuppressWarnings("javadoc")
@@ -29,7 +30,10 @@ public class RootNode extends IntermediateNode
 	private transient String filePath;
 
 	@JsonIgnore
-	public transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
+	protected transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
+
+	protected CertificateHandling certificateHandling;
+
 
 	public RootNode() { // required for deserialization & node-factory
 		super();
@@ -39,6 +43,8 @@ public class RootNode extends IntermediateNode
 		super(name, description);
 	}
 
+
+
 	@SuppressWarnings({"deprecation"})
 	@Override
 	protected void finalize() {
@@ -47,8 +53,20 @@ public class RootNode extends IntermediateNode
 
 	public void setParent(Node parent) {
 		if (parent != null) {
-			throw new RuntimeException("This should NEVER be called!"); //$NON-NLS-1$
+			throw new RuntimeException("This should NEVER be called for a RootNode!"); //$NON-NLS-1$
 		}
+	}
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+		// this method is called at the end of the deserialization, i.e. all fields are set by now
+		// As a side effect we initialize the certificate handling here.
+		// (would be cleaner to have an explicit method for such post-initializations, but ...)
+		if (this.certificateHandling == null) {
+			log.info("Creating certificate handling"); //$NON-NLS-1$
+			this.certificateHandling = new CertificateHandling();
+		}
+		this.certificateHandling.preloadKeysAndCerts();
 	}
 
 	/**
