@@ -9,6 +9,7 @@ import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 
 import javax.persistence.Entity;
+import javax.persistence.MappedSuperclass;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAccess;
@@ -43,6 +44,7 @@ public class ArchitectureTests
 					.that().resideInAnyPackage("..entities..", "..service..", "")
 					.and().areNotAnonymousClasses()
 					.and().areNotInnerClasses()
+					.and().areNotEnums() // enums are considered as classes
 					.should().bePublic();
 				rule.check(classes);
 	}
@@ -53,12 +55,17 @@ public class ArchitectureTests
 		rule = ArchRuleDefinition.classes()
 			.that().areAnnotatedWith(Entity.class)
 			.should().resideInAnyPackage("..entities..");
-		rule.check(classes);
+		rule.allowEmptyShould(true).check(classes);
 
 		rule = ArchRuleDefinition.classes()
-			.that().haveNameMatching("..Repository..")
+			.that().areAnnotatedWith(MappedSuperclass.class)
+			.should().resideInAnyPackage("..entities..");
+		rule.allowEmptyShould(true).check(classes);
+
+		rule = ArchRuleDefinition.classes()
+			.that().haveNameMatching("..Repository")
 			.should().resideInAnyPackage("..repositories..");
-		rule.check(classes);
+		rule.allowEmptyShould(true).check(classes);
 	}
 
 	@ArchTest
@@ -66,21 +73,21 @@ public class ArchitectureTests
 		ArchRule rule;
 		rule = ArchRuleDefinition.classes()
 			.that().haveNameMatching("..Repository")
-			.should().dependOnClassesThat().resideInAnyPackage("..entities")
+			.should().dependOnClassesThat().resideInAnyPackage("..entities..")
 			;
-		rule.check(classes);
+		rule.allowEmptyShould(true).check(classes);
 
 		rule = ArchRuleDefinition.classes()
 			.that().haveNameMatching("..Service")
-			.should().dependOnClassesThat().resideInAnyPackage("..entities")
-			.andShould().dependOnClassesThat().resideInAnyPackage("..repositories")
+			.should().dependOnClassesThat().resideInAnyPackage("..entities..")
+			.andShould().dependOnClassesThat().resideInAnyPackage("..repositories..")
 			;
-		rule.check(classes);
+		rule.allowEmptyShould(true).check(classes);
 	}
 
 	@ArchTest
 	void checkLayers(JavaClasses classes) {
-		LayeredArchitecture layers = Architectures.layeredArchitecture()
+		LayeredArchitecture layers = Architectures.layeredArchitecture().consideringAllDependencies()
 			.layer("Main").definedBy("net.mmo.utils.kism")
 			.layer("Backend").definedBy("..backend..")
 			.layer("Service").definedBy("..backend.service..")
@@ -138,7 +145,7 @@ public class ArchitectureTests
 			new DescribedPredicate<JavaAccess<?>>("target is accessing a foreign Messages class")
 				{
 					@Override
-					public boolean apply(JavaAccess<?> access) {
+					public boolean test(JavaAccess<?> access) {
 						JavaClass targetClass = access.getTarget().getOwner();
 						if ("Messages".equals(targetClass.getSimpleName())) {
 							JavaClass callerClass = access.getOwner().getOwner();
