@@ -12,6 +12,17 @@
 	<description>Keep-it-simple Monitoring</description>
 	<!-- url>tbd</url -->
 	<inceptionYear>2021</inceptionYear>
+	<developers>
+		<developer>
+			<roles>
+				<role>All-in-one</role>
+			</roles>
+			<id>mmo</id>
+			<name>Michael Moser</name>
+			<email>michael.moser@alumni.ethz.ch</email>
+			<timezone>"Europe/Zurich" (UTC+01:00)</timezone>
+		</developer>
+	</developers>
 
 	<!-- to be finalized if/when I move this to GitHub / MMO
 	<issueManagement>
@@ -27,7 +38,7 @@
 	 -->
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -52,7 +63,7 @@
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
 		
 		<h2.version>2.0.204</h2.version>
-		<archunit-junit5.version>0.22.0</archunit-junit5.version>
+		<archunit-junit5.version>1.2.1</archunit-junit5.version>
 		
 		<sshj.version>0.32.0</sshj.version>
 		<mail.version>1.4</mail.version>
@@ -62,7 +73,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.6</version>
+		<version>2.7.18</version>
 	</parent>
 
 	<repositories>
@@ -153,6 +164,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- to enable live reload in the application (see https://vaadin.com/docs/latest/configuration/live-reload/spring-boot): -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -172,7 +184,7 @@
 			<version>0.1.4</version>
 		</dependency>
 		-->
-		<!-- non-declared dependency of the above -->
+		<!-- an apparently non-declared dependency of the above: -->
 		<dependency>
 			<groupId>javax.websocket</groupId>
 			<artifactId>javax.websocket-api</artifactId>
@@ -301,7 +313,13 @@
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
-			<version>21.8.0.0</version>
+			<version>23.3.0.23.09</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
+		<dependency>
+			<groupId>org.mariadb.jdbc</groupId>
+			<artifactId>mariadb-java-client</artifactId>
+			<version>3.3.1</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 		<!-- required when using Vaadin BeanValidators: -->
@@ -344,7 +362,6 @@
 		</dependency>
 
 
-
 		<!-- for AspectJ: -->
 		<!-- Instrumentations are enabled as a javaagent that run on the JVM. Springs org.springframework:spring-instrument.jar 
 			ships the InstrumentationSavingAgent which saves the instrumentation.
@@ -371,7 +388,7 @@
 			<version>${archunit-junit5.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- using javamelody-core for monitoring ->
 		<dependency>
 			<groupId>net.bull.javamelody</groupId>
@@ -401,14 +418,6 @@
 		</dependency>
 		<!- -->
 	</dependencies>
-	
-	<developers>
-		<developer>
-			<id>mmo</id>
-			<name>Michael Moser</name>
-			<email>michael.moser@freesurf.ch</email>
-		</developer>
-	</developers>
 
 	<build>
 	
@@ -419,7 +428,7 @@
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>2.22.2</version>
 				</plugin>
-				
+
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
