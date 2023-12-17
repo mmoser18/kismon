@@ -38,35 +38,9 @@ public class JDBCHandling implements Closeable
 		return this.timeoutExecutor;
 	}
 
-	@Override
-	public void close() {
-		if (this.connection != null) {
-			try {
-				this.connection.close();
-			} catch (SQLException ex) {
-				log.error("Closing", ex); //$NON-NLS-1$
-			}
-		}
-		this.timeoutExecutor = null;
-		this.driver = null;
-	}
-
-	void resetConnection() {
-		synchronized(this) {
-			if (this.connection != null) {
-				try {
-					this.connection.abort(getExecutor()); // the Oracle-Driver doesn't implement that...
-				} catch (Throwable ex) { // ... and then throws an java.lang.reflect.InvocationTargetException
-					log.trace("Exception aborting connection: " + ex.getMessage()); //$NON-NLS-1$
-				}
-			}
-			this.connection = null;
-		}
-	}
-
 	private void registerDriver(String driverClassName) throws Exception {
-		log.debug("registerDriver:"); //$NON-NLS-1$
 		this.driver = (Driver)Class.forName(driverClassName).getDeclaredConstructor().newInstance();
+		log.debug("registerDriver '{}': {}", driverClassName, this.driver); //$NON-NLS-1$
 		DriverManager.registerDriver(this.driver);
 	}
 
@@ -86,21 +60,55 @@ public class JDBCHandling implements Closeable
 		return this.connection;
 	}
 
+	@Override
+	public void close() {
+		if (this.connection != null) {
+			try {
+				this.connection.close();
+			} catch (SQLException ex) {
+				log.error("Closing", ex); //$NON-NLS-1$
+			}
+		}
+		this.timeoutExecutor = null;
+	}
+
+	void resetConnection() {
+		synchronized(this) {
+			if (this.connection != null) {
+				try {
+					this.connection.abort(getExecutor()); // the Oracle-Driver doesn't implement that...
+				} catch (Throwable ex) { // ... and then throws an java.lang.reflect.InvocationTargetException
+					log.trace("Exception aborting connection: " + ex.getMessage()); //$NON-NLS-1$
+				}
+				this.connection = null;
+			}
+			if (this.driver != null) {
+				try {
+					log.debug("deregisterDriver '{}'", this.driver); //$NON-NLS-1$
+					DriverManager.deregisterDriver(this.driver);
+				} catch (SQLException ex) {
+					log.trace("Error deregistering driver {}", this.driver); //$NON-NLS-1$
+				}
+				this.driver = null;
+			}
+		}
+	}
+
 	/**
 	 * @return a ResultSet or an updateCount (Integer)
 	 * Note: it is important that the user later closes the statement by calling close(...) with the result of the query!
 	 */
 	@SuppressWarnings("resource")
-	static Object executeQuery(Connection reqConnection, int statementTimeout, String resQuery) throws SQLException {
+	Object executeQuery(int statementTimeout, String resQuery) throws SQLException {
 		try {
-			Statement statement = reqConnection.createStatement();
+			Statement statement = this.connection.createStatement();
 			statement.setQueryTimeout(statementTimeout);
 			log.trace("statement.execute():", resQuery); //$NON-NLS-1$
 			return (statement.execute(resQuery)
 			       ? statement.getResultSet() // true: result is a ResultSet
 			       : statement.getUpdateCount()); // false: result is not a ResultSet but an update count or there are no results
 		} catch (SQLException ex) {
-			reqConnection.close(); // delete old connection so that a new connection is attempted. Otherwise, if a connection had been terminated no new one will ever be attempted
+			this.connection.close(); // delete old connection so that a new connection is attempted. Otherwise, if a connection had been terminated no new one will ever be attempted
 			throw ex;
 		}
 	}
@@ -143,7 +151,7 @@ public class JDBCHandling implements Closeable
 		return values;
 	}
 
-	static void close(Object res) {
+	static void closeResultSet(Object res) {
 		if (res instanceof ResultSet) {
 			try {
 				((ResultSet)res).getStatement().close(); // note: this also closes res!

@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -93,6 +92,11 @@ public class JDBCConnection extends TCPConnection
 		resetConnection(); // trigger a recreation of the connection if the dbPwd changes
 	}
 
+	public void setDriverName(String driverName) {
+		this.driverName = driverName;
+		resetConnection(); // trigger a recreation of the connection if the driverName changes
+	}
+
 	public void setQuery(String query) {
 		this.query = query;
 		updateResultingQuery();
@@ -121,19 +125,22 @@ public class JDBCConnection extends TCPConnection
 		}
 	}
 
-	private Connection createConnection() throws Exception {
+	@SuppressWarnings("resource")
+	private JDBCHandling createConnection() throws Exception {
 		log.debug("createConnection:"); //$NON-NLS-1$
 		if (this.handling == null) {
 			this.handling = new JDBCHandling();
 		}
-		return this.handling.createConnection(resolveProperties(this.driverName), resultingUrlResolved(),
-		                                      resolveProperties(this.dbUid), resolveProperties(this.dbPwd),
-		                                      this.timeout);
+		this.handling.createConnection(resolveProperties(this.driverName), resultingUrlResolved(),
+		                               resolveProperties(this.dbUid), resolveProperties(this.dbPwd),
+		                               this.timeout);
+		return this.handling;
 	}
 
 	private void resetConnection() {
 		if (this.handling != null) {
 			this.handling.resetConnection(); // trigger a recreation of the connection if the dbUid changes
+			this.handling = null;
 		}
 	}
 
@@ -141,7 +148,7 @@ public class JDBCConnection extends TCPConnection
 	public void sendRequest() throws Exception {
 		log.debug("sendRequest {}:", getName()); //$NON-NLS-1$
 		String resQuery = resultingQueryResolved();
-		Connection connection = null;
+		JDBCHandling connection = null;
 		Object res = null;
 		setTimestamp(LocalDateTime.now()); // must be BEFORE createConnection so that we get a timestamp in the case this fails
 		try {
@@ -149,7 +156,7 @@ public class JDBCConnection extends TCPConnection
 			setResponseStatus("<waiting>"); //$NON-NLS-1$
 			setResponsePayload("<no response received (yet>"); //$NON-NLS-1$
 			long startTime = System.nanoTime();
-			res = JDBCHandling.executeQuery(connection, this.timeout, resQuery);
+			res = connection.executeQuery(this.timeout, resQuery);
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
 			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
@@ -177,7 +184,7 @@ public class JDBCConnection extends TCPConnection
 			// system we need to close our connection again right after each check. Less efficient but
 			// necessary...
 			if (res != null) {
-				JDBCHandling.close(res);
+				JDBCHandling.closeResultSet(res);
 			}
 			if (connection != null) {
 				connection.close();
