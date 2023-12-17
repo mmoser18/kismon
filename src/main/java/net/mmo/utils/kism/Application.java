@@ -79,8 +79,8 @@ public class Application extends SpringBootServletInitializer
 			TCPConnection.disableHostNameVerification = // we parse this into a boolean as syntax validation:
 				Boolean.parseBoolean(appProperties.getProperty("DisableHostNameVerification", //$NON-NLS-1$
 				                                               "true")); //$NON-NLS-1$
-			System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", //$NON-NLS-1$
-			                                   Boolean.toString(TCPConnection.disableHostNameVerification));
+			System.setProperty("jdk.internal.httpclient.disableHostnameVerification", //$NON-NLS-1$
+			                   Boolean.toString(TCPConnection.disableHostNameVerification));
 
 			TCPConnection.trustAllCertificates =
 				Boolean.parseBoolean(appProperties.getProperty("TrustAllCertificates", //$NON-NLS-1$

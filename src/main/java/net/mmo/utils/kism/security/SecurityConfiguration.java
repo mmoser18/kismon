@@ -47,19 +47,20 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 		// You can add any possible extra configurations of your own here
 	}
 
+	@SuppressWarnings("deprecation")
 	@Bean
 	@Override
 	public UserDetailsService userDetailsService() {
 		log.info("userDetailsService");
 		String userNames = AppProperties.getProperties().getProperty("user.names");
 		if (StringUtils.isEmpty(userNames)) {
-			throw new IllegalArgumentException("'user.names' entry not found in application.properties");
+			throw new IllegalArgumentException("No entry 'user.names' found in application.properties");
 		}
 		List<UserDetails> userDetails = new ArrayList<>();
 		for (String userNameEntry: userNames.split(",")) {
 			String[] uidAndRole = userNameEntry.split(":");
 			if (uidAndRole == null || uidAndRole.length != 2) {
-				throw new IllegalArgumentException("User-entry '" + userNameEntry + "' does not contain user:role");
+				throw new IllegalArgumentException("User-entry '" + userNameEntry + "' does not match format <user>:<role>");
 			}
 			String uid  = uidAndRole[0];
 			String role = uidAndRole[1];
