@@ -1,6 +1,6 @@
 @startuml
 
-package "net.mmo.utils.kism" #FFFFFF {
+package "net.mmo.utils.kism"  [[../src/main/java/net/mmo/utils/kism]] #FFFFFF {
 
 	!include entities_nodes.puml
 	!include ui_view_nodes.puml
