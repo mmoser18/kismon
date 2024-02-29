@@ -1,6 +1,8 @@
 
 package net.mmo.utils.kism.entities;
 
+import java.io.Serializable;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -10,8 +12,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @SuppressWarnings("javadoc")
 @MappedSuperclass
-public abstract class AbstractEntity
+public abstract class AbstractEntity implements Cloneable, Serializable
 {
+	private static final long serialVersionUID = 452368103142431981L;
+
 	@JsonIgnore
 	public static boolean initializing = true; // signals that we are still initializing the application
 	                                           // necessary to avoid calling updateAllResolvableValues

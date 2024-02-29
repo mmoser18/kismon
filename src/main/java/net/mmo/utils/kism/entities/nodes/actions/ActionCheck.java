@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes.actions;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import javax.validation.constraints.NotBlank;
@@ -30,7 +29,7 @@ import net.mmo.utils.kism.utils.ThreadSupport;
 @Setter
 @Getter
 @Slf4j
-public class ActionCheck extends AbstractEntity implements Cloneable, Serializable
+public class ActionCheck extends AbstractEntity
 {
 	private static final long serialVersionUID = 9046877318500148684L;
 

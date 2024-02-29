@@ -45,6 +45,8 @@ import net.mmo.utils.kism.utils.StringUtils;
 @Slf4j
 public class SendMailAction <N extends ActionableNode> implements IAction<N>
 {
+	private static final long serialVersionUID = 4615050152823304964L;
+
 	@NotEmpty
 	String mailTo;
 	String mailCc;

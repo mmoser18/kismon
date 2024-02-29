@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.entities.nodes.actions;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -16,7 +18,7 @@ import net.mmo.utils.kism.entities.nodes.Node.State;
  * @param <N>
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
-public interface IAction <N extends ActionableNode>
+public interface IAction <N extends ActionableNode> extends Cloneable, Serializable
 {
 	/**
 	 * @param node which has changed

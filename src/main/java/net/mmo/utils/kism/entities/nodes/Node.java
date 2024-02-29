@@ -6,7 +6,6 @@
 package net.mmo.utils.kism.entities.nodes;
 
 import java.beans.PropertyChangeListener;
-import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -35,7 +34,7 @@ import org.springframework.util.Assert;
 // be reconstructed after reading the config from a file
 @Slf4j
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
-public abstract class Node extends AbstractEntity implements Cloneable, Serializable
+public abstract class Node extends AbstractEntity
 {
 	private static final long serialVersionUID = 3875470009216934341L;
 

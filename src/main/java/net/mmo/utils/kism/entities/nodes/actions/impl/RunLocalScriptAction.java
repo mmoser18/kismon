@@ -19,6 +19,8 @@ import net.mmo.utils.kism.entities.nodes.actions.IAction;
 @Slf4j
 public class RunLocalScriptAction <N extends ActionableNode> implements IAction<N>
 {
+	private static final long serialVersionUID = -1880340989518522465L;
+
 	/**
 	 * we need a public parameterless constructor so that the ActionFactory can create this using <class>.newInstance();
 	 */

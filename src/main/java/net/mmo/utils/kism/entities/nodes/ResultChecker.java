@@ -5,7 +5,6 @@
 
 package net.mmo.utils.kism.entities.nodes;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -24,7 +23,7 @@ import net.mmo.utils.kism.entities.nodes.Node.State;
 @Setter
 @Getter
 @Slf4j
-public class ResultChecker extends AbstractEntity implements Cloneable, Serializable
+public class ResultChecker extends AbstractEntity
 {
 	private static final long serialVersionUID = -2258681869832385199L;
 

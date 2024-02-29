@@ -101,7 +101,9 @@ public class NodeService
 		String path = rootNode.getFilePath();
 		path = saveToFile(rootNode, rootNode.getName(), path != null ? path : DEFAULT_FILE_NAME + '.' + CONFIG_FILE_TYPE);
 		if (path != null) {
-			rootNode.setFilePath(path);
+			if (!path.equals(rootNode.getFilePath())) {
+				rootNode.setFilePath(path);
+			}
 			return true;
 		}
 		return false;

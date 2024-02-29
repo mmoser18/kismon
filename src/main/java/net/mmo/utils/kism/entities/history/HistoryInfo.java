@@ -1,7 +1,6 @@
 
 package net.mmo.utils.kism.entities.history;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
@@ -15,7 +14,7 @@ import net.mmo.utils.kism.entities.nodes.VisibleNodeType;
 @Entity
 @Setter
 @Getter
-public class HistoryInfo extends AbstractEntity implements Serializable
+public class HistoryInfo extends AbstractEntity
 {
 	private static final long serialVersionUID = -974098342485642213L;
 

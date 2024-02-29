@@ -20,6 +20,8 @@ import net.mmo.utils.kism.entities.nodes.actions.IAction;
 @Slf4j
 public class EmitLogAction <N extends ActionableNode> implements IAction<N>
 {
+	private static final long serialVersionUID = -8407051637305711684L;
+
 	/**
 	 * we need a public parameterless constructor so that the ActionFactory can create this using <class>.newInstance();
 	 */
