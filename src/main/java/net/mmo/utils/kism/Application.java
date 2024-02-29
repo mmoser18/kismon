@@ -81,6 +81,10 @@ public class Application extends SpringBootServletInitializer
 				                                               "true")); //$NON-NLS-1$
 			System.setProperty("jdk.internal.httpclient.disableHostnameVerification", //$NON-NLS-1$
 			                   Boolean.toString(TCPConnection.disableHostNameVerification));
+			// For certain connections we set the host header (which is normally automatically added by the stack).
+			// To allow this the following option is set - but it doesn't work... :-(
+			System.setProperty("jdk.httpclient.allowRestrictedHeaders", //$NON-NLS-1$
+			                   "host"); //$NON-NLS-1$
 
 			TCPConnection.trustAllCertificates =
 				Boolean.parseBoolean(appProperties.getProperty("TrustAllCertificates", //$NON-NLS-1$
