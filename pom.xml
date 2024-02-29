@@ -54,9 +54,14 @@
 		<vaadin.version>23.0.2</vaadin.version>
 		<vaadin.version>23.1.7</vaadin.version>
 		<!- -->
-		<vaadin.version>23.1.7</vaadin.version> <!-- last version that does NOT validate the Chart licenses during build time -->
+		<!-- last version that does NOT validate the Chart licenses during build time -->
+		<vaadin.version>23.1.7</vaadin.version> 
+		<!-- -->
 		<!-- not working / refuses to build without license: ->
 		<vaadin.version>23.2.0</vaadin.version>
+		<!- -->
+		<!-- newest version ->
+		<vaadin.version>24.3.5</vaadin.version>
 		<!- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
