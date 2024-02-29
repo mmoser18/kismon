@@ -94,7 +94,8 @@ public class CertificateHandling
 
 	@SuppressWarnings("javadoc")
 	public void preloadKeysAndCerts() {
-		log.info("preloadKeysAndCerts"); //$NON-NLS-1$
+		log.info("preloadKeysAndCerts - supported Keystore Filetypes are: {}", //$NON-NLS-1$
+		         Arrays.asList(java.security.Security.getProviders()).stream().map(p -> p.getName()).collect(Collectors.toList()));
 		if (this.descriptors == null) {
 			init(); // preload the hard-coded certificates if none defined, yet (this is to bootstrap the whole thing...)
 		}
