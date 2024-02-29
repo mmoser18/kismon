@@ -8,6 +8,8 @@ package net.mmo.utils.kism.arch;
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
 
@@ -81,6 +83,19 @@ public class ArchitectureTests
 			.that().haveNameMatching("..Service")
 			.should().dependOnClassesThat().resideInAnyPackage("..entities..")
 			.andShould().dependOnClassesThat().resideInAnyPackage("..repositories..")
+			;
+		rule.allowEmptyShould(true).check(classes);
+	}
+
+	@ArchTest
+	void checkSerializability(JavaClasses classes) {
+		ArchRule rule = ArchRuleDefinition.classes()
+			.that().resideInAnyPackage("..entities..")
+			.and().doNotHaveSimpleName("NodeFactory")
+			.and().doNotHaveSimpleName("Messages")
+			.and().doNotHaveSimpleName("JDBCHandling")
+			.and().areNotInnerClasses()
+			.should().beAssignableTo(Serializable.class)
 			;
 		rule.allowEmptyShould(true).check(classes);
 	}
