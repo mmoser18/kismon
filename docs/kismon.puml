@@ -1,8 +1,5 @@
 @startuml
 
-'skinparam linetype polyline
-skinparam linetype ortho
-
 package "Main" <<net.mmo.utils.kism>> as main [[../src/main/java/net/mmo/utils/kism]] {
 
 	class Application [[../src/main/java/net/mmo/utils/kism/Application.java]]
