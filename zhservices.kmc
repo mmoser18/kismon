@@ -464,9 +464,14 @@
 		"applicable" : true,
 		"properties" : {
 			"uid" : "ZHSERVICES",
+			"NodeStatusTo" : "---",
 			"driver" : "org.mariadb.jdbc.Driver",
+			"NodeName" : "---",
 			"port" : "---",
-			"db_url" : "jdbc:mariadb://localhost${port}/ZHS_BASE_SERVICES"
+			"mail_subject" : "KISMON-Notification for Rule '${NodeName}' - new status: ${NodeStatusTo}",
+			"db_url" : "jdbc:mariadb://localhost${port}/ZHS_BASE_SERVICES",
+			"mail_sender" : "KISMON@${COMPUTERNAME}.${USERDNSDOMAIN}",
+			"mail_recipient" : "michael.moser@elca.ch"
 		},
 		"actionCheck" : null,
 		"action" : null,
@@ -525,6 +530,36 @@
 				"dbPwd" : "${pwd}",
 				"query" : "select * from config_schema_version",
 				"driverName" : "${driver}"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+				"name" : "TEST-Check attachments.deleteOrphanedAttachments paused",
+				"description" : "ZHS_BASE_SERVICES - Check that attachments.deleteOrphanedAttachments is paused",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : {
+					"triggerThresholds" : [ "2", "3", "2" ]
+				},
+				"action" : {
+					"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction",
+					"mailTo" : "${mail_recipient}",
+					"mailCc" : "",
+					"mailFrom" : "${mail_sender}",
+					"mailSubject" : "${mail_subject}",
+					"mailContent" : "KISMON-Notification for Rule '${NodeName}' (checking '${TargetAddress}'):\n\nStatus changed from '${NodeStatusFrom}' to '${NodeStatusTo}' (for ${ApplicableThreshold} subsequent checks (= ${ApplicableTimespan} sec's))\n\nGreetings from ${mail_sender}\n\n(this is an automated mail)."
+				},
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "EndsWith",
+					"operands" : [ "PAUSED" ]
+				},
+				"url" : "${db_url}",
+				"dbUid" : "${uid}",
+				"dbPwd" : "${pwd}",
+				"query" : "select TRIGGER_STATE from JOB_QRTZ_TRIGGERS where JOB_NAME= 'deleteOrphanedAttachments'",
+				"driverName" : "${driver}"
 			} ],
 			"expanded" : true
 		}, {
@@ -580,6 +615,36 @@
 				"dbUid" : "${uid}",
 				"dbPwd" : "${pwd}",
 				"query" : "select * from config_schema_version",
+				"driverName" : "${driver}"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+				"name" : "UAT-Check attachments.deleteOrphanedAttachments paused",
+				"description" : "ZHS_BASE_SERVICES - Check that attachments.deleteOrphanedAttachments is paused",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : {
+					"triggerThresholds" : [ "2", "3", "2" ]
+				},
+				"action" : {
+					"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction",
+					"mailTo" : "${mail_recipient}",
+					"mailCc" : "",
+					"mailFrom" : "${mail_sender}",
+					"mailSubject" : "${mail_subject}",
+					"mailContent" : "KISMON-Notification for Rule '${NodeName}' (checking '${TargetAddress}'):\n\nStatus changed from '${NodeStatusFrom}' to '${NodeStatusTo}' (for ${ApplicableThreshold} subsequent checks (= ${ApplicableTimespan} sec's))\n\nGreetings from ${mail_sender}\n\n(this is an automated mail)."
+				},
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "EndsWith",
+					"operands" : [ "PAUSED" ]
+				},
+				"url" : "${db_url}",
+				"dbUid" : "${uid}",
+				"dbPwd" : "${pwd}",
+				"query" : "select TRIGGER_STATE from JOB_QRTZ_TRIGGERS where JOB_NAME= 'deleteOrphanedAttachments'",
 				"driverName" : "${driver}"
 			} ],
 			"expanded" : true
@@ -637,10 +702,40 @@
 				"dbPwd" : "${pwd}",
 				"query" : "select * from config_schema_version",
 				"driverName" : "${driver}"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+				"name" : "PROD-Check attachments.deleteOrphanedAttachments paused",
+				"description" : "ZHS_BASE_SERVICES - Check that attachments.deleteOrphanedAttachments is paused",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : {
+					"triggerThresholds" : [ "2", "3", "2" ]
+				},
+				"action" : {
+					"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction",
+					"mailTo" : "${mail_recipient}",
+					"mailCc" : "",
+					"mailFrom" : "${mail_sender}",
+					"mailSubject" : "${mail_subject}",
+					"mailContent" : "KISMON-Notification for Rule '${NodeName}' (checking '${TargetAddress}'):\n\nStatus changed from '${NodeStatusFrom}' to '${NodeStatusTo}' (for ${ApplicableThreshold} subsequent checks (= ${ApplicableTimespan} sec's))\n\nGreetings from ${mail_sender}\n\n(this is an automated mail)."
+				},
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "EndsWith",
+					"operands" : [ "PAUSED" ]
+				},
+				"url" : "${db_url}",
+				"dbUid" : "${uid}",
+				"dbPwd" : "${pwd}",
+				"query" : "select TRIGGER_STATE from JOB_QRTZ_TRIGGERS where JOB_NAME= 'deleteOrphanedAttachments'",
+				"driverName" : "${driver}"
 			} ],
 			"expanded" : true
 		} ],
-		"expanded" : false
+		"expanded" : true
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "MariaDB DB Brokers",
@@ -969,7 +1064,7 @@
 				"payload" : "",
 				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : false
+			"expanded" : true
 		}, {
 			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 			"name" : "MinIO UAT",
@@ -1063,8 +1158,10 @@
 		"applicable" : true,
 		"properties" : {
 			"bb" : "---",
+			"iam_url" : "http://zhs-base-iam-repository-zhm-egov-${env}.zhm.acp2.aspectra.com/",
 			"host" : "zhs-base-command-bridge-zhm-egov-${env}.zhm.acp2.aspectra.com",
 			"env" : "---",
+			"cb_url" : "https://${host}/v2/commandBridge/${bb}/send",
 			"url" : "https://${host}/v2/commandBridge/${bb}/send"
 		},
 		"actionCheck" : null,
@@ -1099,7 +1196,7 @@
 					"condition" : "Contains",
 					"operands" : [ "<token:primaryTokenValidUntil>" ]
 				},
-				"url" : "${url}",
+				"url" : "${cb_url}",
 				"method" : "POST",
 				"targetUid" : "<user>",
 				"targetPwd" : "<password>",
@@ -1108,6 +1205,86 @@
 				"redirectBehavior" : "NORMAL",
 				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/xml\nZHS-Api-Version: 1.0.13\nZhs-Context: PGNvbnRleHQ+Cgk8Y2xpZW50UHJvdmlkZWRDb3JyZWxhdGlvbklkPjg5NDNiM2I0LTVmMzItMTFlYy1iZjYzLTAyNDJhYzEzMDAwMjwvY2xpZW50UHJvdmlkZWRDb3JyZWxhdGlvbklkPgoJPHpoc0ludGVybmFsQ29ycmVsYXRpb25JZD45MzUzMjZhYS01ZjMyLTExZWMtYmY2My0wMjQyYWMxMzAwMDI8L3poc0ludGVybmFsQ29ycmVsYXRpb25JZD4KCTx6aHNJbnRlcm5hbENvbW1hbmRJZD42MWQ4OTBlZS02ZWVkLTQ5NmYtYTkyYy04ZWMzMDFmN2ZmMzU8L3poc0ludGVybmFsQ29tbWFuZElkPgoJPG9yaWdpbmFsbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9vcmlnaW5hbGx5UmVxdWVzdGluZ0J1aWxkaW5nQmxvY2s+Cgk8aW1tZWRpYXRlbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9pbW1lZGlhdGVseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPgoJPGFzc2VydGVkSWRlbnRpdHk+CgkJPGludGVybmFsSWRlbnRpdHkvPgoJPC9hc3NlcnRlZElkZW50aXR5Pgo8L2NvbnRleHQ+",
 				"payload" : "<token:createToken xmlns:token=\"https://www.services.zh.ch/uri/xmlns/zhs-base-token/1/0\" version=\"1.0.0\" />",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.createIdentityAssertion TEST",
+				"description" : "${iam_url}getIdentityAssertion",
+				"applicable" : false,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}createIdentityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiOWZiNGM4OTktMjNmMi00ZjdmLTlkYmYtNjQ5YmY3YjNkNTFmIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImNsaWVudCIsInpocy11c2VyIl0sImdpdmVuX25hbWUiOiJNaWNoYWVsIiwiZmFtaWx5X25hbWUiOiJNb3NlciIsInBob25lX251bWJlciI6Iis0MTc2NDIwODUzOSIsImJpcnRoZGF0ZSI6IjE5NTktMDMtMTgiLCJnZW5kZXIiOiJtIiwibmF0aW9uYWxpdHkiOiJBVCIsInBsYWNlT2ZCaXJ0aCI6IldpZW4gLyDDlnN0ZXJyZWljaCIsImFjciI6InVybjpxYS5hZ292LmNoOm5hbWVzOnRjOmFjOmNsYXNzZXM6MTAwIn0.klHE70InWiWKTj0ahXLaRpiPr-mXdStWnKuX1f6XZl0\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.getIdentityAssertion TEST",
+				"description" : "${iam_url}getIdentityAssertion",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}getIdentityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiOWZiNGM4OTktMjNmMi00ZjdmLTlkYmYtNjQ5YmY3YjNkNTFmIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImNsaWVudCIsInpocy11c2VyIl0sImdpdmVuX25hbWUiOiJNaWNoYWVsIiwiZmFtaWx5X25hbWUiOiJNb3NlciIsInBob25lX251bWJlciI6Iis0MTc2NDIwODUzOSIsImJpcnRoZGF0ZSI6IjE5NTktMDMtMTgiLCJnZW5kZXIiOiJtIiwibmF0aW9uYWxpdHkiOiJBVCIsInBsYWNlT2ZCaXJ0aCI6IldpZW4gLyDDlnN0ZXJyZWljaCIsImFjciI6InVybjpxYS5hZ292LmNoOm5hbWVzOnRjOmFjOmNsYXNzZXM6MTAwIn0.klHE70InWiWKTj0ahXLaRpiPr-mXdStWnKuX1f6XZl0\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "trustRelation.listTrustRelations TEST",
+				"description" : "https://zhs-base-command-bridge-zhm-egov-test2.zhm.acp2.aspectra.com/v2/commandBridge/trustRelation/send",
+				"applicable" : true,
+				"properties" : {
+					"bb" : "trustRelation"
+				},
+				"actionCheck" : null,
+				"action" : null,
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<trust:trustRelationsListed" ]
+				},
+				"url" : "${cb_url}",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/xml\nZHS-Api-Version: 1.0.13\nZhs-Context: PGNvbW1hbmRDb250ZXh0IHhtbG5zPSJodHRwczovL3d3dy5zZXJ2aWNlcy56aC5jaC91cmkveG1sbnMvemhzLWNvbW1vbi8xLzQiPg0KCTxjbGllbnRQcm92aWRlZENvcnJlbGF0aW9uSWQ+ODk0M2IzYjQtNWYzMi0xMWVjLWJmNjMtMDI0MmFjMTMwMDAyPC9jbGllbnRQcm92aWRlZENvcnJlbGF0aW9uSWQ+DQoJPHpoc0ludGVybmFsQ29ycmVsYXRpb25JZD45MzUzMjZhYS01ZjMyLTExZWMtYmY2My0wMjQyYWMxMzAwMDI8L3poc0ludGVybmFsQ29ycmVsYXRpb25JZD4NCgk8emhzSW50ZXJuYWxDb21tYW5kSWQ+NjFkODkwZWUtNmVlZC00OTZmLWE5MmMtOGVjMzAxZjdmZjM1PC96aHNJbnRlcm5hbENvbW1hbmRJZD4NCgk8b3JpZ2luYWxseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPmNvbW1hbmRCcmlkZ2U8L29yaWdpbmFsbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz4NCgk8aW1tZWRpYXRlbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9pbW1lZGlhdGVseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPg0KCTxhc3NlcnRlZElkZW50aXR5Pg0KCQk8aW50ZXJuYWxJZGVudGl0eS8+DQoJPC9hc3NlcnRlZElkZW50aXR5Pg0KPC9jb21tYW5kQ29udGV4dD4=",
+				"payload" : "<trust:listTrustRelations xmlns:trust=\"https://www.services.zh.ch/uri/xmlns/zhs-base-trustRelation/1/0\" version=\"1.0.1\" />",
 				"acceptableReturnCodes" : "200"
 			} ],
 			"expanded" : true
@@ -1132,7 +1309,7 @@
 				},
 				"actionCheck" : null,
 				"action" : null,
-				"active" : false,
+				"active" : true,
 				"period" : 60,
 				"timeout" : 15,
 				"checkResults" : true,
@@ -1140,7 +1317,7 @@
 					"condition" : "Contains",
 					"operands" : [ "<token:primaryTokenValidUntil>" ]
 				},
-				"url" : "${url}",
+				"url" : "${cb_url}",
 				"method" : "POST",
 				"targetUid" : "<user>",
 				"targetPwd" : "<password>",
@@ -1149,6 +1326,86 @@
 				"redirectBehavior" : "NORMAL",
 				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/xml\nZHS-Api-Version: 1.0.13\nZhs-Context: PGNvbnRleHQ+Cgk8Y2xpZW50UHJvdmlkZWRDb3JyZWxhdGlvbklkPjg5NDNiM2I0LTVmMzItMTFlYy1iZjYzLTAyNDJhYzEzMDAwMjwvY2xpZW50UHJvdmlkZWRDb3JyZWxhdGlvbklkPgoJPHpoc0ludGVybmFsQ29ycmVsYXRpb25JZD45MzUzMjZhYS01ZjMyLTExZWMtYmY2My0wMjQyYWMxMzAwMDI8L3poc0ludGVybmFsQ29ycmVsYXRpb25JZD4KCTx6aHNJbnRlcm5hbENvbW1hbmRJZD42MWQ4OTBlZS02ZWVkLTQ5NmYtYTkyYy04ZWMzMDFmN2ZmMzU8L3poc0ludGVybmFsQ29tbWFuZElkPgoJPG9yaWdpbmFsbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9vcmlnaW5hbGx5UmVxdWVzdGluZ0J1aWxkaW5nQmxvY2s+Cgk8aW1tZWRpYXRlbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9pbW1lZGlhdGVseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPgoJPGFzc2VydGVkSWRlbnRpdHk+CgkJPGludGVybmFsSWRlbnRpdHkvPgoJPC9hc3NlcnRlZElkZW50aXR5Pgo8L2NvbnRleHQ+",
 				"payload" : "<token:createToken xmlns:token=\"https://www.services.zh.ch/uri/xmlns/zhs-base-token/1/0\" version=\"1.0.0\" />",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.createIdentityAssertion UAT",
+				"description" : "http://zhs-base-iam-repository-zhm-egov-test.zhm.acp2.aspectra.com/getIdentityAssertion",
+				"applicable" : false,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}createIdentityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiMTU3MWQ2ZGUtNTFhYS00ZTlhLWExODktZWQ2MjM4YTkyMTkyIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImFkbWluIiwiY2xpZW50IiwibG9nLXZpZXdlciIsInNlbGYtcmVnaXN0ZXJlZCIsInNpZGFwLWV4cGxvcmVyIiwidXNlci1hZG1pbiIsInpocy1hZG1pbmlzdHJhdG9yIiwiemhzLXVzZXIiXSwiZ2l2ZW5fbmFtZSI6Ik1pY2hhZWwiLCJmYW1pbHlfbmFtZSI6Ik1vc2VyIiwicGhvbmVfbnVtYmVyIjoiKzQxNzY0MjA4NTM5IiwiYmlydGhkYXRlIjoiMTk1OS0wMy0xOCIsImdlbmRlciI6Im0iLCJuYXRpb25hbGl0eSI6IkFUIiwicGxhY2VPZkJpcnRoIjoiV2llbiAvIMOWc3RlcnJlaWNoIiwiYWNyIjoidXJuOnFhLmFnb3YuY2g6bmFtZXM6dGM6YWM6Y2xhc3NlczoxMDAifQ.k8lTVJejPxQLzxQ1DQLqzM0HiJvOPPx_0UpZ9nhRzcU\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.getIdentityAssertion UAT",
+				"description" : "http://zhs-base-iam-repository-zhm-egov-test.zhm.acp2.aspectra.com/getIdentityAssertion",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}getIdentityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiMTU3MWQ2ZGUtNTFhYS00ZTlhLWExODktZWQ2MjM4YTkyMTkyIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImFkbWluIiwiY2xpZW50IiwibG9nLXZpZXdlciIsInNlbGYtcmVnaXN0ZXJlZCIsInNpZGFwLWV4cGxvcmVyIiwidXNlci1hZG1pbiIsInpocy1hZG1pbmlzdHJhdG9yIiwiemhzLXVzZXIiXSwiZ2l2ZW5fbmFtZSI6Ik1pY2hhZWwiLCJmYW1pbHlfbmFtZSI6Ik1vc2VyIiwicGhvbmVfbnVtYmVyIjoiKzQxNzY0MjA4NTM5IiwiYmlydGhkYXRlIjoiMTk1OS0wMy0xOCIsImdlbmRlciI6Im0iLCJuYXRpb25hbGl0eSI6IkFUIiwicGxhY2VPZkJpcnRoIjoiV2llbiAvIMOWc3RlcnJlaWNoIiwiYWNyIjoidXJuOnFhLmFnb3YuY2g6bmFtZXM6dGM6YWM6Y2xhc3NlczoxMDAifQ.k8lTVJejPxQLzxQ1DQLqzM0HiJvOPPx_0UpZ9nhRzcU\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "trustRelation.listTrustRelations UAT",
+				"description" : "https://zhs-base-command-bridge-zhm-egov-test.zhm.acp2.aspectra.com/v2/commandBridge/trustRelation/send",
+				"applicable" : true,
+				"properties" : {
+					"bb" : "trustRelation"
+				},
+				"actionCheck" : null,
+				"action" : null,
+				"active" : true,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<trust:trustRelationsListed" ]
+				},
+				"url" : "${cb_url}",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/xml\nZHS-Api-Version: 1.0.13\nZhs-Context: PGNvbW1hbmRDb250ZXh0IHhtbG5zPSJodHRwczovL3d3dy5zZXJ2aWNlcy56aC5jaC91cmkveG1sbnMvemhzLWNvbW1vbi8xLzQiPg0KCTxjbGllbnRQcm92aWRlZENvcnJlbGF0aW9uSWQ+ODk0M2IzYjQtNWYzMi0xMWVjLWJmNjMtMDI0MmFjMTMwMDAyPC9jbGllbnRQcm92aWRlZENvcnJlbGF0aW9uSWQ+DQoJPHpoc0ludGVybmFsQ29ycmVsYXRpb25JZD45MzUzMjZhYS01ZjMyLTExZWMtYmY2My0wMjQyYWMxMzAwMDI8L3poc0ludGVybmFsQ29ycmVsYXRpb25JZD4NCgk8emhzSW50ZXJuYWxDb21tYW5kSWQ+NjFkODkwZWUtNmVlZC00OTZmLWE5MmMtOGVjMzAxZjdmZjM1PC96aHNJbnRlcm5hbENvbW1hbmRJZD4NCgk8b3JpZ2luYWxseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPmNvbW1hbmRCcmlkZ2U8L29yaWdpbmFsbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz4NCgk8aW1tZWRpYXRlbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9pbW1lZGlhdGVseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPg0KCTxhc3NlcnRlZElkZW50aXR5Pg0KCQk8aW50ZXJuYWxJZGVudGl0eS8+DQoJPC9hc3NlcnRlZElkZW50aXR5Pg0KPC9jb21tYW5kQ29udGV4dD4=",
+				"payload" : "<trust:listTrustRelations xmlns:trust=\"https://www.services.zh.ch/uri/xmlns/zhs-base-trustRelation/1/0\" version=\"1.0.1\" />",
 				"acceptableReturnCodes" : "200"
 			} ],
 			"expanded" : true
@@ -1181,7 +1438,7 @@
 					"condition" : "Contains",
 					"operands" : [ "<token:primaryTokenValidUntil>" ]
 				},
-				"url" : "${url}",
+				"url" : "${cb_url}",
 				"method" : "POST",
 				"targetUid" : "<user>",
 				"targetPwd" : "<password>",
@@ -1191,8 +1448,114 @@
 				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/xml\nZHS-Api-Version: 1.0.13\nZhs-Context: PGNvbnRleHQ+Cgk8Y2xpZW50UHJvdmlkZWRDb3JyZWxhdGlvbklkPjg5NDNiM2I0LTVmMzItMTFlYy1iZjYzLTAyNDJhYzEzMDAwMjwvY2xpZW50UHJvdmlkZWRDb3JyZWxhdGlvbklkPgoJPHpoc0ludGVybmFsQ29ycmVsYXRpb25JZD45MzUzMjZhYS01ZjMyLTExZWMtYmY2My0wMjQyYWMxMzAwMDI8L3poc0ludGVybmFsQ29ycmVsYXRpb25JZD4KCTx6aHNJbnRlcm5hbENvbW1hbmRJZD42MWQ4OTBlZS02ZWVkLTQ5NmYtYTkyYy04ZWMzMDFmN2ZmMzU8L3poc0ludGVybmFsQ29tbWFuZElkPgoJPG9yaWdpbmFsbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9vcmlnaW5hbGx5UmVxdWVzdGluZ0J1aWxkaW5nQmxvY2s+Cgk8aW1tZWRpYXRlbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9pbW1lZGlhdGVseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPgoJPGFzc2VydGVkSWRlbnRpdHk+CgkJPGludGVybmFsSWRlbnRpdHkvPgoJPC9hc3NlcnRlZElkZW50aXR5Pgo8L2NvbnRleHQ+",
 				"payload" : "<token:createToken xmlns:token=\"https://www.services.zh.ch/uri/xmlns/zhs-base-token/1/0\" version=\"1.0.0\" />",
 				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.createIdentityAssertion PROD",
+				"description" : "http://zhs-base-iam-repository-zhm-egov-test.zhm.acp2.aspectra.com/createIdentityAssertion",
+				"applicable" : false,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}createIdentityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiMTU3MWQ2ZGUtNTFhYS00ZTlhLWExODktZWQ2MjM4YTkyMTkyIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImFkbWluIiwiY2xpZW50IiwibG9nLXZpZXdlciIsInNlbGYtcmVnaXN0ZXJlZCIsInNpZGFwLWV4cGxvcmVyIiwidXNlci1hZG1pbiIsInpocy1hZG1pbmlzdHJhdG9yIiwiemhzLXVzZXIiXSwiZ2l2ZW5fbmFtZSI6Ik1pY2hhZWwiLCJmYW1pbHlfbmFtZSI6Ik1vc2VyIiwicGhvbmVfbnVtYmVyIjoiKzQxNzY0MjA4NTM5IiwiYmlydGhkYXRlIjoiMTk1OS0wMy0xOCIsImdlbmRlciI6Im0iLCJuYXRpb25hbGl0eSI6IkFUIiwicGxhY2VPZkJpcnRoIjoiV2llbiAvIMOWc3RlcnJlaWNoIiwiYWNyIjoidXJuOnFhLmFnb3YuY2g6bmFtZXM6dGM6YWM6Y2xhc3NlczoxMDAifQ.k8lTVJejPxQLzxQ1DQLqzM0HiJvOPPx_0UpZ9nhRzcU\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.createIdentityAssertion PROD-Copy",
+				"description" : "http://zhs-base-iam-repository-zhm-egov-test.zhm.acp2.aspectra.com/createIdentityAssertion",
+				"applicable" : false,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}identityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiMTU3MWQ2ZGUtNTFhYS00ZTlhLWExODktZWQ2MjM4YTkyMTkyIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImFkbWluIiwiY2xpZW50IiwibG9nLXZpZXdlciIsInNlbGYtcmVnaXN0ZXJlZCIsInNpZGFwLWV4cGxvcmVyIiwidXNlci1hZG1pbiIsInpocy1hZG1pbmlzdHJhdG9yIiwiemhzLXVzZXIiXSwiZ2l2ZW5fbmFtZSI6Ik1pY2hhZWwiLCJmYW1pbHlfbmFtZSI6Ik1vc2VyIiwicGhvbmVfbnVtYmVyIjoiKzQxNzY0MjA4NTM5IiwiYmlydGhkYXRlIjoiMTk1OS0wMy0xOCIsImdlbmRlciI6Im0iLCJuYXRpb25hbGl0eSI6IkFUIiwicGxhY2VPZkJpcnRoIjoiV2llbiAvIMOWc3RlcnJlaWNoIiwiYWNyIjoidXJuOnFhLmFnb3YuY2g6bmFtZXM6dGM6YWM6Y2xhc3NlczoxMDAifQ.k8lTVJejPxQLzxQ1DQLqzM0HiJvOPPx_0UpZ9nhRzcU\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "iamRepository.getIdentityAssertion PROD",
+				"description" : "http://zhs-base-iam-repository-zhm-egov-test.zhm.acp2.aspectra.com/getIdentityAssertion",
+				"applicable" : false,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<iam:firstName>Michael</iam:firstName><iam:lastName>Moser</iam:lastName>" ]
+				},
+				"url" : "${iam_url}getIdentityAssertion",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/json\nZHS-Api-Version: 1.0.13",
+				"payload" : "{\n    \"idToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBaXJsb2NrSUFNIiwib3JpZ19pc3MiOiJBaXJsb2NrSUFNIiwic3ViIjoiMTU3MWQ2ZGUtNTFhYS00ZTlhLWExODktZWQ2MjM4YTkyMTkyIiwibmFtZSI6Ik1pY2hhZWwgTW9zZXIiLCJpYXQiOjE3MDMxODAwNzksImVtYWlsIjoibWljaGFlbC5tb3NlckBlbGNhLmNoIiwiZUNIMDE3MC5WU1JOIjoiMSIsImVDSDAxNzAuVlNBIjoiMiIsInJvbGVzIjpbImFkbWluIiwiY2xpZW50IiwibG9nLXZpZXdlciIsInNlbGYtcmVnaXN0ZXJlZCIsInNpZGFwLWV4cGxvcmVyIiwidXNlci1hZG1pbiIsInpocy1hZG1pbmlzdHJhdG9yIiwiemhzLXVzZXIiXSwiZ2l2ZW5fbmFtZSI6Ik1pY2hhZWwiLCJmYW1pbHlfbmFtZSI6Ik1vc2VyIiwicGhvbmVfbnVtYmVyIjoiKzQxNzY0MjA4NTM5IiwiYmlydGhkYXRlIjoiMTk1OS0wMy0xOCIsImdlbmRlciI6Im0iLCJuYXRpb25hbGl0eSI6IkFUIiwicGxhY2VPZkJpcnRoIjoiV2llbiAvIMOWc3RlcnJlaWNoIiwiYWNyIjoidXJuOnFhLmFnb3YuY2g6bmFtZXM6dGM6YWM6Y2xhc3NlczoxMDAifQ.k8lTVJejPxQLzxQ1DQLqzM0HiJvOPPx_0UpZ9nhRzcU\"\n}",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "trustRelation.listTrustRelations PROD",
+				"description" : "https://zhs-base-command-bridge-zhm-egov-test.zhm.acp2.aspectra.com/v2/commandBridge/trustRelation/send",
+				"applicable" : false,
+				"properties" : {
+					"bb" : "trustRelation"
+				},
+				"actionCheck" : null,
+				"action" : null,
+				"active" : false,
+				"period" : 60,
+				"timeout" : 15,
+				"checkResults" : true,
+				"resultChecker" : {
+					"condition" : "Contains",
+					"operands" : [ "<trust:trustRelationsListed" ]
+				},
+				"url" : "${cb_url}",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "Accept: */*\nAccept-Encoding: gzip, deflate, br\nCache-Control: no-cache\nContent-Type: application/xml\nZHS-Api-Version: 1.0.13\nZhs-Context: PGNvbW1hbmRDb250ZXh0IHhtbG5zPSJodHRwczovL3d3dy5zZXJ2aWNlcy56aC5jaC91cmkveG1sbnMvemhzLWNvbW1vbi8xLzQiPg0KCTxjbGllbnRQcm92aWRlZENvcnJlbGF0aW9uSWQ+ODk0M2IzYjQtNWYzMi0xMWVjLWJmNjMtMDI0MmFjMTMwMDAyPC9jbGllbnRQcm92aWRlZENvcnJlbGF0aW9uSWQ+DQoJPHpoc0ludGVybmFsQ29ycmVsYXRpb25JZD45MzUzMjZhYS01ZjMyLTExZWMtYmY2My0wMjQyYWMxMzAwMDI8L3poc0ludGVybmFsQ29ycmVsYXRpb25JZD4NCgk8emhzSW50ZXJuYWxDb21tYW5kSWQ+NjFkODkwZWUtNmVlZC00OTZmLWE5MmMtOGVjMzAxZjdmZjM1PC96aHNJbnRlcm5hbENvbW1hbmRJZD4NCgk8b3JpZ2luYWxseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPmNvbW1hbmRCcmlkZ2U8L29yaWdpbmFsbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz4NCgk8aW1tZWRpYXRlbHlSZXF1ZXN0aW5nQnVpbGRpbmdCbG9jaz5jb21tYW5kQnJpZGdlPC9pbW1lZGlhdGVseVJlcXVlc3RpbmdCdWlsZGluZ0Jsb2NrPg0KCTxhc3NlcnRlZElkZW50aXR5Pg0KCQk8aW50ZXJuYWxJZGVudGl0eS8+DQoJPC9hc3NlcnRlZElkZW50aXR5Pg0KPC9jb21tYW5kQ29udGV4dD4=",
+				"payload" : "<trust:listTrustRelations xmlns:trust=\"https://www.services.zh.ch/uri/xmlns/zhs-base-trustRelation/1/0\" version=\"1.0.1\" />",
+				"acceptableReturnCodes" : "200"
 			} ],
-			"expanded" : true
+			"expanded" : false
 		} ],
 		"expanded" : true
 	} ],
@@ -1200,22 +1563,22 @@
 	"certificateHandling" : {
 		"descriptors" : [ {
 			"hostPattern" : "zhs-base-command-bridge-zhm-egov-test2.zhm.acp2.aspectra.com",
-			"keyAndCertFileName" : "zhs-base-command_bridge_client_test.p12",
+			"keyAndCertFileName" : "D:/Projects/ZHServices/ZHServices Certificates/TEST/zhs-base-command-bridge_client_test.p12",
 			"keyAndCertFileType" : "PKCS12",
-			"keyAndCertFilePwd" : "password",
-			"keyAndCertKeyPwd" : "password"
+			"keyAndCertFilePwd" : "changeit",
+			"keyAndCertKeyPwd" : "changeit"
 		}, {
 			"hostPattern" : "zhs-base-command-bridge-zhm-egov-test.zhm.acp2.aspectra.com",
-			"keyAndCertFileName" : "zhs-base-command_bridge_client_uat.p12",
+			"keyAndCertFileName" : "D:/Projects/ZHServices/ZHServices Certificates/UAT/zhs-base-command-bridge_client_uat.p12",
 			"keyAndCertFileType" : "PKCS12",
-			"keyAndCertFilePwd" : "password",
-			"keyAndCertKeyPwd" : "password"
+			"keyAndCertFilePwd" : "changeit",
+			"keyAndCertKeyPwd" : "changeit"
 		}, {
 			"hostPattern" : "zhs-base-command-bridge-zhm-egov-prod.zhm.acp2.aspectra.com",
-			"keyAndCertFileName" : "zhs-base-command_bridge_client_prod.p12",
+			"keyAndCertFileName" : "D:/Projects/ZHServices/ZHServices Certificates/PROD/zhs-base-command-bridge_client_prod.p12",
 			"keyAndCertFileType" : "PKCS12",
-			"keyAndCertFilePwd" : "password",
-			"keyAndCertKeyPwd" : "password"
+			"keyAndCertFilePwd" : "changeit",
+			"keyAndCertKeyPwd" : "changeit"
 		} ]
 	}
 }
