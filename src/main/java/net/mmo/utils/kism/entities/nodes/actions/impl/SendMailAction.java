@@ -87,7 +87,7 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 	MailProperties mailProperties = new MailProperties();
 
 	@JsonIgnore
-	Session mailSession;
+	transient Session mailSession;
 	/**
 	 * we need a public parameterless constructor so that the ActionFactory can create this using <class>.newInstance();
 	 */
