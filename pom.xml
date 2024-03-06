@@ -48,12 +48,7 @@
 		<user.home>${env.USERPROFILE}</user.home>
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
 		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1, but did NOT work with v19.0.x..v21.0.4: -->
-		<!-- worked: ->
-		<vaadin.version>22.0.2</vaadin.version>
-		<vaadin.version>23.0.1</vaadin.version>
-		<vaadin.version>23.0.2</vaadin.version>
-		<vaadin.version>23.1.7</vaadin.version>
-		<!- -->
+		<!-- worked: 22.0.2, 23.0.1, 23.0.2 -->
 		<!-- last version that does NOT validate the Chart licenses during build time -->
 		<vaadin.version>23.1.7</vaadin.version> 
 		<!-- -->
@@ -67,10 +62,10 @@
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
 		
-		<h2.version>2.0.204</h2.version>
+		<h2.version>2.2.224</h2.version>
 		<archunit-junit5.version>1.2.1</archunit-junit5.version>
 		
-		<sshj.version>0.32.0</sshj.version>
+		<sshj.version>0.38.0</sshj.version>
 		<mail.version>1.4</mail.version>
 		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
 	</properties>
@@ -297,8 +292,6 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		
-
 		<!--  -->
 		<!-- Using PostGres DB / not tested ->
 		<dependency>
@@ -434,7 +427,7 @@
 					<version>2.22.2</version>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -452,17 +445,18 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/> <!-- ignored while the execution of this plugin on a Java>v8-JRE always yields:
+										<ignore/> <!-` ignored while the execution of this plugin on a Java>v8-JRE always yields:
 												Execution generate-sources of goal org.apache.cxf:cxf-codegen-plugin:3.1.5:wsdl2java failed:
 												A required class was missing while executing org.apache.cxf:cxf-codegen-plugin:3.1.5:wsdl2java:
 												javax/xml/bind/annotation/adapters/HexBinaryAdapter
-											-->
+											->
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				<!- -->
 			</plugins>
 		</pluginManagement>
 		
@@ -714,7 +708,8 @@
 					<plugin>
 						<groupId>org.owasp</groupId>
 						<artifactId>dependency-check-maven</artifactId>
-						<version>${dependency-check-maven.version}</version>
+						<version>9.0.9</version>
+
 						<configuration>
 							<formats>
 								<format>html</format>
