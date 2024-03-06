@@ -35,6 +35,8 @@ webpack.generated.js
 /ksta.kmc_bak
 /ksta.kmc
 /ksta-old-VMs.kmc
+/zhservices.kmc
+/zhservices.kmc_bak
 /*.bak
 /* - Copy.kmc
 /keystore.p12
