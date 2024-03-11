@@ -41,4 +41,6 @@ webpack.generated.js
 /* - Copy.kmc
 /keystore.p12
 /truststore.p12
-/config von ksta-zh-tools
+config von ksta-zh-tools
+ELCA_certificates
+running_version
