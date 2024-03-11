@@ -1,34 +1,34 @@
 @echo off
+
+rem note: adapt to the location where the KISMON jar and other files are located:
 set KISMON_HOME=U:\Documents\eclipse\workspace_Vaadin\KIS-Monitoring
 cd %KISMON_HOME%
 
 set JAVA_HOME=C:\Program Files\Java\jdk-17.0
-rem set JAVA_HOME=C:\Program Files\Java\jdk-21.0
-echo run application using %JAVA_HOME%:
+echo running KISMON using %JAVA_HOME%:
 set KISMON_JAR=kis-monitoring-1.1-SNAPSHOT.jar
 
-rem we need the properties file HERE:
-echo copying required resources to right place:
+rem we need the properties file and a few others HERE:
+echo copying required resources to target:
 for %%f in (application.properties banner.txt logback.xml) do copy src\main\resources\%%f target\
 for %%f in (logback-test.xml) do copy src\test\resources\%%f target\
-for %%f in (*.kmc *.p12) do copy %%f target\
+for %%f in (*.p12) do copy %%f target\
+rem disabled - taking config from parent dir to avoid overwriting possibly adapted config at each startup
+rem for %%f in (*.kmc) do copy %%f target\
+rem in case of TLS handshake issues you can enable jSSLKeyLog to be able to read and record TLS-messages using WireShark to analyze issues
 rem TLS logging utility:
 rem for %%f in (jSSLKeyLog.jar) do copy %%f target\
 
 cd target
 
-rem useful Java options:
+rem useful Java options (in case of handshake issues):
 rem "-Djavax.net.debug=ssl:handshake" 
-rem -Djdk.httpclient.allowRestrictedHeaders=host,connection" 
 
-rem standard version - with args:
+rem standard version - with config file names (with path) as args - e.g.:
 rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\ksta.kmc" "%KISMON_HOME%\test.kmc"
-rem no args to use the file specified in application.properties:
+rem starting without args --> will use the config file specified in application.properties:
 "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%"
-rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\frobi.kmc"
-rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\ksta.kmc" "%KISMON_HOME%\zhservices.kmc"
-rem "%JAVA_HOME%\bin\java" "-Djdk.httpclient.allowRestrictedHeaders=host,connection" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\zhservices.kmc"
-rem with TLS logging for WireShark:
-rem "%JAVA_HOME%\bin\java" -javaagent:jSSLKeyLog.jar==%USERPROFILE%\Desktop\kismon_logfile.log -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\ksta.kmc" "%KISMON_HOME%\test.kmc"
+rem with TLS logging enabled (for WireShark):
+rem "%JAVA_HOME%\bin\java" -javaagent:jSSLKeyLog.jar==%USERPROFILE%\Desktop\kismon_logfile.log -cp . -jar "%KISMON_JAR%"
 
 cd ..
