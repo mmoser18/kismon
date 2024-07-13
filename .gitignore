@@ -32,6 +32,9 @@ webpack.generated.js
 /.npmrc
 /package.json~
 /.pnpm-debug.log
+/vite.config.ts
+/vite.generated.ts
+*.bundle
 /ksta.kmc
 /*.bak
 /* - Copy.kmc
