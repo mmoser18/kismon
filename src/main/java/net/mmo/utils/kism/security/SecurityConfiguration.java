@@ -8,7 +8,7 @@ package net.mmo.utils.kism.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.views.login.LoginView;
 import net.mmo.utils.kism.utils.AppProperties;
@@ -27,7 +27,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @EnableWebSecurity
 @Configuration
 @Slf4j
-public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
+public class SecurityConfiguration extends VaadinWebSecurity
 {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -47,9 +47,7 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 		// You can add any possible extra configurations of your own here
 	}
 
-	@SuppressWarnings("deprecation")
 	@Bean
-	@Override
 	public UserDetailsService userDetailsService() {
 		log.info("userDetailsService");
 		String userNames = AppProperties.getProperties().getProperty("user.names");
@@ -82,16 +80,16 @@ public class SecurityConfiguration extends VaadinWebSecurityConfigurerAdapter
 	public void configure(WebSecurity web) throws Exception {
 		log.info("configure: web={}", web);
 		web.ignoring()
-			.antMatchers("/VAADIN/**",
-			             "/favicon.ico",
-			             "/robots.txt",
-			             "/manifest.webmanifest",
-			             "/sw.js",
-			             "/offline.html",
-			             "/icons/**",
-			             "/images/**",
-			             "/styles/**",
-			             "/h2-console/**");
+			.requestMatchers("/VAADIN/**",
+			                 "/favicon.ico",
+			                 "/robots.txt",
+			                 "/manifest.webmanifest",
+			                 "/sw.js",
+			                 "/offline.html",
+			                 "/icons/**",
+			                 "/images/**",
+			                 "/styles/**",
+			                 "/h2-console/**");
 		super.configure(web);
 	}
 }
