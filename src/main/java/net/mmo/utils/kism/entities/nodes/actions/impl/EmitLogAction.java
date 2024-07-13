@@ -16,7 +16,9 @@ import net.mmo.utils.kism.entities.nodes.actions.IAction;
  * class description here...
  * @param <N>
  */
-@ToString(includeFieldNames = true, callSuper = true)
+//disabled since this doesn't compile with the newest version ("Lombok annotation handler class lombok.eclipse.handlers.HandleToString failed"):
+//@ToString(includeFieldNames = true, callSuper = true)
+@ToString
 @Slf4j
 public class EmitLogAction <N extends ActionableNode> implements IAction<N>
 {
