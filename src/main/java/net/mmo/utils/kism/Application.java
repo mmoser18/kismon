@@ -113,7 +113,7 @@ public class Application extends SpringBootServletInitializer
 				                          "jks"); //$NON-NLS-1$
 			String keyStorePath =
 				appProperties.getProperty("KeyStorePath", //$NON-NLS-1$
-				                          "D:\\Projects\\KStA_ZH_ZHQuest\\spec\\Testing\\Testsystems\\Testcertificates\\certificates - test systems\\localhost-keystore.p12"); //$NON-NLS-1$
+				                          "keystore.p12"); //$NON-NLS-1$
 			String keyStorePwd =
 				appProperties.getProperty("KeyStorePassword", //$NON-NLS-1$
 				                          "password"); //$NON-NLS-1$
