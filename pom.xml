@@ -31,14 +31,14 @@
 	</issueManagement>
 
 	<scm>
-		<connection>scm:git:git://github.com/tbd/kism.git</connection>
-		<developerConnection>scm:git:git@github.com:mmo/kism.git</developerConnection>
-		<url>http://github.com/tbd/kism</url>
+		<connection>scm:git:git://github.com/mmoser18/kismon.git</connection>
+		<developerConnection>scm:git:git@github.com:mmoser18/kismon.git</developerConnection>
+		<url>http://github.com/mmoser18/kismon</url>
 	</scm>
 	 -->
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,23 +47,20 @@
 		<!-- some local settings: -->
 		<user.home>${env.USERPROFILE}</user.home>
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
-		<!-- worked with Vaadin 18.0.4 and then again with 22.0.1, but did NOT work with v19.0.x..v21.0.4: -->
-		<!-- worked: 22.0.2, 23.0.1, 23.0.2 -->
-		<!-- last version that does NOT validate the Chart licenses during build time -->
+		<!-- worked with Vaadin: 18.0.4 and then again with 22.0.1, 22.0.2, 23.0.1, 23.0.2, 
+		     but did NOT work with v19.0.x..v21.0.4: -->
+		<!-- last version that does NOT validate the Chart license during build time ->
 		<vaadin.version>23.1.7</vaadin.version> 
+		<!- -->
+		<!-- newest version / but since v23.2.0 this refuses to build without license ||-( : -->
+		<vaadin.version>24.3.8</vaadin.version>
 		<!-- -->
-		<!-- not working / refuses to build without license: ->
-		<vaadin.version>23.2.0</vaadin.version>
-		<!- -->
-		<!-- newest version ->
-		<vaadin.version>24.3.5</vaadin.version>
-		<!- -->
 		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
 		
 		<h2.version>2.2.224</h2.version>
-		<archunit-junit5.version>1.2.1</archunit-junit5.version>
+		<archunit-junit5.version>1.3.0</archunit-junit5.version>
 		
 		<sshj.version>0.38.0</sshj.version>
 		<mail.version>1.4</mail.version>
@@ -73,7 +70,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.18</version>
+		<version>3.2.4</version>
 	</parent>
 
 	<repositories>
@@ -123,8 +120,11 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<!-- Replace artifactId 'vaadin' with 'vaadin-core' to use only free components -->
-			<!--  artifactId>vaadin-core</artifactId -->
-			<artifactId>vaadin</artifactId>
+			<!-- -->
+			<artifactId>vaadin</artifactId> 
+			<!-- ->
+			<artifactId>vaadin-core</artifactId>
+			<!- -->
 			<exclusions>
 				<!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
 				<exclusion>
@@ -171,24 +171,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- for some reasons I got occasional(!) compile errors claiming that ""java.lang.annotation.Annotation"" was missing - this dependency fixed this -->
-		<!-- https://mvnrepository.com/artifact/javax.annotation/javax.annotation-api -->
-		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>javax.annotation-api</artifactId>
-		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.vaadin.addons</groupId>
-			<artifactId>sizereporter</artifactId>
-			<version>0.1.4</version>
-		</dependency>
-		-->
-		<!-- an apparently non-declared dependency of the above: -->
-		<dependency>
-			<groupId>javax.websocket</groupId>
-			<artifactId>javax.websocket-api</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-testbench</artifactId>
@@ -210,13 +192,13 @@
 			Liberty, etc), one thus needs to add the javax.servlet API to the compile time 
 			dependencies. It's not needed to include it in the build, it's already provided 
 			by the target servlet container:
-		-->
+		->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<!-- If you happen to actually deploy to a Java EE 7+ application server 
+		<!- If you happen to actually deploy to a Java EE 7+ application server 
 			like WildFly, use the below dependency instead. It covers the entire Java 
 			EE API, including javax.servlet 
 		->
@@ -269,22 +251,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
-		-->
-		<!-- Spring's JPA apparently also requires spring-aop (but doesn't seem 
-			to declare it ||-( It got <some error>... Caused by: java.lang.NoClassDefFoundError: 
-			org.springframework.data.jpa.repository.JpaRepository ... but after having 
-			declared it ONCE, everything worked. Even after removing it again?!? And 
-			even after I cleared the local m2repo. Very Odd! 
-		<dependency>
-			<groupId>org.springframework</groupId> 
-			<artifactId>spring-aop</artifactId>
-		</dependency>
-		-->
 
 		<!-- Using in-memory database H2 -->
 		<dependency>
@@ -361,8 +327,9 @@
 
 
 		<!-- for AspectJ: -->
-		<!-- Instrumentations are enabled as a javaagent that run on the JVM. Springs org.springframework:spring-instrument.jar 
-			ships the InstrumentationSavingAgent which saves the instrumentation.
+		<!-- Instrumentations are enabled as a javaagent that run on the JVM. 
+			Springs org.springframework:spring-instrument.jar ships the InstrumentationSavingAgent which 
+			saves the instrumentation.
 			To run AspectJ load-time weaving in a spring environment it is necessary to have these two instrumentations: 
 		-->
 		<!-- AspectJ version is mentioned in springboot-starter ->
@@ -379,6 +346,7 @@
 			<artifactId>aspectjweaver</artifactId>
 		</dependency>
 		<!- -->
+		
 		<!-- for ArchUnit-tests (executed during UTs): -->
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
@@ -387,32 +355,23 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- using javamelody-core for monitoring ->
+		<!-- https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api -->
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+		</dependency>
+
+		<!-- using javamelody-core for monitoring / planned for future version ->
 		<dependency>
 			<groupId>net.bull.javamelody</groupId>
 			<artifactId>javamelody-core</artifactId>
 			<version>1.86.0</version>
-		</dependency>
-		<!- -->
-		<!-- itext, option to add PDF export ->
-		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
-			<version>2.1.7</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>bcmail-jdk14</artifactId>
-					<groupId>bouncycastle</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bcprov-jdk14</artifactId>
-					<groupId>bouncycastle</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bctsp-jdk14</artifactId>
-					<groupId>bouncycastle</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<!- -->
 	</dependencies>
