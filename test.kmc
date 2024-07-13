@@ -1,0 +1,285 @@
+{
+	"className" : "net.mmo.utils.kism.entities.nodes.RootNode",
+	"name" : "test",
+	"description" : "Test-Nodes and Examples",
+	"applicable" : true,
+	"properties" : {
+		"db_default_driver" : "oracle.jdbc.driver.OracleDriver",
+		"db_url_dmz" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=vm-dmzoracle.elca.ch)(PORT=54345)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SERVICE_NAME=DL05DMZ)))",
+		"db_url" : "${db_url_new}",
+		"db_url_local" : "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521)))(CONNECT_DATA=(UR=A)(SERVER=DEDICATED)(SID=XE)))",
+		"db_url_new" : "jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=OFF)(FAILOVER=ON)(CONNECT_TIMEOUT=3)(RETRY_COUNT=3)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj03.elcanet.local)(PORT=1523))(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-prj04.elcanet.local)(PORT=1523)))(CONNECT_DATA=(SERVICE_NAME=D19CSEAP1.elcanet.local)))"
+	},
+	"actionCheck" : null,
+	"action" : null,
+	"condition" : "DEGRADED_ON_NOT_ALL_OK",
+	"children" : [ {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+		"name" : "Test REST_0",
+		"description" : "Test REST Connection",
+		"applicable" : true,
+		"properties" : {
+			"xxx" : "yyy"
+		},
+		"actionCheck" : null,
+		"action" : null,
+		"active" : false,
+		"period" : 30,
+		"timeout" : 15,
+		"checkResults" : true,
+		"resultChecker" : {
+			"condition" : "EndsWithIgnoreCase",
+			"operands" : [ ]
+		},
+		"url" : "http://localhost:8080/${xxx}",
+		"method" : "POST",
+		"targetUid" : "user",
+		"targetPwd" : "password",
+		"includeBasicAuthHeader" : false,
+		"httpVersion" : "HTTP_1_1",
+		"redirectBehavior" : "NORMAL",
+		"headers" : "bar: foo\nContent-Type: text/html; charset=UTF-16\nfoo: bar",
+		"payload" : "foobar ${xxx} abc\t",
+		"acceptableReturnCodes" : "200"
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.SOAPConnection",
+		"name" : "Test SOAP_request_with_long_name",
+		"description" : "Test SOAP Connection",
+		"applicable" : true,
+		"properties" : {
+			"x" : "Operation"
+		},
+		"actionCheck" : null,
+		"action" : null,
+		"active" : false,
+		"period" : 60,
+		"timeout" : 10,
+		"checkResults" : true,
+		"resultChecker" : {
+			"condition" : "Contains",
+			"operands" : [ "SoapEnvelope" ]
+		},
+		"url" : "http://localhost:8080",
+		"method" : "POST",
+		"targetUid" : "user",
+		"targetPwd" : "password",
+		"includeBasicAuthHeader" : false,
+		"httpVersion" : "HTTP_1_1",
+		"redirectBehavior" : "NORMAL",
+		"headers" : "",
+		"payload" : "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhquest/2\" xmlns:ns1=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonDetailType/2\" xmlns:ns2=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/kStARegisterNrWithoutCheckDigitType/1\" xmlns:ns3=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslPersonType/1\" xmlns:ns4=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslJuristischePersonType/1\" xmlns:ns5=\"http://www.ech.ch/xmlns/eCH-0097/2\" xmlns:ns6=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslNatuerlichePersonType/1\" xmlns:ns7=\"http://zhstregisterjp.ksta.zh.ch/xmlns/common/vnNumber13Type/1\" xmlns:ns8=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/addressType/2\" xmlns:ns9=\"http://zhstregisterjp.ksta.zh.ch/xmlns/zhstregisterjp/sslKontaktType/1\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <ns:registerSSLRequestType>\n         <ticketId>?</ticketId>\n         <sslPersonDetailType>\n            <!--Zero or more repetitions:-->\n            <ns1:registerNrWithoutCheckDigit>\n               <ns2:kStARegisterNr>?</ns2:kStARegisterNr>\n               <ns2:kStARegisterNrType>?</ns2:kStARegisterNrType>\n            </ns1:registerNrWithoutCheckDigit>\n            <ns1:sslPerson>\n               <!--You have a CHOICE of the next 2 items at this level-->\n               <ns3:sslJuristsichePerson>\n                  <!--Optional:-->\n                  <ns4:firmenname>?</ns4:firmenname>\n                  <!--Optional:-->\n                  <ns4:telefonNummer>?</ns4:telefonNummer>\n                  <!--Optional:-->\n                  <ns4:faxNummer>?</ns4:faxNummer>\n                  <!--Optional:-->\n                  <ns4:dateOfFoundation>?</ns4:dateOfFoundation>\n                  <!--Optional:-->\n                  <ns4:liquidationBeschlussDatum>?</ns4:liquidationBeschlussDatum>\n                  <!--Optional:-->\n                  <ns4:liquidationErledigungDatum>?</ns4:liquidationErledigungDatum>\n                  <!--Optional:-->\n                  <ns4:hregLoeschungZustimmungDatum>?</ns4:hregLoeschungZustimmungDatum>\n                  <!--Optional:-->\n                  <ns4:rechtsForm>?</ns4:rechtsForm>\n                  <!--Optional:-->\n                  <ns4:grundkapital>?</ns4:grundkapital>\n                  <!--Optional:-->\n                  <ns4:municipality>?</ns4:municipality>\n                  <!--Zero or more repetitions:-->\n                  <ns4:registerNrWithoutCheckDigitFusion>\n                     <ns2:kStARegisterNr>?</ns2:kStARegisterNr>\n                     <ns2:kStARegisterNrType>?</ns2:kStARegisterNrType>\n                  </ns4:registerNrWithoutCheckDigitFusion>\n                  <!--Optional:-->\n                  <ns4:branche>?</ns4:branche>\n                  <!--Optional:-->\n                  <ns4:vertreterNummer>?</ns4:vertreterNummer>\n                  <!--Optional:-->\n                  <ns4:vertretungsArt>?</ns4:vertretungsArt>\n                  <!--Optional:-->\n                  <ns4:nogaCode>?</ns4:nogaCode>\n                  <!--Optional:-->\n                  <ns4:oe>?</ns4:oe>\n                  <!--Optional:-->\n                  <ns4:uId>\n                     <ns5:uidOrganisationIdCategorie>?</ns5:uidOrganisationIdCategorie>\n                     <ns5:uidOrganisationId>?</ns5:uidOrganisationId>\n                  </ns4:uId>\n                  <!--Optional:-->\n                  <ns4:steuerGruppe>?</ns4:steuerGruppe>\n               </ns3:sslJuristsichePerson>\n               <!--Optional:-->\n               <ns3:sslNatuerlichePerson>\n                  <!--Zero or more repetitions:-->\n                  <ns6:versicherungsNummer>\n                     <!--Optional:-->\n                     <ns7:vn>?</ns7:vn>\n                  </ns6:versicherungsNummer>\n                  <!--Optional:-->\n                  <ns6:anrede>?</ns6:anrede>\n                  <!--Optional:-->\n                  <ns6:titel>?</ns6:titel>\n                  <!--Optional:-->\n                  <ns6:name>?</ns6:name>\n                  <!--Optional:-->\n                  <ns6:vorname>?</ns6:vorname>\n                  <!--Optional:-->\n                  <ns6:geburtsdatum>?</ns6:geburtsdatum>\n                  <!--Optional:-->\n                  <ns6:geschlecht>?</ns6:geschlecht>\n                  <!--Optional:-->\n                  <ns6:telefonNummerGeschaeft>?</ns6:telefonNummerGeschaeft>\n                  <!--Optional:-->\n                  <ns6:telefonNummerPrivat>?</ns6:telefonNummerPrivat>\n                  <!--Optional:-->\n                  <ns6:faxNummer>?</ns6:faxNummer>\n                  <!--Optional:-->\n                  <ns6:municipality>?</ns6:municipality>\n               </ns3:sslNatuerlichePerson>\n            </ns1:sslPerson>\n            <ns1:sslAdresse>\n               <!--Optional:-->\n               <ns8:adresseTyp>?</ns8:adresseTyp>\n               <!--Optional:-->\n               <ns8:addressAddOn1>?</ns8:addressAddOn1>\n               <!--Optional:-->\n               <ns8:addressAddOn2>?</ns8:addressAddOn2>\n               <!--Optional:-->\n               <ns8:street>?</ns8:street>\n               <!--Optional:-->\n               <ns8:houseNumber>?</ns8:houseNumber>\n               <!--Optional:-->\n               <ns8:dwellingNumber>?</ns8:dwellingNumber>\n               <!--Optional:-->\n               <ns8:postOfficeBoxText>?</ns8:postOfficeBoxText>\n               <!--Optional:-->\n               <ns8:swissZipCode>?</ns8:swissZipCode>\n               <!--Optional:-->\n               <ns8:swissZipCodeAddOn>?</ns8:swissZipCodeAddOn>\n               <!--Optional:-->\n               <ns8:swissZipCodeId>?</ns8:swissZipCodeId>\n               <!--Optional:-->\n               <ns8:foreignZipCode>?</ns8:foreignZipCode>\n               <!--Optional:-->\n               <ns8:locality>?</ns8:locality>\n               <!--Optional:-->\n               <ns8:town>?</ns8:town>\n               <!--Optional:-->\n               <ns8:country>?</ns8:country>\n               <!--Optional:-->\n               <ns8:stadtkreis>?</ns8:stadtkreis>\n               <!--Optional:-->\n               <ns8:adresseVonDat>?</ns8:adresseVonDat>\n               <!--Optional:-->\n               <ns8:zustellStoppDat>?</ns8:zustellStoppDat>\n               <!--Optional:-->\n               <ns8:zustellStoppGrund>?</ns8:zustellStoppGrund>\n            </ns1:sslAdresse>\n            <ns1:sslKontakt>\n               <!--Optional:-->\n               <ns9:anrede>?</ns9:anrede>\n               <!--Optional:-->\n               <ns9:titel>?</ns9:titel>\n               <!--Optional:-->\n               <ns9:name>?</ns9:name>\n               <!--Optional:-->\n               <ns9:vorname>?</ns9:vorname>\n               <!--Optional:-->\n               <ns9:namenZusatz>?</ns9:namenZusatz>\n               <!--Optional:-->\n               <ns9:abteilung>?</ns9:abteilung>\n               <!--Optional:-->\n               <ns9:emailAdresse>?</ns9:emailAdresse>\n               <!--Optional:-->\n               <ns9:telefonNummerGeschaeft>?</ns9:telefonNummerGeschaeft>\n               <!--Optional:-->\n               <ns9:telefonNummerMobil>?</ns9:telefonNummerMobil>\n               <!--Optional:-->\n               <ns9:faxNummer>?</ns9:faxNummer>\n            </ns1:sslKontakt>\n            <ns1:status>?</ns1:status>\n            <!--Optional:-->\n            <ns1:konkursEroeffnungDatum>?</ns1:konkursEroeffnungDatum>\n            <!--Optional:-->\n            <ns1:konkursSchuldenrufFristDatum>?</ns1:konkursSchuldenrufFristDatum>\n            <!--Optional:-->\n            <ns1:konkursErledigungDatum>?</ns1:konkursErledigungDatum>\n            <!--Optional:-->\n            <ns1:sslSteuergemeinde>?</ns1:sslSteuergemeinde>\n            <!--Zero or more repetitions:-->\n            <ns1:arbeitgeberNr>?</ns1:arbeitgeberNr>\n         </sslPersonDetailType>\n         <!--Zero or more repetitions:-->\n         <anmeldeForumlare>?</anmeldeForumlare>\n      </ns:registerSSLRequestType>\n   </soapenv:Body>\n</soapenv:Envelope>",
+		"acceptableReturnCodes" : "200",
+		"soapAction" : "\"registerSSL\""
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.JDBCConnection",
+		"name" : "Test JDBC_0",
+		"description" : "Test JDBC Connection",
+		"applicable" : false,
+		"properties" : {
+			"bar" : "zzz",
+			"foo" : "*"
+		},
+		"actionCheck" : {
+			"triggerThresholds" : [ "5", "3", "2" ]
+		},
+		"action" : {
+			"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction",
+			"mailTo" : "mmo@swissonline.ch",
+			"mailCc" : "",
+			"mailFrom" : "mmo@swissonline.ch",
+			"mailSubject" : "Notification for Node '${NodeName}': ${NodeStatusTo}",
+			"mailContent" : "Notification for Node '${NodeName}': Status-change: ${NodeStatusFrom} => ${NodeStatusTo}"
+		},
+		"active" : false,
+		"period" : 60,
+		"timeout" : 10,
+		"checkResults" : true,
+		"resultChecker" : {
+			"condition" : "ContainsIgnoreCase",
+			"operands" : [ "Frau" ]
+		},
+		"url" : "jdbc:oracle:thin:@localhost:1521/xe",
+		"dbUid" : "C##QUEST",
+		"dbPwd" : "QUEST",
+		"query" : "select ${foo} from REF_ANREDE",
+		"driverName" : "oracle.jdbc.driver.OracleDriver"
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+		"name" : "Test Intermediate Node 0",
+		"description" : "Test Intermediate Node 0",
+		"applicable" : true,
+		"properties" : { },
+		"actionCheck" : null,
+		"action" : null,
+		"condition" : "ALL_MUST_BE_OK",
+		"children" : [ {
+			"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+			"name" : "Test Intermediate Node 1",
+			"description" : "Test Intermediate Node 1",
+			"applicable" : true,
+			"properties" : { },
+			"actionCheck" : null,
+			"action" : null,
+			"condition" : "ALL_MUST_BE_OK",
+			"children" : [ {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "Test Intermediate Node 2",
+				"description" : "Test Intermediate Node 2",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ {
+					"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+					"name" : "REST Connection 3",
+					"description" : "REST Connection 3 - Test",
+					"applicable" : true,
+					"properties" : { },
+					"actionCheck" : {
+						"triggerThresholds" : [ "7", "3", "2" ]
+					},
+					"action" : {
+						"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction",
+						"mailTo" : "x@y.z",
+						"mailCc" : "",
+						"mailFrom" : "mmo@swissonline.ch",
+						"mailSubject" : "Test",
+						"mailContent" : "Notification for Node '${NodeName}': Status changed from '${NodeStatusFrom}' to '${NodeStatusTo}'"
+					},
+					"active" : false,
+					"period" : 60,
+					"timeout" : 45,
+					"checkResults" : true,
+					"resultChecker" : {
+						"condition" : "Contains",
+						"operands" : [ "foobar" ]
+					},
+					"url" : "http://www.example.com:80",
+					"method" : "GET",
+					"targetUid" : "<user>",
+					"targetPwd" : "<password>",
+					"includeBasicAuthHeader" : false,
+					"httpVersion" : "HTTP_1_1",
+					"redirectBehavior" : "NORMAL",
+					"headers" : "",
+					"payload" : "",
+					"acceptableReturnCodes" : "200"
+				} ],
+				"expanded" : true
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+				"name" : "REST Connection 4",
+				"description" : "REST Connection 4",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : {
+					"triggerThresholds" : [ "5", "3", "2" ]
+				},
+				"action" : {
+					"className" : "net.mmo.utils.kism.entities.nodes.actions.impl.SendMailAction",
+					"mailTo" : "foo@bar.com",
+					"mailCc" : "",
+					"mailFrom" : "bar@foo.com",
+					"mailSubject" : "Notification for Node '${NodeName}': ${NodeStatusTo}",
+					"mailContent" : "Notification for Node '${NodeName}': Status-change: ${NodeStatusFrom} => ${NodeStatusTo}"
+				},
+				"active" : false,
+				"period" : 60,
+				"timeout" : 45,
+				"checkResults" : false,
+				"resultChecker" : {
+					"condition" : null,
+					"operands" : [ ]
+				},
+				"url" : "https://www.example.com:443",
+				"method" : "POST",
+				"targetUid" : "<user>",
+				"targetPwd" : "<password>",
+				"includeBasicAuthHeader" : false,
+				"httpVersion" : "HTTP_1_1",
+				"redirectBehavior" : "NORMAL",
+				"headers" : "",
+				"payload" : "foo",
+				"acceptableReturnCodes" : "200"
+			}, {
+				"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+				"name" : "Intermediate Node 6",
+				"description" : "Intermediate Node 6",
+				"applicable" : true,
+				"properties" : { },
+				"actionCheck" : null,
+				"action" : null,
+				"condition" : "ALL_MUST_BE_OK",
+				"children" : [ ],
+				"expanded" : false
+			} ],
+			"expanded" : true
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+			"name" : "Test REST Connection 2",
+			"description" : "Test REST Connection 2",
+			"applicable" : true,
+			"properties" : { },
+			"actionCheck" : null,
+			"action" : null,
+			"active" : false,
+			"period" : 60,
+			"timeout" : 45,
+			"checkResults" : false,
+			"resultChecker" : {
+				"condition" : null,
+				"operands" : [ ]
+			},
+			"url" : "https://www.example.com:443",
+			"method" : "PUT",
+			"targetUid" : "<user>",
+			"targetPwd" : "<password>",
+			"includeBasicAuthHeader" : false,
+			"httpVersion" : "HTTP_1_1",
+			"redirectBehavior" : "NORMAL",
+			"headers" : "",
+			"payload" : "",
+			"acceptableReturnCodes" : "200"
+		} ],
+		"expanded" : true
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.PingConnection",
+		"name" : "Test Ping localhost",
+		"description" : "Test Ping localhost",
+		"applicable" : true,
+		"properties" : { },
+		"actionCheck" : null,
+		"action" : null,
+		"active" : false,
+		"period" : 60,
+		"timeout" : 3,
+		"checkResults" : false,
+		"resultChecker" : null,
+		"hostAddress" : "localhost"
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.SSHConnection",
+		"name" : "Test SSH Connection",
+		"description" : "Test SSH Connection",
+		"applicable" : true,
+		"properties" : { },
+		"actionCheck" : null,
+		"action" : null,
+		"active" : false,
+		"period" : 60,
+		"timeout" : 5,
+		"checkResults" : true,
+		"resultChecker" : {
+			"condition" : "Contains",
+			"operands" : [ "Reply from" ]
+		},
+		"hostAddress" : "localhost",
+		"hostPort" : 22,
+		"username" : "",
+		"authMethod" : "PWD",
+		"authArg" : "",
+		"fingerprint" : "",
+		"command" : "ping -n 1 www.google.com"
+	} ],
+	"expanded" : true
+}
