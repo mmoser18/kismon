@@ -51,10 +51,13 @@ public class PropertyResolver
 				buf.append(property); // replace matching group by placeholder
 				i = matcher.end();
 			}
-			if (i <= 0) return tmpStr; // no (more) placeholder found - done!
+			if (i <= 0) {
+				break; // no (more) placeholder found - done!
+			}
 			buf.append(tmpStr.substring(i)); // add remainder of string
-			tmpStr = buf.toString().translateEscapes();
+			tmpStr = buf.toString();
 		}
+		// log.trace("tmpStr: '{}'", tmpStr); //$NON-NLS-1$
+		return tmpStr.translateEscapes(); // replace escaped control characters with actual control characters
 	}
-
 }
