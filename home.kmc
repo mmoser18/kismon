@@ -1,0 +1,66 @@
+{
+	"className" : "net.mmo.utils.kism.entities.nodes.RootNode",
+	"name" : "home",
+	"description" : "Monitoring config for home network",
+	"applicable" : true,
+	"properties" : {
+		"db_default_driver" : "oracle.jdbc.driver.OracleDriver"
+	},
+	"actionCheck" : null,
+	"action" : null,
+	"condition" : "DEGRADED_ON_NOT_ALL_OK",
+	"children" : [ {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+		"name" : "Fritz!Box 7590",
+		"description" : "",
+		"applicable" : true,
+		"properties" : { },
+		"actionCheck" : null,
+		"action" : null,
+		"active" : true,
+		"period" : 60,
+		"timeout" : 5,
+		"checkResults" : true,
+		"resultChecker" : {
+			"condition" : "ContainsIgnoreCase",
+			"operands" : [ "FRITZ!Box" ]
+		},
+		"url" : "http://192.168.1.1",
+		"method" : "GET",
+		"targetUid" : "",
+		"targetPwd" : "",
+		"includeBasicAuthHeader" : false,
+		"httpVersion" : "HTTP_1_1",
+		"redirectBehavior" : "NORMAL",
+		"headers" : "",
+		"payload" : "",
+		"acceptableReturnCodes" : "200"
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+		"name" : "Fritz!Box 7590-Copy",
+		"description" : "",
+		"applicable" : true,
+		"properties" : { },
+		"actionCheck" : null,
+		"action" : null,
+		"active" : true,
+		"period" : 60,
+		"timeout" : 5,
+		"checkResults" : true,
+		"resultChecker" : {
+			"condition" : "ContainsIgnoreCase",
+			"operands" : [ "FRITZ!Box" ]
+		},
+		"url" : "http://fritz.box",
+		"method" : "GET",
+		"targetUid" : "",
+		"targetPwd" : "",
+		"includeBasicAuthHeader" : false,
+		"httpVersion" : "HTTP_1_1",
+		"redirectBehavior" : "NORMAL",
+		"headers" : "",
+		"payload" : "",
+		"acceptableReturnCodes" : "200"
+	} ],
+	"expanded" : true
+}
