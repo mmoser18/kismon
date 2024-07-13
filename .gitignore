@@ -17,7 +17,8 @@ error-screenshots/
 
 webpack.generated.js
 /logs/
-/garage/
+/data/
+/garage/*
 /debug.log
 /src - */
 /tsconfig.json
@@ -31,16 +32,14 @@ webpack.generated.js
 /.npmrc
 /package.json~
 /.pnpm-debug.log
-/default_old.kmc
-/ksta.kmc_bak
 /ksta.kmc
-/ksta-old-VMs.kmc
-/zhservices.kmc
-/zhservices.kmc_bak
 /*.bak
 /* - Copy.kmc
-/keystore.p12
-/truststore.p12
+keystore.p12
+truststore.p12
+running_version
+/KISMON-*.zip
 config von ksta-zh-tools
 ELCA_certificates
-running_version
+/zhservices.kmc
+/*/.gitignore
