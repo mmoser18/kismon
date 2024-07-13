@@ -5,13 +5,12 @@
 
 package net.mmo.utils.kism.ui.views.login;
 
-import javax.annotation.security.RolesAllowed;
-
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.CommonConstants;
 
@@ -37,7 +36,7 @@ public class LogoutView extends VerticalLayout
 			setAlignItems(Alignment.CENTER);
 			setJustifyContentMode(JustifyContentMode.CENTER);
 
-			add(new Label(Messages.getString("LogoutView.Label.LogOut.Text"))); //$NON-NLS-1$
+			add(new NativeLabel(Messages.getString("LogoutView.Label.LogOut.Text"))); //$NON-NLS-1$
 
 			VaadinSession current = VaadinSession.getCurrent();
 			current.getSession().invalidate();

@@ -11,7 +11,7 @@ import static net.mmo.utils.kism.ui.UIConstants.MonospaceTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -76,7 +76,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.hostPort = new IntegerField(Messages.getString("SSHConnectionForm.HostPort.Label")); //$NON-NLS-1$
 		this.hostPort.setClassName(HostPortClassName);
 		this.hostPort.setThemeName(LabelPaddingTheme);
-		this.hostPort.setHasControls(true);
+		this.hostPort.setStepButtonsVisible(true);
 		this.hostPort.setClearButtonVisible(this.clearButtonsVisible);
 		this.hostPort.setEnabled(this.isAdminUser);
 //		this.hostPort.addValueChangeListener(event ->
@@ -194,7 +194,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		requestDetailsPanel.add(this.response);
 		requestDetails.add(Messages.getString("SSHConnectionForm.RequestAndResponseDetails.Label"), requestDetailsPanel); //$NON-NLS-1$
 
-		this.fields.add(new Label(Messages.getString("SSHConnectionForm.Result.Label")), //$NON-NLS-1$
+		this.fields.add(new NativeLabel(Messages.getString("SSHConnectionForm.Result.Label")), //$NON-NLS-1$
 		                responseDetailsFields,
 		                requestDetails,
 		                this.validationDetails

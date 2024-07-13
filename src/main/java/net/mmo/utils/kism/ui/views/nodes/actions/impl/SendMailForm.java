@@ -5,7 +5,7 @@
 
 package net.mmo.utils.kism.ui.views.nodes.actions.impl;
 
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -52,7 +52,7 @@ public class SendMailForm <N extends ActionableNode> extends VerticalLayout impl
 		addClassName(FormClassName);
 
 		String ttl = Messages.getString("SendMailForm.Title"); //$NON-NLS-1$
-		if (!StringUtils.isEmpty(ttl)) add(new Label(ttl)); // we allow this to be empty
+		if (!StringUtils.isEmpty(ttl)) add(new NativeLabel(ttl)); // we allow this to be empty
 		this.mailTo   = new TextField(Messages.getString("SendMailForm.Recipient.Label")); //$NON-NLS-1$
 		this.mailTo.addClassName(MailToClassName);
 		this.mailTo.setThemeName(UIConstants.LabelPaddingTheme);

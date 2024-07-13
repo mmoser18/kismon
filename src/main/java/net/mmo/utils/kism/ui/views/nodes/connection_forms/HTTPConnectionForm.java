@@ -12,7 +12,7 @@ import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -289,7 +289,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 
 		this.validationDetailsPanel.addComponentAtIndex(1, this.acceptableReturnCodes);
 
-		this.fields.add(new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
+		this.fields.add(new NativeLabel(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
 		                responseDetailsFields,
 		                requestDetails,
 		                this.validationDetails

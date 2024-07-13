@@ -10,7 +10,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +77,7 @@ public class ConfirmDialog extends Dialog
 		if (header != null) msgLane.add(new H3(header));
 		for (String str: question.split("\n")) { //$NON-NLS-1$
 
-			msgLane.add(new Label(str));
+			msgLane.add(new NativeLabel(str));
 		}
 
 		HorizontalLayout buttons = new HorizontalLayout();

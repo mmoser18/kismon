@@ -11,7 +11,7 @@ import static net.mmo.utils.kism.ui.UIConstants.MonospaceTheme;
 import static net.mmo.utils.kism.ui.UIConstants.NodeFormField;
 
 import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -166,7 +166,7 @@ public class JDBCConnectionForm extends TCPConnectionForm<JDBCConnection>
 		HorizontalLayout responseResults = new HorizontalLayout(this.responseStatus, this.duration, this.timestamp);
 		responseResults.addClassName(CombinedClassName);
 
-		this.fields.add(new Label(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
+		this.fields.add(new NativeLabel(Messages.getString("HTTPConnectionForm.Result.Label")), //$NON-NLS-1$
 		                responseResults,
 		                requestDetails,
 		                this.validationDetails

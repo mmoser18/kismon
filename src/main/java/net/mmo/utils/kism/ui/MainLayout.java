@@ -10,7 +10,7 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
@@ -74,7 +74,7 @@ public class MainLayout extends AppLayout
 		if (SecurityUtils.isAdminUser() && !NodeService.startupErrors.isEmpty()) {
 			VerticalLayout panel = new VerticalLayout(header);
 			for (String msg: NodeService.startupErrors.split("\n")) { //$NON-NLS-1$
-				Label label = new Label(msg);
+				NativeLabel label = new NativeLabel(msg);
 				label.setClassName(StartupErrorMessageClassName);
 				panel.add(label);
 			}

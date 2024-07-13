@@ -15,7 +15,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -59,7 +59,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	static final String ExecuteClassName     = NodeFormField + "executeButton"; //$NON-NLS-1$
 
 	protected final Logger log = LoggerFactory.getLogger(this.getClass());
-	protected Label header = new Label(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
+	protected NativeLabel header = new NativeLabel(Messages.getString("NodeForm.Label.Header.Text")); //$NON-NLS-1$
 
 	protected TextField name;
 	protected TextArea description;
