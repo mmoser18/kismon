@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.annotation.security.RolesAllowed;
-
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -19,6 +17,7 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
@@ -107,7 +106,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 		this.durationMinimum.setLabel(Messages.getString("HistoryView.Duration.Minimum.Label")); //$NON-NLS-1$
 		this.durationMinimum.setClassName(DurationMinimumFieldClassName);
 		this.durationMinimum.setThemeName(LabelPaddingTheme);
-		this.durationMinimum.setHasControls(true);
+		this.durationMinimum.setStepButtonsVisible(true);
 		this.durationMinimum.setWidth("12em"); //$NON-NLS-1$
 		this.durationMinimum.addValueChangeListener(e -> {
 			log.info("durationMinimum changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$
@@ -119,7 +118,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 		this.durationMaximum.setLabel(Messages.getString("HistoryView.Duration.Maximum.Label")); //$NON-NLS-1$
 		this.durationMaximum.setClassName(DurationMaximumFieldClassName);
 		this.durationMaximum.setThemeName(LabelPaddingTheme);
-		this.durationMaximum.setHasControls(true);
+		this.durationMaximum.setStepButtonsVisible(true);
 		this.durationMaximum.setWidth("12em"); //$NON-NLS-1$
 		this.durationMaximum.addValueChangeListener(e -> {
 			log.info("durationMaximum changed: fromClient={}", e.isFromClient()); //$NON-NLS-1$

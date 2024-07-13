@@ -3,8 +3,7 @@ package net.mmo.utils.kism.entities.history;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
-
+import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.mmo.utils.kism.entities.AbstractEntity;

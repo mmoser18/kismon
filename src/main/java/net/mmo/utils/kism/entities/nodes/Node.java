@@ -9,12 +9,12 @@ import java.beans.PropertyChangeListener;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +68,7 @@ public abstract class Node extends AbstractEntity
 
 	private NodeProperties properties = new NodeProperties();
 
-	@JsonIgnore
+	@JsonBackReference(value = "child-parent")
 	protected transient IntermediateNode parent;
 
 	@JsonIgnore

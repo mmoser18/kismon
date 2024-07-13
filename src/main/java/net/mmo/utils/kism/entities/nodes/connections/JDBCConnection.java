@@ -67,7 +67,7 @@ public class JDBCConnection extends TCPConnection
 		super(name, description);
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	@Override
 	protected void finalize() throws Throwable {
 		if (this.handling != null) {

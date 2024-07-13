@@ -10,9 +10,6 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyO
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.MappedSuperclass;
-
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAccess;
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -27,6 +24,8 @@ import com.tngtech.archunit.library.Architectures;
 import com.tngtech.archunit.library.Architectures.LayeredArchitecture;
 import com.tngtech.archunit.library.GeneralCodingRules;
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
+import jakarta.persistence.Entity;
+import jakarta.persistence.MappedSuperclass;
 // import static com.tngtech.archunit.lang.conditions.ArchPredicates.are;
 // import static com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo;
 // import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;

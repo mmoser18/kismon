@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.RolesAllowed;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -26,7 +24,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -40,6 +38,7 @@ import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
@@ -534,7 +533,48 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	private void select(Node node) {
+		log.info("select: {}", node); //$NON-NLS-1$
 		this.tree.select(node);
+		scrollTo(node);
+	}
+
+	protected static void expandPath(Node node) {
+		for (IntermediateNode n = node.getParent(); n != null; n = n.getParent()) { n.setExpanded(true); }
+	}
+
+	/** scroll view such that the current node is (or becomes) visible */
+	protected void scrollTo(Node node) {
+		int[] indexes = calculateIndexes(node);
+		if (indexes != null) this.tree.scrollToIndex(indexes);
+	}
+
+	/** counts level of current node. Root-node is one level */
+	protected static int countLevels(Node node) {
+		int level = 0;
+		for (Node n = node; n != null; level++) { n = n.getParent(); }
+		return level;
+	}
+
+	/**
+	 * Calculate the indexes for a given node. See @see com.vaadin.flow.component.treegrid.TreeGrid.scrollToIndex
+	 * for an explanation of indexes used for positioning.
+	 */
+	protected int[] calculateIndexes(Node node) {
+		int nrLevels = countLevels(node);
+		if (nrLevels > 1) {
+			int indexes[] = new int[nrLevels];
+			Node n = node;
+			IntermediateNode p;
+			for (int level = nrLevels-1; (p = n.getParent()) != null && level > 0; level--) {
+				log.trace("{}: parent: {} ({} children) - child: {}", level, p, p.getChildren().size(), n); //$NON-NLS-1$
+				indexes[level] = p.getChildren().indexOf(n);
+				n = p;
+			}
+			indexes[0] = this.nodeService.getRootNodes().indexOf(n);
+			log.debug("indexes: {}", indexes); //$NON-NLS-1$
+			return indexes;
+		}
+		return null;
 	}
 
 	private void addNode(VisibleNodeType type) {
@@ -864,7 +904,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				         node.getName(), parent.getName(), grandParent.getName());
 				grandParent.addChildAtPos(parentPos+1, node);
 				saveNode(node);
-				updateTree();
+				updateTree(); // redraw the modified tree
 			}
 		}
 		select(node);
@@ -884,9 +924,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 				if (sibling instanceof IntermediateNode) {
 					IntermediateNode newParent = (IntermediateNode)sibling;
 					newParent.addChild(node);
-					// node.setParent(newParent);
 					saveNode(node);
-					updateTree();
+					expandPath(node); // the target parent may be collapsed.
+					updateTree(); // redraw the modified tree
 					break;
 				}
 			}
@@ -932,6 +972,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		// expand/collapse tree to previously saved state:
 		getRootNodesAsBareNodes().forEach(node -> adjustCollapseExpanded(node));
 		recalculateColumnWidths(); // make sure the column widths are adjusted
+		// scroll to currently selected item...
 	}
 
 	protected void setNewNodeRefreshListener() {
@@ -1105,7 +1146,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				add(icon);
 			}
 			if (text != null) {
-				Label label = new Label(text);
+				NativeLabel label = new NativeLabel(text);
 				label.setClassName("label-" + classSuffix); //$NON-NLS-1$
 				add(label);
 			}

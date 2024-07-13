@@ -14,10 +14,10 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -39,7 +39,9 @@ import net.mmo.utils.kism.utils.StringUtils;
  * class description here...
  * @param <N>
  */
-@ToString(includeFieldNames = true, callSuper = true)
+//disabled since this doesn't compile with the newest version ("Lombok annotation handler class lombok.eclipse.handlers.HandleToString failed"):
+//@ToString(includeFieldNames = true, callSuper = true)
+@ToString
 @Setter
 @Getter
 @Slf4j

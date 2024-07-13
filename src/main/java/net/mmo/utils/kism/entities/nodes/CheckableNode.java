@@ -5,9 +5,8 @@
 
 package net.mmo.utils.kism.entities.nodes;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 
