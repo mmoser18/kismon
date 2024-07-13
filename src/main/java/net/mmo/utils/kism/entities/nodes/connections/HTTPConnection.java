@@ -420,6 +420,7 @@ abstract public class HTTPConnection extends TCPConnection
 		                                                   // If null, ACCEPT_ORIGINAL_SERVER will be used.
 	}
 
+	@SuppressWarnings("resource")
 	public void ensureValidClient() {
 		if (getHttpClient() == null) {
 			setHttpClient(createClient());

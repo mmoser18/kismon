@@ -62,7 +62,7 @@ public class SSHConnection extends IPConnection
 		super(name, description);
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	@Override
 	protected void finalize() throws Throwable {
 		if (this.sshClient != null) {

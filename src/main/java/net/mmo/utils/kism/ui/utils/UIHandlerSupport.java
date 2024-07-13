@@ -71,8 +71,10 @@ public class UIHandlerSupport
 
 	private static void logout() {
 		VaadinSession current = VaadinSession.getCurrent();
-		current.getSession().invalidate();
-		current.close();
+		if (current != null) {
+			current.getSession().invalidate();
+			current.close();
+		}
 	}
 
 	/**

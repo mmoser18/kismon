@@ -7,7 +7,6 @@ package net.mmo.utils.kism.entities.nodes.connections;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.cfg.NotYetImplementedException;
 
 @SuppressWarnings("javadoc")
 @Setter
@@ -26,6 +25,6 @@ public class TelnetConnection extends TCPConnection
 
 	@Override
 	public void sendRequest() throws Exception {
-		throw new NotYetImplementedException("Telnet not yet implemented"); //$NON-NLS-1$
+		throw new Exception("Telnet not yet implemented"); //$NON-NLS-1$
 	}
 }

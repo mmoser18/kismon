@@ -29,9 +29,8 @@ public class RootNode extends IntermediateNode
 	@JsonIgnore // no point in writing that value into the file itself. Restored/set after reading from it
 	private transient String filePath;
 
-	@JsonIgnore
 	protected transient final Collection<PropertyChangeListener> changeListeners = new HashSet<>();
-
+	@JsonIgnore
 	protected CertificateHandling certificateHandling;
 
 
@@ -45,7 +44,7 @@ public class RootNode extends IntermediateNode
 
 
 
-	@SuppressWarnings({"deprecation"})
+	@SuppressWarnings("removal")
 	@Override
 	protected void finalize() {
 		this.changeListeners.clear();
