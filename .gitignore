@@ -16,6 +16,8 @@ drivers/
 error-screenshots/
 
 webpack.generated.js
+/frontend/generated/*
+/frontend/index.html
 /logs/
 /data/
 /garage/*
@@ -46,3 +48,4 @@ config von ksta-zh-tools
 ELCA_certificates
 /zhservices.kmc
 /*/.gitignore
+/home.kmc
