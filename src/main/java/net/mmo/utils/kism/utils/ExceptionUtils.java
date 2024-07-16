@@ -5,6 +5,8 @@
 
 package net.mmo.utils.kism.utils;
 
+import java.util.Arrays;
+
 @SuppressWarnings("javadoc")
 public class ExceptionUtils
 {
@@ -22,9 +24,17 @@ public class ExceptionUtils
 		return buf.toString();
 	}
 	public static String exceptionRootCauseMsg(Throwable start) {
-		String msg = "undefined"; //$NON-NLS-1$
+		String msg = "<no root cause provided>"; //$NON-NLS-1$
 		for (Throwable t = start; t != null; t = t.getCause()) {
-			if (t.getMessage() != null) msg = t.getMessage();
+			String tMsg = t.getMessage();
+			if (tMsg != null && !tMsg.isBlank()) {
+				msg = t.getMessage();
+			} else {
+				Throwable[] suppressed = t.getSuppressed();
+				if (suppressed != null && suppressed.length > 0) {
+					msg = Arrays.asList(t.getSuppressed()).toString();
+				}
+			}
 		}
 		return msg;
 	}

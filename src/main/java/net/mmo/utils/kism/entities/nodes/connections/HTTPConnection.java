@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -146,8 +147,7 @@ abstract public class HTTPConnection extends TCPConnection
 	transient protected byte[] responseBody;
 
 	// If set then we use a TrustManager that trusts ALL (i.e. also self signed) certificates:
-	@JsonIgnore
-	transient protected final TrustManager trustAllCerts =
+	protected static final TrustManager trustAllCerts =
 		new X509TrustManager() {
 			@Override
 			public X509Certificate[] getAcceptedIssuers() {
@@ -160,6 +160,10 @@ abstract public class HTTPConnection extends TCPConnection
 			@Override
 			public void checkServerTrusted(X509Certificate[] certs, String authType) {
 				// empty
+			}
+			@Override
+			public String toString() {
+				return "trustAllCerts(" + X509TrustManager.class.getSimpleName() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		};
 
@@ -347,6 +351,7 @@ abstract public class HTTPConnection extends TCPConnection
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
+		log.debug("creating HTTP client for: {}", this.resolvedURI); //$NON-NLS-1$
 		if (this.resolvedURI.getScheme().equals("https")) { //$NON-NLS-1$
 			// for SSL/TLS we need to jump through a few extra-loops:
 			if (acceptableSSLVersions != null && acceptableSSLVersions.length > 0) {
@@ -367,7 +372,8 @@ abstract public class HTTPConnection extends TCPConnection
 			}
 
 			if (trustAllCertificates) {
-				tms = new TrustManager[] { this.trustAllCerts };
+				tms = new TrustManager[] { trustAllCerts };
+				log.debug("Trusting ALL SSL certificates - available trust-managers are: {}", Arrays.asList(tms)); //$NON-NLS-1$
 			}
 			if (kms != null || tms != null) {
 				SSLContext sslContext = null;
@@ -376,7 +382,7 @@ abstract public class HTTPConnection extends TCPConnection
 					sslContext.init(kms, tms, new java.security.SecureRandom());
 					builder.sslContext(sslContext);
 				} catch (Exception ex) {
-					log.error("Error creating SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
+					log.error("Error creating an SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
 				}
 			}
 		}
@@ -555,7 +561,8 @@ abstract public class HTTPConnection extends TCPConnection
 				String location = response.headers().firstValue("Location").orElseGet(null); //$NON-NLS-1$
 				log.info("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
 				if (location == null || location.length() <= 0) {
-					throw new Exception(String.format("received redirect response %d without Location headers", statusCode)); //$NON-NLS-1$
+					if (client != null) client.close();
+					throw new Exception(String.format("received redirect response %d without 'Location:' headers", statusCode)); //$NON-NLS-1$
 				}
 				try {
 					request = createRequest(new URI(location));
@@ -570,11 +577,13 @@ abstract public class HTTPConnection extends TCPConnection
 			} while (true); // exit via break or exception...
 			processResponseReceived(response);
 
-		} catch (Exception ex) {
-			if (log.isTraceEnabled()) { // log with stack trace - this is for hard nuts:
+		} catch (Throwable ex) {
+			if (shortRequestLogEntries) {
+				log.debug("exception executing '{}': {}", getName(), ExceptionUtils.exceptionRootCauseMsg(ex)); //$NON-NLS-1$
+			} else if (log.isTraceEnabled()) { // log with stack trace - this is for tough nuts:
 				log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
 			} else {
-				log.info("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
+				log.debug("exception executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 			}
 			setResponseStatusCode(-1);
 			setResponseHeaders(null);
@@ -583,15 +592,16 @@ abstract public class HTTPConnection extends TCPConnection
 			setState(State.FAILED);
 			setRequestResult(getState().name() + '/' + ExceptionUtils.exceptionRootCauseMsg(ex));
 			if (response != null) {
-				throw new Exception(String.format("Error for '%s' processing response from '%s': ", //$NON-NLS-1$
-				                                  getName(), request.uri()),
+				throw new Exception(String.format("Error for '%s' processing response from '%s': %s", //$NON-NLS-1$
+				                                  getName(), request.uri(), ex),
 				                    ex);
 			} else if (request != null) {
-				throw new Exception(String.format("Error for '%s' sending request '%s':", //$NON-NLS-1$
-				                                  getName(), request.uri()),
+				throw new Exception(String.format("Error for '%s' sending request '%s': %s", //$NON-NLS-1$
+				                                  getName(), request.uri(), ex),
 				                    ex);
 			} else {
-				throw new Exception(String.format("Error for '%s' creating request", getName()) ,//$NON-NLS-1$
+				throw new Exception(String.format("Error for '%s' creating request: %s", //$NON-NLS-1$
+				                                  getName(), ex) ,
 				                    ex);
 			}
 		} finally {

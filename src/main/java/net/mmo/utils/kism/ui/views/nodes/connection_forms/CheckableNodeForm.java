@@ -144,7 +144,7 @@ public abstract class CheckableNodeForm <N extends CheckableNode> extends LeafNo
 			// if the nr of required args is smaller than operandNr then this operand is irrelevant, so we always validate it as OK
 			Condition condValue = this.form.condition.getValue();
 			int nrArgs = (condValue != null ? condValue.getNrArgs() : -1);
-			CheckableNodeForm.this.log.info("condition: {}, value: {}, nrArgs: {}", this.form.condition, condValue, nrArgs); //$NON-NLS-1$
+			CheckableNodeForm.this.log.debug("condition: {}, value: {}, nrArgs: {}", this.form.condition, condValue, nrArgs); //$NON-NLS-1$
 			if (condValue == null || nrArgs < this.operandNr) return ValidationResult.ok();
 			Class<?> clazz = condValue.getArgClasses()[this.operandNr-1];
 			if (clazz == String.class) {

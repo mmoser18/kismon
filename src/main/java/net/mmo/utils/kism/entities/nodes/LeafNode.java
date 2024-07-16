@@ -205,10 +205,13 @@ abstract public class LeafNode extends ActionableNode
 		try {
 			sendRequest();
 			resultMsg = getRequestResult();
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			if (shortRequestLogEntries) {
-				if (log.isInfoEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
-					log.info("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+				if (log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
+					log.debug("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+				} else {
+					String msg = ExceptionUtils.exceptionRootCauseMsg(ex);
+					log.info("Error {} '{}': {}", logFragment, getName(), (msg != null && !msg.isBlank() ? msg : ex)); //$NON-NLS-1$
 				}
 			} else {
 				log.info("Error " + logFragment + " '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
