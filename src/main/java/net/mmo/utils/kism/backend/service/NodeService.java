@@ -25,13 +25,13 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.vaadin.flow.component.notification.Notification;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
+import net.mmo.utils.kism.ui.views.nodes.NodeView;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.NodeProperties;
@@ -191,17 +191,17 @@ public class NodeService
 				} else {
 					String msg = String.format("File '%s' is not writable!", tmpFile); //$NON-NLS-1$
 					log.info(msg);
-					new Notification(msg, 10000).open();
+					NodeView.createNotification(msg, 10000);
 				}
 			} else {
 				String msg = String.format("File '%s' is not writable!", finalFile); //$NON-NLS-1$
 				log.info(msg);
-				new Notification(msg, 10000).open();
+				NodeView.createNotification(msg, 10000);
 			}
 		} catch (Throwable t) {
 			String msg = String.format("Exception saving '%s': %s", obj, t); //$NON-NLS-1$
 			log.error(msg, t);
-			new Notification(msg, 10000).open();
+			NodeView.createNotification(msg, 10000);
 		}
 		return null;
 	}

@@ -1073,7 +1073,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node(s) '%s': %s", nodeNames, t); //$NON-NLS-1$
 			log.error(msg, t);
-			createNotification(msg, 5000);
+			createNotification(msg, 10000);
 		}
 		updateTree();
 		// do we want to select (all) parent node(s) after a deletion:
@@ -1126,10 +1126,18 @@ public class NodeView <N extends Node> extends VerticalLayout
 	}
 
 	public static void createNotification(String msg, int duration) {
-		Notification notif = new Notification(msg, duration);
+		Notification notif = new Notification(msg, duration)
+		{
+			private static final long serialVersionUID = 8046905230067171276L;
+
+			@Override
+			public String toString() {
+				return super.toString() + "[msg='" + msg + "']"; //$NON-NLS-1$ //$NON-NLS-2$
+			}
+		};
 		notif.addAttachListener(evt ->
 		{
-			log.info("Notification attach-event: {}", evt); //$NON-NLS-1$
+			log.info("Notification AttachEvent: {}", evt); //$NON-NLS-1$
 			notif.close();
 		});
 		notif.open();

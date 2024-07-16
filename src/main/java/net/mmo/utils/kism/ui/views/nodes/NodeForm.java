@@ -16,13 +16,13 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BindingValidationStatus;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
@@ -628,21 +628,35 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected void validateAndSave() {
 		if (this.node != null) {
 			this.log.info("validateAndSave '{}'", this.node.getName()); //$NON-NLS-1$
-			try {
-				if (SecurityUtils.isAdminUser()) {
-					validate(); // throws ValidationException if data not valid
+			if (SecurityUtils.isAdminUser()) {
+				try {
+					validate();
 					writeBean(this.node);
 					fireEvent(new SaveEvent(this, this.node));
 					setUiChanges(false);
-				} else {
-					readBean(this.node); // reset whatever changes the user may have entered
+				} catch (ValidationException ex) { // throws ValidationException if data not valid
+					this.log.info("ValidationException:", ex); //$NON-NLS-1$
+					java.util.List<ValidationResult> beanValidationErrors = ex.getBeanValidationErrors();
+					String errorMsg = "Validation failed: " + ex.getMessage() + ": "; //$NON-NLS-1$ //$NON-NLS-2$
+					if (beanValidationErrors.isEmpty()) {
+						java.util.List<BindingValidationStatus<?>> fieldValidationErrors = ex.getFieldValidationErrors();
+						errorMsg +=
+						fieldValidationErrors.stream()
+							.map((BindingValidationStatus<?> beanValidationStatus) -> "status:'" + beanValidationStatus.getStatus() //$NON-NLS-1$
+						                                                              + "': " + (beanValidationStatus.getResult().isPresent() //$NON-NLS-1$
+						                                                                        ? beanValidationStatus.getResult().get().getErrorMessage()
+						                                                                        : "unresolved:" + fieldValidationErrors) //$NON-NLS-1$
+						                                                              )
+						    .collect(Collectors.toList());
+					} else {
+						errorMsg += beanValidationErrors.stream().map((validationResult) -> validationResult.getErrorMessage()).collect(Collectors.toList());
+					}
+					this.log.warn(errorMsg);
+					NodeView.createNotification(errorMsg, 60000);
 				}
-			} catch (ValidationException e) {
-				this.log.warn("Validation failed: {}: bean: {} / fields: {}", //$NON-NLS-1$
-				         e.getMessage(),
-				         e.getBeanValidationErrors().stream().map((validationResult) -> validationResult.getErrorMessage()).collect(Collectors.toList()),
-				         e.getFieldValidationErrors().stream().map((status) -> "'" + status.getField().getValue() + "': " + status.getResult().get().getErrorMessage()).collect(Collectors.toList())); //$NON-NLS-1$ //$NON-NLS-2$
-				new Notification(e.getBeanValidationErrors().toString(), 0).open();
+
+			} else {
+				readBean(this.node); // reset whatever changes the user may have entered
 			}
 		} else {
 			setUiChanges(false);
