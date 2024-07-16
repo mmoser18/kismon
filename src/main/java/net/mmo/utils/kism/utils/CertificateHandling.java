@@ -63,33 +63,15 @@ public class CertificateHandling
 	transient HashMap<String, KeyManagerFactory> keyManagerFactories = new HashMap<>();
 
 	void init () {
-		log.info("Supported Keystore Filetypes are: {}", //$NON-NLS-1$
-		         Arrays.asList(java.security.Security.getProviders()).stream().map(p -> p.getName()).collect(Collectors.toList()));
-
 		this.descriptors = new ArrayList<>();
 
-		this.descriptors.add(
-			new KeyAndCertificateDescriptor("zhs-base-command-bridge-zhm-egov-test2.zhm.acp2.aspectra.com", //$NON-NLS-1$
-			                                "zhs-base-command_bridge_client_test.p12", //$NON-NLS-1$
-			                                DefaultKeyAndCertificateFileType,
-			                                "password", //$NON-NLS-1$
-			                                "password") //$NON-NLS-1$
-		);
-		this.descriptors.add(
-			new KeyAndCertificateDescriptor("zhs-base-command-bridge-zhm-egov-test.zhm.acp2.aspectra.com", //$NON-NLS-1$
-			                                "zhs-base-command_bridge_client_uat.p12", //$NON-NLS-1$
-			                                DefaultKeyAndCertificateFileType,
-			                                "password", //$NON-NLS-1$
-			                                "password") //$NON-NLS-1$
-		);
-
-		this.descriptors.add(
-			new KeyAndCertificateDescriptor("zhs-base-command-bridge-zhm-egov-prod.zhm.acp2.aspectra.com", //$NON-NLS-1$
-			                                "zhs-base-command_bridge_client_prod.p12", //$NON-NLS-1$
-			                                DefaultKeyAndCertificateFileType,
-			                                "password", //$NON-NLS-1$
-			                                "password") //$NON-NLS-1$
-		);
+//		this.descriptors.add(
+//			new KeyAndCertificateDescriptor("<example-domain>", //$NON-NLS-1$
+//			                                "<example-keystore>.p12", //$NON-NLS-1$
+//			                                DefaultKeyAndCertificateFileType,
+//			                                "<example-keystore-file-password>", //$NON-NLS-1$
+//			                                "<example-keystore-key-password>") //$NON-NLS-1$
+//		);
 	}
 
 	@SuppressWarnings("javadoc")
@@ -99,7 +81,7 @@ public class CertificateHandling
 		if (this.descriptors == null) {
 			init(); // preload the hard-coded certificates if none defined, yet (this is to bootstrap the whole thing...)
 		}
-		log.info("Certificate descriptors are: {}", this.descriptors); //$NON-NLS-1$
+		log.info("Preloaded certificate descriptors are: {}", this.descriptors); //$NON-NLS-1$
 
 		this.descriptors.forEach(desc -> this.keyAndCertificateFiles.put(desc.getHostPattern(), desc));
 		this.keyAndCertificateFiles.forEach((key, fd) -> {
