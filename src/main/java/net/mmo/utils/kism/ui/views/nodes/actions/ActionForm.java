@@ -28,7 +28,6 @@ import net.mmo.utils.kism.entities.nodes.actions.ActionCheck;
 import net.mmo.utils.kism.entities.nodes.actions.IAction;
 import net.mmo.utils.kism.ui.UIConstants;
 import net.mmo.utils.kism.ui.views.nodes.NodeForm;
-import net.mmo.utils.kism.ui.views.nodes.NodeView;
 import net.mmo.utils.kism.ui.views.nodes.actions.ActionFactory.ActionType;
 /**
  * extends NodeForm with Action-Details
@@ -152,7 +151,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 					action.doAction(this.node, this.node.getState(), null);
 				} catch (Exception ex) {
 					this.log.error("error executing action " + action, ex); //$NON-NLS-1$
-					NodeView.createNotification(String.format(Messages.getString("ActionForm.TriggerActionError.Message"), ex.getMessage())); //$NON-NLS-1$
+					NodeService.createNotification(String.format(Messages.getString("ActionForm.TriggerActionError.Message"), ex.getMessage())); //$NON-NLS-1$
 				}
 			}
 		});

@@ -25,13 +25,13 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.vaadin.flow.component.notification.Notification;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.entities.nodes.IntermediateNode;
 import net.mmo.utils.kism.entities.nodes.Node;
 import net.mmo.utils.kism.entities.nodes.RootNode;
-import net.mmo.utils.kism.ui.views.nodes.NodeView;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.NodeProperties;
@@ -191,19 +191,44 @@ public class NodeService
 				} else {
 					String msg = String.format("File '%s' is not writable!", tmpFile); //$NON-NLS-1$
 					log.info(msg);
-					NodeView.createNotification(msg, 10000);
+					createNotification(msg, 10000);
 				}
 			} else {
 				String msg = String.format("File '%s' is not writable!", finalFile); //$NON-NLS-1$
 				log.info(msg);
-				NodeView.createNotification(msg, 10000);
+				createNotification(msg, 10000);
 			}
 		} catch (Throwable t) {
 			String msg = String.format("Exception saving '%s': %s", obj, t); //$NON-NLS-1$
 			log.error(msg, t);
-			NodeView.createNotification(msg, 10000);
+			createNotification(msg, 10000);
 		}
 		return null;
+	}
+
+	/* moved this here to avoid references of views/components in entities (although this internally
+	 * references Vaadin UI components...) */
+
+	public static void createNotification(String msg) {
+		createNotification(msg, 0);
+	}
+
+	public static void createNotification(String msg, int duration) {
+		Notification notif = new Notification(msg, duration)
+		{
+			private static final long serialVersionUID = 8046905230067171276L;
+
+			@Override
+			public String toString() {
+				return super.toString() + "[msg='" + msg + "']"; //$NON-NLS-1$ //$NON-NLS-2$
+			}
+		};
+		notif.addAttachListener(evt ->
+		{
+			log.info("Notification AttachEvent: {}", evt); //$NON-NLS-1$
+			notif.close();
+		});
+		notif.open();
 	}
 
 	public void writeFile(Object obj, String rootNodeName, File file) throws IOException {

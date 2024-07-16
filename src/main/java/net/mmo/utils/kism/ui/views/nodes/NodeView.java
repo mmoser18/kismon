@@ -27,7 +27,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
@@ -206,12 +205,12 @@ public class NodeView <N extends Node> extends VerticalLayout
 			{
 				log.info("saveAllButton clicked"); //$NON-NLS-1$
 				if (saveAllRootNodes()) { // saving was successful:
-					createNotification(Messages.getString("NodeView.Button.SaveAll.Success"), 2000); //$NON-NLS-1$
+					NodeService.createNotification(Messages.getString("NodeView.Button.SaveAll.Success"), 2000); //$NON-NLS-1$
 					if (!NodeView.alwaysSave) {
 						highlightSaveButton(false);
 					}
 				} else {
-					createNotification(Messages.getString("NodeView.Button.SaveAll.Error")); //$NON-NLS-1$
+					NodeService.createNotification(Messages.getString("NodeView.Button.SaveAll.Error")); //$NON-NLS-1$
 				}
 			});
 
@@ -957,7 +956,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} else {
 			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
 			log.info(msg);
-			createNotification(msg);
+			NodeService.createNotification(msg);
 		}
 	}
 
@@ -1073,7 +1072,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node(s) '%s': %s", nodeNames, t); //$NON-NLS-1$
 			log.error(msg, t);
-			createNotification(msg, 10000);
+			NodeService.createNotification(msg, 10000);
 		}
 		updateTree();
 		// do we want to select (all) parent node(s) after a deletion:
@@ -1121,27 +1120,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 		});
 	}
 
-	public static void createNotification(String msg) {
-		createNotification(msg, 0);
-	}
-
-	public static void createNotification(String msg, int duration) {
-		Notification notif = new Notification(msg, duration)
-		{
-			private static final long serialVersionUID = 8046905230067171276L;
-
-			@Override
-			public String toString() {
-				return super.toString() + "[msg='" + msg + "']"; //$NON-NLS-1$ //$NON-NLS-2$
-			}
-		};
-		notif.addAttachListener(evt ->
-		{
-			log.info("Notification AttachEvent: {}", evt); //$NON-NLS-1$
-			notif.close();
-		});
-		notif.open();
-	}
 
 	private static class LabelWithIcon extends HorizontalLayout
 	{

@@ -652,7 +652,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 						errorMsg += beanValidationErrors.stream().map((validationResult) -> validationResult.getErrorMessage()).collect(Collectors.toList());
 					}
 					this.log.warn(errorMsg);
-					NodeView.createNotification(errorMsg, 60000);
+					NodeService.createNotification(errorMsg, 60000);
 				}
 
 			} else {
