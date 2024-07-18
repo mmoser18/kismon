@@ -487,6 +487,7 @@
 					<excludes> <!-- these should be provided externally to the .jar: -->
 						<exclude>**/application.properties</exclude>
 						<exclude>**/logback.xml</exclude>
+						<exclude>com/vaadin/**</exclude>
 					</excludes>
 					<archive>
 						<manifestEntries>
