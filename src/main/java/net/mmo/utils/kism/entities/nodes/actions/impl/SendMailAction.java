@@ -267,15 +267,10 @@ public class SendMailAction <N extends ActionableNode> implements IAction<N>
 			case PlaceHolder_TargetAddress:
 				if (this.node instanceof TCPConnection) {
 					return ((TCPConnection)this.node).getResultingUrl();
-				}
-				if (this.node instanceof IPConnection) {
+				} else if (this.node instanceof IPConnection) {
 					return ((IPConnection)this.node).getResultingHostAddress();
-				}
-				if (this.node instanceof IPConnection) {
-					return ((IPConnection)this.node).getResultingHostAddress();
-				}
-
-				//$FALL-THROUGH$
+				} // else:
+				// $FALL-THROUGH$
 			default:
 				return super.getProperty(key);
 			}
