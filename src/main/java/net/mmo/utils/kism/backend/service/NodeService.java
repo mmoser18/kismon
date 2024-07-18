@@ -191,17 +191,17 @@ public class NodeService
 				} else {
 					String msg = String.format("File '%s' is not writable!", tmpFile); //$NON-NLS-1$
 					log.info(msg);
-					createNotification(msg, 10000);
+					createNotification(msg);
 				}
 			} else {
 				String msg = String.format("File '%s' is not writable!", finalFile); //$NON-NLS-1$
 				log.info(msg);
-				createNotification(msg, 10000);
+				createNotification(msg);
 			}
 		} catch (Throwable t) {
 			String msg = String.format("Exception saving '%s': %s", obj, t); //$NON-NLS-1$
 			log.error(msg, t);
-			createNotification(msg, 10000);
+			createNotification(msg);
 		}
 		return null;
 	}
@@ -210,11 +210,11 @@ public class NodeService
 	 * references Vaadin UI components...) */
 
 	public static void createNotification(String msg) {
-		createNotification(msg, 0);
+		createNotification(msg, 0); // 0: means: no auto-closing, i.e. stay until clicked
 	}
 
-	public static void createNotification(String msg, int duration) {
-		Notification notif = new Notification(msg, duration)
+	public static void createNotification(String msg, int durationInMillis) {
+		Notification notif = new Notification(msg, durationInMillis)
 		{
 			private static final long serialVersionUID = 8046905230067171276L;
 
@@ -225,8 +225,13 @@ public class NodeService
 		};
 		notif.addAttachListener(evt ->
 		{
-			log.info("Notification AttachEvent: {}", evt); //$NON-NLS-1$
-			notif.close();
+			log.trace("Notification Attach-Event: {}", evt); //$NON-NLS-1$
+			// notif.close();
+		});
+		notif.addOpenedChangeListener(evt ->
+		{
+			log.trace("Notification OpenedChange-Event: {}", evt); //$NON-NLS-1$
+			// notif.close();
 		});
 		notif.open();
 	}

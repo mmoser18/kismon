@@ -205,7 +205,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			{
 				log.info("saveAllButton clicked"); //$NON-NLS-1$
 				if (saveAllRootNodes()) { // saving was successful:
-					NodeService.createNotification(Messages.getString("NodeView.Button.SaveAll.Success"), 2000); //$NON-NLS-1$
+					NodeService.createNotification(Messages.getString("NodeView.Button.SaveAll.Success"), 3000); //$NON-NLS-1$
 					if (!NodeView.alwaysSave) {
 						highlightSaveButton(false);
 					}
@@ -1072,7 +1072,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		} catch (Throwable t) {
 			String msg = String.format("Exception deleting node(s) '%s': %s", nodeNames, t); //$NON-NLS-1$
 			log.error(msg, t);
-			NodeService.createNotification(msg, 10000);
+			NodeService.createNotification(msg);
 		}
 		updateTree();
 		// do we want to select (all) parent node(s) after a deletion:

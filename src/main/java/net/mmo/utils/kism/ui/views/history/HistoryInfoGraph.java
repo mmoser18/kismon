@@ -50,6 +50,12 @@ import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 @Slf4j
 public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Object>>
 {
+	static {
+		log.info("HistoryInfoGraph static c'tor begin:"); //$NON-NLS-1$;
+	}
+	{
+		log.info("HistoryInfoGraph instance c'tor begin:"); //$NON-NLS-1$;
+	}
 	private static final long serialVersionUID = -1954281705187898725L;
 	private static final boolean LEGENDS_AT_LEFT = false;
 
@@ -62,6 +68,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	public HistoryInfoGraph(HistoryInfoService historyInfoService) {
 		super(historyInfoService);
+		log.info("HistoryInfoGraph instance c'tor end."); //$NON-NLS-1$;
 	}
 
 	@Override
@@ -225,5 +232,9 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	private void selectAll() {
 		log.info("selectAll"); //$NON-NLS-1$
 		UIHandlerSupport.executeLater(this, 0, () -> forAllSeriesDo(ds -> ds.setVisible(true, true)));
+	}
+
+	static {
+		log.info("HistoryInfoGraph static c'tor end."); //$NON-NLS-1$;
 	}
 }
