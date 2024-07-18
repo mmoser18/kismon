@@ -281,5 +281,9 @@
 		"fingerprint" : "",
 		"command" : "ping -n 1 www.google.com"
 	} ],
-	"expanded" : true
+	"expanded" : true,
+	"certificateHandling" : {
+		"descriptors" : [ {
+		} ]
+	}
 }
