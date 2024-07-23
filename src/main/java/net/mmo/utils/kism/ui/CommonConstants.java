@@ -22,10 +22,11 @@ public class CommonConstants
 	public static final String LogoutURL = "logout"; //$NON-NLS-1$
 	public static final String LoginSuccessURL = "nodes"; //$NON-NLS-1$
 
+	public static final String HelpURL = "./help/help.html"; //$NON-NLS-1$
+
 	public static final String PasswordPlaceHolder = "<password_suppressed>"; // text to send instead of a password for non-admin users //$NON-NLS-1$
 	public final static String Role_ADMIN = "ADMIN"; //$NON-NLS-1$
 	public final static String Role_READ_ONLY = "READ_ONLY"; //$NON-NLS-1$
-
 	public enum LayoutDirection {
 		Horizontal(Messages.getString("CommonConstants.LayoutDirection.Horizontal")), //$NON-NLS-1$
 		Vertical  (Messages.getString("CommonConstants.LayoutDirection.Vertical")); //$NON-NLS-1$

@@ -251,7 +251,7 @@ vaadin-chart {
 	margin: 0px;
 }
 
-.logout-link {
+.logout-link .help-link {
 	padding: 10px;
 	text-decoration: underline;
 }

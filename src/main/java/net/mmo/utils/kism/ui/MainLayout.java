@@ -43,9 +43,11 @@ public class MainLayout extends AppLayout
 	private static final long serialVersionUID = 8922152078442380813L;
 
 	public static final String LogoutLinkLabel = Messages.getString("MainLayout.Link.LogOut.Label"); //$NON-NLS-1$
+	public static final String HelpLinkLabel = Messages.getString("MainLayout.Link.Help.Label"); //$NON-NLS-1$
 	public static final String TitleClassName = "main-title"; //$NON-NLS-1$
 	public static final String HeaderClassName = "main-header"; //$NON-NLS-1$
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
+	public static final String HelpLinkClassName = "help-link"; //$NON-NLS-1$
 	public static final String StartupErrorMessageClassName = "startup-error"; //$NON-NLS-1$
 
 	public MainLayout() {
@@ -60,10 +62,14 @@ public class MainLayout extends AppLayout
 		H1 appTitle = new H1(CommonConstants.ApplicationFullName);
 		appTitle.addClassName(TitleClassName);
 		// add a logout link to the page:
+		Anchor help = new Anchor(CommonConstants.HelpURL, HelpLinkLabel);
+		help.addClassName(HelpLinkClassName);
+		help.getElement().setAttribute("router-ignore", true); //$NON-NLS-1$
+		// add a logout link to the page:
 		Anchor logout = new Anchor(CommonConstants.LogoutURL, LogoutLinkLabel);
 		logout.addClassName(LogoutLinkClassName);
 
-		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, logout);
+		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, help, logout);
 		header.addClassName(HeaderClassName);
 //		header.expand(appTitle);
 //		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
