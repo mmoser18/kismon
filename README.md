@@ -13,10 +13,8 @@ It provides a tree-like overview of your system like so:
 # Table of Contents
 
 # Introduction
-<a name="kismon_intro"></a>
 
 ## Node-Hierarchies and States
-<a name="kismon_node-hierarchies_and_states"></a>
 
 Components form a tree and can be organized and grouped in subtrees. The requests used to probe for the 
 corresponding element's conditions can be defined on "leaf-nodes" in that tree. 
@@ -42,7 +40,6 @@ children corresponds to one configuration file (see further down on config files
 KISMON can load multiple configurations and monitor more than one hierarchy at once.  
 
 ## Requests and Request-Types
-<a name="kismon_Requests_and_Request-Types"></a>
 
 Request-types that are supported by KISMON are *REST*- and *SOAP*-requests, *JDBC*-requests 
 (i.e. DB queries), *PING* (does ICMP-pings testing reachability and responsiveness of a system) 
@@ -74,7 +71,6 @@ extracts the response time from that result).
 shell.
 
 ### Nodes View
-<a name="kismon_Nodes_View"></a>
 
 The main view of KISMON is clearly the nodes view as shown in the screenshots above. 
 It shows the status of the last "poll" and the status hierarchy is updated after each update 
@@ -85,7 +81,6 @@ from the last response received (or not received in which case one can see the r
 the error message).
 
 ### History Data
-<a name="kismon_History_Data"></a>
 
 Results of all requests (i.e. the node name, the timestamp of each request, the resulting status and 
 response times) are saved to a DB. 
@@ -94,7 +89,6 @@ By default that is a simple in-memory DB (H2) but one could also specify a diffe
 e.g. for some statistics).
 
 #### History Data Table View
-<a name="kismon_History_Data_Table_View"></a>
 
 There is a *tabular* history view that allows to browse the history data with filters to narrow down the 
 list to specific host(s) and/or time spans. With that one can e.g. inspect whether a system was up and 
@@ -103,7 +97,6 @@ running or not or whether it experienced some slow-down during a specific period
 ![alt Screenshot of KISMON configured for ZHServices with history table](images/screenshot_KISMON_for_ZHServices_with_history_table.png "Screenshot of KISMON configured for ZHServices with history table")
 
 #### History Data Graphical View
-<a name="kismon_History_Data_Graphical_View"></a>
 
 There is also a *graphical* history view whose purpose is to provide a graphical visualization of the 
 response times. However, that view is still in a very infant state (i.e. sill experimental and unstable). 
@@ -118,10 +111,8 @@ crash or hang in the license verification process.
 ![alt Screenshot of KISMON configured for ZHServices with history graph](images/screenshot_KISMON_for_ZHServices_with_history_graph.png "Screenshot of KISMON configured for ZHServices with history graph")
 
 ## Configuring the Application
-<a name="kismon_Configuring_the_Application"></a>
 
 ### Configuration via Forms
-<a name="kismon_Configuration_via_Forms"></a>
 
 The individual request types and parameters (for leaf nodes) and the summarization rules 
 (for intermediate nodes) are configured via different "forms". These forms contain parts that are always 
@@ -129,7 +120,6 @@ visible and parts that are initially hidden in collapsed "accordions", i.e. part
 or "unfolded" to see their details.
 
 #### The generic fields at the top (always visible):
-<a name="kismon_Configuration_via_Forms-Generic_Fields"></a>
 
 The generic fields at the top of the forms are the same for all node types. These are 
 * the *name* of each "node" (which must be unique in the entire tree). 
@@ -153,7 +143,6 @@ placeholders in most alphanumeric entry fields of *this* node or any of its chil
 are inherited from a node's parent (and grand-parent, grand-grand-parent, etc.).
 
 #### Connection Details (accordion 1)
-<a name="kismon_Configuration_via_Forms-Connection_Details"></a>
 
 These are collected in an "Accordion", i.e. a part of a form that is expandable and collapsible by 
 clicking onto the accordeon's header to the right of the "twisty" (triangle).
@@ -161,7 +150,6 @@ clicking onto the accordeon's header to the right of the "twisty" (triangle).
 Each node- (i.e. request)-type has its specific *Connection Details* fields:
 
 ##### REST-Requests
-<a name="kismon_Configuration_via_Forms-Connection_Details-REST"></a>
 
 This type derives from *HTTP_Connection*, i.e. if offers the connection configuration details *URL*, 
 *user-id* and *password*. These fields can contain placeholders.
@@ -181,7 +169,6 @@ For methods that allow to send a "payload" (or content), i.e. PUT and POST, ther
 entry-field for such payuloads provided. This field also supports placeholders.
 
 ##### SOAP-Requests
-<a name="kismon_Configuration_via_Forms-Connection_Details-SOAP"></a>
 
 This type also derives from *HTTP_Connection* but supports POST-requests only (as SOAP does) - the 
 HTTP-method field is thus hidden.
@@ -189,7 +176,6 @@ Besides all the fields provides by REST-POST requests there also is *SOAP-action
 enter the value of the likely-named HTTP-header field.
 
 ##### JDBC-Requests
-<a name="kismon_Configuration_via_Forms-Connection_Details-JDBC"></a>
 
 This type also derives from *HTTP_Connection*. It does not have an HTTP-method selector, instead it 
 provides two fields: one for the JDBC driver class-name and a second for the SQL-query that is to be 
@@ -202,7 +188,6 @@ then some application specific non-data-modifying query should be used (and its 
 contain the expected answer).
 
 ##### PING-Requests
-<a name="kismon_Configuration_via_Forms-Connection_Details-PING"></a>
 
 This type derives from IP_Connection (i.e. one specifies no protocol, only an IP host-name or -address).
 Note that - since Java does not support to send ICMP-requests and TCP-/UDP-echo (on port 7 / RFC 862) 
@@ -210,7 +195,6 @@ is only very seldom supported - these requests actually fork a system shell
 (*cmd* on Windows, *bash* on \*ix) to use the system's command "ping" to do the job. 
 
 ##### SSH-Requests
-<a name="kismon_Configuration_via_Forms-Connection_Details-SSH"></a>
 
 This type also derives from IP_Connection and opens an SSH connection (default: on port 22) to the 
 target host, logs in (using the values in *authentication method* , *user name*  and *password*).
@@ -228,7 +212,6 @@ flagged as *OK* when below 90(%), *Degraded* when between 90(%) and 95(%) and *F
 to alert us when the disk was about to run full.
 
 ##### Intermediate Nodes
-<a name="kismon_Configuration_via_Forms-Connection_Details-Intermedia_Nodes"></a>
 
 *Intermediate nodes* summarize the results of their children-nodes based on "Children condition":
 Such conditions are:
@@ -252,14 +235,12 @@ Only one of the two must be and is allowed to be up, i.e. *OK*, the other two si
 both are active) are *not* allowed and thus considered as *Failed*.
 
 #### Result (always visible for Leaf-nodes)
-<a name="kismon_Configuration_via_Forms-Result"></a>
 
 Below the *Excute*-button (which is also always visible and allows to trigger a request manually) there 
 is a section that displays the request's response status, the timestamp of the sent request as well as 
 the duration until the response was received.
 
 #### Request and Response Details (accordion 2 for Leaf-nodes)
-<a name="kismon_Configuration_via_Forms-Request_and_Response_Details"></a>
 
 The second accordeon contains no user-fillable fields. Rather it allows to display and verify the header 
 and payload of the *outgoing* message **exactly** as sent to the target system as well as - if the system 
@@ -271,7 +252,6 @@ Basic Authentication Header (if the corresponding checkbox was checked) and the 
 included in the request (if any was entered into that special field).
 
 #### Validation Details (accordion 3 for Leaf-nodes)
-<a name="kismon_Configuration_via_Forms-Validation_Details"></a>
 
 This form part allows to specify additional conditions that must be fulfilled to consider a received response 
 as *OK* (rather than *Failed*.
@@ -297,18 +277,15 @@ respectively, can be used to not only decide on *OK* or *Failed* but to yield *O
 between the two argument values or above or below, resp., the second argument.
 
 #### Action Details (accordion 4 for Leaf-nodes, 1 for Intermediate nodes)
-<a name="kismon_Configuration_via_Forms-Action_Details"></a>
 
 The last accordion allows to specify an action to be taken if the state of a node changes. 
 ##### Actions can be:
-<a name="kismon_Configuration_via_Forms-Existing_Actions"></a>
 
 * emit a log message - this goes to the application's log and no further arguments are required.
 * send an email - selecting this action causes additional fields to be displayed that allow to define 
 the emails' sender, the subject and the message's content.
 
 ###### Special Email Action Placeholders
-<a name="kismon_Configuration_via_Forms-Action_Email_PLaceholders"></a>
 
 For this action additional "properties" or "placeholders" are defined that may be used as part 
 of the subject- or the content-field:
@@ -331,14 +308,12 @@ of the subject- or the content-field:
 (\*) during manually triggered execution of the action these values are unknown and hence a replacement
 value of "---" is displayed.
 ##### Planned, future actions are:
-<a name="kismon_Configuration_via_Forms-Future_Actions"></a>
 
-* run a local command or script (Note: "local" means: on the server running the application - which is 
-not necessarily the system running the user's browser).
+* run a local command or script (Note: "local" here means: on the server running the application - 
+this might but typically will not be the same system running the user's browser).
 * run a remote command or script on another system (an arbitrary system logged into using SSH).
 
 ##### Threshold values:
-<a name="kismon_Configuration_via_Forms-Action_Thresholds"></a>
 
 The execution of actions is "delayed" by threshold values (i.e. the action is not triggered 
 immediately by a state transition but only after certain number of requests have yielded the same state). 
@@ -355,19 +330,16 @@ If the system then is later up and responding again for a certain number (\<Thre
 subsequent checks then another action is triggered reporting that the system is now OK again.
 
 ##### Same state counter & Reset status counter buttons
-<a name="kismon_Configuration_via_Forms-Actions_State-Counter_Reset-Counter"></a>
 
 This field simply displays how often the same state was encountered, i.e. how many requests have yielded
 the same status. The Reset-button allows to reset that value.
 
 ##### Trigger action manually manually
-<a name="kismon_Configuration_via_Forms-Actions_Trigger-manually"></a>
 
 This button allows to trigger an action manually. This proved helpful while defining and testing an action, 
 especially while defining recipient(s), subject and content of alert-emails to be sent out.
 
 ### KISMON configuration via a JSON Config File
-<a name="kismon_Configuration_via_JSON_Config_File"></a>
 
 KISMON saves its configurations in JSON files (default extension is ".kmc" for 
 "**k**is**m**on **c**onfiguration").
@@ -389,7 +361,6 @@ There is one noteworthy exception - namely a feature for which no GUI exists (ye
 *only* be configured via the config file:
 
 #### Client Certificate Handling
-<a name="kismon_Configuration_Client_Certificate_Handling"></a>
 
 At the very end of the config JSON file there can be an optional section:
 ```
@@ -423,10 +394,8 @@ The other four fields specify the keystore containing the certificate to be used
 host and the parameters required to access it. Their names should hopefully be self-explanatory.
 
 ## Running the Application
-<a name="kismon_Running_the_Application"></a>
 
 ### Running on the command line:
-<a name="kismon_Running_the_Application_via_Commandline"></a>
 
 The application is provided as executable .jar file. One can thus simply start is via:
 ```
@@ -449,7 +418,6 @@ copies the mentioned `application.properties`-file (plus a few other files) to t
 starting up the application via the command given above.
 
 ### Running from an IDE:
-<a name="kismon_Running_the_Application_via_IDE"></a>
 
 There are two ways to run the application:  using `mvn spring-boot:run` or by running the *Application* 
 class directly from your IDE.
@@ -459,7 +427,6 @@ Below are the configuration details to start the project using a `spring-boot:ru
 Both, Eclipse and IntelliJ IDEA, are covered.
 
 #### Eclipse
-<a name="kismon_Running_the_Application_via_IDE_Eclipse"></a>
 
 - Right click on a project folder and select `Run As` --> `Maven build..` . 
 After that a configuration window is opened.
@@ -470,7 +437,6 @@ After that a configuration window is opened.
 Once configurations are set clicking `Run` will start the application
 
 #### IntelliJ IDEA
-<a name="kismon_Running_the_Application_via_IDE_IntelliJ"></a>
 
 - On the right side of the window, select Maven --> Plugins--> `spring-boot` --> `spring-boot:run` goal
 - Optionally, you can disable tests by clicking on a `Skip Tests mode` blue button.
@@ -483,7 +449,6 @@ If you want to run the application locally in the production mode, use `spring-b
 command instead.
 
 ## Project overview
-<a name="kismon_Project_Overview"></a>
 
 The project follows 
 [Maven's standard directory layout structure](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html):
@@ -499,12 +464,10 @@ The project follows
 
 
 ## Notes
-<a name="kismon_Notes"></a>
 
 If you run the application from a maven command line, remember to prepend a `mvn` to the command.
 
 ## Implementation
-<a name="kismon_Implementation"></a>
 
 KISMON is based on Vaadin [Vaadin](https://vaadin.com/), a Graphik library that originally had its roots 
 in [GWT (Google Web Toolkit)](https://www.gwtproject.org/) but has since left this ancestry behind 
@@ -529,7 +492,6 @@ changes and the POJO gets updated, when a user modifies a field). These mappers 
 conversions and validations of a Java class's field and are really very convenient to use.
 
 ### More Information on Vaadin
-<a name="kismon_More_Information_on_Vaadin"></a>
 
 - Vaadin Basics [https://vaadin.com/docs](https://vaadin.com/docs)
 - More components at [https://vaadin.com/components](https://vaadin.com/components) and 
@@ -541,7 +503,6 @@ conversions and validations of a Java class's field and are really very convenie
 ## Program Internals
 
 ### Class-structure
-<a name="kismon_Implementation_Class-structure"></a>
 
 The main overview shows the split into the UI part, the entities, the "backend" (file-IO, DB-access, ...)
 and a few utility classes (e.g. for HTTP-security config, etc.).
@@ -603,4 +564,3 @@ achieve valid JSON syntax):
     ]
   }
 ```
-
