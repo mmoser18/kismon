@@ -55,7 +55,7 @@
 		<!-- newest version / but since v23.2.0 this refuses to build without license ||-( : -->
 		<vaadin.version>24.3.8</vaadin.version>
 		<!-- -->
-		<wdm.version>4.2.2</wdm.version>	<!-- wdm = WebDriver Manager -->
+		<wdm.version>5.9.1</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
 		
