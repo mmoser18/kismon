@@ -49,3 +49,5 @@ ELCA_certificates
 /zhservices.kmc
 /*/.gitignore
 /home.kmc
+/newer-versions.txt
+**/help.html
