@@ -268,6 +268,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	protected void createFormFields(NodeService nodeService) {
 		this.name = new TextField(Messages.getString("NodeForm.Name.Label")); //$NON-NLS-1$
 		this.name.addClassName(NameClassName);
+		this.name.setTooltipText(Messages.getString("NodeForm.Name.Tooltip")); //$NON-NLS-1$
 		this.name.setThemeName(UIConstants.LabelPaddingTheme);
 		this.name.setClearButtonVisible(this.clearButtonsVisible);
 		this.name.setEnabled(this.isAdminUser);
@@ -294,23 +295,27 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 		this.description = new TextArea(Messages.getString("NodeForm.Description.Label")); //$NON-NLS-1$
 		this.description.addClassName(DescriptionClassName);
+		this.description.setTooltipText(Messages.getString("NodeForm.Description.Tooltip")); //$NON-NLS-1$
 		this.description.setThemeName(UIConstants.LabelPaddingTheme);
 		this.description.setClearButtonVisible(this.clearButtonsVisible);
 		this.description.setEnabled(this.isAdminUser);
 
 		this.stateField = new TextField(Messages.getString("NodeForm.State.Label")); //$NON-NLS-1$
 		this.stateField.addClassName(StateClassName);
+		this.stateField.setTooltipText(Messages.getString("NodeForm.State.Tooltip")); //$NON-NLS-1$
 		this.stateField.setReadOnly(true); // stateField is calculated!
 		this.binder.forField(this.stateField).bind(n -> StateLabelProvider.getStateLabel(n.getState()), null);
 
 		this.applicable  = new Checkbox(Messages.getString("NodeForm.Applicable.Label")); //$NON-NLS-1$
 		this.applicable.addClassName(ApplicableClassName);
+		this.applicable.setTooltipText(Messages.getString("NodeForm.Applicable.Tooltip")); //$NON-NLS-1$
 
 		HorizontalLayout stateAndApplicable = new HorizontalLayout(this.applicable, this.stateField);
 		stateAndApplicable.addClassName(UIConstants.CombinedClassName);
 
 		this.properties = new TextArea(Messages.getString("NodeForm.Properties.Label")); //$NON-NLS-1$
 		this.properties.addClassName(PropertiesClassName);
+		this.properties.setTooltipText(Messages.getString("NodeForm.Properties.Tooltip")); //$NON-NLS-1$
 		this.properties.setThemeName(UIConstants.LabelPaddingTheme);
 		this.properties.addThemeName(UIConstants.MonospaceTheme);
 		this.properties.setClearButtonVisible(this.clearButtonsVisible);
