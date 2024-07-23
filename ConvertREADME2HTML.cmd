@@ -9,7 +9,7 @@ rem enable the below to uninstall things again:
 rem goto uninstall
 
 rem once this script has run once you can enable the below "goto" to speed up things a bit:
-goto skip_install
+rem goto skip_install
 
 :install
 call npm install --save-dev markdown-extensions
