@@ -196,6 +196,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 
 		this.responseStatusCode = new IntegerField(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Label")); //$NON-NLS-1$
 		this.responseStatusCode.setClassName(ResponseStatusCodeClassName);
+		this.responseStatusCode.setTooltipText(Messages.getString("HTTPConnectionForm.ResponseStatusCode.Tooltip")); //$NON-NLS-1$
 		this.responseStatusCode.setThemeName(LabelPaddingTheme);
 		this.responseStatusCode.setReadOnly(true);
 		this.binder.forField(this.responseStatusCode)
