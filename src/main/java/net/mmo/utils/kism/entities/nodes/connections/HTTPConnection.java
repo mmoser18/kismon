@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -101,9 +102,14 @@ abstract public class HTTPConnection extends TCPConnection
 	private final static Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
 	private final static String  CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
 	private final static String  LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9\\+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
-	private final static String  CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
-	private final static int     CHARSET_GROUP_NR  = 2; // the group name containing the character set
-	private final static Pattern CHARSET_PATTERN = Pattern.compile(CHARSET_REGEXP);
+	private final static String  CONTENT_TYPE_CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + "+)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
+	private final static int     CONTENT_TYPE_CHARSET_GROUP_NR  = 2; // the group name containing the character set
+	private final static Pattern CONTENT_TYPE_CHARSET_PATTERN = Pattern.compile(CONTENT_TYPE_CHARSET_REGEXP);
+
+	private final static String DOCTYPE_HTML = "<!doctype html>"; //$NON-NLS-1$
+
+	private final static Pattern META_CHARSET_PATTERN = Pattern.compile("(?s:.)*<head>(?s:.)*<meta charset=\\\"(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\\"\\s*/>(?s:.)*"); //$NON-NLS-1$ //$NON-NLS-2$
+	private final static int     META_CHARSET_GROUP_NR  = 1; // the group name containing the character set
 
 	protected HTTP_Method method = HTTP_Method.POST;
 
@@ -700,7 +706,7 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 	public String responseBodyAsString() {
 		byte[] body = getResponseBody();
-		Charset charset = extractResponseCharset();
+		Charset charset = extractResponseCharset(body);
 		HttpHeaders respHdrs = getResponseHeaders();
 		if (respHdrs != null) {
 			List<String> encodingList = respHdrs.map().get("content-encoding"); //$NON-NLS-1$
@@ -716,6 +722,10 @@ abstract public class HTTPConnection extends TCPConnection
 					}
 					if (encoding != null) {
 						body = unzip(body, encoding);
+						if (charset == DEFAULT_CHARSET) { // the charset might have been specified in the just decoded body, so we need to try again:
+							charset = extractResponseCharset(body);
+						}
+						log.debug("charset {}: {}", this.resolvedURI, charset); //$NON-NLS-1$
 						return "[>> Decompressed (using " + encoding+ "): <<]\n" + convertBodyToString(body, charset); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				} catch (IOException ex) {
@@ -725,6 +735,7 @@ abstract public class HTTPConnection extends TCPConnection
 				}
 			}
 		}
+		log.debug("charset {}: {}", this.resolvedURI, charset); //$NON-NLS-1$
 		return convertBodyToString(body, charset);
 	}
 	protected byte[] unzip(byte[] bytes, Encodings decompression) throws IOException {
@@ -746,7 +757,7 @@ abstract public class HTTPConnection extends TCPConnection
 			return byteArrayOutputStream.toByteArray();
 		}
 	}
-	private static String convertBodyToString(byte[] body, Charset charset) {
+	private static String convertBodyToString(final byte[] body, Charset charset) {
 		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);
 	}
 
@@ -754,31 +765,63 @@ abstract public class HTTPConnection extends TCPConnection
 	 * @throws Exception */
 	protected Charset extractRequestCharset() {
 		HttpHeaders requHdrs = getRequestHeaders();
-		return extractRequestCharset(requHdrs != null ? requHdrs.map() : null);
+		return extractCharset(requHdrs != null ? requHdrs.map() : null, null, "request"); //$NON-NLS-1$
 	}
+
 	/** extract character set from response headers - if there is any... */
-	protected Charset extractResponseCharset() {
+	protected Charset extractResponseCharset(final byte[] body) {
 		HttpHeaders respHdrs = getResponseHeaders();
-		return extractRequestCharset(respHdrs != null ? respHdrs.map() : null);
+		return extractCharset(respHdrs != null ? respHdrs.map() : null, body, "response"); //$NON-NLS-1$
 	}
 	/** extract character set from Content-Type header - if there is any... */
-	protected Charset extractRequestCharset(Map<String, List<String>> map) {
-		return (Charset)KeyValuesConverter.extractValueFragment(map,
-		                                                        CONTENT_TYPE_HEADER, VALUES_FRAGMENT_SEPARATOR,
-		                                                        CHARSET_PATTERN, CHARSET_GROUP_NR,
-		                                                        (str) -> {
-		                                                        	String charsetName = str.toUpperCase();
-		                                                        	if (Charset.isSupported(charsetName)) {
-		                                                        		Charset cs = Charset.forName(charsetName);
-		                                                        		log.debug("extractRequestCharset: found character set: '{}'", cs); //$NON-NLS-1$
-		                                                        		return cs;
-		                                                        	} else {
-		                                                        		log.warn("extractRequestCharset: charset '{}' not supported", charsetName); //$NON-NLS-1$
-		                                                        		// throw new Exception("charset '" + match + "' not supported");
-		                                                        		return null;
-		                                                        	}
-		                                                        },
-		                                                        DEFAULT_CHARSET);
+	protected Charset extractCharset(final Map<String, List<String>> map, final byte[] body, final String logSnippet) {
+		// 1.: attempt to extract the charset from the ContentType-header:
+		Charset contentTypeCharset =
+			(Charset)KeyValuesConverter.extractValueFragment(map,
+			                                                 CONTENT_TYPE_HEADER,
+			                                                 VALUES_FRAGMENT_SEPARATOR,
+			                                                 CONTENT_TYPE_CHARSET_PATTERN,
+			                                                 CONTENT_TYPE_CHARSET_GROUP_NR,
+			                                                 (str) -> convertNameToCharset(str),
+			                                                 null);
+		if (contentTypeCharset != null) {
+			log.trace("extractCharset: found {} character set in content-header: '{}'", logSnippet, contentTypeCharset); //$NON-NLS-1$
+			return contentTypeCharset;
+		}
+		// 2. for <!DOCTYPE html>: look for "<meta charSet="..."/>" present in the payload-header (<head>...</head>):
+		if (body != null && body.length > 0) {
+			String bodyString= new String(body, StandardCharsets.US_ASCII).toLowerCase(); // using US_ASCII since HTML header stuff should be in US_ASCII only!
+			if (bodyString.startsWith(DOCTYPE_HTML)) {
+				Matcher m = META_CHARSET_PATTERN.matcher(bodyString);
+				if (m.matches()) {
+					contentTypeCharset = convertNameToCharset(m.group(META_CHARSET_GROUP_NR));
+					if (contentTypeCharset != null) {
+						log.trace("extractCharset: found {} character set in meta header: '{}'", logSnippet, contentTypeCharset); //$NON-NLS-1$
+						return contentTypeCharset;
+					}
+				} else {
+					log.trace("no match. '{}'", bodyString.substring(0, Math.min(5000, bodyString.length()))); //$NON-NLS-1$
+				}
+			} else {
+				log.trace("no doctype html."); //$NON-NLS-1$
+			}
+		}
+		// 3. if no (legal) charset indication was found: we assume the default HTTP charset:
+		log.trace("extractCharset: found no {} character set - using default charset", logSnippet); //$NON-NLS-1$
+		return DEFAULT_CHARSET;
+	}
+
+	Charset convertNameToCharset(String str) {
+		String charsetName = str.toUpperCase();
+		if (Charset.isSupported(charsetName)) {
+			Charset cs = Charset.forName(charsetName);
+			log.trace("convertNameToCharset: found character set: '{}'", cs); //$NON-NLS-1$
+			return cs;
+		} else {
+			log.warn("convertNameToCharset: charset '{}' not supported", charsetName); //$NON-NLS-1$
+			// throw new Exception("charset '" + str + "' not supported"); // we rather warn and continue...
+			return null;
+		}
 	}
 
 	@Override
