@@ -280,10 +280,95 @@
 		"authArg" : "",
 		"fingerprint" : "",
 		"command" : "ping -n 1 www.google.com"
+	}, {
+		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
+		"name" : "External systems on the Internet",
+		"description" : "External systems on the Internet",
+		"applicable" : true,
+		"properties" : { },
+		"actionCheck" : null,
+		"action" : null,
+		"condition" : "ALL_MUST_BE_OK",
+		"children" : [ {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+			"name" : "SBB",
+			"description" : "SBB (note: the request does not work without a user-agent - property!)",
+			"applicable" : true,
+			"properties" : { },
+			"actionCheck" : null,
+			"action" : null,
+			"active" : true,
+			"period" : 60,
+			"timeout" : 5,
+			"checkResults" : true,
+			"resultChecker" : {
+				"condition" : "Contains",
+				"operands" : [ "<title>Das Online-Portal der SBB für Fahrplan, Zug und ÖV</title>" ]
+			},
+			"url" : "https://www.sbb.ch/de",
+			"method" : "GET",
+			"targetUid" : "<user>",
+			"targetPwd" : "<password>",
+			"includeBasicAuthHeader" : false,
+			"httpVersion" : "HTTP_1_1",
+			"redirectBehavior" : "NORMAL",
+			"headers" : "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36\nContent-Type: text/html; charset=utf-8\n",
+			"payload" : "",
+			"acceptableReturnCodes" : "200"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+			"name" : "Post",
+			"description" : "Post",
+			"applicable" : true,
+			"properties" : { },
+			"actionCheck" : null,
+			"action" : null,
+			"active" : true,
+			"period" : 60,
+			"timeout" : 5,
+			"checkResults" : true,
+			"resultChecker" : {
+				"condition" : "Contains",
+				"operands" : [ "<title>Die Schweizerische Post</title>" ]
+			},
+			"url" : "https://www.post.ch",
+			"method" : "GET",
+			"targetUid" : "<user>",
+			"targetPwd" : "<password>",
+			"includeBasicAuthHeader" : false,
+			"httpVersion" : "HTTP_1_1",
+			"redirectBehavior" : "NORMAL",
+			"headers" : "\n",
+			"payload" : "",
+			"acceptableReturnCodes" : "200"
+		}, {
+			"className" : "net.mmo.utils.kism.entities.nodes.connections.RESTConnection",
+			"name" : "GitLab",
+			"description" : "GitLab",
+			"applicable" : true,
+			"properties" : { },
+			"actionCheck" : null,
+			"action" : null,
+			"active" : true,
+			"period" : 60,
+			"timeout" : 5,
+			"checkResults" : true,
+			"resultChecker" : {
+				"condition" : "Contains",
+				"operands" : [ "<title>The most-comprehensive AI-powered DevSecOps platform | GitLab</title>" ]
+			},
+			"url" : "https://www.gitlab.com",
+			"method" : "GET",
+			"targetUid" : "<user>",
+			"targetPwd" : "<password>",
+			"includeBasicAuthHeader" : false,
+			"httpVersion" : "HTTP_1_1",
+			"redirectBehavior" : "NORMAL",
+			"headers" : "\n",
+			"payload" : "",
+			"acceptableReturnCodes" : "200"
+		} ],
+		"expanded" : true
 	} ],
-	"expanded" : true,
-	"certificateHandling" : {
-		"descriptors" : [ {
-		} ]
-	}
+	"expanded" : true
 }

@@ -25,9 +25,9 @@ rem useful Java options (in case of handshake issues):
 rem "-Djavax.net.debug=ssl:handshake" 
 
 rem standard version - with config file names (with path) as args - e.g.:
-rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\ksta.kmc" "%KISMON_HOME%\test.kmc"
+"%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\test.kmc"
 rem starting without args --> will use the config file specified in application.properties:
-"%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%"
+rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%"
 rem with TLS logging enabled (for WireShark):
 rem "%JAVA_HOME%\bin\java" -javaagent:jSSLKeyLog.jar==%USERPROFILE%\Desktop\kismon_logfile.log -cp . -jar "%KISMON_JAR%"
 
