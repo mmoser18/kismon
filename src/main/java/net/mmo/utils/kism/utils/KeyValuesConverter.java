@@ -95,12 +95,13 @@ public class KeyValuesConverter
 				for (String mapValue: mapValues) {
 					int pos = mapValue.indexOf(fragementSeparator);
 					if (pos > 1) {
+						log.trace("extractValueFragment: mapValue='{}'", mapValue); //$NON-NLS-1$
 						String charsetFragment = mapValue.substring(pos);
-						log.trace("extractValueFragment: charsetFragment = '{}'", charsetFragment); //$NON-NLS-1$
+						log.trace("extractValueFragment: charsetFragment='{}'", charsetFragment); //$NON-NLS-1$
 						Matcher m = pattern.matcher(charsetFragment);
 						String fragment = null;
 						if (m.matches() && ((fragment = m.group(matchingGroup)) != null)) {
-							log.trace("extractValueFragment: match = '{}'", fragment); //$NON-NLS-1$
+							log.trace("extractValueFragment: match='{}'", fragment); //$NON-NLS-1$
 							Object res = converter.apply(fragment);
 							if (res != null) return res;
 						} else {

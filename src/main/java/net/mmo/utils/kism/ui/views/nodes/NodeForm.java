@@ -649,7 +649,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 						fieldValidationErrors.stream()
 							.map((BindingValidationStatus<?> beanValidationStatus) -> "status:'" + beanValidationStatus.getStatus() //$NON-NLS-1$
 						                                                              + "': " + (beanValidationStatus.getResult().isPresent() //$NON-NLS-1$
-						                                                                        ? beanValidationStatus.getResult().get().getErrorMessage()
+						                                                                        ? beanValidationStatus.getResult().get().toString()
 						                                                                        : "unresolved:" + fieldValidationErrors) //$NON-NLS-1$
 						                                                              )
 						    .collect(Collectors.toList());

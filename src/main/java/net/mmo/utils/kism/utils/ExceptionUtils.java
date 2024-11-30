@@ -30,8 +30,8 @@ public class ExceptionUtils
 			if (tMsg != null && !tMsg.isBlank()) {
 				msg = t.getMessage();
 			} else {
-				Throwable[] suppressed = t.getSuppressed();
-				if (suppressed != null && suppressed.length > 0) {
+				Throwable[] suppressed = t.getSuppressed(); // always non-null
+				if (suppressed.length > 0) {
 					msg = Arrays.asList(t.getSuppressed()).toString();
 				}
 			}

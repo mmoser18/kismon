@@ -38,7 +38,7 @@ abstract public class LeafNode extends ActionableNode
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
-	public final static int NO_RESPONSE_DURATION = 0; // used as duration if there was no response (timeout or other error)
+	public final static int NO_RESPONSE_DURATION = -1; // used as duration if there was no response (timeout or other error)
 
 	/**
 	 * Should this node be included in the parent condition evaluation?
