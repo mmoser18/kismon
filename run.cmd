@@ -17,18 +17,21 @@ rem disabled - taking config from parent dir to avoid overwriting possibly adapt
 for %%f in (*.kmc) do copy %%f target\
 rem in case of TLS handshake issues you can enable jSSLKeyLog to be able to read and record TLS-messages using WireShark to analyze issues
 rem TLS logging utility:
-rem for %%f in (jSSLKeyLog.jar) do copy %%f target\
+for %%f in (jSSLKeyLog.jar) do copy %%f target\
 
 cd target
 
 rem useful Java options (in case of handshake issues):
 rem "-Djavax.net.debug=ssl:handshake" 
 
+rem set configFile=test.kmc
+set configFile=home.kmc
+
 rem standard version - with config file names (with path) as args - e.g.:
-"%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\test.kmc"
+rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\%configFile%"
 rem starting without args --> will use the config file specified in application.properties:
 rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%"
 rem with TLS logging enabled (for WireShark):
-rem "%JAVA_HOME%\bin\java" -javaagent:jSSLKeyLog.jar==%USERPROFILE%\Desktop\kismon_logfile.log -cp . -jar "%KISMON_JAR%"
+"%JAVA_HOME%\bin\java" -javaagent:jSSLKeyLog.jar==%USERPROFILE%\ssl-keys.log -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\%configFile%"
 
 cd ..
