@@ -19,7 +19,7 @@
 			</roles>
 			<id>mmo</id>
 			<name>Michael Moser</name>
-			<email>michael.moser@alumni.ethz.ch</email>
+			<email>17732576+mmoser18@users.noreply.github.com</email>
 			<timezone>"Europe/Zurich" (UTC+01:00)</timezone>
 		</developer>
 	</developers>
@@ -65,6 +65,10 @@
 		<sshj.version>0.38.0</sshj.version>
 		<mail.version>1.4</mail.version>
 		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+		
+		<license.header>${project.basedir}/LicenseHeader.txt</license.header>
+		<license.years>2020-2025</license.years>
+		<license.skip>false</license.skip>
 	</properties>
 
 	<parent>
@@ -292,6 +296,7 @@
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
+		
 		<!-- the following are obviously referenced by hibernate validator - why are these not in its pom? -->
 		<dependency>
 			<groupId>javax.el</groupId>
@@ -422,6 +427,36 @@
 		<defaultGoal>spring-boot:run</defaultGoal>
 		<plugins>
 			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>4.6</version>
+				<configuration>
+					<header>${license.header}</header>
+					<mapping>
+						<java>SLASHSTAR_STYLE</java>
+					</mapping>
+					<includes>
+						<include>**/src/**/*.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/target/**</exclude>
+						<exclude>**/etc/**</exclude>
+						<exclude>**/garage/**</exclude> <!-- leave my private stuff alone! -->
+					</excludes>
+					<properties>
+						<years>${license.years}</years>
+					</properties>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse> <!-- use "true" to force usage of javac if the default maven compiler crashes -->
@@ -517,6 +552,11 @@
 
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>com.mycila</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+					</plugin>
+					
 					<plugin>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>

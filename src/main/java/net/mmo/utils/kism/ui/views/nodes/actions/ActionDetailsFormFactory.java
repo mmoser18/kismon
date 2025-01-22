@@ -1,6 +1,7 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
- * @since 06.06.2022
+ * Copyright © 2020-2025 by Michael Moser
+ *
+ * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
 
 package net.mmo.utils.kism.ui.views.nodes.actions;

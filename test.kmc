@@ -283,7 +283,7 @@
 	}, {
 		"className" : "net.mmo.utils.kism.entities.nodes.IntermediateNode",
 		"name" : "External systems on the Internet",
-		"description" : "External systems on the Internet",
+		"description" : "A couple of external systems on the Internet - this is more to check whether internet connectivity and the provider's name resolution is working properly.",
 		"applicable" : true,
 		"properties" : { },
 		"actionCheck" : null,

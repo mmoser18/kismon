@@ -1,9 +1,11 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
- * @since Feb 12, 2022
+ * Copyright © 2020-2025 by Michael Moser
  *
- *        stolen from here:
- *        https://stackoverflow.com/questions/58009033/how-spring-data-elasticsearch-use-offset-and-limit-to-query/63911746#63911746
+ * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
+ */
+/**
+ * inspired by:
+ * https://stackoverflow.com/questions/58009033/how-spring-data-elasticsearch-use-offset-and-limit-to-query/63911746#63911746
  */
 
 package net.mmo.utils.kism.utils;

@@ -1,14 +1,16 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
- * @since 27 Nov 2024
+ * Copyright © 2020-2025 by Michael Moser
+ *
+ * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
 
 package net.mmo.utils.kism.entities.nodes.connections;
 
-import static net.mmo.utils.kism.entities.nodes.connections.HTTPConnection.AUTH_SEP;
+import static net.mmo.utils.kism.utils.HTTP_Authorization.AUTH_SEP;
 
 import java.security.MessageDigest;
 
+import net.mmo.utils.kism.utils.HTTP_Authorization;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -21,26 +23,26 @@ public class HTTPConnectionTest
 		final String authHeader = "Digest realm=\"Some realm\", nonce=\"2955cc6154daf65f8259755919c0041e\", qop=\"auth\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", stale=\"FALSE\"";
 		String extracted;
 
-		extracted = HTTPConnection.extractValue(authHeader, "realm");
+		extracted = HTTP_Authorization.extractValue(authHeader, "realm");
 		Assertions.assertEquals("Some realm", extracted);
 
-		extracted = HTTPConnection.extractValue(authHeader, "qop");
+		extracted = HTTP_Authorization.extractValue(authHeader, "qop");
 		Assertions.assertEquals("auth", extracted);
 
-		extracted = HTTPConnection.extractValue(authHeader, "stale");
+		extracted = HTTP_Authorization.extractValue(authHeader, "stale");
 		Assertions.assertEquals("FALSE", extracted);
 	}
 
 	@Test
 	void DirectiveContains() {
 		String directive;
-		directive = HTTPConnection.directiveContains(null, "auth");
+		directive = HTTP_Authorization.directiveContains(null, "auth");
 		Assertions.assertEquals(null, directive);
 
-		directive = HTTPConnection.directiveContains("foobar", "auth");
+		directive = HTTP_Authorization.directiveContains("foobar", "auth");
 		Assertions.assertEquals(null, directive);
 
-		directive = HTTPConnection.directiveContains("auth,auth-int", "auth");
+		directive = HTTP_Authorization.directiveContains("auth,auth-int", "auth");
 		Assertions.assertEquals("auth", directive);
 	}
 
@@ -50,17 +52,18 @@ public class HTTPConnectionTest
 
 		final MessageDigest md = MessageDigest.getInstance("MD5");
 
-		final String ha1  = HTTPConnection.H("Mufasa:testrealm@host.com:Circle Of Life", md);
+		final String ha1  = HTTP_Authorization.H(md, "Mufasa:testrealm@host.com:Circle Of Life");
 		Assertions.assertEquals("939e7578ed9e3c518a452acee763bce9", ha1);
 
-		final String ha2 = HTTPConnection.H("GET:/dir/index.html", md);
+		final String ha2 = HTTP_Authorization.H(md, "GET:/dir/index.html");
 		Assertions.assertEquals("39aff3a2bab6126f332b942af96d3366", ha2);
 
-		final String exampleResponse = HTTPConnection.H("939e7578ed9e3c518a452acee763bce9:"
-		                                                + "dcd98b7102dd2f0e8b11d0f600bfb0c093:"
-		                                                + "00000001:0a4f113b:auth:"
-		                                                + "39aff3a2bab6126f332b942af96d3366",
-		                                                md);
+		final String exampleResponse = HTTP_Authorization.H(md,
+		                                                    "939e7578ed9e3c518a452acee763bce9:"
+		                                                    + "dcd98b7102dd2f0e8b11d0f600bfb0c093:"
+		                                                    + "00000001:0a4f113b:auth:"
+		                                                    + "39aff3a2bab6126f332b942af96d3366"
+		                                                   );
 		Assertions.assertEquals("6629fae49393a05397450978507c4ef1", exampleResponse);
 	}
 
@@ -72,7 +75,7 @@ public class HTTPConnectionTest
 		final String input = "Jäsøn Doe";
 		final String expected = "J%C3%A4s%C3%B8n%20Doe";
 
-		Assertions.assertEquals(expected, HTTPConnection.urlEncode(input));
+		Assertions.assertEquals(expected, HTTP_Authorization.urlEncode(input));
 	}
 
 	@Test
@@ -105,13 +108,14 @@ public class HTTPConnectionTest
 			+ AUTH_SEP + "opaque=\"" + opaque + "\""
 			;
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         null,
-			                                         null);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            null,
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -155,13 +159,14 @@ public class HTTPConnectionTest
 			;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         (str) -> nc,
-			                                         () -> cnonce);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            (str) -> nc,
+			                                            () -> cnonce);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -199,13 +204,14 @@ public class HTTPConnectionTest
 						;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         null,
-			                                         null);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            null,
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -246,13 +252,14 @@ public class HTTPConnectionTest
 						;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         null,
-			                                         null);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            null,
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -325,13 +332,14 @@ public class HTTPConnectionTest
 			;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         (str) -> nc,
-			                                         () -> cnonce);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            (str) -> nc,
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -406,13 +414,14 @@ public class HTTPConnectionTest
 			;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         (str) -> nc,
-			                                         () -> cnonce);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            (str) -> nc,
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -516,13 +525,14 @@ public class HTTPConnectionTest
 			;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         (str) -> nc,
-			                                         () -> cnonce);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            (str) -> nc,
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -530,29 +540,29 @@ public class HTTPConnectionTest
 	/**
 	 * Example from our dish washer:
 	 * Response:
-	 * Www-Authenticate: Digest realm="AdoraDish V2000", nonce="f2da10eb273197fc94c103a75c27b175", qop="auth", opaque="5ccc069c403ebaf9f0171e9517f40e41", stale="FALSE"
+	 * Www-Authenticate: Digest realm="AdoraDish V2000", nonce="69a2ec597ec116a31d8a0076d00c695d", qop="auth", opaque="5ccc069c403ebaf9f0171e9517f40e41", stale="FALSE"
 	 * Request:
 	 * Authorization: Digest username="mmo", realm="AdoraDish V2000", nonce="f2da10eb273197fc94c103a75c27b175", uri="/", response="bc011c7524cedb20389a939e45da68e9", cnonce="aec6f558", opaque="5ccc069c403ebaf9f0171e9517f40e41", qop=auth, nc=00000001
 	 * @throws Exception
 	 */
 	@Test
-	void createAuthenticationValueAtHome() throws Exception {
+	void createAuthenticationValueAtHome1() throws Exception {
 		final String username  = "mmo";
 		final String realm     = "AdoraDish V2000";
-		final String password  = "well...";
-		final String nonce     = "f2da10eb273197fc94c103a75c27b175";
+		final String password  = "zI3EVaMOsT6P5k";
+		final String nonce     = "69a2ec597ec116a31d8a0076d00c695d";
 		final String qop       = "auth";
 		final String opaque    = "5ccc069c403ebaf9f0171e9517f40e41";
 
 		final String method    = "GET";
 		final String uri       = "/";
 
-		final String cnonce    = "aec6f558";
-		final String nc        = "00000001";
-		final String response  = "dd1fdb0fbba3057f07096365b73a412b";
+		final String cnonce    = "de3eb37f8fec50a4";
+		final String nc        = "00000002";
+		final String response  = "fdb25e9fd304a04d50000bd66ffbd5e4";
 
 		final String receivedAuthHeader =
-			"Digest realm=\"AdoraDish V2000\", nonce=\"f2da10eb273197fc94c103a75c27b175\", qop=\"auth\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", stale=\"FALSE\"";
+			"Digest realm=\"" + realm + "\", nonce=\"" + nonce + "\", qop=\"" + qop + "\", opaque=\"" + opaque + "\", stale=\"FALSE\"";
 
 		final String expectedHeader =
 			"Digest"
@@ -568,14 +578,75 @@ public class HTTPConnectionTest
 			;
 
 		final String responseHeader =
-			HTTPConnection.createAuthorizationValue(receivedAuthHeader,
-			                                         username,
-			                                         password,
-			                                         method,
-			                                         uri,
-			                                         (str) -> nc,
-			                                         () -> cnonce);
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            (str) -> nc,
+			                                            () -> cnonce);
+
+		Assertions.assertEquals(expectedHeader, responseHeader, "created response header doesn't match the expected result");
+	}
+
+
+	/**
+	 * Example from our dish washer:
+	 * Response:
+	 * Www-Authenticate: Digest realm="AdoraDish V2000", nonce="de8d452441f462175d9f53a35610dbd7", qop="auth", opaque="5ccc069c403ebaf9f0171e9517f40e41", stale="TRUE"
+	 * Request:
+	 * Authorization: Digest username="mmo", realm="AdoraDish V2000", nonce="de8d452441f462175d9f53a35610dbd7", uri="/", response="71cf87e1ca823843d34e2b60cbd4ee29", opaque="5ccc069c403ebaf9f0171e9517f40e41", qop=auth, nc=00000001, cnonce="b96c5559aa3971e1"
+	 * @throws Exception
+	 */
+	@Test
+	void createAuthenticationValueAtHome2() throws Exception {
+		final String username  = "mmo";
+		final String realm     = "AdoraDish V2000";
+		final String password  = "zI3EVaMOsT6P5k";
+		final String nonce     = "de8d452441f462175d9f53a35610dbd7";
+		final String qop       = "auth";
+		final String opaque    = "5ccc069c403ebaf9f0171e9517f40e41";
+
+		final String method    = "GET";
+		final String uri       = "/";
+
+		final String cnonce    = "b96c5559aa3971e1";
+		final String nc        = "00000001";
+		final String response  = "71cf87e1ca823843d34e2b60cbd4ee29";
+
+		final String receivedAuthHeader =
+			"Digest realm=\"AdoraDish V2000\", nonce=\"de8d452441f462175d9f53a35610dbd7\", qop=\"auth\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", stale=\"TRUE\"";
+
+//		final String expectedHeader =
+//			"Digest username=\"mmo\", realm=\"AdoraDish V2000\", nonce=\"de8d452441f462175d9f53a35610dbd7\", uri=\"/\", response=\"71cf87e1ca823843d34e2b60cbd4ee29\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", qop=auth, nc=00000001, cnonce=\"b96c5559aa3971e1\"";
+
+		final String expectedHeader =
+			"Digest"
+			+ " username=\"" + username + "\""
+			+ AUTH_SEP + "realm=\"" + realm + "\""
+			+ AUTH_SEP + "nonce=\"" + nonce + "\""
+			+ AUTH_SEP + "uri=\"" + uri + "\""
+			+ AUTH_SEP + "response=\"" + response + "\""
+			+ AUTH_SEP + "cnonce=\"" + cnonce + "\""
+			+ AUTH_SEP + "opaque=\"" + opaque + "\""
+			+ AUTH_SEP + "qop=" + qop // unquoted!
+			+ AUTH_SEP + "nc=" + nc // unquoted!
+			;
+
+		final String responseHeader =
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            (str) -> nc,
+			                                            () -> cnonce);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
+
+
+
 }

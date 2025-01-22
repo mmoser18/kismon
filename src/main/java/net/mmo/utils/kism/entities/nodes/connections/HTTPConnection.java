@@ -1,6 +1,7 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
- * @since 06.12.2020
+ * Copyright © 2020-2025 by Michael Moser
+ *
+ * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
 
 package net.mmo.utils.kism.entities.nodes.connections;
@@ -14,7 +15,6 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
@@ -27,22 +27,15 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -62,6 +55,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.utils.ExceptionUtils;
+import net.mmo.utils.kism.utils.HTTP_Authorization;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.StringUtils;
 
@@ -100,13 +94,13 @@ abstract public class HTTPConnection extends TCPConnection
 	public final static String PROPERTYNAME_RESPONSE_STATUS_CODE = "responseStatusCode"; //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_HEADERS     = "responseHeaders"; //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_BODY        = "responseBody"; //$NON-NLS-1$
+	public final static byte[] EMPTY_BODY = new byte[0];
 
-	private final static byte[] EMPTY_BODY = new byte[0];
-	private final static String VALUE_UNDEFINED = ""; //$NON-NLS-1$
+	public final static String VALUE_UNDEFINED = ""; //$NON-NLS-1$
 
 	private final static String VALUES_FRAGMENT_SEPARATOR = ";"; //$NON-NLS-1$
 
-	private final static Charset DEFAULT_HTTP_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
+	public final static Charset DEFAULT_HTTP_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
 	private final static String  CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
 	private final static String  LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9\\+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
 	private final static String  CONTENT_TYPE_CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + "+)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -117,14 +111,9 @@ abstract public class HTTPConnection extends TCPConnection
 	private final static Pattern META_CHARSET_PATTERN = Pattern.compile("(?s:.)*<head>(?s:.)*<meta charset=\\\"(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\\"\\s*/>(?s:.)*"); //$NON-NLS-1$ //$NON-NLS-2$ - must be in lowercase!
 	private final static int     META_CHARSET_GROUP_NR  = 1; // the group name containing the character set
 
-	/* Note: these must be listed in order of preference. If multiple options are offered by the server the code below picks the first matching. */
-	private final static String SUPPORTED_HASH_ALGOS[] =  { "SHA-256", "SHA-256-sess", "SHA-512-256", "SHA-512-256-sess", "MD5", "MD5-sess"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-	private final static String DEFAULT_HASH_ALGO =  "MD5"; //$NON-NLS-1$
-	final static String AUTH_SEP = ", "; //$NON-NLS-1$
-
 
 	private final static int MAX_REDIRECTIONS = 10;
-	private final static int MAX_AUTH_ATTEMPTS = 2;
+	private final static int MAX_AUTH_ATTEMPTS = 3;
 
 
 	protected HTTP_Method method = HTTP_Method.GET;
@@ -254,7 +243,7 @@ abstract public class HTTPConnection extends TCPConnection
 		this.method = method;
 		setHttpRequest(null); // trigger a recreation of the request if the method changes
 		setRequestHeaders(null);
-		setRequestBody((byte[])null);
+		setRequestBody(EMPTY_BODY);
 	}
 
 	public void setHttpVersion(Version httpVersion) {
@@ -499,7 +488,7 @@ abstract public class HTTPConnection extends TCPConnection
 			Map<String, Object> map = KeyValuesConverter.convertStringToMap(resolveProperties(getHeaders()));
 			map.forEach((key, value) -> httpRequestBuilder.setHeader(key, value.toString()));
 		}
-		if (this.includeBasicAuthHeader) {
+		if (this.authorizationValue == null && this.includeBasicAuthHeader) {
 			createBasicAuthorizationValue();
 		}
 		if (this.authorizationValue != null) {
@@ -597,7 +586,7 @@ abstract public class HTTPConnection extends TCPConnection
 						log.debug("received response 401 with auth-header: '{}' - creating authorization request:", authHeader); //$NON-NLS-1$
 						try {
 							createAuthorizationValue(authHeader, request.method(), request.uri());
-							request = createRequest(request.uri()); // creating a new request using same URI but including the new authorizationValue
+							request = createRequest(request.uri()); // creating a new request using same method and URI but including the new authorizationValue
 							setHttpRequest(request);
 							continue;
 						} catch (Exception ex) {
@@ -619,13 +608,13 @@ abstract public class HTTPConnection extends TCPConnection
 				log.info("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
 				if (location == null || location.length() <= 0) {
 					// a log entry is created in an outer catch
-					throw new Exception(String.format("Received redirect-response %d without a 'Location:'-header", statusCode)); //$NON-NLS-1$
+					throw new Exception(String.format("Received redirect-response %d but without a 'Location:'-header", statusCode)); //$NON-NLS-1$
 				}
 				try {
 					request = createRequest(new URI(location));
 					setHttpRequest(request);
 				} catch (Exception ex) {
-					String errMsg = String.format("error creating new request from received redirection location '%s'", getName(), location); //$NON-NLS-1$
+					String errMsg = String.format("error creating new request from received redirection location '%s' for '%s'", location, getName()); //$NON-NLS-1$
 					throw new Exception(errMsg, ex);
 				}
 			} while (true); // exit is via break or exception...
@@ -912,288 +901,30 @@ abstract public class HTTPConnection extends TCPConnection
 	                                      final URI uri) throws Exception {
 		try {
 			this.authorizationValue =
-				createAuthorizationValue(authHeader,
-				                         getResolvedTargetUid(),
-				                         getResolvedTargetPwd(),
-			                             requestMethod,
-			                             uri.getPath(),
-			                             (nonce) -> generateNonceCount(nonce),
-			                             () -> createCnonce(4)
-			                            );
+				HTTP_Authorization.createAuthorizationValue(authHeader,
+				                                            getResolvedTargetUid(),
+				                                            getResolvedTargetPwd(),
+				                                            requestMethod,
+				                                            getRequestBody(),
+				                                            uri.getPath(),
+				                                            (nonce) -> generateNonceCount(nonce),
+				                                            () -> HTTP_Authorization.createCNonce(8)
+				                                           );
 			log.debug("response auth-header: '{}'", this.authorizationValue); //$NON-NLS-1$
 		} catch (Exception ex) {
 			setResponseBody(ex.getMessage().getBytes());
 			throw ex;
 		}
 	}
-	/** separated to allow simpler unit-testing:
-	 * This method generates an Authorization header value according to RFC-7616
-	 */
-	static String createAuthorizationValue(final String authHeader,
-	                                       final String uid,
-	                                       final String pwd,
-	                                       final String requestMethod,
-	                                       final String uri,
-	                                       final Function<String, String> nonceCountGen,
-	                                       final Supplier<String> cnonceGen) throws Exception {
 
-		if (!StringUtils.isEmpty(uid)) { // the pwd can be empty but the uid must not be!
-			final String password = (pwd != null ? pwd : ""); //$NON-NLS-1$
-			if (authHeader.startsWith("Basic")) { // Basic access authentication required //$NON-NLS-1$
-				return "Basic " //$NON-NLS-1$
-				       + new String(Base64.getEncoder().encode((uid
-				                                               + ":" //$NON-NLS-1$
-				                                               + password
-				                                               ).getBytes(StandardCharsets.UTF_8)),
-				                    DEFAULT_HTTP_CHARSET);
-			} else if (authHeader.startsWith("Digest")) { // Digest access authentication required //$NON-NLS-1$
-
-				log.debug("uri:'" + uri + "', authHeader :'" + authHeader + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-
-				final String realm = extractValue(authHeader, "realm"); //$NON-NLS-1$
-				final String domains = extractValue(authHeader, "domain"); //$NON-NLS-1$
-				final String nonce = extractValue(authHeader, "nonce"); //$NON-NLS-1$
-				final String opaque = extractValue(authHeader, "opaque"); //$NON-NLS-1$
-				final String qopOptions = extractValue(authHeader, "qop"); //$NON-NLS-1$
-				final String algoOptions = extractValue(authHeader, "algorithm"); //$NON-NLS-1$
-				final String stale = extractValue(authHeader, "stale"); //$NON-NLS-1$charset
-				final String charset = extractValue(authHeader, "charset"); //$NON-NLS-1$charset
-				final String userhash = extractValue(authHeader, "userhash"); //$NON-NLS-1$charset
-
-				log.debug("extracted auth-header values: " //$NON-NLS-1$
-				          + "realm:'" + realm + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", domain:'" + domains + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", nonce:'" + nonce + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", opaque:'" + opaque + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", qop:'" + qopOptions + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", algorithm:'" + algoOptions + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", stale:'" + stale + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", charset:'" + charset + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", userhash:'" + userhash + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				         );
-
-				assertProvided(realm, authHeader);
-				assertProvided(nonce, authHeader);
-				if (charset != null && !charset.equals("UTF-8")) { //$NON-NLS-1$
-					log.warn("Invalid charset value in authentication header: '{}' - only UTF-8 is allowed", charset); //$NON-NLS-1$
-				}
-
-				String qop = null;
-				String cnonce = null;
-				String nc = null;
-				String entity_body = null;
-
-				if (qopOptions != null) {
-					qop = directiveContains(qopOptions, "auth", "auth-int"); // //$NON-NLS-1$ //$NON-NLS-2$
-					cnonce = cnonceGen.get();
-					nc = nonceCountGen.apply(nonce);
-					if ("auth-int".equals(qop)) { //$NON-NLS-1$
-						entity_body = "???"; // what exactly has this to be calculated from??? //$NON-NLS-1$
-						log.warn("qop-variant \"auth-int\" not yet implemented!"); //$NON-NLS-1$
-					}
-				}
-
-				final String algorithm;
-				String hashAlgo;
-				if (algoOptions == null) {
-					hashAlgo = algorithm = DEFAULT_HASH_ALGO;
-				} else if ((algorithm = directiveContains(algoOptions, SUPPORTED_HASH_ALGOS)) != null) {
-					final int pos = algorithm.indexOf("-sess"); //$NON-NLS-1$
-					hashAlgo = (pos > 0 ? algorithm.substring(0, pos) : algorithm);
-					// Stupidly Java names some algorithms as "SHA-x/y" (i.e. with a slash between the numbers)
-					// while the RFC names the same as "SHA-x-y" (i.e. with a dash between numbers). Duuuh ||-(
-					// We thus need to map these:
-					hashAlgo = hashAlgo.replaceFirst("SHA\\-(\\d*)\\-(\\d*)", "SHA\\-$1/$2"); //$NON-NLS-1$ //$NON-NLS-2$
-				} else {
-					throw new Exception("Unexpected authentication hash algorithm(s) '" + algoOptions + "' encountered in directive '" + algoOptions + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				}
-
-				final MessageDigest md;
-				try {
-					md = MessageDigest.getInstance(hashAlgo);
-				} catch (Exception ex) {
-					throw new Exception("Authentication hash algorithm '" + hashAlgo + "' not supported - available algos are: " + Security.getAlgorithms("MessageDigest"), ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				}
-
-				if (qop == null && algorithm.endsWith("-sess")) { //$NON-NLS-1$
-					throw new Exception(String.format("Digest authentication requested with \"...-sess\" algorithm but no \"qop\"-directive specified in received header: '%s'", authHeader)); //$NON-NLS-1$
-				}
-
-				final String username;
-				boolean usernameQuotable = true;
-				if (Boolean.parseBoolean(userhash)) { // parseBoolean() also takes care of null-check
-					username = H(uid + ':' + realm, md);
-				} else {
-					if (uid.contains(":") || uid.contains("\"")) { // we can't send that as quotes string //$NON-NLS-1$ //$NON-NLS-2$
-						usernameQuotable = false;
-						username = urlEncode(uid);
-					} else {
-						username = uid;
-					}
-				}
-
-				String HA1 = H(algorithm.endsWith("-sess") //$NON-NLS-1$
-				               ? H(uid + ':' + realm + ':' + password, md) + ':' + nonce + ':' + cnonce
-				               : uid + ':' + realm + ':' + password
-				               , md);
-
-				String HA2 = H("auth-int".equals(qop) //$NON-NLS-1$
-				               ? requestMethod + ':' + uri + ':' + H(entity_body, md)
-				               : requestMethod + ':' + uri
-				               , md);
-
-				final String response =
-					(qop != null)
-				    ? KD(HA1, nonce + ':' + nc + ':' + cnonce + ':' + qop + ':' + HA2, md)
-				    : KD(HA1, nonce + ':' + HA2, md);
-
-				// creating response string strictly following the order in https://datatracker.ietf.org/doc/html/rfc2617:
-				return "Digest" //$NON-NLS-1$
-				       + " username" + (usernameQuotable  //$NON-NLS-1$
-				    				   ? "=\"" + username + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				    				   : "*=UTF-8''" + username //$NON-NLS-1$
-				    				   )
-				       + AUTH_SEP + "realm=\"" + realm + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				       + AUTH_SEP + "nonce=\"" + nonce +"\"" //$NON-NLS-1$ //$NON-NLS-2$
-				       + AUTH_SEP + "uri=\"" + uri + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				       + AUTH_SEP + "response=\"" + response + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				       + (algoOptions != null // we only include the algorithm in the response if it had been sent by the server
-				         ? AUTH_SEP + "algorithm=" + algorithm // unquoted! //$NON-NLS-1$
-				         : "") //$NON-NLS-1$
-				       + (qopOptions != null // cnonce are only to be added if server provided a qop in its response
-				         ? AUTH_SEP + "cnonce=\"" + cnonce + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				         : "") //$NON-NLS-1$
-				       + (opaque != null
-				         ? AUTH_SEP + "opaque=\"" + opaque + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				         : "") //$NON-NLS-1$
-				       + (qopOptions != null // qop and nc are only to be added if server provided a qop in its response
-				         ? AUTH_SEP + "qop=" + qop // unquoted! //$NON-NLS-1$
-				           + AUTH_SEP + "nc=" + nc // unquoted! //$NON-NLS-1$
-				         : "") //$NON-NLS-1$
-				       + (userhash != null
-				          ? AUTH_SEP + "userhash=" + Boolean.toString(usernameQuotable) //$NON-NLS-1$
-				          : "") //$NON-NLS-1$
-				       // auth-param - "Any unrecognized directive MUST be ignored."!
-				       ;
-			} else {
-				throw new Exception(String.format("unsupported authentication method: '%s'", authHeader)); //$NON-NLS-1$
-			}
-// TODO implement token-based authentication
-//		} else if (authHeader.toLowerCase().startsWith("token")) { //$NON-NLS-1$
-//			final String token = "???"; //$NON-NLS-1$
-//			return "token=\"" + token + "\""; //$NON-NLS-1$ //$NON-NLS-2$
-		} else {
-			throw new Exception(String.format("authentication requested, but no uid and/or pwd specified: '%s'", authHeader)); //$NON-NLS-1$
-		}
-	}
-
-	/**
-	 * We URL-encode a string with the addition that ' ' is encoded as "%20" instead of '+'
-	 * example from the specs: "Jäsøn Doe" -> J%C3%A4s%C3%B8n%20Doe
-	 */
-	static String urlEncode(String uid) {
-		return URLEncoder.encode(uid, StandardCharsets.UTF_8).replace("+", "%20"); //$NON-NLS-1$ //$NON-NLS-2$
-	}
-	static void assertProvided(final String directive, final String authHeader) throws Exception {
-		if (directive == null || directive.isBlank()) {
-			throw new Exception(String.format("Digest authentication requested but no '%s'-directive specified in received header: '%s'", directive, authHeader)); //$NON-NLS-1$
-		}
-	}
-
-	String generateNonceCount(final String nonce) {
+	private String generateNonceCount(final String nonce) {
 		if (nonce.equals(this.previousNonce)) { // same nonce reused:
 			++this.nonceCount; // increment the counter: "00000001" --> "00000002", etc.
 		} else {
 			this.previousNonce = nonce; //  memorize this new nonce
-			this.nonceCount = 0; // first use of a new nonce: --> nc="00000001"
+			this.nonceCount = 1; // first use of a new nonce: --> nc="00000001"
 		}
 		return String.format("%08x", this.nonceCount); //$NON-NLS-1$
-	}
-	/**
-	 * certain digest directives can contain comma-separates lists (e.g. qop).
-	 * This method checks whether a specific value is contains in it.
-	 * @param directiveList
-	 * @return
-	 */
-	static String directiveContains(final String directiveList, final String ... patterns) {
-		if (directiveList == null || directiveList.isBlank()) return null;
-		for (String component: directiveList.split(",")) { //$NON-NLS-1$
-			final String candidate = component.trim();
-			for (String pattern: patterns) {
-				if (candidate.equalsIgnoreCase(pattern)) {
-					log.debug("choice found: '{}'", pattern); //$NON-NLS-1$
-					return pattern;
-				}
-			}
-		}
-		return null;
-	}
-
-
-	static String createCnonce(final int nrBytes) {
-		byte[] bytes = new byte[nrBytes];
-		new SecureRandom().nextBytes(bytes);
-
-		StringBuilder result = new StringBuilder();
-		for (byte temp : bytes) {
-			result.append(String.format("%02x", temp)); //$NON-NLS-1$
-		}
-		return result.toString();
-	}
-	/**
-	 * This methods calculates an 16-byte hash of the input string using the algorithm chosen and
-	 * returns it in lowercase hexadecimal representation, i.e. as a 32 character string.
-	 * @param input
-	 * @return
-	 */
-	static String H(final String input, final MessageDigest md) {
-		md.reset();
-//		final byte[] bytes = input.getBytes();
-//		final byte[] bytes = input.getBytes(DEFAULT_HTTP_CHARSET);
-		final byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
-//		log.trace("bytes are: {}", HexFormat.ofDelimiter(".").withUpperCase().formatHex(bytes)); //$NON-NLS-1$ //$NON-NLS-2$
-		md.update(bytes);
-		final String res = HexFormat.of().formatHex(md.digest());
-		log.trace("{}('{}') = '{}'", md.getAlgorithm(), input, res); //$NON-NLS-1$
-		return res;
-	}
-
-	/* for some reason they differentiated between KD and H in the specs, so
-	 * I kept it that way even though it makes very little sense */
-	static String KD(final String secret, final String data, final MessageDigest md) {
-		return H(secret + ":" + data, md); //$NON-NLS-1$
-	}
-
-	/**
-	 * Extract a given directive:
-	 * @param headerValue
-	 * @return
-	 */
-	static String extractValue(final String headerValue, final String directive) {
-		final String searchString = directive + "="; //$NON-NLS-1$
-		int valueStartPos = headerValue.toLowerCase().indexOf(searchString); // directive names are to be handled case insensitive
-		if (valueStartPos >= 0) {
-			valueStartPos += searchString.length();
-			final boolean quoted = headerValue.charAt(valueStartPos) == '"';
-			int valueEndPos;
-			if (quoted) {
-				valueStartPos++;
-				valueEndPos = headerValue.indexOf("\"", valueStartPos); //$NON-NLS-1$
-			} else {
-				valueEndPos = headerValue.indexOf(",", valueStartPos); //$NON-NLS-1$
-				if (valueEndPos <= 0) valueEndPos = headerValue.length();
-			}
-			if (valueEndPos > valueStartPos) {
-				final String value = headerValue.substring(valueStartPos, valueEndPos);
-				log.trace("value for directive '{}': '{}'", directive, value); //$NON-NLS-1$\
-				return value.isBlank() ? null : value; // unify empty string to null
-			} else {
-				log.info("no end-quote found for directive '{}' in responseString '{}'", directive, headerValue); //$NON-NLS-1$\
-			}
-		} else {
-			log.trace("no value for directive '{}'", directive); //$NON-NLS-1$
-		}
-		return null;
 	}
 
 	@Override
