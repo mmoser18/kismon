@@ -51,6 +51,7 @@
 	<logger name="net.mmo.utils.kism.utils.PropertyResolver" level="trace"/>
 	 -->
 	<logger name="net.mmo.utils.kism.entities.nodes.connections.HTTPConnection" level="trace"/>
+	<logger name="net.mmo.utils.kism.entities.nodes.ResultChecker" level="trace"/>
 
 	<!-- logger name="com.vaadin.flow.data.binder.Binder" level="debug"/ -->
 

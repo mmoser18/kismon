@@ -102,10 +102,10 @@ public class ResultChecker extends AbstractEntity
 		State result = State.OK;
 		if (this.condition != null) {
 			int nrExpectedArgs = this.condition.getNrArgs();
-			Object operand1;
-			Object operand2;
-			Object operand3;
-			synchronized(this) { // synchronized so that the operands can't be modified while we change them
+			Object operand1 = null;
+			Object operand2 = null;
+			Object operand3 = null;
+			synchronized(this) { // synchronized so that the operands can't be modified while we fetch them
 				if (this.resolvedOperands == null) {
 					this.resolvedOperands = resolveOperands(contextNode);
 					if (this.operands.size() != nrExpectedArgs) {
@@ -113,9 +113,15 @@ public class ResultChecker extends AbstractEntity
 						                                   this.condition, this.operands.size(), nrExpectedArgs));
 					}
 				}
-				operand1 = (nrExpectedArgs >= 1 ? this.resolvedOperands.get(0) : null);
-				operand2 = (nrExpectedArgs >= 2 ? this.resolvedOperands.get(1) : null);
-				operand3 = (nrExpectedArgs >= 3 ? this.resolvedOperands.get(2) : null);
+				if (nrExpectedArgs >= 1) {
+					operand1 = this.resolvedOperands.get(0);
+					if (nrExpectedArgs >= 2) {
+						operand2 = this.resolvedOperands.get(1);
+						if (nrExpectedArgs >= 3) {
+							operand3 = this.resolvedOperands.get(2);
+						}
+					}
+				}
 			}
 			switch (this.condition) {
 			case Equals:
@@ -197,8 +203,8 @@ public class ResultChecker extends AbstractEntity
 				throw new RuntimeException("Unexpected Condition: " + this.condition); //$NON-NLS-1$
 			}
 		}
-		log.trace("checking {}: operands: {}, value: {} => {}", //$NON-NLS-1$
-		          this.condition, this.resolvedOperands, value.length() < 100 ? value : value.substring(0,99) + "...", result); //$NON-NLS-1$
+		log.trace("checked {}: operands: {}, value: {} => result: {}", //$NON-NLS-1$
+		          this.condition, this.resolvedOperands, value.length() < 300 ? value : value.substring(0,299) + "...", result); //$NON-NLS-1$
 		return result;
 	}
 
@@ -230,7 +236,7 @@ public class ResultChecker extends AbstractEntity
 	public String toString() {
 		return new StringBuffer(this.getClass().getSimpleName())
 			.append("{condition:").append(this.condition) //$NON-NLS-1$
-			.append(", operand:'").append(this.operands) //$NON-NLS-1$
+			.append(", operands:'").append(this.operands) //$NON-NLS-1$
 			.append("'}") //$NON-NLS-1$
 			.toString();
 	}
