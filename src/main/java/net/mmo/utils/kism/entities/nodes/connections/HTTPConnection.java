@@ -102,13 +102,13 @@ abstract public class HTTPConnection extends TCPConnection
 
 	public final static Charset DEFAULT_HTTP_CHARSET = StandardCharsets.ISO_8859_1; // the default HTTP 1.1 charset
 	private final static String  CONTENT_TYPE_HEADER = "Content-Type"; //$NON-NLS-1$
-	private final static String  LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9\\+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
+	private final static String  LEGAL_CHARSET_NAME_CHARS = "[A-Za-z0-9+\\-\\.:_]"; // according to java.nio.charset.Charset //$NON-NLS-1$
 	private final static String  CONTENT_TYPE_CHARSET_REGEXP = VALUES_FRAGMENT_SEPARATOR + "\\s*(?i:charset)\\s*=\\s*(\\\"?)(" + LEGAL_CHARSET_NAME_CHARS + "+)\\1"; //$NON-NLS-1$ //$NON-NLS-2$
 	private final static int     CONTENT_TYPE_CHARSET_GROUP_NR  = 2; // the group name containing the character set
 	private final static Pattern CONTENT_TYPE_CHARSET_PATTERN = Pattern.compile(CONTENT_TYPE_CHARSET_REGEXP);
 
 	private final static String DOCTYPE_HTML = "<!doctype html>"; // must be in lower-case!  //$NON-NLS-1$
-	private final static Pattern META_CHARSET_PATTERN = Pattern.compile("(?s:.)*<head>(?s:.)*<meta charset=\\\"(" + LEGAL_CHARSET_NAME_CHARS + LEGAL_CHARSET_NAME_CHARS + "*)\\\"\\s*/>(?s:.)*"); //$NON-NLS-1$ //$NON-NLS-2$ - must be in lowercase!
+	private final static Pattern META_CHARSET_PATTERN = Pattern.compile("(?s:.)*<head>(?s:.)*<meta charset=\"(" + LEGAL_CHARSET_NAME_CHARS + "+)\"(?s:.)*/>(?s:.)*"); //$NON-NLS-1$ //$NON-NLS-2$ - must be in lowercase!
 	private final static int     META_CHARSET_GROUP_NR  = 1; // the group name containing the character set
 
 
@@ -699,11 +699,14 @@ abstract public class HTTPConnection extends TCPConnection
 					res = State.FAILED;
 				} // :search
 			}
-			ResultChecker checker = getResultChecker();
-			if (checker != null && checker.getCondition() != null) {
-				res = getResultChecker().checkResult(this, responseBodyAsString());
-			} else { // we only check for acceptableReturnCodes - might want to check that we did...y
-				log.debug("no result check defined."); //$NON-NLS-1$
+			if (res == State.OK) {
+				ResultChecker checker = getResultChecker();
+				if (checker != null && checker.getCondition() != null) {
+					log.trace("checking {}:", checker); //$NON-NLS-1$
+					res = getResultChecker().checkResult(this, responseBodyAsString());
+				} else { // we only check for acceptableReturnCodes - might want to check that we did...y
+					log.debug("no check defined."); //$NON-NLS-1$
+				}
 			}
 		}
 		log.debug("deriveState '{}': {} - checking:{} (received:'{}', acceptable:'{}', checker:{})", name, res, isCheckResults(), getResponseStatusCode(), getAcceptableReturnCodes(), getResultChecker()); //$NON-NLS-1$
@@ -865,10 +868,10 @@ abstract public class HTTPConnection extends TCPConnection
 				log.trace("no doctype html."); //$NON-NLS-1$
 			}
 		} else {
-			log.trace("body too short to contain a doctype specification."); //$NON-NLS-1$
+			log.trace("{}-body too short to contain a doctype specification.", logSnippet); //$NON-NLS-1$
 		}
 		// 3. if no (legal) charset indication was found: we assume the default HTTP charset:
-		log.trace("extractCharset: found no '{}' character set - assuming default charset", logSnippet); //$NON-NLS-1$
+		log.trace("extractCharset: found no '{}' character set - assuming default charset '{}'", logSnippet, DEFAULT_HTTP_CHARSET); //$NON-NLS-1$
 		return DEFAULT_HTTP_CHARSET;
 	}
 
@@ -890,7 +893,7 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	/**
-	 * For Digest-authetication we are dealing with this string as defined in
+	 * For Digest-authentication we are dealing with this string as defined in
 	 * <a href="https://datatracker.ietf.org/doc/html/rfc7616#section-3.2.1">https://datatracker.ietf.org/doc/html/rfc2617#section-3.2.1</a>
 	 * and we need to create a response as described in
 	 * <a href="https://datatracker.ietf.org/doc/html/rfc7616#section-3.2.2">https://datatracker.ietf.org/doc/html/rfc2617 section-3.2.2</a>:

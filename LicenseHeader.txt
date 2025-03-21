@@ -1,3 +1,3 @@
-Copyright © ${years} by Michael Moser
+Copyright © ${years} by ${owner}
 
-@author Michael Moser (17732576+mmoser18@users.noreply.github.com)
+@author ${owner} (${email})

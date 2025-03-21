@@ -65,10 +65,6 @@
 		<sshj.version>0.38.0</sshj.version>
 		<mail.version>1.4</mail.version>
 		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
-		
-		<license.header>${project.basedir}/LicenseHeader.txt</license.header>
-		<license.years>2020-2025</license.years>
-		<license.skip>false</license.skip>
 	</properties>
 
 	<parent>
@@ -429,23 +425,34 @@
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>4.6</version>
+				<version>5.0.0</version>
 				<configuration>
-					<header>${license.header}</header>
-					<mapping>
-						<java>SLASHSTAR_STYLE</java>
-					</mapping>
-					<includes>
-						<include>**/src/**/*.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/target/**</exclude>
-						<exclude>**/etc/**</exclude>
-						<exclude>**/garage/**</exclude> <!-- leave my private stuff alone! -->
-					</excludes>
 					<properties>
-						<years>${license.years}</years>
+						<owner>Michael Moser</owner>
+						<email>17732576+mmoser18@users.noreply.github.com</email>
+						<years>2020-2025</years>
+						<skip>false</skip>
 					</properties>
+					<licenseSets>
+						<licenseSet>
+							<header>${project.basedir}/LicenseHeader.txt</header>
+							<includes>
+								<include>**/src/**/*.java</include>
+							</includes>
+							<excludes>
+								<exclude>**/target/**</exclude>
+								<exclude>**/config/**</exclude>
+								<exclude>**/data/**</exclude>
+								<exclude>**/docs/**</exclude>
+								<exclude>**/frontend/**</exclude>
+								<exclude>**/garage/**</exclude> <!-- leave my private stuff alone! -->
+								<exclude>**/vaadin/**</exclude>
+							</excludes>
+						</licenseSet>
+					</licenseSets>
+					<mapping>
+						<java>JAVADOC_STYLE</java>
+					</mapping>
 				</configuration>
 				<executions>
 					<execution>

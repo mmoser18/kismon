@@ -246,7 +246,7 @@ public class HTTP_Authorization
 		new SecureRandom().nextBytes(bytes);
 
 		StringBuilder result = new StringBuilder();
-		for (byte temp : bytes) {
+		for (byte temp: bytes) {
 			result.append(String.format("%02x", temp)); //$NON-NLS-1$
 		}
 		log.trace("createCNonce: '{}'", bytes); //$NON-NLS-1$
@@ -268,6 +268,7 @@ public class HTTP_Authorization
 	static String H(final MessageDigest md, final byte[] bytes) {
 		md.update(bytes);
 		final String res = HexFormat.of().formatHex(md.digest());
+		md.reset();
 		// log.trace("{}('{}') = '{}'", md.getAlgorithm(), HexFormat.of().withUpperCase().formatHex(bytes), res); //$NON-NLS-1$
 		return res;
 	}
