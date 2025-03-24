@@ -871,7 +871,7 @@ abstract public class HTTPConnection extends TCPConnection
 			log.trace("{}-body too short to contain a doctype specification.", logSnippet); //$NON-NLS-1$
 		}
 		// 3. if no (legal) charset indication was found: we assume the default HTTP charset:
-		log.trace("extractCharset: found no '{}' character set - assuming default charset '{}'", logSnippet, DEFAULT_HTTP_CHARSET); //$NON-NLS-1$
+		log.trace("extractCharset: found no '{}' character set -> assuming default charset '{}'", logSnippet, DEFAULT_HTTP_CHARSET); //$NON-NLS-1$
 		return DEFAULT_HTTP_CHARSET;
 	}
 
