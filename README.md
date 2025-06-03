@@ -12,7 +12,52 @@ It provides a tree-like overview of your system like so:
 
 # Table of Contents
 
-[[_TOC_]]
+<!-- toc -->
+
+- [Introduction](#introduction)
+  * [Node-Hierarchies and States](#node-hierarchies-and-states)
+  * [Requests and Request-Types](#requests-and-request-types)
+    + [Nodes View](#nodes-view)
+    + [History Data](#history-data)
+      - [History Data Table View](#history-data-table-view)
+      - [History Data Graphical View](#history-data-graphical-view)
+  * [Configuring the Application](#configuring-the-application)
+    + [Configuration via Forms](#configuration-via-forms)
+      - [The generic fields at the top (always visible):](#the-generic-fields-at-the-top-always-visible)
+      - [Connection Details (accordion 1)](#connection-details-accordion-1)
+        * [REST-Requests](#rest-requests)
+        * [SOAP-Requests](#soap-requests)
+        * [JDBC-Requests](#jdbc-requests)
+        * [PING-Requests](#ping-requests)
+        * [SSH-Requests](#ssh-requests)
+        * [Intermediate Nodes](#intermediate-nodes)
+      - [Result (always visible for Leaf-nodes)](#result-always-visible-for-leaf-nodes)
+      - [Request and Response Details (accordion 2 for Leaf-nodes)](#request-and-response-details-accordion-2-for-leaf-nodes)
+      - [Validation Details (accordion 3 for Leaf-nodes)](#validation-details-accordion-3-for-leaf-nodes)
+      - [Action Details (accordion 4 for Leaf-nodes, 1 for Intermediate nodes)](#action-details-accordion-4-for-leaf-nodes-1-for-intermediate-nodes)
+        * [Actions can be:](#actions-can-be)
+          + [Special Email Action Placeholders](#special-email-action-placeholders)
+        * [Planned, future actions are:](#planned-future-actions-are)
+        * [Threshold values:](#threshold-values)
+        * [Same state counter & Reset status counter buttons](#same-state-counter--reset-status-counter-buttons)
+        * [Trigger action manually manually](#trigger-action-manually-manually)
+    + [KISMON configuration via a JSON Config File](#kismon-configuration-via-a-json-config-file)
+      - [Client Certificate Handling](#client-certificate-handling)
+  * [Running the Application](#running-the-application)
+    + [Running on the command line:](#running-on-the-command-line)
+    + [Running from an IDE:](#running-from-an-ide)
+      - [Eclipse](#eclipse)
+      - [IntelliJ IDEA](#intellij-idea)
+  * [Project overview](#project-overview)
+  * [Notes](#notes)
+  * [Implementation](#implementation)
+    + [More Information on Vaadin](#more-information-on-vaadin)
+  * [Program Internals](#program-internals)
+    + [Class-structure](#class-structure)
+    + [Tooling](#tooling)
+      - [Automatically convert the REAMD.md file to an HTML help page](#automatically-convert-the-reamdmd-file-to-an-html-help-page)
+
+<!-- tocstop -->
 
 # Introduction
 
@@ -528,13 +573,18 @@ UI-(config)-changes written to the entities but the UI is updated live with the 
 
 ### Tooling
 
+#### Automatically update the table of content of the README.md file
+
+Run the `update_readme_toc.cmd` script to create/update the table of content of the README.md file.
+This is also called as part of the build.
+
 #### Automatically convert the REAMD.md file to an HTML help page
 
 To automatically convert the Github REAMD.md file to an HTML help page, run the 
 `ConvertREADME2HTML.cmd` script.
 
 Before doing so, append the following at the very end of `package.json` (Note the comma `,` - 
-here highlighted as `**,**` - that you have to append to the line before the last closing `}` to 
+here highlighted as `**,**` at the first line below - that you have to append to the line before the last closing `}` to 
 achieve valid JSON syntax):
 
 ```
