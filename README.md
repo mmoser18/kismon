@@ -12,6 +12,8 @@ It provides a tree-like overview of your system like so:
 
 # Table of Contents
 
+[[_TOC_]]
+
 # Introduction
 
 ## Node-Hierarchies and States
@@ -99,7 +101,7 @@ running or not or whether it experienced some slow-down during a specific period
 #### History Data Graphical View
 
 There is also a *graphical* history view whose purpose is to provide a graphical visualization of the 
-response times. However, that view is still in a very infant state (i.e. sill experimental and unstable). 
+response times. However, that view is still in a very infant state (i.e. still experimental and unstable). 
 When its filter is not very narrow (i.e. yielding large amounts of data to display) the backend calls 
 of this view occasionally hang or even crash the application, so this feature is definitely *not* 
 "production-ready", yet. I suggest to ignore it for now. 
