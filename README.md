@@ -516,7 +516,7 @@ If you run the application from a maven command line, remember to prepend a `mvn
 
 ## Implementation
 
-KISMON is based on Vaadin [Vaadin](https://vaadin.com/), a Graphik library that originally had its roots 
+KISMON is based on [Vaadin](https://vaadin.com/), a graphic library that originally had its roots 
 in [GWT (Google Web Toolkit)](https://www.gwtproject.org/) but has since left this ancestry behind 
 (since v8+, we are now at v23) and is now working completely without any GWT legacy. 
 The current version I would describe as "GWT done right".
