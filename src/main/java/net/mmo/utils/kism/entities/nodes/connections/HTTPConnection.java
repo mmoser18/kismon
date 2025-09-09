@@ -717,21 +717,21 @@ abstract public class HTTPConnection extends TCPConnection
 	public void logRequestValues() throws IOException {
 		if (log.isDebugEnabled()) {
 			HttpRequest request = getHttpRequest();
-			Optional<BodyPublisher> optional = request.bodyPublisher();
+			Optional<BodyPublisher> optionalBody = request.bodyPublisher();
 			log.debug("{}-httpRequest to '{}' / headers: {} / body: {} bytes / cookies: {}", //$NON-NLS-1$
 			         request.method(), request.uri(), request.headers().map(),
-			          (optional.isEmpty() ? 0 : getRequestBody().length),
+			          (optionalBody.isEmpty() ? 0 : getRequestBody().length),
 			          getHttpClient().cookieHandler().get().get(request.uri(), Collections.emptyMap()));
 
-			if (log.isTraceEnabled() && !optional.isEmpty()) {
+			if (log.isTraceEnabled() && !optionalBody.isEmpty()) {
 				log.trace("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
 			}
 		}
 	}
 
 	public void logResponseValues() {
-		log.debug("response: status={} / payload-length={} / headers:{} / body: {} bytes", //$NON-NLS-1$
-		          getResponseStatusCode(), getResponseBody().length, getResponseHeaders(), getResponseBody().length);
+		log.debug("response: status={} / headers:{} / body: {} bytes", //$NON-NLS-1$
+		          getResponseStatusCode(), getResponseHeaders().map(), getResponseBody().length);
 	}
 
 	// utility methods:
@@ -868,7 +868,7 @@ abstract public class HTTPConnection extends TCPConnection
 				log.trace("no doctype html."); //$NON-NLS-1$
 			}
 		} else {
-			log.trace("{}-body too short to contain a doctype specification.", logSnippet); //$NON-NLS-1$
+			log.trace("{}-body too short ({}) to contain a doctype specification.", logSnippet, (body != null ? body.length : "empty")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		// 3. if no (legal) charset indication was found: we assume the default HTTP charset:
 		log.trace("extractCharset: found no '{}' character set -> assuming default charset '{}'", logSnippet, DEFAULT_HTTP_CHARSET); //$NON-NLS-1$
