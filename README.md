@@ -55,6 +55,7 @@ It provides a tree-like overview of your system like so:
   * [Program Internals](#program-internals)
     + [Class-structure](#class-structure)
     + [Tooling](#tooling)
+      - [Automatically update the table of content of the README.md file](#automatically-update-the-table-of-content-of-the-readmemd-file)
       - [Automatically convert the REAMD.md file to an HTML help page](#automatically-convert-the-reamdmd-file-to-an-html-help-page)
 
 <!-- tocstop -->
@@ -578,7 +579,7 @@ UI-(config)-changes written to the entities but the UI is updated live with the 
 Run the `update_readme_toc.cmd` script to create/update the table of content of the README.md file.
 This is also called as part of the build.
 
-#### Automatically convert the REAMD.md file to an HTML help page
+#### Automatically convert the READMD.md file to an HTML help page
 
 To automatically convert the Github REAMD.md file to an HTML help page, run the 
 `ConvertREADME2HTML.cmd` script.
