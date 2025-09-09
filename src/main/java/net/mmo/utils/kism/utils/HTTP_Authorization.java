@@ -72,8 +72,8 @@ public class HTTP_Authorization
 				final String domains = extractValue(authHeader, "domain"); //$NON-NLS-1$
 				final String nonce = extractValue(authHeader, "nonce"); //$NON-NLS-1$
 				final String opaque = extractValue(authHeader, "opaque"); //$NON-NLS-1$
-				final String qopOptions = extractValue(authHeader, "qop"); //$NON-NLS-1$
-				final String algoOptions = extractValue(authHeader, "algorithm"); //$NON-NLS-1$
+				final String qop = extractValue(authHeader, "qop"); //$NON-NLS-1$
+				final String algorithm = extractValue(authHeader, "algorithm"); //$NON-NLS-1$
 				final String stale = extractValue(authHeader, "stale"); //$NON-NLS-1$charset
 				final String charset = extractValue(authHeader, "charset"); //$NON-NLS-1$charset
 				final String userhash = extractValue(authHeader, "userhash"); //$NON-NLS-1$charset
@@ -83,45 +83,48 @@ public class HTTP_Authorization
 				          + ", domain:'" + domains + "'" //$NON-NLS-1$ //$NON-NLS-2$
 				          + ", nonce:'" + nonce + "'" //$NON-NLS-1$ //$NON-NLS-2$
 				          + ", opaque:'" + opaque + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", qop:'" + qopOptions + "'" //$NON-NLS-1$ //$NON-NLS-2$
-				          + ", algorithm:'" + algoOptions + "'" //$NON-NLS-1$ //$NON-NLS-2$
+				          + ", qop:'" + qop + "'" //$NON-NLS-1$ //$NON-NLS-2$
+				          + ", algorithm:'" + algorithm + "'" //$NON-NLS-1$ //$NON-NLS-2$
 				          + ", stale:'" + stale + "'" //$NON-NLS-1$ //$NON-NLS-2$
 				          + ", charset:'" + charset + "'" //$NON-NLS-1$ //$NON-NLS-2$
 				          + ", userhash:'" + userhash + "'" //$NON-NLS-1$ //$NON-NLS-2$
 				         );
 
-				assertProvided(realm, authHeader);
-				assertProvided(nonce, authHeader);
+				assertProvided("realm", realm, authHeader); //$NON-NLS-1$
+				assertProvided("nonce", nonce, authHeader); //$NON-NLS-1$
 				if (charset != null && !charset.equals("UTF-8")) { //$NON-NLS-1$
 					log.warn("Invalid charset value in authentication header: '{}' - only UTF-8 is allowed", charset); //$NON-NLS-1$
 				}
 
-				String qop = null;
+				String qopUsed = null;
 				String cnonce = null;
 				String nc = null;
 
-				if (qopOptions != null) {
-					qop = directiveContains(qopOptions, "auth", "auth-int"); // //$NON-NLS-1$ //$NON-NLS-2$
+				if (qop != null) {
+					qopUsed = directiveContains(qop, "auth", "auth-int"); // //$NON-NLS-1$ //$NON-NLS-2$
+					if (qopUsed == null) {
+						throw new Exception("Server offered unsupported qop(s): '" + qop + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+					}
 					cnonce = cnonceGen.get();
 					nc = nonceCountGen.apply(nonce);
-					if ("auth-int".equals(qop)) { //$NON-NLS-1$
+					if ("auth-int".equals(qopUsed)) { //$NON-NLS-1$
 						log.warn("qop-variant \"auth-int\" not yet implemented!"); //$NON-NLS-1$
 					}
 				}
 
-				final String algorithm;
+				final String algorithmUsed;
 				String hashAlgo;
-				if (algoOptions == null) {
-					hashAlgo = algorithm = DEFAULT_HASH_ALGO;
-				} else if ((algorithm = directiveContains(algoOptions, SUPPORTED_HASH_ALGOS)) != null) {
-					final int pos = algorithm.indexOf("-sess"); //$NON-NLS-1$
-					hashAlgo = (pos > 0 ? algorithm.substring(0, pos) : algorithm);
+				if (algorithm == null) {
+					hashAlgo = algorithmUsed = DEFAULT_HASH_ALGO;
+				} else if ((algorithmUsed = directiveContains(algorithm, SUPPORTED_HASH_ALGOS)) != null) {
+					final int pos = algorithmUsed.indexOf("-sess"); //$NON-NLS-1$
+					hashAlgo = (pos > 0 ? algorithmUsed.substring(0, pos) : algorithmUsed);
 					// Stupidly Java names some algorithms as "SHA-x/y" (i.e. with a slash between the numbers)
 					// while the RFC names the same as "SHA-x-y" (i.e. with a dash between numbers). Duuuh ||-(
 					// We thus need to map these:
 					hashAlgo = hashAlgo.replaceFirst("SHA\\-(\\d*)\\-(\\d*)", "SHA\\-$1/$2"); //$NON-NLS-1$ //$NON-NLS-2$
 				} else {
-					throw new Exception("Unexpected authentication hash algorithm(s) '" + algoOptions + "' encountered in directive '" + algoOptions + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					throw new Exception("Unexpected authentication hash algorithm(s) '" + algorithm + "' encountered in directive '" + algorithm + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 
 				final MessageDigest md;
@@ -131,37 +134,37 @@ public class HTTP_Authorization
 					throw new Exception("Authentication hash algorithm '" + hashAlgo + "' not supported - available algos are: " + Security.getAlgorithms("MessageDigest"), ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 
-				if (qop == null && algorithm.endsWith("-sess")) { //$NON-NLS-1$
+				if (qop == null && algorithmUsed.endsWith("-sess")) { //$NON-NLS-1$
 					throw new Exception(String.format("Digest authentication requested with \"...-sess\" algorithm but no \"qop\"-directive specified in received header: '%s'", authHeader)); //$NON-NLS-1$
 				}
 
 				final String username;
+				boolean usedUserhash = false;
 				boolean usernameQuotable = true;
 				if (Boolean.parseBoolean(userhash)) { // parseBoolean() also takes care of null-check
 					username = H(md, uid + ':' + realm);
+					usedUserhash = true;
+				} else if (uid.contains(":") || uid.contains("\"")) { // we can't send that as quoted string //$NON-NLS-1$ //$NON-NLS-2$
+					usernameQuotable = false;
+					username = urlEncode(uid);
 				} else {
-					if (uid.contains(":") || uid.contains("\"")) { // we can't send that as quotes string //$NON-NLS-1$ //$NON-NLS-2$
-						usernameQuotable = false;
-						username = urlEncode(uid);
-					} else {
-						username = uid;
-					}
+					username = uid;
 				}
 
 				String HA1 = H(md,
-				               algorithm.endsWith("-sess") //$NON-NLS-1$
+				               algorithmUsed.endsWith("-sess") //$NON-NLS-1$
 				               ? H(md, uid + ':' + realm + ':' + password) + ':' + nonce + ':' + cnonce
 				               : uid + ':' + realm + ':' + password
 				              );
 
 				String HA2 = H(md,
-				               "auth-int".equals(qop) //$NON-NLS-1$
+				               "auth-int".equals(qopUsed) //$NON-NLS-1$
 				               ? requestMethod.toUpperCase() + ':' + uri + ':' + H(md, requestBody)
 				               : requestMethod.toUpperCase() + ':' + uri
 				              );
 
-				final String response = (qop != null)
-				                         ? KD(md, HA1, nonce + ':' + nc + ':' + cnonce + ':' + qop + ':' + HA2)
+				final String response = (qopUsed != null)
+				                         ? KD(md, HA1, nonce + ':' + nc + ':' + cnonce + ':' + qopUsed + ':' + HA2)
 				                         : KD(md, HA1, nonce + ':' + HA2);
 
 				// creating response string strictly following the order in https://datatracker.ietf.org/doc/html/rfc2617:
@@ -174,21 +177,21 @@ public class HTTP_Authorization
 				       + AUTH_SEP + "nonce=\"" + nonce +"\"" //$NON-NLS-1$ //$NON-NLS-2$
 				       + AUTH_SEP + "uri=\"" + uri + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				       + AUTH_SEP + "response=\"" + response + "\"" //$NON-NLS-1$ //$NON-NLS-2$
-				       + (algoOptions != null // we only include the algorithm in the response if it had been sent by the server
-				         ? AUTH_SEP + "algorithm=" + algorithm // unquoted! //$NON-NLS-1$
+				       + (algorithm != null // we only include the algorithm in the response if it had been sent by the server
+				         ? AUTH_SEP + "algorithm=" + algorithmUsed // unquoted! //$NON-NLS-1$
 				         : "") //$NON-NLS-1$
-				       + (qopOptions != null // cnonce is only to be added if server provided a qop in its response
+				       + (qop != null // cnonce is only to be added if server provided a qop in its response
 				         ? AUTH_SEP + "cnonce=\"" + cnonce + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				         : "") //$NON-NLS-1$
 				       + (opaque != null
 				         ? AUTH_SEP + "opaque=\"" + opaque + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				         : "") //$NON-NLS-1$
-				       + (qopOptions != null // qop and nc are only to be added if server provided a qop in its response
-				         ? AUTH_SEP + "qop=" + qop // unquoted! //$NON-NLS-1$
+				       + (qop != null // qop and nc are only to be added if server provided a qop in its response
+				         ? AUTH_SEP + "qop=" + qopUsed // unquoted! //$NON-NLS-1$
 				           + AUTH_SEP + "nc=" + nc // unquoted! //$NON-NLS-1$
 				         : "") //$NON-NLS-1$
-				       + (userhash != null
-				          ? AUTH_SEP + "userhash=" + Boolean.toString(usernameQuotable) //$NON-NLS-1$
+				       + (usedUserhash
+				          ? AUTH_SEP + "userhash=true" // unquoted! //$NON-NLS-1$
 				          : "") //$NON-NLS-1$
 				       // auth-param - "Any unrecognized directive MUST be ignored."!
 				       ;
@@ -213,9 +216,9 @@ public class HTTP_Authorization
 	public static String urlEncode(String str) {
 		return URLEncoder.encode(str, StandardCharsets.UTF_8).replace("+", "%20"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
-	static void assertProvided(final String directive, final String authHeader) throws Exception {
-		if (directive == null || directive.isBlank()) {
-			throw new Exception(String.format("Digest authentication requested but no '%s'-directive specified in received header: '%s'", directive, authHeader)); //$NON-NLS-1$
+	static void assertProvided(final String directiveName, final String value, final String authHeader) throws Exception {
+		if (value == null || value.isBlank()) {
+			throw new Exception(String.format("Digest authentication requested but no '%s'-directive specified in received header: '%s'", directiveName, authHeader)); //$NON-NLS-1$
 		}
 	}
 
@@ -232,7 +235,7 @@ public class HTTP_Authorization
 			final String candidate = component.trim();
 			for (String pattern: patterns) {
 				if (candidate.equalsIgnoreCase(pattern)) {
-					log.debug("choice found: '{}'", pattern); //$NON-NLS-1$
+					log.debug("choice selected: '{}'", pattern); //$NON-NLS-1$
 					return pattern;
 				}
 			}
@@ -267,9 +270,9 @@ public class HTTP_Authorization
 	}
 	static String H(final MessageDigest md, final byte[] bytes) {
 		md.update(bytes);
-		final String res = HexFormat.of().formatHex(md.digest());
-		md.reset();
+		final String res = HexFormat.of().withLowerCase().formatHex(md.digest());
 		// log.trace("{}('{}') = '{}'", md.getAlgorithm(), HexFormat.of().withUpperCase().formatHex(bytes), res); //$NON-NLS-1$
+		md.reset();
 		return res;
 	}
 

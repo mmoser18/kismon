@@ -264,6 +264,52 @@ public class HTTPConnectionTest
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
+	// unfortunately we don't know the password used for this example...
+	// @Test
+	void createAuthenticationValue5() throws Exception {
+		final String username  = "alice";
+		final String realm     = "example.com";
+		final String password  = "Wonderland";
+		final String nonce     = "dcd98b7102dd2f0e8b11d0f600bfb0c093";
+		final String opaque    = "5ccc069c403ebaf9f0171e9517f40e41";
+
+		final String method    = "GET";
+		final String uri       = "/protected";
+
+		final String response  = "6629fae49393a05397450978507c4ef1";
+
+
+		final String receivedAuthHeader =
+			"Digest" +
+			" realm=\"" + realm + "\""
+			+ AUTH_SEP + "nonce=\"" + nonce + "\""
+			+ AUTH_SEP + "opaque=\"" + opaque + "\""
+			;
+
+		final String expectedHeader =
+						"Digest"
+						+ " username=\"" + username + "\""
+						+ AUTH_SEP + "realm=\"" + realm + "\""
+						+ AUTH_SEP + "nonce=\"" + nonce + "\""
+						+ AUTH_SEP + "uri=\"" + uri + "\""
+						+ AUTH_SEP + "opaque=\"" + opaque + "\""
+						+ AUTH_SEP + "response=\"" + response + "\""
+						;
+
+		final String responseHeader =
+			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
+			                                            username,
+			                                            password,
+			                                            method,
+			                                            HTTPConnection.EMPTY_BODY,
+			                                            uri,
+			                                            null,
+			                                            null);
+
+		Assertions.assertEquals(expectedHeader, responseHeader);
+	}
+
+
 	/**
 	 * From https://datatracker.ietf.org/doc/html/rfc7616#section-3.9.1
 	 *
@@ -646,7 +692,4 @@ public class HTTPConnectionTest
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
-
-
-
 }
