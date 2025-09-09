@@ -74,7 +74,6 @@ public class FormFactory <N extends Node> extends VerticalLayout
 			log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
 		} else {
 			log.info("found existing form for {}: {}", clazz, form); //$NON-NLS-1$
-			// form.getElement().removeFromTree(); // make sure this is not attached to any old tree anymore.
 		}
 		form.initFlags(); // these may have changed (e.g. by a logout/login with a different uid)
 		return form;
