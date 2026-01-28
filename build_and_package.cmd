@@ -11,7 +11,7 @@ rem echo ========================
 echo run maven build: 
 rem For this to work flawlessly the env-variables "M2=C:\Program Files\Apache\Maven\bin" and "M2_HOME=C:\Program Files\Apache\Maven" 
 rem should be set! 
-rem "call" because command 'mvn' is actually a cmd-file with an exit at the end. Without the call this also terminates *us* ||-(
+rem "call" because command 'mvn' is actually a cmd-file with an exit at the end. Without the "call" this also terminates *us* ||-(
 call mvn clean verify -Pproduction
 
 rem update the table of contents in the README.md file:

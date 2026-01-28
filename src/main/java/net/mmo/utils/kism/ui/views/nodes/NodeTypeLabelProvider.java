@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */

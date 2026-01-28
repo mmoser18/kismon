@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.StringUtils;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -26,7 +25,6 @@ import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-@Slf4j
 public class SSHConnection extends IPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
@@ -126,7 +124,7 @@ public class SSHConnection extends IPConnection
 			try {
 				this.sshClient.disconnect();
 			} catch (IOException ex) {
-				log.trace("Exception closing sshClient", ex); //$NON-NLS-1$
+				this.log.trace("Exception closing sshClient", ex); //$NON-NLS-1$
 			}
 			this.sshClient = null;
 		}
@@ -134,15 +132,15 @@ public class SSHConnection extends IPConnection
 
 	@Override
 	public void sendRequest() throws Exception {
-		log.debug("ssh to '{}':", getResultingHostAddress()); //$NON-NLS-1$
+		this.log.debug("ssh to '{}':", getResultingHostAddress()); //$NON-NLS-1$
 		try {
 			if (this.sshClient == null) {
-				log.trace("Creating SSHClient:"); //$NON-NLS-1$
+				this.log.trace("Creating SSHClient:"); //$NON-NLS-1$
 				this.sshClient = new SSHClient();
 				String resolvedFingerprint = resolveProperties(getFingerprint());
-				log.debug("accaptable fingerprint is '{}'", resolvedFingerprint); //$NON-NLS-1$
+				this.log.debug("accaptable fingerprint is '{}'", resolvedFingerprint); //$NON-NLS-1$
 				if (StringUtils.isEmpty(resolvedFingerprint)) {
-					log.trace("using PromiscuousVerifier"); //$NON-NLS-1$
+					this.log.trace("using PromiscuousVerifier"); //$NON-NLS-1$
 					this.sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 				} else {
 					this.sshClient.addHostKeyVerifier(resolvedFingerprint);
@@ -161,7 +159,7 @@ public class SSHConnection extends IPConnection
 				}
 			}
 			final String resolvedCommand = resolveProperties(getCommand());
-			log.debug("{}: Executing command '{}':", getName(), resolvedCommand); //$NON-NLS-1$
+			this.log.debug("{}: Executing command '{}':", getName(), resolvedCommand); //$NON-NLS-1$
 			// ... before executing the actual request:
 			setTimestamp(LocalDateTime.now());
 			long startTime = System.nanoTime();
@@ -170,20 +168,20 @@ public class SSHConnection extends IPConnection
 				sshCommand.join(getTimeout(), TimeUnit.SECONDS);
 				long callDuration = System.nanoTime() - startTime;
 				setDuration(callDuration);
-				log.debug("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+				this.log.debug("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 				String result = sshCommand.getExitErrorMessage();
 				if (result != null) { // violent exit!
 					setResponse(result);
 					setState(State.FAILED);
 					sshCommand.close();
-					log.debug("Exit-status for '{}' (command:'{}') was: {} / {}", //$NON-NLS-1$
+					this.log.debug("Exit-status for '{}' (command:'{}') was: {} / {}", //$NON-NLS-1$
 					         getName(), resolvedCommand, sshCommand.getExitStatus(), result);
 				} else { // cmd went OK:
 					try (InputStream is = sshCommand.getErrorStream()) {
 						result = readStream(is);
 					}
 					if (result != null && !result.isEmpty()) { // we had some error:
-						log.debug("Error executing '{}' (command:'{}'): {}", //$NON-NLS-1$
+						this.log.debug("Error executing '{}' (command:'{}'): {}", //$NON-NLS-1$
 						          getName(), resolvedCommand, result);
 						setState(State.DEGRADED);
 					} else { // nothing on error stream:
@@ -192,14 +190,14 @@ public class SSHConnection extends IPConnection
 					try (InputStream is = sshCommand.getInputStream()) {
 						result = readStream(is);
 					}
-					log.debug("Result executing '{}' (command:'{}'): {}", //$NON-NLS-1$
+					this.log.debug("Result executing '{}' (command:'{}'): {}", //$NON-NLS-1$
 					          getName(), resolvedCommand, result);
 				}
 				setResponse(result);
 				deriveState();
 			} // cmd gets closed here.
 		} catch (Exception ex) {
-			log.debug("Exception executing '{}' (creating ssh-client/-session/-command): {}", getName(), ex); //$NON-NLS-1$
+			this.log.debug("Exception executing '{}' (creating ssh-client/-session/-command): {}", getName(), ex); //$NON-NLS-1$
 			setDuration(-1);
 			setResponse(ex.getMessage());
 			setState(State.FAILED);
@@ -225,7 +223,7 @@ public class SSHConnection extends IPConnection
 				throw new IllegalArgumentException("resultChecker == null for checkResults == true"); //$NON-NLS-1$
 			}
 		}
-		log.trace("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
+		this.log.trace("deriveState '{}': {}", getName(), res); //$NON-NLS-1$
 		setState(res);
 	}
 

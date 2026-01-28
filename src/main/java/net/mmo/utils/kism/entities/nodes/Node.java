@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -18,12 +18,13 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.AbstractEntity;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.NodeProperties;
 import net.mmo.utils.kism.utils.PropertyResolver;
 import net.mmo.utils.kism.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 @SuppressWarnings("javadoc")
@@ -33,7 +34,6 @@ import org.springframework.util.Assert;
 // This was supposed to avoid infinite recursion when serializing the tree as JSON
 // but it did not work. Instead I have set "parent" as @JsonIgnore. It is redundant and can
 // be reconstructed after reading the config from a file
-@Slf4j
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 public abstract class Node extends AbstractEntity
 {
@@ -42,6 +42,9 @@ public abstract class Node extends AbstractEntity
 	public final static String PROPERTYNAME_STATE = "state";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_PARENT = "parent";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_APPLICABLE = "applicable";  //$NON-NLS-1$
+
+	@JsonIgnore
+	transient protected Logger log;
 
 	public enum State {
 		FAILED,
@@ -78,7 +81,8 @@ public abstract class Node extends AbstractEntity
 	// required for deserialization
 	protected Node() {
 		super();
-		log.debug("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
+		this.log = LoggerFactory.getLogger(this.getClass());
+		this.log.debug("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	protected Node(String name, String description) {
 		this(name, description, State.OK);
@@ -89,7 +93,8 @@ public abstract class Node extends AbstractEntity
 		this.name = name;
 		this.description = description;
 		this.state = state;
-		log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
+		this.log = LoggerFactory.getLogger(this.getClass());
+		this.log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 
 	public Node(String name, String description, State state, IntermediateNode parent) {
@@ -113,7 +118,7 @@ public abstract class Node extends AbstractEntity
 	}
 
 	public void propertiesFromString(String values) {
-		log.trace("setProperties(\"{}\")", values); //$NON-NLS-1$
+		this.log.trace("setProperties(\"{}\")", values); //$NON-NLS-1$
 		NodeProperties props = this.properties;
 		if (props == null) {
 			props = new NodeProperties(getParent() != null ? getParent().getProperties() : null);
@@ -184,7 +189,7 @@ public abstract class Node extends AbstractEntity
 				setter.accept(resolveProperties(originalValue));
 			} catch (Exception ex) {
 				String msg = String.format("Error resolving '%s': %s", originalValue, ex.getMessage()); //$NON-NLS-1$
-				log.error(msg);
+				this.log.error(msg);
 				setter.accept(msg);
 			}
 		}
@@ -230,7 +235,7 @@ public abstract class Node extends AbstractEntity
 
 	/** method to be overwritten by root nodes only! */
 	protected void informOnPropertyChange(Node node, String propertyName, Object oldValue, Object newValue) {
-		log.warn("informOnPropertyChange() called on non-root-node - ignored"); //$NON-NLS-1$
+		this.log.warn("informOnPropertyChange() called on non-root-node - ignored"); //$NON-NLS-1$
 	}
 
 	/** method to inform listener(s) re. property changes that may have happened outside the GUI */

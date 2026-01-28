@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -387,8 +387,8 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		return responseBodyAsString(this.node);
 	}
 	protected String responseBodyAsString(N n) {
-		String convertedResponse = n.responseBodyAsString();
-		String responseText = (this.prettyPrintResponseXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedResponse, false) : convertedResponse);
+		final String convertedResponse = n.responseBodyAsString();
+		final String responseText = (this.prettyPrintResponseXml.getValue() ? XmlPrettyPrinter.prettyPrintXML(convertedResponse, false) : convertedResponse);
 		return responseText != null ? responseText : ""; //$NON-NLS-1$
 	}
 

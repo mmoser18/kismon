@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
-<configuration>
+<configuration debug="true">
 
 	<property name="LOGS" value="./logs" />
 
@@ -12,14 +12,14 @@
 	</appender>
 
 	<appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOGS}/kism.log</file>
+		<file>${LOGS}/kism_test.log</file>
 		<encoder>
 			<pattern>%d %p %C [%t] %m%n</pattern>
 		</encoder>
 
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<!-- rollover daily and when the file reaches 10 MegaBytes -->
-			<fileNamePattern>${LOGS}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<fileNamePattern>${LOGS}/archived/kism_test-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
@@ -36,7 +36,7 @@
 	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn"/>
 	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info"/>
 
-	<root level="trace">
+	<root level="debug">
 		<appender-ref ref="Console" />
 		<appender-ref ref="RollingFile" />
 	</root>

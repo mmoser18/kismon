@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -14,7 +14,6 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
@@ -22,7 +21,6 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-@Slf4j
 public class JDBCConnection extends TCPConnection
 {
 	private static final long serialVersionUID = -2228821478937714703L;
@@ -128,7 +126,7 @@ public class JDBCConnection extends TCPConnection
 
 	@SuppressWarnings("resource")
 	private JDBCHandling createConnection() throws Exception {
-		log.debug("createConnection:"); //$NON-NLS-1$
+		this.log.debug("createConnection:"); //$NON-NLS-1$
 		if (this.handling == null) {
 			this.handling = new JDBCHandling();
 		}
@@ -147,7 +145,7 @@ public class JDBCConnection extends TCPConnection
 
 	@Override
 	public void sendRequest() throws Exception {
-		log.debug("sendRequest {}:", getName()); //$NON-NLS-1$
+		this.log.debug("sendRequest {}:", getName()); //$NON-NLS-1$
 		String resQuery = resultingQueryResolved();
 		JDBCHandling connection = null;
 		Object res = null;
@@ -160,11 +158,11 @@ public class JDBCConnection extends TCPConnection
 			res = connection.executeQuery(this.timeout, resQuery);
 			long callDuration = System.nanoTime() - startTime;
 			setDuration(callDuration);
-			log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+			this.log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
 			responseReceived(res);
 			setRequestResult(getState().name() + '/' + getResponseStatus());
 		} catch (Exception ex) {
-			log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
+			this.log.debug("exception executing '{}': {}", getName(), ex.getMessage()); //$NON-NLS-1$
 			setResponseStatus(ex instanceof SQLException ? extractSqlError((SQLException)ex) : ex.getMessage());
 			setResponsePayload(String.format("Exception executing '%s' (query '%s'): %s", //$NON-NLS-1$
 			                                 getName(), resQuery, ExceptionUtils.exceptionCauseSummary(ex)));
@@ -197,14 +195,14 @@ public class JDBCConnection extends TCPConnection
 	private void responseReceived(Object res) throws Exception {
 		if (res instanceof ResultSet) {
 			convertResultSet((ResultSet)res);
-			log.debug("response: status={} / payload={} bytes", //$NON-NLS-1$
+			this.log.debug("response: status={} / payload={} bytes", //$NON-NLS-1$
 			         getResponseStatus(), getResponsePayload().length());
-			log.trace("payload=\"{}\"", //$NON-NLS-1$
+			this.log.trace("payload=\"{}\"", //$NON-NLS-1$
 				      getResponsePayload());
 			deriveState();
 		} else { // result is not a ResultSet but an update count or there are no results
 			int updates = (Integer)res;
-			log.debug("Result: #updates:{}", updates); //$NON-NLS-1$
+			this.log.debug("Result: #updates:{}", updates); //$NON-NLS-1$
 			State state = updates >= 0 ? State.OK : State.FAILED;
 			setResponseStatus(state.name());
 			setResponsePayload(state == State.OK
@@ -234,7 +232,7 @@ public class JDBCConnection extends TCPConnection
 
 			setResponseStatus(RESPONSE_STATUS_OK);
 		} catch (SQLException ex) {
-			log.error("Exception extracting results:", ex); //$NON-NLS-1$
+			this.log.error("Exception extracting results:", ex); //$NON-NLS-1$
 			setResponseStatus(extractSqlError(ex));
 			setResponsePayload(String.format("Exception converting result set: %s", ex)); //$NON-NLS-1$
 		}
@@ -258,11 +256,11 @@ public class JDBCConnection extends TCPConnection
 			if (checker != null && checker.getCondition() != null) {
 				checkResult = checker.checkResult(this, getResponsePayload());
 			} else {
-				log.debug("no result check defined."); //$NON-NLS-1$
+				this.log.debug("no result check defined."); //$NON-NLS-1$
 			}
 		}
 		setState(checkResult);
-		log.trace("deriveState: {}", checkResult); //$NON-NLS-1$
+		this.log.trace("deriveState: {}", checkResult); //$NON-NLS-1$
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -30,6 +30,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -219,7 +220,7 @@ public class NodeService
 	}
 
 	public static void createNotification(String msg, int durationInMillis) {
-		Notification notif = new Notification(msg, durationInMillis)
+		final Notification notif = new Notification(msg, durationInMillis)
 		{
 			private static final long serialVersionUID = 8046905230067171276L;
 
@@ -238,6 +239,11 @@ public class NodeService
 			log.trace("Notification OpenedChange-Event: {}", evt); //$NON-NLS-1$
 			// notif.close();
 		});
+		if (durationInMillis == 0) {
+			final Button closeButton = new Button(Messages.getString("Notification.CloseButton.Label")); //$NON-NLS-1$
+			closeButton.addSingleClickListener(event -> notif.close());
+			notif.add(closeButton);
+		}
 		notif.open();
 	}
 

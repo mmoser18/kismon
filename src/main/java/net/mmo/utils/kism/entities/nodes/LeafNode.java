@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -19,11 +19,12 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
 import net.mmo.utils.kism.entities.history.HistoryInfo;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Common superclass for leaf nodes.
@@ -31,11 +32,11 @@ import net.mmo.utils.kism.utils.ExceptionUtils;
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-@Slf4j
 abstract public class LeafNode extends ActionableNode
 {
 	private static final long serialVersionUID = 265720619758262963L;
 
+	protected static final Logger staticLog = LoggerFactory.getLogger(LeafNode.class);
 	public final static String PROPERTYNAME_DURATION  = "duration";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_TIMESTAMP  = "timestamp";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_RESPONSE_COMPLETE    = "responseComplete"; //$NON-NLS-1$
@@ -115,7 +116,7 @@ abstract public class LeafNode extends ActionableNode
 	}
 	public static void setHaltAllRequests(boolean haltAllRequests) {
 		LeafNode.haltAllRequests = haltAllRequests;
-		log.info("All requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		staticLog.info("All requests are now " + (LeafNode.haltAllRequests ? "halted" : "enabled")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/** required for deserialization only */
@@ -165,15 +166,16 @@ abstract public class LeafNode extends ActionableNode
 		}
 	}
 
+	@SuppressWarnings("resource")
 	private void initExecutors() {
 		setRequestSender(new Runnable()
 			{ // this is the code being executed by the automatic executors
 				@Override
 				public void run() {
 					if (isHaltAllRequests()) {
-						log.trace("Requests halted for '{}':", getName()); //$NON-NLS-1$
+						LeafNode.this.log.trace("Requests halted for '{}':", getName()); //$NON-NLS-1$
 					} else {
-						log.debug("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
+						LeafNode.this.log.debug("Calling sendRequest() for '{}':", getName()); //$NON-NLS-1$
 						executeRequestInternal("calling"); //$NON-NLS-1$
 					}
 				}
@@ -192,11 +194,11 @@ abstract public class LeafNode extends ActionableNode
 	public void executeRequest() throws Exception {
 		if (asyncRequests) {
 			this.interactiveExecutor.execute(() -> {
-				log.info("executing sendRequest(async): '{}'", getName()); //$NON-NLS-1$
+				this.log.info("executing sendRequest(async): '{}' [{}]", getName(), this.getClass().getName()); //$NON-NLS-1$
 				executeRequestInternal("executing(async)"); //$NON-NLS-1$
 			});
 		} else {
-			log.info("executing sendRequest(sync):  '{}'", getName()); //$NON-NLS-1$
+			this.log.info("executing sendRequest(sync):  '{}' [{}]", getName(), this.getClass().getName()); //$NON-NLS-1$
 			executeRequestInternal("executing(sync)"); //$NON-NLS-1$
 		}
 	}
@@ -208,14 +210,14 @@ abstract public class LeafNode extends ActionableNode
 			resultMsg = getRequestResult();
 		} catch (Throwable ex) {
 			if (shortRequestLogEntries) {
-				if (log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
-					log.debug("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+				if (this.log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
+					this.log.debug("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 				} else {
 					String msg = ExceptionUtils.exceptionRootCauseMsg(ex);
-					log.info("Error {} '{}': {}", logFragment, getName(), (msg != null && !msg.isBlank() ? msg : ex)); //$NON-NLS-1$
+					this.log.info("Error {} '{}': {}", logFragment, getName(), (msg != null && !msg.isBlank() ? msg : ex)); //$NON-NLS-1$
 				}
 			} else {
-				log.info("Error " + logFragment + " '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				this.log.info("Error " + logFragment + " '" + getName() + "':", ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
 			resultMsg = getRequestResult();
@@ -224,24 +226,28 @@ abstract public class LeafNode extends ActionableNode
 		requestInfoService.save(new HistoryInfo(getName(), getClass(), getDuration(), getTimestamp(), resultMsg));
 	}
 
+	@SuppressWarnings("resource")
 	protected void adjustExecutor() {
 //		// Because this method gets called from the UI and it may take a while we need to offload
-//		// that to another thread to complete it in the background: / didn't work... :-(
+//		// that to another thread to complete it in the background:
+// Alas, this didn't work... :-(
 //		UIHandlerSupport.executeLater(this::adjustExecutorInternal);
 //	}
 //
 //	protected void adjustExecutorInternal() {
-		if (getPeriodicExecutor() != null) {
-			log.debug("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
-			if (!getPeriodicExecutor().isTerminated()) {
-				getPeriodicExecutor().shutdown();
-				try {
-					getPeriodicExecutor().awaitTermination(3, TimeUnit.SECONDS);
-				} catch (InterruptedException ex) {
-					log.error("Error shutting down '" + getName() + '"' , ex); //$NON-NLS-1$
+		try (ScheduledExecutorService executor = getPeriodicExecutor()) {
+			if (executor != null) {
+				this.log.debug("stopping periodicExecutor for {}:", getName()); //$NON-NLS-1$
+				if (!executor.isTerminated()) {
+					executor.shutdown();
+					try {
+						executor.awaitTermination(3, TimeUnit.SECONDS);
+					} catch (InterruptedException ex) {
+						this.log.error("Error shutting down '" + getName() + '"' , ex); //$NON-NLS-1$
+					}
 				}
+				setPeriodicExecutor(null);
 			}
-			setPeriodicExecutor(null);
 		}
 		if (getFuture() != null) {
 			getFuture().cancel(true);
@@ -249,7 +255,7 @@ abstract public class LeafNode extends ActionableNode
 		}
 
 		if (isActive()) { // we (re)start - possibly with a different period and/or timeout:
-			log.debug("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
+			this.log.debug("starting periodicExecutor for '{}' (period: {} secs, timeout: {} secs):", getName(), getPeriod(), getTimeout()); //$NON-NLS-1$
 			setPeriodicExecutor(Executors.newScheduledThreadPool(1));
 			setFuture(getPeriodicExecutor().scheduleAtFixedRate(getRequestSender(), getPeriod(), getPeriod(), TimeUnit.SECONDS));
 		}

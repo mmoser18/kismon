@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -31,7 +31,6 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,17 +51,16 @@ import javax.net.ssl.X509TrustManager;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.ResultChecker;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import net.mmo.utils.kism.utils.HTTP_Authorization;
 import net.mmo.utils.kism.utils.KeyValuesConverter;
 import net.mmo.utils.kism.utils.StringUtils;
+import org.springframework.http.HttpStatus;
 
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-@Slf4j
 abstract public class HTTPConnection extends TCPConnection
 {
 	private static final long serialVersionUID = -1288268291213672552L;
@@ -97,6 +95,8 @@ abstract public class HTTPConnection extends TCPConnection
 	public final static byte[] EMPTY_BODY = new byte[0];
 
 	public final static String VALUE_UNDEFINED = ""; //$NON-NLS-1$
+
+	private final static char INTERNAL_MSG_MARKER = '\u001a'; // SUBstitute as first character of a string marks a UI message rather than a real response body $NON-NLS-1$
 
 	private final static String VALUES_FRAGMENT_SEPARATOR = ";"; //$NON-NLS-1$
 
@@ -156,12 +156,15 @@ abstract public class HTTPConnection extends TCPConnection
 	transient protected HttpHeaders responseHeaders;
 	@JsonIgnore
 	transient protected byte[] responseBody;
+	@JsonIgnore
+	transient protected Charset responseCharset;
 
-	// Stuff for the handling of Digest authenticaton:
+	// Stuff for the handling of Digest authentication:
 	@JsonIgnore
 	transient protected String authorizationValue;
 	@JsonIgnore
 	transient private String previousNonce;
+	@JsonIgnore
 	transient private int nonceCount;
 
 
@@ -189,7 +192,7 @@ abstract public class HTTPConnection extends TCPConnection
 	public HTTPConnection() { // required for deserialization
 		super();
 	}
-	public HTTPConnection(String name, String description) {
+	public HTTPConnection(final String name, final String description) {
 		super(name, description);
 	}
 
@@ -222,7 +225,7 @@ abstract public class HTTPConnection extends TCPConnection
 //	}
 
 	@Override
-	public void setResultingUrl(String resultingUrl) {
+	public void setResultingUrl(final String resultingUrl) {
 		String oldUrl = this.getResultingUrl();
 		if (!Objects.equals(resultingUrl, oldUrl)) {
 			super.setResultingUrl(resultingUrl);
@@ -231,7 +234,7 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	@Override
-	public void setTimeout(int timeout) {
+	public void setTimeout(final int timeout) {
 		int oldTimeout = this.getTimeout();
 		if (timeout != oldTimeout) {
 			super.setTimeout(timeout);
@@ -239,19 +242,19 @@ abstract public class HTTPConnection extends TCPConnection
 		}
 	}
 
-	public void setMethod(HTTP_Method method) {
+	public void setMethod(final HTTP_Method method) {
 		this.method = method;
 		setHttpRequest(null); // trigger a recreation of the request if the method changes
 		setRequestHeaders(null);
 		setRequestBody(EMPTY_BODY);
 	}
 
-	public void setHttpVersion(Version httpVersion) {
+	public void setHttpVersion(final Version httpVersion) {
 		this.httpVersion = httpVersion;
 		setHttpClient(null); // trigger a recreation of the connection if the http version ever changes
 	}
 
-	public void setTargetUid(String targetUid) {
+	public void setTargetUid(final String targetUid) {
 		this.targetUid = targetUid;
 		setHttpClient(null); // trigger a recreation of the connection if the dbUid changes
 	}
@@ -261,7 +264,7 @@ abstract public class HTTPConnection extends TCPConnection
 		return resolveProperties(getTargetUid());
 	}
 
-	public void setTargetPwd(String targetPwd) {
+	public void setTargetPwd(final String targetPwd) {
 		this.targetPwd = targetPwd;
 		setHttpClient(null); // trigger a recreation of the connection if the dbPwd changes
 	}
@@ -271,28 +274,28 @@ abstract public class HTTPConnection extends TCPConnection
 		return resolveProperties(getTargetPwd());
 	}
 
-	public void setHeaders(String headers) {
+	public void setHeaders(final String headers) {
 		this.headers = headers;
 		updateRequestHeaders();
 	}
 
-	public void setPayload(String payload) {
+	public void setPayload(final String payload) {
 		this.payload = payload;
 		updateRequestBody();
 	}
 
-	public void setAcceptableReturnCodes(String acceptableReturnCodes) {
+	public void setAcceptableReturnCodes(final String acceptableReturnCodes) {
 		this.acceptableReturnCodes = acceptableReturnCodes;
 	}
 
-	private synchronized void setHttpClient(HttpClient httpClient) {
+	private synchronized void setHttpClient(final HttpClient httpClient) {
 		this.httpClient = httpClient;
-		this.authorizationValue = null; // setting a new client also invalidates any old authentication header
-		this.previousNonce = null;
-		this.nonceCount = 0;
+		setAuthorizationValue(null); // setting a new client also invalidates any old authentication header
+		setPreviousNonce(null);
+		setNonceCount(0);
 		setHttpRequest(null); // setting a new client invalidates old request
 	}
-	private synchronized void setHttpRequest(HttpRequest httpRequest) {
+	private synchronized void setHttpRequest(final HttpRequest httpRequest) {
 		this.httpRequest = httpRequest;
 	}
 
@@ -301,7 +304,7 @@ abstract public class HTTPConnection extends TCPConnection
 			try {
 				createRequest(); // this sets the requestHeaders as side-effect
 			} catch (Exception ex) {
-				log.error("Error in createRequest", ex.getMessage()); //$NON-NLS-1$
+				this.log.error("Error in createRequest", ex.getMessage()); //$NON-NLS-1$
 				this.requestHeaders = null;
 			}
 		}
@@ -313,7 +316,7 @@ abstract public class HTTPConnection extends TCPConnection
 		}
 	}
 
-	public void setRequestHeaders(HttpHeaders requestHeaders) {
+	public void setRequestHeaders(final HttpHeaders requestHeaders) {
 		if (!Objects.equals(this.requestHeaders, requestHeaders)) {
 			HttpHeaders oldRequestHeaders = this.requestHeaders;
 			this.requestHeaders = requestHeaders;
@@ -321,7 +324,7 @@ abstract public class HTTPConnection extends TCPConnection
 		}
 	}
 
-	public void setRequestBody(byte[] requestBody) {
+	public void setRequestBody(final byte[] requestBody) {
 		if (!Objects.equals(this.requestBody, requestBody)) {
 			byte[] oldRequestBody = this.requestBody;
 			this.requestBody = requestBody;
@@ -330,32 +333,32 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	@JsonIgnore
-	public void setRequestBody(String value) {
+	public void setRequestBody(final String value) {
 		setRequestBody(convertBodyFromString(value, extractRequestCharset()));
 	}
-	private static byte[] convertBodyFromString(String value, Charset charset) {
+	private static byte[] convertBodyFromString(final String value, final Charset charset) {
 		return (value != null ? value.getBytes(charset) : EMPTY_BODY);
 	}
 
 	// update received data:
 
-	public void setResponseStatusCode(int responseStatusCode ) {
+	public void setResponseStatusCode(final int responseStatusCode ) {
 		if (!Objects.equals(this.responseStatusCode, responseStatusCode)) {
 			int oldResponseStatusCode = this.responseStatusCode;
 			this.responseStatusCode = responseStatusCode;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_STATUS_CODE, oldResponseStatusCode, responseStatusCode);
 		}
 	}
-	public void setResponseHeaders(HttpHeaders responseHeaders) {
+	public void setResponseHeaders(final HttpHeaders responseHeaders) {
 		if (!Objects.equals(this.responseHeaders, responseHeaders)) {
-			HttpHeaders oldResponseHeaders = this.responseHeaders;
+			final HttpHeaders oldResponseHeaders = this.responseHeaders;
 			this.responseHeaders = responseHeaders;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_HEADERS, oldResponseHeaders, responseHeaders);
 		}
 	}
-	public void setResponseBody(byte[] responseBody) {
+	public void setResponseBody(final byte[] responseBody) {
 		if (!Objects.equals(this.responseBody, responseBody)) {
-			byte[] oldResponseBody = this.responseBody;
+			final byte[] oldResponseBody = this.responseBody;
 			this.responseBody = responseBody;
 			informOnPropertyChange(PROPERTYNAME_RESPONSE_BODY, oldResponseBody, responseBody);
 		}
@@ -373,7 +376,7 @@ abstract public class HTTPConnection extends TCPConnection
 			.connectTimeout(Duration.ofSeconds(getTimeout()))
 			;
 
-		log.debug("creating HTTP client for: {}", this.resolvedURI); //$NON-NLS-1$
+		this.log.debug("creating HTTP client for: {}", this.resolvedURI); //$NON-NLS-1$
 		if (this.resolvedURI.getScheme().equals("https")) { //$NON-NLS-1$
 			// for SSL/TLS we need to jump through a few extra-loops:
 			if (acceptableSSLVersions != null && acceptableSSLVersions.length > 0) {
@@ -395,7 +398,7 @@ abstract public class HTTPConnection extends TCPConnection
 
 			if (trustAllCertificates) {
 				tms = new TrustManager[] { trustAllCerts };
-				log.debug("Trusting ALL SSL certificates - available trust-managers are: {}", Arrays.asList(tms)); //$NON-NLS-1$
+				this.log.debug("Trusting ALL SSL certificates - available trust-managers are: {}", Arrays.asList(tms)); //$NON-NLS-1$
 			}
 			if (kms != null || tms != null) {
 				SSLContext sslContext = null;
@@ -404,7 +407,7 @@ abstract public class HTTPConnection extends TCPConnection
 					sslContext.init(kms, tms, new java.security.SecureRandom());
 					builder.sslContext(sslContext);
 				} catch (Exception ex) {
-					log.error("Error creating an SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
+					this.log.error("Error creating an SSLContext accepting ALL certificates - ignored", ex); //$NON-NLS-1$
 				}
 			}
 		}
@@ -421,13 +424,13 @@ abstract public class HTTPConnection extends TCPConnection
 						}
 					});
 				} else {
-					log.error("Node '{}': uid and/or password resolved to blank - no authentication possible", getName()); //$NON-NLS-1$
+					this.log.error("Node '{}': uid and/or password resolved to blank - no authentication possible", getName()); //$NON-NLS-1$
 				}
 			} catch (Exception ex) {
-				log.error(String.format("Node '%s': uid and/or password resolved to blank - no authentication possible", getName()), ex); //$NON-NLS-1$
+				this.log.error(String.format("Node '%s': uid and/or password resolved to blank - no authentication possible", getName()), ex); //$NON-NLS-1$
 			}
 		} else {
-			log.debug("uid and/or password defined as blank - no authentication."); //$NON-NLS-1$
+			this.log.debug("uid and/or password defined as blank - no authentication."); //$NON-NLS-1$
 		}
 
 		// TODO implement proxy access
@@ -465,13 +468,13 @@ abstract public class HTTPConnection extends TCPConnection
 		try { // trying to get better error logs when the URL does not properly resolve:
 			resultingUrlResolved = resultingUrlResolved();
 		} catch (Exception ex) {
-			log.error("createRequest: error resolving URL '{}': {}", this.getUrl(), ex.getMessage()); //$NON-NLS-1$
+			this.log.error("createRequest: error resolving URL '{}': {}", this.getUrl(), ex.getMessage()); //$NON-NLS-1$
 			throw ex;
 		}
 		try { // trying to get better error logs if this fails:
 			this.resolvedURI = URI.create(resultingUrlResolved);
 		} catch (Exception ex) {
-			log.error("createRequest: error creating URI from '{}': {}", resultingUrlResolved, ex.getMessage()); //$NON-NLS-1$
+			this.log.error("createRequest: error creating URI from '{}': {}", resultingUrlResolved, ex.getMessage()); //$NON-NLS-1$
 			throw ex;
 		}
 		return createRequest(this.resolvedURI);
@@ -480,7 +483,7 @@ abstract public class HTTPConnection extends TCPConnection
 	/*
 	 * This method is parameterized with a uri (and not taking resolvedURI) because it is also used for redirections
 	 */
-	public HttpRequest createRequest(URI uri) throws Exception {
+	public HttpRequest createRequest(final URI uri) throws Exception {
 		HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
 			.uri(uri)
 			.timeout(Duration.ofSeconds(getTimeout()));
@@ -489,7 +492,7 @@ abstract public class HTTPConnection extends TCPConnection
 			map.forEach((key, value) -> httpRequestBuilder.setHeader(key, value.toString()));
 		}
 		if (this.authorizationValue == null && this.includeBasicAuthHeader) {
-			createBasicAuthorizationValue();
+			this.authorizationValue = createBasicAuthorizationValue();
 		}
 		if (this.authorizationValue != null) {
 			httpRequestBuilder.setHeader("Authorization", this.authorizationValue); //$NON-NLS-1$
@@ -508,7 +511,7 @@ abstract public class HTTPConnection extends TCPConnection
 		case PUT: {
 			setRequestBody(resolveProperties(getPayload()));
 			byte[] body = getRequestBody();
-			httpRequestBuilder.POST(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
+			httpRequestBuilder.PUT(BodyPublishers.ofByteArray(body != null ? body : EMPTY_BODY));
 			break;
 		}
 		case DELETE:
@@ -526,7 +529,7 @@ abstract public class HTTPConnection extends TCPConnection
 		HttpRequest request = getHttpRequest();
 		if (request == null) {
 			setHttpRequest(createRequest());
-			if (getHttpRequest() == null) { // we had such cases - beats me why
+			if (getHttpRequest() == null) { // I had a few such cases - beats me why
 				throw new Exception("HttpRequest still null after just setting it!?!"); //$NON-NLS-1$
 			}
 		}
@@ -538,14 +541,14 @@ abstract public class HTTPConnection extends TCPConnection
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unused")
-	protected void aditionalRequestPreparations(Builder builder) throws Exception {
+	protected void aditionalRequestPreparations(final Builder builder) throws Exception {
 		// empty
 	}
 
 	@SuppressWarnings({"null", "resource"}) // the program flow guarantees that request is != null if response is <> null!
 	@Override
 	public void sendRequest() throws Exception {
-		log.debug("sendRequest '{}':", getName()); //$NON-NLS-1$
+		this.log.debug("sendRequest '{}':", getName()); //$NON-NLS-1$
 		HttpClient client = null;
 		HttpRequest request = null;
 		HttpResponse<byte[]> response = null;
@@ -561,31 +564,33 @@ abstract public class HTTPConnection extends TCPConnection
 			int nrAuthAttempts = 0;
 			do {
 				setRequestHeaders(request.headers());
+				this.log.trace("request headers: {}", request.headers()); //$NON-NLS-1$
 				// signal response pending:
 				setResponseStatusCode(-1);
 				setResponseHeaders(null);
-				setResponseBody("<no response received (yet)>".getBytes()); //$NON-NLS-1$
+				setResponseBody((INTERNAL_MSG_MARKER + "<no response received (yet)>").getBytes()); //$NON-NLS-1$
+				setState(null);
 				logRequestValues();
 				// ... before executing the actual request:
-				long startTime = System.nanoTime();
+				final long startTime = System.nanoTime();
 				// send the request / receive response:
 				response = client.send(request, BodyHandlers.ofByteArray());
 				// ... and after executing the actual request:
 				long callDuration = System.nanoTime() - startTime;
 				setDuration(callDuration);
-				log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
-				int statusCode = response.statusCode();
+				this.log.trace("responseReceived for '{}' after {} microsecs.", getName(), callDuration/1000); //$NON-NLS-1$
+				final int statusCode = response.statusCode();
 				processResponseReceived(response);
-				if (statusCode == 401) { // Unauthorized
+				if (statusCode == HttpStatus.UNAUTHORIZED.value()) { // Unauthorized
 					if (++nrAuthAttempts > MAX_AUTH_ATTEMPTS) { // to avoid endless loops if our header is wrong or the server keeps responding with 401 responses...
 						// a log entry is created in an outer catch
 						throw new Exception("too many attempts (" + nrAuthAttempts + ") trying to create a valid authentication response"); //$NON-NLS-1$ //$NON-NLS-2$
 					}
-					String authHeader = response.headers().firstValue("WWW-Authenticate").orElseGet(null); //$NON-NLS-1$
+					final String authHeader = response.headers().firstValue("WWW-Authenticate").orElseGet(null); //$NON-NLS-1$
 					if (authHeader != null) {
-						log.debug("received response 401 with auth-header: '{}' - creating authorization request:", authHeader); //$NON-NLS-1$
+						this.log.debug("received response {} with auth-header: '{}' - creating authorization request:", HttpStatus.UNAUTHORIZED, authHeader); //$NON-NLS-1$
 						try {
-							createAuthorizationValue(authHeader, request.method(), request.uri());
+							setAuthorizationValue(createAuthorizationValue(authHeader, request.method(), request.uri()));
 							request = createRequest(request.uri()); // creating a new request using same method and URI but including the new authorizationValue
 							setHttpRequest(request);
 							continue;
@@ -594,18 +599,18 @@ abstract public class HTTPConnection extends TCPConnection
 							throw new Exception(String.format("error creating new request for authentication header '%s'", authHeader), ex); //$NON-NLS-1$
 						}
 					} else {
-						throw new Exception(String.format("status code 401 received but without indication re. expected authentication")); //$NON-NLS-1$
+						throw new Exception(String.format("status code 401 received but no 'WWW-Authenticate'-header found.")); //$NON-NLS-1$
 					}
-				} else if (statusCode < 300 || statusCode >= 400) {
+				} else if (statusCode < HttpStatus.MULTIPLE_CHOICES.value() || statusCode >= HttpStatus.BAD_REQUEST.value()) {
 					processResponseReceived(response);
-					break; // no redirection
+					break; // no redirection, no error - we got a response!
 				}
 				// still here: we got a redirection - process it:
 				if (++nrRedirections > MAX_REDIRECTIONS) {
 					throw new Exception(String.format("Too many redirections: %d", nrRedirections)); //$NON-NLS-1$
 				}
-				String location = response.headers().firstValue("Location").orElseGet(null); //$NON-NLS-1$
-				log.info("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
+				final String location = response.headers().firstValue("Location").orElseGet(null); //$NON-NLS-1$
+				this.log.info("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
 				if (location == null || location.length() <= 0) {
 					// a log entry is created in an outer catch
 					throw new Exception(String.format("Received redirect-response %d but without a 'Location:'-header", statusCode)); //$NON-NLS-1$
@@ -622,14 +627,14 @@ abstract public class HTTPConnection extends TCPConnection
 		} catch (Throwable ex) {
 			if (shortRequestLogEntries) {
 				if (ex instanceof java.net.http.HttpConnectTimeoutException) {
-					log.debug("exception executing '{}': {}", getName(), ExceptionUtils.exceptionRootCauseMsg(ex)); //$NON-NLS-1$
+					this.log.debug("exception executing '{}': {}", getName(), ExceptionUtils.exceptionRootCauseMsg(ex)); //$NON-NLS-1$
 				} else {
-					log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
+					this.log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
 				}
-			} else if (log.isTraceEnabled()) { // log with stack trace - this is for tough nuts:
-				log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
+			} else if (this.log.isTraceEnabled()) { // log with stack trace - this is for tough nuts:
+				this.log.trace(String.format("exception executing '%s':", getName()), ex); //$NON-NLS-1$
 			} else {
-				log.debug("exception executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
+				this.log.debug("exception executing '{}': {}", getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 			}
 			if (client != null) {
 				client.close(); // we close the client (in case of an error, else we keep it).
@@ -641,7 +646,7 @@ abstract public class HTTPConnection extends TCPConnection
 
 			// instead we prefix the received body with the error message
 			final byte[] oldContent = getResponseBody();
-			final byte[] prefix     = ("Note: this prefix is an internal error message - not a response from the contacted server!\n" //$NON-NLS-1$
+			final byte[] prefix     = (INTERNAL_MSG_MARKER + "Note: this prefix is an internal error message - not a response from the contacted server!\n" //$NON-NLS-1$
 			                         + ExceptionUtils.exceptionCauseSummary(ex) + "\nlast response from server:\n---\n").getBytes(); //$NON-NLS-1$
 			final byte[] errMsg = new byte[oldContent.length + prefix.length];
 			System.arraycopy(prefix, 0, errMsg, 0, prefix.length);
@@ -669,7 +674,7 @@ abstract public class HTTPConnection extends TCPConnection
 		}
 	}
 
-	public void processResponseReceived(HttpResponse<byte[]> response) throws Exception {
+	public void processResponseReceived(final HttpResponse<byte[]> response) throws Exception {
 		setResponseStatusCode(response.statusCode());
 		setResponseHeaders(response.headers());
 		setResponseBody(response.body());
@@ -683,55 +688,56 @@ abstract public class HTTPConnection extends TCPConnection
 		String name = getName();
 		if (isCheckResults()) {
 			String acceptableCodes = resolveProperties(getAcceptableReturnCodes());
-			log.trace("deriveState '{}': acceptableCodes:{}", name, acceptableCodes); //$NON-NLS-1$
+			this.log.trace("deriveState '{}': acceptableCodes:{}", name, acceptableCodes); //$NON-NLS-1$
 			if (!StringUtils.isEmpty(acceptableCodes)) {
 				String responseStatusCodeStr = Integer.toString(getResponseStatusCode());
-				log.trace("deriveState '{}': responseStatusCode:{} - responseStatusCodeStr:{}", name, getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
+				this.log.trace("deriveState '{}': responseStatusCode:{} - responseStatusCodeStr:{}", name, getResponseStatusCode(), responseStatusCodeStr); //$NON-NLS-1$
 				search: {
 					for (String acceptable: acceptableCodes.split("[,\\s]")) { //$NON-NLS-1$
 						if (acceptable.equals(responseStatusCodeStr)) {
-							log.debug("deriveState '{}': responseStatusCode:{} -> matched: {}", name, getResponseStatusCode(), acceptable); //$NON-NLS-1$
+							this.log.debug("deriveState '{}': responseStatusCode:{} -> matched: {}", name, getResponseStatusCode(), acceptable); //$NON-NLS-1$
 							break search;
 						}
-						log.trace("deriveState '{}': responseStatusCode:{} -> did not match: {}", name, getResponseStatusCode(), acceptable); //$NON-NLS-1$
+						this.log.trace("deriveState '{}': responseStatusCode:{} -> did not match: {}", name, getResponseStatusCode(), acceptable); //$NON-NLS-1$
 					}
-					log.debug("deriveState '{}': responseStatusCode:{} -> no match found.", name,getResponseStatusCode()); //$NON-NLS-1$
+					this.log.debug("deriveState '{}': responseStatusCode:{} -> no match found.", name,getResponseStatusCode()); //$NON-NLS-1$
 					res = State.FAILED;
 				} // :search
 			}
 			if (res == State.OK) {
 				ResultChecker checker = getResultChecker();
 				if (checker != null && checker.getCondition() != null) {
-					log.trace("checking {}:", checker); //$NON-NLS-1$
+					this.log.trace("checking {}:", checker); //$NON-NLS-1$
 					res = getResultChecker().checkResult(this, responseBodyAsString());
 				} else { // we only check for acceptableReturnCodes - might want to check that we did...y
-					log.debug("no check defined."); //$NON-NLS-1$
+					this.log.debug("no check defined."); //$NON-NLS-1$
 				}
 			}
 		}
-		log.debug("deriveState '{}': {} - checking:{} (received:'{}', acceptable:'{}', checker:{})", name, res, isCheckResults(), getResponseStatusCode(), getAcceptableReturnCodes(), getResultChecker()); //$NON-NLS-1$
+		this.log.debug("deriveState '{}': {} - checking:{} (received:'{}', acceptable:'{}', checker:{})", name, res, isCheckResults(), getResponseStatusCode(), getAcceptableReturnCodes(), getResultChecker()); //$NON-NLS-1$
 		setState(res);
 	}
 
 	@SuppressWarnings("resource")
 	public void logRequestValues() throws IOException {
-		if (log.isDebugEnabled()) {
-			HttpRequest request = getHttpRequest();
-			Optional<BodyPublisher> optionalBody = request.bodyPublisher();
-			log.debug("{}-httpRequest to '{}' / headers: {} / body: {} bytes / cookies: {}", //$NON-NLS-1$
+		if (this.log.isDebugEnabled()) {
+			final HttpRequest request = getHttpRequest();
+			final Optional<BodyPublisher> optionalBody = request.bodyPublisher();
+			this.log.debug("{}-httpRequest to '{}' / headers: {} / body: {} bytes / cookies: {}", //$NON-NLS-1$
 			         request.method(), request.uri(), request.headers().map(),
 			          (optionalBody.isEmpty() ? 0 : getRequestBody().length),
-			          getHttpClient().cookieHandler().get().get(request.uri(), Collections.emptyMap()));
+			          getHttpClient().cookieHandler().get().get(request.uri(),
+			                                                    request.headers().map() /*Collections.emptyMap()*/ ));
 
-			if (log.isTraceEnabled() && !optionalBody.isEmpty()) {
-				log.trace("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
+			if (this.log.isTraceEnabled() && !optionalBody.isEmpty()) {
+				this.log.trace("body: \"{}\"", requestBodyAsString()); //$NON-NLS-1$
 			}
 		}
 	}
 
 	public void logResponseValues() {
-		log.debug("response: status={} / headers:{} / body: {} bytes", //$NON-NLS-1$
-		          getResponseStatusCode(), getResponseHeaders().map(), getResponseBody().length);
+		this.log.debug("response: status={} / headers:{} / body: {} bytes", //$NON-NLS-1$
+		               getResponseStatusCode(), getResponseHeaders().map(), getResponseBody().length);
 	}
 
 	// utility methods:
@@ -749,12 +755,13 @@ abstract public class HTTPConnection extends TCPConnection
 		return convertHeadersToString(getResponseHeaders());
 	}
 
-	private static String convertHeadersToString(HttpHeaders headers) {
+	private static String convertHeadersToString(final HttpHeaders headers) {
 		return (headers != null ? KeyValuesConverter.convertHeaderMapToString(headers.map()) : ""); //$NON-NLS-1$
 	}
 
 	public String requestBodyAsString() {
-		return convertBodyToString(getRequestBody(), extractRequestCharset());
+		final byte[] body = getRequestBody();
+		return (body == null || body.length == 0 ? VALUE_UNDEFINED : convertBodyToString(body, extractRequestCharset()));
 	}
 
 	enum Encodings {
@@ -764,7 +771,10 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 	public String responseBodyAsString() {
 		byte[] body = getResponseBody();
-		Charset charset = extractResponseCharset(body);
+		if (body == null || body.length == 0) return VALUE_UNDEFINED;
+		if (body[0] == INTERNAL_MSG_MARKER) return new String(body); // internal msg...
+
+		this.responseCharset = extractResponseCharset(body);
 		HttpHeaders respHdrs = getResponseHeaders();
 		if (respHdrs != null) {
 			List<String> encodingList = respHdrs.map().get("content-encoding"); //$NON-NLS-1$
@@ -780,23 +790,23 @@ abstract public class HTTPConnection extends TCPConnection
 					}
 					if (encoding != null) {
 						body = unzip(body, encoding);
-						if (charset == DEFAULT_HTTP_CHARSET) { // the charset might have been specified in the just decoded body, so we need to try again:
-							charset = extractResponseCharset(body);
+						if (this.responseCharset == DEFAULT_HTTP_CHARSET) { // the charset might have been specified in the just decoded body, so we need to try again:
+							this.responseCharset = extractResponseCharset(body);
 						}
-						log.debug("charset {}: {} {}", this.resolvedURI, charset, charset == DEFAULT_HTTP_CHARSET ? "(default)" : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-						return "[>> Decompressed (using " + encoding+ "): <<]\n" + convertBodyToString(body, charset); //$NON-NLS-1$ //$NON-NLS-2$
+						this.log.debug("charset {}: {} {}", this.resolvedURI, this.responseCharset, this.responseCharset == DEFAULT_HTTP_CHARSET ? "(default)" : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+						return "[>> Decompressed (using " + encoding+ "): <<]\n" + convertBodyToString(body, this.responseCharset); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				} catch (IOException ex) {
 					String errMsg = "Error inflating response-body (using " + encoding + "): " + ExceptionUtils.exceptionCauseSummary(ex); //$NON-NLS-1$ //$NON-NLS-2$
-					log.error(errMsg);
-					return errMsg + '\n' + convertBodyToString(body, charset);
+					this.log.error(errMsg);
+					return errMsg + '\n' + convertBodyToString(body, this.responseCharset);
 				}
 			}
 		}
-		log.debug("charset {}: {}", this.resolvedURI, charset); //$NON-NLS-1$
-		return convertBodyToString(body, charset);
+		this.log.debug("charset {}: {}", this.resolvedURI, this.responseCharset); //$NON-NLS-1$
+		return convertBodyToString(body, this.responseCharset);
 	}
-	protected byte[] unzip(byte[] bytes, Encodings decompression) throws IOException {
+	protected byte[] unzip(final byte[] bytes, final Encodings decompression) throws IOException {
 		if (bytes == null) return null;
 		if (bytes.length == 0) return new byte[0];
 		try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
@@ -815,20 +825,20 @@ abstract public class HTTPConnection extends TCPConnection
 			return byteArrayOutputStream.toByteArray();
 		}
 	}
-	private static String convertBodyToString(final byte[] body, Charset charset) {
+	private static String convertBodyToString(final byte[] body, final Charset charset) {
 		return (body != null ? new String(body, charset) : VALUE_UNDEFINED);
 	}
 
 	/** extract character set from httpRequest headers - if there is any...
 	 * @throws Exception */
 	protected Charset extractRequestCharset() {
-		HttpHeaders requHdrs = getRequestHeaders();
+		final HttpHeaders requHdrs = getRequestHeaders();
 		return extractCharset(requHdrs != null ? requHdrs.map() : null, null, "request"); //$NON-NLS-1$
 	}
 
 	/** extract character set from response headers - if there is any... */
 	protected Charset extractResponseCharset(final byte[] body) {
-		HttpHeaders respHdrs = getResponseHeaders();
+		final HttpHeaders respHdrs = getResponseHeaders();
 		return extractCharset(respHdrs != null ? respHdrs.map() : null, body, "response"); //$NON-NLS-1$
 	}
 	/** extract character set from Content-Type header - if there is any... */
@@ -843,7 +853,7 @@ abstract public class HTTPConnection extends TCPConnection
 			                                                 (str) -> convertNameToCharset(str),
 			                                                 null);
 		if (contentTypeCharset != null) {
-			log.trace("extractCharset: found '{}' character set in content-header: '{}'", logSnippet, contentTypeCharset); //$NON-NLS-1$
+			this.log.trace("extractCharset: found '{}' character set in content-header: '{}'", logSnippet, contentTypeCharset); //$NON-NLS-1$
 			return contentTypeCharset;
 		}
 		// 2. for <!DOCTYPE html>: look for "<meta charSet="..."/>" present in the HTML header (<head>...</head>):
@@ -858,38 +868,38 @@ abstract public class HTTPConnection extends TCPConnection
 				if (m.matches()) {
 					contentTypeCharset = convertNameToCharset(m.group(META_CHARSET_GROUP_NR));
 					if (contentTypeCharset != null) {
-						log.trace("extractCharset: found '{}' character set in meta header: '{}'", logSnippet, contentTypeCharset); //$NON-NLS-1$
+						this.log.trace("extractCharset: found '{}' character set in meta header: '{}'", logSnippet, contentTypeCharset); //$NON-NLS-1$
 						return contentTypeCharset;
 					}
-				} else if (log.isTraceEnabled()) {
-					log.trace("no 'meta charset=...' found: '{}'", bodyString.substring(0, Math.min(5000, bodyString.length()))); //$NON-NLS-1$
+				} else if (this.log.isTraceEnabled()) {
+					this.log.trace("no 'meta charset=...' found: '{}'", bodyString.substring(0, Math.min(5000, bodyString.length()))); //$NON-NLS-1$
 				}
 			} else {
-				log.trace("no doctype html."); //$NON-NLS-1$
+				this.log.trace("no doctype html."); //$NON-NLS-1$
 			}
 		} else {
-			log.trace("{}-body too short ({}) to contain a doctype specification.", logSnippet, (body != null ? body.length : "empty")); //$NON-NLS-1$ //$NON-NLS-2$
+			this.log.trace("{}-body too short ({}) to contain a doctype specification.", logSnippet, (body != null ? body.length : "empty")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		// 3. if no (legal) charset indication was found: we assume the default HTTP charset:
-		log.trace("extractCharset: found no '{}' character set -> assuming default charset '{}'", logSnippet, DEFAULT_HTTP_CHARSET); //$NON-NLS-1$
+		this.log.trace("extractCharset: found no '{}' character set -> assuming default charset '{}'", logSnippet, DEFAULT_HTTP_CHARSET); //$NON-NLS-1$
 		return DEFAULT_HTTP_CHARSET;
 	}
 
-	Charset convertNameToCharset(String str) {
+	Charset convertNameToCharset(final String str) {
 		String charsetName = str.toUpperCase();
 		if (Charset.isSupported(charsetName)) {
 			Charset cs = Charset.forName(charsetName);
-			log.trace("convertNameToCharset: found character set: '{}'", cs); //$NON-NLS-1$
+			this.log.trace("convertNameToCharset: found character set: '{}'", cs); //$NON-NLS-1$
 			return cs;
 		} else {
-			log.warn("convertNameToCharset: charset '{}' is not supported", charsetName); //$NON-NLS-1$
+			this.log.warn("convertNameToCharset: charset '{}' is not supported", charsetName); //$NON-NLS-1$
 			// throw new Exception("charset '" + str + "' not supported"); // we rather warn and continue...
 			return null;
 		}
 	}
 
-	private void createBasicAuthorizationValue() throws Exception {
-		createAuthorizationValue("Basic", null, null); //$NON-NLS-1$
+	private String createBasicAuthorizationValue() throws Exception {
+		return createAuthorizationValue("Basic", null, null); //$NON-NLS-1$
 	}
 
 	/**
@@ -899,27 +909,30 @@ abstract public class HTTPConnection extends TCPConnection
 	 * <a href="https://datatracker.ietf.org/doc/html/rfc7616#section-3.2.2">https://datatracker.ietf.org/doc/html/rfc2617 section-3.2.2</a>:
 	 */
 
-	private void createAuthorizationValue(final String authHeader,
-	                                      final String requestMethod,
-	                                      final URI uri) throws Exception {
+	private String createAuthorizationValue(final String authHeader,
+	                                        final String requestMethod,
+	                                        final URI uri) throws Exception {
 		try {
-			this.authorizationValue =
-				HTTP_Authorization.createAuthorizationValue(authHeader,
-				                                            getResolvedTargetUid(),
-				                                            getResolvedTargetPwd(),
-				                                            requestMethod,
-				                                            getRequestBody(),
-				                                            uri.getPath(),
-				                                            (nonce) -> generateNonceCount(nonce),
-				                                            () -> HTTP_Authorization.createCNonce(8)
-				                                           );
-			log.debug("response auth-header: '{}'", this.authorizationValue); //$NON-NLS-1$
+			final String authValue =
+			    HTTP_Authorization.createAuthorizationValue(authHeader,
+			                                                getResolvedTargetUid(),
+			                                                getResolvedTargetPwd(),
+			                                                requestMethod,
+			                                                getRequestBody(),
+			                                                uri,
+			                                                (nonce) -> generateNonceCount(nonce),
+			                                                () -> HTTP_Authorization.createCNonce(8),
+			                                                this.responseCharset
+			                                               );
+			this.log.debug("auth-header: '{}'", authValue); //$NON-NLS-1$
+			return authValue;
 		} catch (Exception ex) {
-			setResponseBody(ex.getMessage().getBytes());
+			setResponseBody((INTERNAL_MSG_MARKER + ex.getMessage()).getBytes());
 			throw ex;
 		}
 	}
 
+	// moved here, because we need to memorize the previousNonce
 	private String generateNonceCount(final String nonce) {
 		if (nonce.equals(this.previousNonce)) { // same nonce reused:
 			++this.nonceCount; // increment the counter: "00000001" --> "00000002", etc.

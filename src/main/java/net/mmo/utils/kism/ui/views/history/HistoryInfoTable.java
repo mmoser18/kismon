@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -226,7 +226,6 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	/* NOTE: this method IS executed by a GUI thread - it CAN access GUI elements! */
 	@Override
-	@SuppressWarnings("serial")
 	protected void updateView(HashMap <String, Object> res) {
 		log.info("HistoryInfoTable.updateView"); //$NON-NLS-1$
 		// we are doing the DB query inline in the GUI thread - to be seen how well this works:

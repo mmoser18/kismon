@@ -1,12 +1,14 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
 
 package net.mmo.utils.kism.utils;
 
+import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -16,12 +18,13 @@ import java.util.HexFormat;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.nimbusds.jose.util.StandardCharset;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 
 /**
  * separated this into an own class to keep HTTPConnection manageable.
- * These method generate Authorization headers for Basic and Digest authentication (according to RFC-7616).
+ * The method generates Authorization headers for Basic and Digest authentication (according to RFC-7616).
  */
 @SuppressWarnings("javadoc")
 @Slf4j
@@ -51,9 +54,10 @@ public class HTTP_Authorization
 	                                              final String pwd,
 	                                              final String requestMethod,
 	                                              final byte[] requestBody,
-	                                              final String uri,
+	                                              final URI uri,
 	                                              final Function<String, String> nonceCountGen,
-	                                              final Supplier<String> cnonceGen) throws Exception {
+	                                              final Supplier<String> cnonceGen,
+	                                              final Charset responseCharset) throws Exception {
 
 		if (!StringUtils.isEmpty(uid)) { // the pwd can be empty but the uid must not be!
 			final String password = (pwd != null ? pwd : ""); //$NON-NLS-1$
@@ -65,8 +69,9 @@ public class HTTP_Authorization
 				                                               ).getBytes(StandardCharsets.UTF_8)),
 				                    HTTPConnection.DEFAULT_HTTP_CHARSET);
 			} else if (authHeader.startsWith("Digest")) { // Digest access authentication required //$NON-NLS-1$
+				final String path = uri.getPath();
 
-				log.debug("uri:'" + uri + "', authHeader :'" + authHeader + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				log.debug("uri:'" + path + "', authHeader :'" + authHeader + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 				final String realm = extractValue(authHeader, "realm"); //$NON-NLS-1$
 				final String domains = extractValue(authHeader, "domain"); //$NON-NLS-1$
@@ -96,22 +101,6 @@ public class HTTP_Authorization
 					log.warn("Invalid charset value in authentication header: '{}' - only UTF-8 is allowed", charset); //$NON-NLS-1$
 				}
 
-				String qopUsed = null;
-				String cnonce = null;
-				String nc = null;
-
-				if (qop != null) {
-					qopUsed = directiveContains(qop, "auth", "auth-int"); // //$NON-NLS-1$ //$NON-NLS-2$
-					if (qopUsed == null) {
-						throw new Exception("Server offered unsupported qop(s): '" + qop + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-					}
-					cnonce = cnonceGen.get();
-					nc = nonceCountGen.apply(nonce);
-					if ("auth-int".equals(qopUsed)) { //$NON-NLS-1$
-						log.warn("qop-variant \"auth-int\" not yet implemented!"); //$NON-NLS-1$
-					}
-				}
-
 				final String algorithmUsed;
 				String hashAlgo;
 				if (algorithm == null) {
@@ -134,6 +123,23 @@ public class HTTP_Authorization
 					throw new Exception("Authentication hash algorithm '" + hashAlgo + "' not supported - available algos are: " + Security.getAlgorithms("MessageDigest"), ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 
+				String qopUsed = null;
+				String cnonce = null;
+				String nc = null;
+
+				if (qop != null) {
+					qopUsed = directiveContains(qop, "auth", "auth-int"); // //$NON-NLS-1$ //$NON-NLS-2$
+					if (qopUsed == null) {
+						throw new Exception("Server offered unsupported qop(s): '" + qop + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+					cnonce = cnonceGen.get();
+					nc = nonceCountGen.apply(nonce);
+					log.trace("generateNonceCount: {}", nc); //$NON-NLS-1$
+
+					if ("auth-int".equals(qopUsed)) { //$NON-NLS-1$
+						log.warn("qop-variant \"auth-int\" not yet implemented!"); //$NON-NLS-1$
+					}
+				}
 				if (qop == null && algorithmUsed.endsWith("-sess")) { //$NON-NLS-1$
 					throw new Exception(String.format("Digest authentication requested with \"...-sess\" algorithm but no \"qop\"-directive specified in received header: '%s'", authHeader)); //$NON-NLS-1$
 				}
@@ -142,7 +148,7 @@ public class HTTP_Authorization
 				boolean usedUserhash = false;
 				boolean usernameQuotable = true;
 				if (Boolean.parseBoolean(userhash)) { // parseBoolean() also takes care of null-check
-					username = H(md, uid + ':' + realm);
+					username = H(md, uid + ':' + realm, responseCharset);
 					usedUserhash = true;
 				} else if (uid.contains(":") || uid.contains("\"")) { // we can't send that as quoted string //$NON-NLS-1$ //$NON-NLS-2$
 					usernameQuotable = false;
@@ -153,29 +159,30 @@ public class HTTP_Authorization
 
 				String HA1 = H(md,
 				               algorithmUsed.endsWith("-sess") //$NON-NLS-1$
-				               ? H(md, uid + ':' + realm + ':' + password) + ':' + nonce + ':' + cnonce
-				               : uid + ':' + realm + ':' + password
-				              );
+				               ? H(md, uid + ':' + realm + ':' + password, responseCharset) + ':' + nonce + ':' + cnonce
+				               : uid + ':' + realm + ':' + password,
+				               responseCharset);
 
 				String HA2 = H(md,
 				               "auth-int".equals(qopUsed) //$NON-NLS-1$
-				               ? requestMethod.toUpperCase() + ':' + uri + ':' + H(md, requestBody)
-				               : requestMethod.toUpperCase() + ':' + uri
+				               ? requestMethod.toUpperCase() + ':' + path + ':' + H(md, requestBody)
+				               : requestMethod.toUpperCase() + ':' + path,
+				               responseCharset
 				              );
 
 				final String response = (qopUsed != null)
-				                         ? KD(md, HA1, nonce + ':' + nc + ':' + cnonce + ':' + qopUsed + ':' + HA2)
-				                         : KD(md, HA1, nonce + ':' + HA2);
+				                         ? KD(md, HA1, nonce + ':' + nc + ':' + cnonce + ':' + qopUsed + ':' + HA2, responseCharset)
+				                         : KD(md, HA1, nonce + ':' + HA2, responseCharset);
 
 				// creating response string strictly following the order in https://datatracker.ietf.org/doc/html/rfc2617:
-				return "Digest" //$NON-NLS-1$
+				final String authValue = "Digest" //$NON-NLS-1$
 				       + " username" + (usernameQuotable  //$NON-NLS-1$
 				    				   ? "=\"" + username + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				    				   : "*=UTF-8''" + username //$NON-NLS-1$
 				    				   )
 				       + AUTH_SEP + "realm=\"" + realm + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				       + AUTH_SEP + "nonce=\"" + nonce +"\"" //$NON-NLS-1$ //$NON-NLS-2$
-				       + AUTH_SEP + "uri=\"" + uri + "\"" //$NON-NLS-1$ //$NON-NLS-2$
+				       + AUTH_SEP + "uri=\"" + path + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				       + AUTH_SEP + "response=\"" + response + "\"" //$NON-NLS-1$ //$NON-NLS-2$
 				       + (algorithm != null // we only include the algorithm in the response if it had been sent by the server
 				         ? AUTH_SEP + "algorithm=" + algorithmUsed // unquoted! //$NON-NLS-1$
@@ -195,6 +202,8 @@ public class HTTP_Authorization
 				          : "") //$NON-NLS-1$
 				       // auth-param - "Any unrecognized directive MUST be ignored."!
 				       ;
+				log.debug("generated auth value: '{}'.", authValue); //$NON-NLS-1$
+				return authValue;
 			} else {
 				throw new Exception(String.format("unsupported authentication method: '%s'", authHeader)); //$NON-NLS-1$
 			}
@@ -245,15 +254,16 @@ public class HTTP_Authorization
 
 
 	public static String createCNonce(final int nrBytes) {
-		byte[] bytes = new byte[nrBytes];
+		final byte[] bytes = new byte[nrBytes];
 		new SecureRandom().nextBytes(bytes);
 
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		for (byte temp: bytes) {
 			result.append(String.format("%02x", temp)); //$NON-NLS-1$
 		}
-		log.trace("createCNonce: '{}'", bytes); //$NON-NLS-1$
-		return result.toString();
+		final String res = result.toString();
+		log.trace("createCNonce: '{}'", res); //$NON-NLS-1$
+		return res;
 	}
 	/**
 	 * This methods calculates an 16-byte hash of the input string using the algorithm chosen and
@@ -261,8 +271,8 @@ public class HTTP_Authorization
 	 * @param input
 	 * @return the hash value
 	 */
-	public static String H(final MessageDigest md, final String input) {
-		final byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+	public static String H(final MessageDigest md, final String input, final Charset charset) {
+		final byte[] bytes = input.getBytes(StandardCharset.UTF_8); // or responseCharset?
 //		log.trace("bytes are: {}", HexFormat.ofDelimiter(".").withUpperCase().formatHex(bytes)); //$NON-NLS-1$ //$NON-NLS-2$
 		String res = H(md, bytes);
 		log.trace("{}('{}') = '{}'", md.getAlgorithm(), input, res); //$NON-NLS-1$
@@ -278,8 +288,8 @@ public class HTTP_Authorization
 
 	/* for some reason they differentiated between KD and H in the specs, so
 	 * I kept it that way even though it makes very little sense */
-	static String KD(final MessageDigest md, final String secret, final String data) {
-		return H(md, secret + ':' + data);
+	static String KD(final MessageDigest md, final String secret, final String data, final Charset charset) {
+		return H(md, secret + ':' + data, charset);
 	}
 
 	/**

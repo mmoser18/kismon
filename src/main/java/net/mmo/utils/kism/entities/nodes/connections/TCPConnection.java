@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -19,7 +19,6 @@ import net.mmo.utils.kism.entities.nodes.CheckableNode;
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-// @Slf4j
 abstract public class TCPConnection extends CheckableNode
 {
 	private static final long serialVersionUID = 6679464784537111431L;

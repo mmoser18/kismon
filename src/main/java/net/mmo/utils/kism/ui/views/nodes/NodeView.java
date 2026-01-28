@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -363,7 +363,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 					default: throw new IllegalArgumentException("illegal state: " + state); //$NON-NLS-1$
 					}
 				} else {
-					return new LabelWithIcon(VaadinIcon.MINUS, "<undefined>", ""); //$NON-NLS-1$ //$NON-NLS-2$
+					return new LabelWithIcon(VaadinIcon.MINUS_CIRCLE, "<undefined>", ""); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			})
 			.setHeader(Messages.getString("NodeView.TreeGrid.ColumnName.State")) //$NON-NLS-1$

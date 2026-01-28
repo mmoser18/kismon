@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -46,7 +46,7 @@ public class ArchitectureTests
 					.that().resideInAnyPackage("..entities..", "..service..", "")
 					.and().areNotAnonymousClasses()
 					.and().areNotInnerClasses()
-					.and().areNotEnums() // enums are considered as classes
+					.and().areNotEnums() // enums are considered as classes by ArchUnit ||-(
 					.should().bePublic();
 				rule.check(classes);
 	}
@@ -95,6 +95,7 @@ public class ArchitectureTests
 			.and().doNotHaveSimpleName("Messages")
 			.and().doNotHaveSimpleName("JDBCHandling")
 			.and().areNotInnerClasses()
+			.and().areNotEnums() // enums are considered as classes by ArchUnit ||-(
 			.should().beAssignableTo(Serializable.class)
 			;
 		rule.allowEmptyShould(true).check(classes);

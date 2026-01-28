@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -16,7 +16,6 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-// @Slf4j
 abstract public class CheckableNode extends LeafNode
 {
 	private static final long serialVersionUID = -7861536138222066083L;

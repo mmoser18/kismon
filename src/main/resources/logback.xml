@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
-<configuration>
+<configuration debug="true">
 
 	<property name="LOGS" value="./logs" />
 
@@ -18,24 +18,20 @@
 		</encoder>
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<!-- rollover daily and when the file reaches 10 MegaBytes -->
-			<fileNamePattern>${LOGS}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<fileNamePattern>${LOGS}/archived/kism-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 	</appender>
 
-	<!-- silence the ArchUnit analysis stuff: -->
+	<!-- silence the verbose ArchUnit analysis stuff: -->
 	<logger name="com.tngtech.archunit.core.importer.JavaClassProcessor" level="info"/>
 	
 	<!-- silence the LogBacks startup mumbling : -->
-	<logger name="ch.qos.logback" level="info"/>
+	<logger name="ch.qos.logback" level="warn"/>
 	<logger name="net.schmizz.sshj" level="warn"/> <!-- why does this have no influence? info messages still appear ||-(  -->
 
 	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn"/>
-	<!-- 
-	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="debug"/>
-	<logger name="net.mmo.utils.kism.entities.nodes.connections.HTTPConnection" level="trace"/>
-	 -->
 	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn"/>
 	<logger name="net.mmo.utils.kism.security.SecurityUtils" level="warn"/>
 	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info"/>
@@ -49,9 +45,11 @@
 	<logger name="net.mmo.utils.kism.ui.views.nodes.connection_forms" level="debug"/>
 	<logger name="net.mmo.utils.kism.utils.KeyValuesConverter" level="trace"/>
 	<logger name="net.mmo.utils.kism.utils.PropertyResolver" level="trace"/>
-	<logger name="net.mmo.utils.kism.entities.nodes.connections.HTTPConnection" level="trace"/>
-	<logger name="net.mmo.utils.kism.utils.HTTP_Authorization" level="trace"/>
 	 -->
+	<logger name="net.mmo.utils.kism.utils.HTTP_Authorization" level="trace"/>
+	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="info"/>
+	<logger name="net.mmo.utils.kism.entities.nodes.connections.HTTPConnection" level="trace"/>
+	<logger name="net.mmo.utils.kism.entities.nodes.connections.RESTConnection" level="debug"/>
 	<!-- 
 	<logger name="net.mmo.utils.kism.entities.nodes.ResultChecker" level="trace"/>
 	<logger name="com.vaadin.flow.data.binder.Binder" level="debug"/>

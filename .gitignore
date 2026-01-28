@@ -2,6 +2,7 @@
 .settings
 .project
 .classpath
+.metadata
 
 .idea/
 *.iml

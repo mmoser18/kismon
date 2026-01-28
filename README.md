@@ -56,7 +56,7 @@ It provides a tree-like overview of your system like so:
     + [Class-structure](#class-structure)
     + [Tooling](#tooling)
       - [Automatically update the table of content of the README.md file](#automatically-update-the-table-of-content-of-the-readmemd-file)
-      - [Automatically convert the REAMD.md file to an HTML help page](#automatically-convert-the-reamdmd-file-to-an-html-help-page)
+      - [Automatically convert the READMD.md file to an HTML help page](#automatically-convert-the-readmdmd-file-to-an-html-help-page)
 
 <!-- tocstop -->
 

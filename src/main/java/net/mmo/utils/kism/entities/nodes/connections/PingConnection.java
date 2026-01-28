@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -18,12 +18,10 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 @SuppressWarnings("javadoc")
 @Setter
 @Getter
-@Slf4j
 public class PingConnection extends IPConnection
 {
 	private static final long serialVersionUID = 643208328101928988L;
@@ -123,7 +121,7 @@ public class PingConnection extends IPConnection
 			try (InputStream is = new BufferedInputStream(proc.getInputStream())) {
 				String res = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 				setResponse(res);
-				log.trace("ping response is '{}'", res); //$NON-NLS-1$
+				this.log.trace("ping response is '{}'", res); //$NON-NLS-1$
 				if (res.contains(PingTimedOut)) {
 					setDuration(-1); // signal: "no response"
 					setState(State.FAILED);
@@ -132,15 +130,15 @@ public class PingConnection extends IPConnection
 					try {
 						Matcher matcherIPv4 = patternSuccessIPv4.matcher(res);
 						if (matcherIPv4.find()) {
-							log.trace("matcherIPv4 matched."); //$NON-NLS-1$
+							this.log.trace("matcherIPv4 matched."); //$NON-NLS-1$
 							time = matcherIPv4.group(MatchGroupIPv4);
 						} else {
 							Matcher matcherIPv6 = patternSuccessIPv6.matcher(res);
 							if (matcherIPv6.find()) {
-								log.trace("matcherIPv6 matched."); //$NON-NLS-1$
+								this.log.trace("matcherIPv6 matched."); //$NON-NLS-1$
 								time = matcherIPv6.group(MatchGroupIPv6);
 							} else {
-								log.trace("no matcherIPx matched."); //$NON-NLS-1$
+								this.log.trace("no matcherIPx matched."); //$NON-NLS-1$
 							}
 						}
 						if (time != null) {
@@ -150,22 +148,22 @@ public class PingConnection extends IPConnection
 							setState(getDuration() > getTimeout() * 10e9  ? State.DEGRADED : State.OK);
 						} else if (patternHostNotFound.matcher(res).find()) {
 							details = "Host not found"; //$NON-NLS-1$
-							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
+							this.log.debug("{}: '{}'", details, res); //$NON-NLS-1$
 							setDuration(0); // signal: "unknown response"
 							setState(State.FAILED);
 						} else if (patternTimedOut.matcher(res).find()) {
 							details = "Ping timed out"; //$NON-NLS-1$
-							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
+							this.log.debug("{}: '{}'", details, res); //$NON-NLS-1$
 							setDuration(0); // signal: "unknown response"
 							setState(State.FAILED);
 						} else { // time not found in response - we take the entire process' duration:
 							details = "No time found in response"; //$NON-NLS-1$
-							log.debug("{}: '{}'", details, res); //$NON-NLS-1$
+							this.log.debug("{}: '{}'", details, res); //$NON-NLS-1$
 							setDuration(System.nanoTime() - startTime);
 							setState(State.DEGRADED); // degraded since we didn't find the time in the response...
 						}
 					} catch (Exception ex) {
-						log.error("Exception analyzing/converting response '" + res + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
+						this.log.error("Exception analyzing/converting response '" + res + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
 						setDuration(0); // signal: "unknown response"
 						setState(State.FAILED);
 					}
@@ -174,10 +172,10 @@ public class PingConnection extends IPConnection
 					}
 				}
 			}
-			log.debug("ping to '{}': {}", getResultingHostAddress(), details); //$NON-NLS-1$
+			this.log.debug("ping to '{}': {}", getResultingHostAddress(), details); //$NON-NLS-1$
 			setRequestResult(getState().name() + '/' + details);
 		} else {
-			log.debug("ping to '{}' timed out.", getResultingHostAddress()); //$NON-NLS-1$
+			this.log.debug("ping to '{}' timed out.", getResultingHostAddress()); //$NON-NLS-1$
 			setDuration(-1);
 			setState(State.FAILED);
 			setRequestResult(getState().name() + "/timed out"); //$NON-NLS-1$

@@ -1,5 +1,5 @@
 /**
- * Copyright © 2020-2025 by Michael Moser
+ * Copyright © 2020-2026 by Michael Moser
  *
  * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
@@ -14,8 +14,8 @@ public class ExceptionUtils
 	private ExceptionUtils() {
 		// never instantiated!
 	}
-	public static String exceptionCauseSummary(Throwable start) {
-		StringBuffer buf = new StringBuffer();
+	public static String exceptionCauseSummary(final Throwable start) {
+		final StringBuffer buf = new StringBuffer();
 		for (Throwable t = start; t != null; t = t.getCause()) {
 			if (buf.length() > 0) {
 				buf.append("\ncaused by: "); //$NON-NLS-1$
@@ -24,14 +24,14 @@ public class ExceptionUtils
 		}
 		return buf.toString();
 	}
-	public static String exceptionRootCauseMsg(Throwable start) {
+	public static String exceptionRootCauseMsg(final Throwable start) {
 		String msg = "<no root cause provided>"; //$NON-NLS-1$
 		for (Throwable t = start; t != null; t = t.getCause()) {
 			String tMsg = t.getMessage();
 			if (tMsg != null && !tMsg.isBlank()) {
 				msg = t.getMessage();
 			} else {
-				Throwable[] suppressed = t.getSuppressed(); // always non-null
+				final Throwable[] suppressed = t.getSuppressed(); // always non-null
 				if (suppressed.length > 0) {
 					msg = Arrays.asList(t.getSuppressed()).toString();
 				}
