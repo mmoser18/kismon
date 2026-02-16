@@ -304,7 +304,7 @@ abstract public class HTTPConnection extends TCPConnection
 			try {
 				createRequest(); // this sets the requestHeaders as side-effect
 			} catch (Exception ex) {
-				this.log.error("Error in createRequest", ex.getMessage()); //$NON-NLS-1$
+				this.log.error("Error in createRequest: {}: {}", ex.getMessage(), ex); //$NON-NLS-1$
 				this.requestHeaders = null;
 			}
 		}
@@ -552,13 +552,16 @@ abstract public class HTTPConnection extends TCPConnection
 		HttpClient client = null;
 		HttpRequest request = null;
 		HttpResponse<byte[]> response = null;
+		this.responseCharset = null;
 		try {
 			setTimestamp(LocalDateTime.now());
 			synchronized(this) {
 				ensureValidClient();
 				client = getHttpClient();
+				this.log.debug("HttpClient version: {}", client.version()); //$NON-NLS-1$
 				ensureValidRequest();
 				request = getHttpRequest();
+				this.log.debug("Request version: {}", request.version().orElse(null)); //$NON-NLS-1$
 			}
 			int nrRedirections = 0;
 			int nrAuthAttempts = 0;
@@ -590,6 +593,7 @@ abstract public class HTTPConnection extends TCPConnection
 					if (authHeader != null) {
 						this.log.debug("received response {} with auth-header: '{}' - creating authorization request:", HttpStatus.UNAUTHORIZED, authHeader); //$NON-NLS-1$
 						try {
+							// Extract charset from 401 response before creating auth header:
 							setAuthorizationValue(createAuthorizationValue(authHeader, request.method(), request.uri()));
 							request = createRequest(request.uri()); // creating a new request using same method and URI but including the new authorizationValue
 							setHttpRequest(request);
@@ -921,8 +925,7 @@ abstract public class HTTPConnection extends TCPConnection
 			                                                getRequestBody(),
 			                                                uri,
 			                                                (nonce) -> generateNonceCount(nonce),
-			                                                () -> HTTP_Authorization.createCNonce(8),
-			                                                this.responseCharset
+			                                                () -> HTTP_Authorization.createCNonce(8)
 			                                               );
 			this.log.debug("auth-header: '{}'", authValue); //$NON-NLS-1$
 			return authValue;

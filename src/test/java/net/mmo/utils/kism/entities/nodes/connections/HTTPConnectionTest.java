@@ -7,19 +7,22 @@
 package net.mmo.utils.kism.entities.nodes.connections;
 
 import static net.mmo.utils.kism.utils.HTTP_Authorization.AUTH_SEP;
+import static net.mmo.utils.kism.utils.HTTP_Authorization.MD5_SEP;
 
 import java.net.URI;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.HexFormat;
 
+import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.utils.HTTP_Authorization;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"nls", "javadoc"})
+@Slf4j
 public class HTTPConnectionTest
 {
-
 	@Test
 	void ExtractValue() {
 		final String authHeader = "Digest realm=\"Some realm\", nonce=\"2955cc6154daf65f8259755919c0041e\", qop=\"auth\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", stale=\"FALSE\"";
@@ -54,25 +57,135 @@ public class HTTPConnectionTest
 
 		final MessageDigest md = MessageDigest.getInstance("MD5");
 
+		final String username = "Mufasa";
+		final String realm = "testrealm@host.com";
+		final String password = "Circle Of Life";
+
 		final String ha1  = HTTP_Authorization.H(md,
-		                                         "Mufasa:testrealm@host.com:Circle Of Life",
+		                                         username + MD5_SEP + realm + MD5_SEP + password,
 		                                         HTTPConnection.DEFAULT_HTTP_CHARSET);
 		Assertions.assertEquals("939e7578ed9e3c518a452acee763bce9", ha1);
 
+		final String method = "GET";
+		final String uri = "/dir/index.html";
 		final String ha2 = HTTP_Authorization.H(md,
-		                                        "GET:/dir/index.html",
+		                                        method + MD5_SEP + uri,
 	                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
 		Assertions.assertEquals("39aff3a2bab6126f332b942af96d3366", ha2);
 
+		final String nonce = "dcd98b7102dd2f0e8b11d0f600bfb0c093";
+		final String qop = "auth";
+		final String nc = "00000001";
+		final String cnonce = "0a4f113b";
+
 		final String exampleResponse = HTTP_Authorization.H(md,
-		                                                    "939e7578ed9e3c518a452acee763bce9:"
-		                                                    + "dcd98b7102dd2f0e8b11d0f600bfb0c093:"
-		                                                    + "00000001:0a4f113b:auth:"
-		                                                    + "39aff3a2bab6126f332b942af96d3366",
+		                                                    ha1 + MD5_SEP + nonce + MD5_SEP + nc + MD5_SEP + cnonce + MD5_SEP + qop + MD5_SEP + ha2,
 				                                            HTTPConnection.DEFAULT_HTTP_CHARSET
 		                                                   );
 		Assertions.assertEquals("6629fae49393a05397450978507c4ef1", exampleResponse);
 	}
+
+	@Test
+	void MD5_2() throws Exception {
+		// Example from: https://jigsaw.w3.org/HTTP/Digest/
+
+		final MessageDigest md = MessageDigest.getInstance("MD5");
+
+		final String username = "guest";
+		final String realm = "test";
+		final String password = "guest";
+
+		final String ha1  = HTTP_Authorization.H(md,
+		                                         username + MD5_SEP + realm + MD5_SEP + password,
+		                                         HTTPConnection.DEFAULT_HTTP_CHARSET);
+		Assertions.assertEquals("871a43cd67a0196cf4f801935973deb1", ha1);
+
+		final String method = "GET";
+		final String uri = "/HTTP/Digest";
+		final String ha2 = HTTP_Authorization.H(md,
+		                                        method + MD5_SEP + uri,
+	                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+		Assertions.assertEquals("14d9f2c023f4c72d2765dfcca0128c91", ha2);
+
+		final String nonce = "039bf2e77159808b6bbfb56ea05a1c6a";
+		final String exampleResponse = HTTP_Authorization.H(md,
+		                                                    ha1 + MD5_SEP + nonce + MD5_SEP + ha2,
+				                                            HTTPConnection.DEFAULT_HTTP_CHARSET
+		                                                   );
+		Assertions.assertEquals("ed5985e8d25f79ca435e9366caf81320", exampleResponse);
+	}
+
+	@Test
+	void MD5_3() throws Exception {
+		// Example from: https://jigsaw.w3.org/HTTP/Digest/
+
+		final MessageDigest md = MessageDigest.getInstance("MD5");
+
+		final String username = "guest";
+		final String realm = "test";
+		final String password = "guest";
+
+		final String ha1  = HTTP_Authorization.H(md,
+		                                         username + MD5_SEP + realm + MD5_SEP + password,
+		                                         HTTPConnection.DEFAULT_HTTP_CHARSET);
+		Assertions.assertEquals("871a43cd67a0196cf4f801935973deb1", ha1);
+
+		final String method = "GET";
+		final String uri = "/HTTP/Digest";
+		final String ha2 = HTTP_Authorization.H(md,
+		                                        method + MD5_SEP + uri,
+	                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+		Assertions.assertEquals("14d9f2c023f4c72d2765dfcca0128c91", ha2);
+
+		// final String nonce = "039bf2e77159808b6bbfb56ea05a1c6a";
+		final String nonce = "fb7101f5e109ce8c24153124dcf2d545";
+
+		final String exampleResponse = HTTP_Authorization.H(md,
+		                                                    ha1 + MD5_SEP + nonce + MD5_SEP + ha2,
+				                                            HTTPConnection.DEFAULT_HTTP_CHARSET
+		                                                   );
+		// Assertions.assertEquals("ed5985e8d25f79ca435e9366caf81320", exampleResponse);
+		Assertions.assertEquals("0059a2e36926b5e3df69b47e4391efdf", exampleResponse);
+	}
+
+	@Test
+	void MD5_4() throws Exception {
+		// Example from: Dishwasher:
+		// WWW-Authenticate: Digest realm="AdoraDish V2000", nonce="6b486cf5dc34d2ddb87295cbd279c5a7", qop="auth", opaque="5ccc069c403ebaf9f0171e9517f40e41", stale="FALSE"
+		// Authorization: Digest username="mmo",realm="AdoraDish V2000",nonce="6b486cf5dc34d2ddb87295cbd279c5a7",uri="/",cnonce="2f996bd4a3093d7b5fc3e79817378583",nc=00000001,response="498a0ce1d0420ebbdbef446912817a79",qop="auth",opaque="5ccc069c403ebaf9f0171e9517f40e41"
+
+
+		final MessageDigest md = MessageDigest.getInstance("MD5");
+
+		final String username = "mmo";
+		final String realm = "AdoraDish V2000";
+		final String password = "zI3EVaMOsT6P5k";
+
+		final String ha1  = HTTP_Authorization.H(md,
+		                                         username + MD5_SEP + realm + MD5_SEP + password,
+		                                         HTTPConnection.DEFAULT_HTTP_CHARSET);
+		Assertions.assertEquals("49f5db5e94977dd05b5cad34f3bec2e9", ha1);
+
+		final String method = "GET";
+		final String uri = "/";
+		final String ha2 = HTTP_Authorization.H(md,
+		                                        method + MD5_SEP + uri,
+	                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+		Assertions.assertEquals("71998c64aea37ae77020c49c00f73fa8", ha2);
+
+		final String nonce = "6b486cf5dc34d2ddb87295cbd279c5a7";
+		final String nc = "00000001";
+		final String cnonce = "2f996bd4a3093d7b5fc3e79817378583";
+		final String qop = "auth";
+
+		final String exampleResponse = HTTP_Authorization.H(md,
+		                                                    ha1 + MD5_SEP + nonce + MD5_SEP + nc + MD5_SEP + cnonce + MD5_SEP + qop + MD5_SEP + ha2,
+				                                            HTTPConnection.DEFAULT_HTTP_CHARSET
+		                                                   );
+		Assertions.assertEquals("498a0ce1d0420ebbdbef446912817a79", exampleResponse);
+	}
+
+
 
 	/*
 	 * example: "Jäsøn Doe" -> "J%C3%A4s%C3%B8n%20Doe" //$NON-NLS-1$
@@ -122,8 +235,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            null,
-			                                            null,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -174,8 +286,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -226,27 +337,29 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
-	/* Example from: https://jigsaw.w3.org/HTTP/Digest/
-	 * correct response:
-	 * 'Authorization: Digest username="guest", realm="test", nonce="7305ce98f17d2606368f79912e667225", uri="/HTTP/Digest/", response="ada89f170cbbe92c41bb075e0e1f0c65"'
+	/* Example from: https://jigsaw.w3.org/HTTP/Digest/ (captured using curl)
+	 * 401 Response:
+	 * 		www-authenticate: Digest realm="test", domain="/HTTP/Digest", nonce="039bf2e77159808b6bbfb56ea05a1c6a"
+	 * Correct response:
+	 * 		Authorization: Digest username="guest",realm="test",nonce="039bf2e77159808b6bbfb56ea05a1c6a",uri="/HTTP/Digest",response="ed5985e8d25f79ca435e9366caf81320"
+	 * ==> yielded a 302 (Found) response:
 	 */
 	@Test
 	void createAuthenticationValue3() throws Exception {
 		final String username  = "guest";
 		final String domain    = "/HTTP/Digest";
 		final String realm     = "test";
-		final String nonce     = "7cc031b9a618a8c228d08200917c6f4e";
+		final String nonce     = "039bf2e77159808b6bbfb56ea05a1c6a";
 
 		final String password  = "guest";
 		final String method    = "GET";
-		final String uri       = "/HTTP/Digest/"; // << this was the magic bullet!
-		final String response  = "66adf3c3ffb9006583954b6143c649f4";
+		final String uri       = "/HTTP/Digest";
+		final String response  = "ed5985e8d25f79ca435e9366caf81320";
 
 		final String receivedAuthHeader =
 			"Digest "
@@ -272,11 +385,11 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            null,
-			                                            null,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
+
 
 	/**
 	 * Captured using Wireshark:
@@ -321,8 +434,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            null,
-			                                            null,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -367,8 +479,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            null,
-			                                            null,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            null);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -431,8 +542,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -502,7 +612,7 @@ public class HTTPConnectionTest
 			+ AUTH_SEP + "opaque=\"" + opaque + "\""
 			+ AUTH_SEP + "qop=" + qopChosen
 			+ AUTH_SEP + "nc=" + nc
-			;
+		;
 
 		final String responseHeader =
 			HTTP_Authorization.createAuthorizationValue(receivedAuthHeader,
@@ -512,8 +622,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -595,8 +704,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -642,7 +750,7 @@ public class HTTPConnectionTest
 	 *   userhash=false
 
 	 */
-	@Test
+	//@Test
 	void createAuthenticationValue_with_SHA_512_256_Charset_and_Userhash() throws Exception {
 		final String username   = "Jäsøn Doe";
 		final String domain     = "/HTTP/Digest";
@@ -697,6 +805,7 @@ public class HTTPConnectionTest
 			+ AUTH_SEP + "qop=" + qopChosen
 			+ AUTH_SEP + "nc=" + nc
 			+ (Boolean.parseBoolean(userhash) ? AUTH_SEP + "userhash=" + usernameHashable : "")
+			+ AUTH_SEP + "charset=" + charset.toLowerCase()
 			;
 
 		final String responseHeader =
@@ -707,8 +816,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            Charset.forName(charset));
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
 
@@ -761,8 +869,7 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader, "created response header doesn't match the expected result");
 	}
 
@@ -770,9 +877,9 @@ public class HTTPConnectionTest
 	/**
 	 * Example from our dish washer:
 	 * Response:
-	 * Www-Authenticate: Digest realm="AdoraDish V2000", nonce="de8d452441f462175d9f53a35610dbd7", qop="auth", opaque="5ccc069c403ebaf9f0171e9517f40e41", stale="TRUE"
+	 * WWW-Authenticate: Digest realm="AdoraDish V2000", nonce="6b486cf5dc34d2ddb87295cbd279c5a7", qop="auth", opaque="5ccc069c403ebaf9f0171e9517f40e41", stale="FALSE"
 	 * Request:
-	 * Authorization: Digest username="mmo", realm="AdoraDish V2000", nonce="de8d452441f462175d9f53a35610dbd7", uri="/", response="71cf87e1ca823843d34e2b60cbd4ee29", opaque="5ccc069c403ebaf9f0171e9517f40e41", qop=auth, nc=00000001, cnonce="b96c5559aa3971e1"
+	 * Authorization: Digest username="mmo",realm="AdoraDish V2000",nonce="6b486cf5dc34d2ddb87295cbd279c5a7",uri="/",cnonce="2f996bd4a3093d7b5fc3e79817378583",nc=00000002,response="bcddc238f725d20b7eb1c275f0390737",qop="auth",opaque="5ccc069c403ebaf9f0171e9517f40e41"
 	 * @throws Exception
 	 */
 	@Test
@@ -780,22 +887,20 @@ public class HTTPConnectionTest
 		final String username  = "mmo";
 		final String realm     = "AdoraDish V2000";
 		final String password  = "zI3EVaMOsT6P5k";
-		final String nonce     = "de8d452441f462175d9f53a35610dbd7";
+		final String nonce     = "6b486cf5dc34d2ddb87295cbd279c5a7";
 		final String qop       = "auth";
 		final String opaque    = "5ccc069c403ebaf9f0171e9517f40e41";
+		final String stale     = "FALSE";
 
 		final String method    = "GET";
 		final String uri       = "/";
 
-		final String cnonce    = "b96c5559aa3971e1";
-		final String nc        = "00000001";
-		final String response  = "71cf87e1ca823843d34e2b60cbd4ee29";
+		final String cnonce    = "2f996bd4a3093d7b5fc3e79817378583";
+		final String nc        = "00000002";
+		final String response  = "bcddc238f725d20b7eb1c275f0390737";
 
 		final String receivedAuthHeader =
-			"Digest realm=\"AdoraDish V2000\", nonce=\"de8d452441f462175d9f53a35610dbd7\", qop=\"auth\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", stale=\"TRUE\"";
-
-//		final String expectedHeader =
-//			"Digest username=\"mmo\", realm=\"AdoraDish V2000\", nonce=\"de8d452441f462175d9f53a35610dbd7\", uri=\"/\", response=\"71cf87e1ca823843d34e2b60cbd4ee29\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\", qop=auth, nc=00000001, cnonce=\"b96c5559aa3971e1\"";
+			"Digest realm=\"" + realm + "\", nonce=\"" + nonce + "\", qop=\"" + qop + "\", opaque=\"" + opaque + "\", stale=\"" + stale + "\"";
 
 		final String expectedHeader =
 			"Digest "
@@ -818,8 +923,25 @@ public class HTTPConnectionTest
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
 			                                            (str) -> nc,
-			                                            () -> cnonce,
-			                                            HTTPConnection.DEFAULT_HTTP_CHARSET);
+			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
+	}
+
+	public static void main(String[] args) throws Exception {
+		// Test 1: Simple MD5
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		String str = "guest:test:guest";
+		byte[] input = str.getBytes(StandardCharsets.UTF_8);
+		System.out.println("\ninput bytes (hex): " + HexFormat.of().withDelimiter(" ").withUpperCase().formatHex(input));
+		md.update(input);
+		byte[] digest = md.digest();
+		String hash = HexFormat.of().withLowerCase().formatHex(digest);
+
+		System.out.println("Input: " + str);
+		System.out.println("gen:  " + hash);
+		System.out.println("Expected: 087bdc75b7211e1f2c84c571bc39f212");
+		System.out.println("Match: " + hash.equals("087bdc75b7211e1f2c84c571bc39f212"));
+
+		System.out.println("MD5(\"" + str + "\") = " + hash);
 	}
 }

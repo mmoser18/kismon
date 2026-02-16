@@ -18,7 +18,6 @@ import java.util.HexFormat;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.nimbusds.jose.util.StandardCharset;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.entities.nodes.connections.HTTPConnection;
 
@@ -34,7 +33,8 @@ public class HTTP_Authorization
 	 * offered by the server the code below picks the first matching entry. */
 	private static final String SUPPORTED_HASH_ALGOS[] =  { "SHA-256", "SHA-256-sess", "SHA-512-256", "SHA-512-256-sess", "MD5", "MD5-sess"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 	private static final String DEFAULT_HASH_ALGO =  "MD5"; //$NON-NLS-1$
-	public static final String AUTH_SEP = ", "; //$NON-NLS-1$
+	public static final String AUTH_SEP = ","; //$NON-NLS-1$
+	public static final String MD5_SEP = ":"; //$NON-NLS-1$
 
 
 	/** separated to allow simpler unit-testing:
@@ -56,8 +56,7 @@ public class HTTP_Authorization
 	                                              final byte[] requestBody,
 	                                              final URI uri,
 	                                              final Function<String, String> nonceCountGen,
-	                                              final Supplier<String> cnonceGen,
-	                                              final Charset responseCharset) throws Exception {
+	                                              final Supplier<String> cnonceGen) throws Exception {
 
 		if (!StringUtils.isEmpty(uid)) { // the pwd can be empty but the uid must not be!
 			final String password = (pwd != null ? pwd : ""); //$NON-NLS-1$
@@ -69,7 +68,12 @@ public class HTTP_Authorization
 				                                               ).getBytes(StandardCharsets.UTF_8)),
 				                    HTTPConnection.DEFAULT_HTTP_CHARSET);
 			} else if (authHeader.startsWith("Digest")) { // Digest access authentication required //$NON-NLS-1$
-				final String path = uri.getPath();
+				// According to RFC 7616: the digest-uri value should be the complete request-target including query parameters.
+				// Using getRawPath() and getRawQuery() avoids potential double-encoding issues.
+				final String rawQuery = uri.getRawQuery();
+				final String rawPath = uri.getRawPath();
+				final String path = (rawPath != null && rawPath.length() > 0 ? rawPath : "/") //$NON-NLS-1$
+				                  + (rawQuery != null ? "?" + rawQuery : ""); //$NON-NLS-1$ //$NON-NLS-2$
 
 				log.debug("uri:'" + path + "', authHeader :'" + authHeader + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
@@ -79,9 +83,9 @@ public class HTTP_Authorization
 				final String opaque = extractValue(authHeader, "opaque"); //$NON-NLS-1$
 				final String qop = extractValue(authHeader, "qop"); //$NON-NLS-1$
 				final String algorithm = extractValue(authHeader, "algorithm"); //$NON-NLS-1$
-				final String stale = extractValue(authHeader, "stale"); //$NON-NLS-1$charset
-				final String charset = extractValue(authHeader, "charset"); //$NON-NLS-1$charset
-				final String userhash = extractValue(authHeader, "userhash"); //$NON-NLS-1$charset
+				final String stale = extractValue(authHeader, "stale"); //$NON-NLS-1$
+				final String charset = extractValue(authHeader, "charset"); //$NON-NLS-1$
+				final String userhash = extractValue(authHeader, "userhash"); //$NON-NLS-1$
 
 				log.debug("extracted auth-header values: " //$NON-NLS-1$
 				          + "realm:'" + realm + "'" //$NON-NLS-1$ //$NON-NLS-2$
@@ -97,8 +101,16 @@ public class HTTP_Authorization
 
 				assertProvided("realm", realm, authHeader); //$NON-NLS-1$
 				assertProvided("nonce", nonce, authHeader); //$NON-NLS-1$
-				if (charset != null && !charset.equals("UTF-8")) { //$NON-NLS-1$
-					log.warn("Invalid charset value in authentication header: '{}' - only UTF-8 is allowed", charset); //$NON-NLS-1$
+				final Charset responseCharset;
+				if (charset != null) {
+					if (charset.equalsIgnoreCase("UTF-8")) { //$NON-NLS-1$
+						responseCharset =  StandardCharsets.UTF_8;
+					} else {
+						log.warn("Invalid charset value in authentication header: '{}' - only UTF-8 is allowed", charset); //$NON-NLS-1$
+						responseCharset = StandardCharsets.ISO_8859_1;
+					}
+				} else { // RFC 2617: default is ISO-8859-1 if charset not specified or not UTF-8
+					responseCharset = StandardCharsets.ISO_8859_1;
 				}
 
 				final String algorithmUsed;
@@ -148,7 +160,7 @@ public class HTTP_Authorization
 				boolean usedUserhash = false;
 				boolean usernameQuotable = true;
 				if (Boolean.parseBoolean(userhash)) { // parseBoolean() also takes care of null-check
-					username = H(md, uid + ':' + realm, responseCharset);
+					username = H(md, uid + MD5_SEP + realm, responseCharset);
 					usedUserhash = true;
 				} else if (uid.contains(":") || uid.contains("\"")) { // we can't send that as quoted string //$NON-NLS-1$ //$NON-NLS-2$
 					usernameQuotable = false;
@@ -159,20 +171,20 @@ public class HTTP_Authorization
 
 				String HA1 = H(md,
 				               algorithmUsed.endsWith("-sess") //$NON-NLS-1$
-				               ? H(md, uid + ':' + realm + ':' + password, responseCharset) + ':' + nonce + ':' + cnonce
-				               : uid + ':' + realm + ':' + password,
+				               ? H(md, uid + MD5_SEP + realm + MD5_SEP + password, responseCharset) + MD5_SEP + nonce + MD5_SEP + cnonce
+				               : uid + MD5_SEP + realm + MD5_SEP + password,
 				               responseCharset);
 
 				String HA2 = H(md,
 				               "auth-int".equals(qopUsed) //$NON-NLS-1$
-				               ? requestMethod.toUpperCase() + ':' + path + ':' + H(md, requestBody)
-				               : requestMethod.toUpperCase() + ':' + path,
+				               ? requestMethod.toUpperCase() + MD5_SEP + path + MD5_SEP + H(md, requestBody)
+				               : requestMethod.toUpperCase() + MD5_SEP + path,
 				               responseCharset
 				              );
 
 				final String response = (qopUsed != null)
-				                         ? KD(md, HA1, nonce + ':' + nc + ':' + cnonce + ':' + qopUsed + ':' + HA2, responseCharset)
-				                         : KD(md, HA1, nonce + ':' + HA2, responseCharset);
+				                         ? KD(md, HA1, nonce + MD5_SEP + nc + MD5_SEP + cnonce + MD5_SEP + qopUsed + MD5_SEP + HA2, responseCharset)
+				                         : KD(md, HA1, nonce + MD5_SEP + HA2, responseCharset);
 
 				// creating response string strictly following the order in https://datatracker.ietf.org/doc/html/rfc2617:
 				final String authValue = "Digest" //$NON-NLS-1$
@@ -199,6 +211,9 @@ public class HTTP_Authorization
 				         : "") //$NON-NLS-1$
 				       + (usedUserhash
 				          ? AUTH_SEP + "userhash=true" // unquoted! //$NON-NLS-1$
+				          : "") //$NON-NLS-1$
+				       + (charset != null && charset.equalsIgnoreCase("UTF-8") //$NON-NLS-1$
+				          ? AUTH_SEP + "charset=utf-8" // unquoted, lowercase per RFC 7616 //$NON-NLS-1$
 				          : "") //$NON-NLS-1$
 				       // auth-param - "Any unrecognized directive MUST be ignored."!
 				       ;
@@ -272,24 +287,24 @@ public class HTTP_Authorization
 	 * @return the hash value
 	 */
 	public static String H(final MessageDigest md, final String input, final Charset charset) {
-		final byte[] bytes = input.getBytes(StandardCharset.UTF_8); // or responseCharset?
-//		log.trace("bytes are: {}", HexFormat.ofDelimiter(".").withUpperCase().formatHex(bytes)); //$NON-NLS-1$ //$NON-NLS-2$
-		String res = H(md, bytes);
-		log.trace("{}('{}') = '{}'", md.getAlgorithm(), input, res); //$NON-NLS-1$
+		final byte[] bytes = input.getBytes(charset != null ? charset : StandardCharsets.ISO_8859_1);
+		// log.debug("Hashing bytes: {}", HexFormat.of().withDelimiter(" ").formatHex(bytes)); //$NON-NLS-1$ //$NON-NLS-2$
+		final String res = H(md, bytes);
+		log.debug("{}('{}') = '{}'", md.getAlgorithm(), input, res); //$NON-NLS-1$
 		return res;
 	}
 	static String H(final MessageDigest md, final byte[] bytes) {
+		md.reset();
 		md.update(bytes);
 		final String res = HexFormat.of().withLowerCase().formatHex(md.digest());
 		// log.trace("{}('{}') = '{}'", md.getAlgorithm(), HexFormat.of().withUpperCase().formatHex(bytes), res); //$NON-NLS-1$
-		md.reset();
 		return res;
 	}
 
 	/* for some reason they differentiated between KD and H in the specs, so
 	 * I kept it that way even though it makes very little sense */
 	static String KD(final MessageDigest md, final String secret, final String data, final Charset charset) {
-		return H(md, secret + ':' + data, charset);
+		return H(md, secret + MD5_SEP + data, charset);
 	}
 
 	/**
