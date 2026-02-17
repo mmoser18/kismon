@@ -88,9 +88,68 @@ public class Application extends SpringBootServletInitializer
 			System.setProperty("jdk.internal.httpclient.disableHostnameVerification", //$NON-NLS-1$
 			                   Boolean.toString(TCPConnection.disableHostNameVerification));
 			// For certain connections we set the host header (which is normally automatically added by the stack).
-			// To allow this the following option is set - but it doesn't work... :-(
+			// To allow this I added the following option - but it doesn't work... :-(
 			System.setProperty("jdk.httpclient.allowRestrictedHeaders", //$NON-NLS-1$
 			                   "host"); //$NON-NLS-1$
+
+
+			String proxyHost = appProperties.getProperty("proxy.host"); //$NON-NLS-1$
+			String proxyPort = appProperties.getProperty("proxy.port"); //$NON-NLS-1$
+			String proxyUsername = appProperties.getProperty("proxy.user"); //$NON-NLS-1$
+			String proxyPassword = appProperties.getProperty("proxy.pwd"); //$NON-NLS-1$
+
+			// http:
+			if (proxyHost != null) {
+				log.info("Proxy host: '{}'", proxyHost); //$NON-NLS-1$
+				System.setProperty("http.proxyHost", proxyHost); //$NON-NLS-1$
+			}
+			if (proxyPort != null) {
+				log.info("Proxy port: '{}'", proxyPort); //$NON-NLS-1$
+				System.setProperty("http.proxyPort", String.valueOf(proxyPort)); //$NON-NLS-1$
+			}
+			if (proxyUsername != null) {
+				log.info("Proxy user: '{}'", proxyUsername); //$NON-NLS-1$
+				System.setProperty("http.proxyUser", proxyUsername); //$NON-NLS-1$
+			}
+			if (proxyPassword != null) {
+				System.setProperty("http.proxyPassword", proxyPassword); //$NON-NLS-1$
+			}
+
+			// https:
+			if (proxyHost != null) {
+				System.setProperty("https.proxyHost", proxyHost); //$NON-NLS-1$
+			}
+			if (proxyPort != null) {
+				System.setProperty("https.proxyPort", String.valueOf(proxyPort)); //$NON-NLS-1$
+			}
+			if (proxyUsername != null) {
+				System.setProperty("https.proxyUser", proxyUsername); //$NON-NLS-1$
+			}
+			if (proxyPassword != null) {
+				System.setProperty("https.proxyPassword", proxyPassword); //$NON-NLS-1$
+			}
+
+			if (proxyHost != null) {
+				// allow also basic authentication scheme for Proxy albeit this is not encouraged...
+				System.setProperty("jdk.http.auth.tunneling.disabledSchemes", ""); //$NON-NLS-1$ //$NON-NLS-2$
+				System.setProperty("jdk.https.auth.tunneling.disabledSchemes", ""); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+
+			if (proxyHost != null &&
+				proxyUsername != null && !proxyUsername.isEmpty() &&
+				proxyPassword != null && !proxyPassword.isEmpty()) {
+				// Set the authenticator that will be used by the networking code when a proxy or an HTTP server asks for authentication.
+				// Note: this can interfere with Basic and Digest authentication as an
+				// outgoing Authorization header is suppressed when an authenticator is set!
+//				log.info("Defining PasswordAuthentication for proxy:"); //$NON-NLS-1$
+//				Authenticator.setDefault(new Authenticator()
+//				{
+//					@Override
+//					public PasswordAuthentication getPasswordAuthentication() {
+//						return new PasswordAuthentication(proxyUsername, proxyPassword.toCharArray());
+//					}
+//				});
+			}
 
 			TCPConnection.trustAllCertificates =
 				Boolean.parseBoolean(appProperties.getProperty("TrustAllCertificates", //$NON-NLS-1$
@@ -138,6 +197,9 @@ public class Application extends SpringBootServletInitializer
 			}
 
 			// misc. other options I had bumped into:
+			String keepAlive = appProperties.getProperty("HttpKeepAlive", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+			if (keepAlive != null) System.setProperty("http.keepAlive", keepAlive); //$NON-NLS-1$
+
 			String authRetryLimit = appProperties.getProperty("HttpAuthRetryLimit"); //$NON-NLS-1$
 			if (authRetryLimit != null) System.setProperty("jdk.httpclient.auth.retrylimit", authRetryLimit); //$NON-NLS-1$
 			String redirectsRetryLimit = appProperties.getProperty("HttpRedirectsRetryLimit"); //$NON-NLS-1$
