@@ -117,7 +117,7 @@ abstract public class HTTPConnection extends TCPConnection
 	private final static int MAX_REDIRECTIONS = 10;
 	private final static int MAX_AUTH_ATTEMPTS = 3;
 
-	private static final boolean PREVENT_HTTPS_TO_HTTP_REDIRECTS = false;
+	private static final boolean PREVENT_HTTPS_TO_HTTP_REDIRECTS = true;
 
 
 	protected HTTP_Method method = HTTP_Method.GET;
