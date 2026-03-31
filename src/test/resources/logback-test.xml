@@ -36,7 +36,7 @@
 	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn"/>
 	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info"/>
 
-	<root level="debug">
+	<root level="info">
 		<appender-ref ref="Console" />
 		<appender-ref ref="RollingFile" />
 	</root>

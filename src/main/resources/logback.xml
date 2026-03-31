@@ -39,18 +39,15 @@
 	<logger name="net.mmo.utils.kism.ui.views.history" level="debug"/>
 	<!--
 	<logger name="net.mmo.utils.kism" level="info"/>
-	<logger name="net.mmo.utils.kism.backend.service.NodeService" level="info"/>
+	<logger name="net.mmo.utils.kism.backend.service.NodeService" level="trace"/>
 	<logger name="net.mmo.utils.kism.ui.views.nodes" level="debug"/>
 	<logger name="net.mmo.utils.kism.ui.views.nodes.NodeForm" level="debug"/>
 	<logger name="net.mmo.utils.kism.ui.views.nodes.connection_forms" level="debug"/>
 	<logger name="net.mmo.utils.kism.utils.KeyValuesConverter" level="trace"/>
 	<logger name="net.mmo.utils.kism.utils.PropertyResolver" level="trace"/>
-	 -->
 	<logger name="net.mmo.utils.kism.utils.HTTP_Authorization" level="trace"/>
-	<logger name="net.mmo.utils.kism.entities.nodes.LeafNode" level="info"/>
 	<logger name="net.mmo.utils.kism.entities.nodes.connections.HTTPConnection" level="trace"/>
 	<logger name="net.mmo.utils.kism.entities.nodes.connections.RESTConnection" level="debug"/>
-	<!-- 
 	<logger name="net.mmo.utils.kism.entities.nodes.ResultChecker" level="trace"/>
 	<logger name="com.vaadin.flow.data.binder.Binder" level="debug"/>
 	-->
