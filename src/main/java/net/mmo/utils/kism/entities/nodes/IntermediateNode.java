@@ -30,8 +30,11 @@ public class IntermediateNode extends ActionableNode
 	public enum ChildrenCondition {
 		ALL_MUST_BE_OK, // ALL children must be OK for an OK, else FAILED
 		DEGRADED_ON_NOT_ALL_OK, // ALL children OK is OK, DEGRADED if ONE child is not OK, else FAILED
+		                        // used e.g. to allow a single child to be down, but not more.
 		ANY_NON_FAILED, // At least one child must be OK/DEGRADED for an OK/DEGRADED, else FAILED
+		                // used e.g. to make sure that at least one child is up
 		EXACTLY_ONE_OK // Exactly ONE child must be OK, all others must not be OK
+		               // Used e.g. for hot stand-by: exactly ONE must be active, the/all others must be off or passive
 	}
 
 	protected ChildrenCondition condition = ChildrenCondition.ALL_MUST_BE_OK;

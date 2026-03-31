@@ -193,7 +193,7 @@ abstract public class HTTPConnection extends TCPConnection
 			}
 		};
 
-	public HTTPConnection() { // required for deserialization
+	protected HTTPConnection() { // required for deserialization
 		super();
 	}
 	public HTTPConnection(final String name, final String description) {
@@ -450,7 +450,8 @@ abstract public class HTTPConnection extends TCPConnection
 
 	@SuppressWarnings("resource")
 	public void ensureValidClient() {
-		if (getHttpClient() == null) {
+		final HttpClient client = getHttpClient();
+		if (client == null || client.isTerminated()) {
 			setHttpClient(createClient(false));
 		}
 	}
@@ -523,10 +524,10 @@ abstract public class HTTPConnection extends TCPConnection
 	}
 
 	public void ensureValidRequest() throws Exception {
-		HttpRequest request = getHttpRequest();
+		final HttpRequest request = getHttpRequest();
 		if (request == null) {
 			setHttpRequest(createRequest());
-			if (getHttpRequest() == null) { // I had a few such cases - beats me why
+			if (getHttpRequest() == null) { // rthis should never be null here, but I had a few such cases - beats me why...
 				throw new Exception("HttpRequest still null after just setting it!?!"); //$NON-NLS-1$
 			}
 		}
@@ -626,7 +627,7 @@ abstract public class HTTPConnection extends TCPConnection
 					throw new Exception(String.format("Too many redirections: %d", nrRedirections)); //$NON-NLS-1$
 				}
 				final String location = response.headers().firstValue("Location").orElseGet(null); //$NON-NLS-1$
-				this.log.info("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
+				this.log.debug("Request '{}' received redirection ({}) to '{}'", getName(), statusCode, location); //$NON-NLS-1$
 				if (location == null || location.length() <= 0) {
 					// a log entry is created in an outer catch
 					throw new Exception(String.format("Received redirect-response %d but without a 'Location:'-header", statusCode)); //$NON-NLS-1$
@@ -636,7 +637,7 @@ abstract public class HTTPConnection extends TCPConnection
 					// The Jigsaw digest authentication test server after successfully log-in
 					// sent back a redirection downgrading from HTTPS to HTTP (!) but then
 					// rejected the subsequent requested when actually requesting the data
-					// via HTTP instead of HTTPS.
+					// using HTTP instead of HTTPS. ||-(
 					// I am not sure whether that is really expected or maybe even required
 					// behavior, but I am implementing this here, too. Apparently some (all?)
 					// browsers behave the same in such cases:
@@ -645,7 +646,7 @@ abstract public class HTTPConnection extends TCPConnection
 						final String newScheme = redirection.getScheme();
 						if (!newScheme.equals(oldScheme) && newScheme.equals("http")) { //$NON-NLS-1$
 							final String newLocation = location.replace(newScheme + "://", oldScheme + "://"); //$NON-NLS-1$ //$NON-NLS-2$
-							this.log.info("Modifying redirection URI scheme from '{}' to '{}'", location, newLocation); //$NON-NLS-1$
+							this.log.debug("Modifying redirection URI scheme from '{}' to '{}'", location, newLocation); //$NON-NLS-1$
 							redirection = new URI(newLocation);
 						}
 					}
@@ -682,9 +683,12 @@ abstract public class HTTPConnection extends TCPConnection
 			final byte[] oldContent = getResponseBody();
 			final byte[] prefix     = (INTERNAL_MSG_MARKER + "Note: this prefix is an internal error message - not a response from the contacted server!\n" //$NON-NLS-1$
 			                         + ExceptionUtils.exceptionCauseSummary(ex) + "\nlast response from server:\n---\n").getBytes(); //$NON-NLS-1$
-			final byte[] errMsg = new byte[oldContent.length + prefix.length];
+
+			final byte[] errMsg = new byte[prefix.length + (oldContent != null ? oldContent.length : 0)];
 			System.arraycopy(prefix, 0, errMsg, 0, prefix.length);
-			System.arraycopy(oldContent, 0, errMsg, prefix.length, oldContent.length);
+			if (oldContent != null) {
+				System.arraycopy(oldContent, 0, errMsg, prefix.length, oldContent.length);
+			}
 			setResponseBody(errMsg);
 
 			setDuration(NO_RESPONSE_DURATION); // signals an exception
