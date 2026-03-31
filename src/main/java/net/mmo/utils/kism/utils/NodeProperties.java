@@ -9,24 +9,27 @@ package net.mmo.utils.kism.utils;
 import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
+import net.mmo.utils.kism.utils.NodeProperties.NodePropertiesDeserializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
-/** utility class to make a node's properties accessible */
+/** utility class to make a node's properties' field "defaults" accessible */
 @SuppressWarnings("javadoc")
 @Slf4j
+@JsonDeserialize(using = NodePropertiesDeserializer.class)
 public class NodeProperties extends Properties
 {
 	private static final long serialVersionUID = -7108847395448335625L;
 
 	public NodeProperties() {
-		// empty
+		this(null);
 	}
 
-	public NodeProperties(Properties parentProperties) {
+	public NodeProperties(NodeProperties parentProperties) {
 		setParentProperties(parentProperties);
-	}
-
-	public Properties getParentProperties() {
-		return this.defaults;
 	}
 
 	@Override
@@ -37,7 +40,14 @@ public class NodeProperties extends Properties
 		return res;
 	}
 
-	/* This method is the actual purpose of this class: to get access to and be able to set "defaults": */
+// unused...
+//	public Properties getParentProperties() {
+//		return this.defaults;
+//	}
+
+	/* This method is the actual purpose of this entire class: to get access to and be able
+	 * to set the "defaults"-field:
+	 */
 	public void setParentProperties(Properties parentProperties) {
 		this.defaults = parentProperties;
 	}
@@ -48,5 +58,23 @@ public class NodeProperties extends Properties
 	public void setPropertiesFromString(String values) {
 		this.clear();
 		this.putAll(KeyValuesConverter.convertStringToMap(values));
+	}
+
+	/**
+	 * Had to add this Deserializer to teach Jackson to deserialize this object indeed as
+	 * "NodeProperties" and not as a super-class-object "Properties" (which then caused a
+	 * subsequent class-cast exception). Got this solution from:
+	 * https://stackoverflow.com/questions/79917391/odd-type-casting-error-with-com-fasterxml-jackson-databind-v3-when-deserializi/79917449#79917449
+	 **/
+	public static class NodePropertiesDeserializer extends ValueDeserializer<NodeProperties>
+	{
+		@Override
+		public NodeProperties deserialize(JsonParser p, DeserializationContext ctxt)
+			throws JacksonException {
+			Properties props = p.readValueAs(Properties.class);
+			NodeProperties nodeProps = new NodeProperties();
+			nodeProps.putAll(props);
+			return nodeProps;
+		}
 	}
 }

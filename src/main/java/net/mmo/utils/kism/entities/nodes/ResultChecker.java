@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -48,9 +49,10 @@ public class ResultChecker extends AbstractEntity
 		RangesDescending(Integer.class, Integer.class),
 		;
 
-		final Class<?>[] argClasses;
+		@JsonIgnore
+		final transient Class<?>[] argClasses;
 
-		Condition(Class<?> ... argClasses) {
+		private Condition(Class<?> ... argClasses) {
 			this.argClasses = argClasses;
 		}
 		public Class<?>[] getArgClasses() {
@@ -60,6 +62,15 @@ public class ResultChecker extends AbstractEntity
 			return this.argClasses.length;
 		}
 
+		/*
+		 *  Why is Jackson not using name() by default but toString() to do the conversion?
+		 *  Got the hint to force a different method for that here:
+		 *  https://stackoverflow.com/questions/79916770/com-fasterxml-jackson-databind-v3-has-issues-deserializing-java-util-properti
+		 */
+		@JsonValue
+		public String getName() {
+			return super.name();
+		}
 		@Override
 		public String toString() {
 			return this.name() + "(" + Arrays.toString(this.argClasses) + ")"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -70,7 +81,7 @@ public class ResultChecker extends AbstractEntity
 	protected ArrayList<String> operands;
 
 	@JsonIgnore
-	transient ArrayList<Object> resolvedOperands;
+	protected transient ArrayList<Object> resolvedOperands;
 
 	@JsonIgnore
 	public void setOperandN(int index, String operand) {
