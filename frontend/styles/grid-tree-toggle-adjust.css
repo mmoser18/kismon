@@ -1,4 +1,4 @@
-/* This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
+/* This is to prevent that a click on the hierarchy column expands/collapses the subtree in a TreeGrid
  * see https://github.com/vaadin/vaadin-grid/issues/1934 
  */
 :host {
