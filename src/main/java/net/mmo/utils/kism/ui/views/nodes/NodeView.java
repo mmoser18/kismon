@@ -75,8 +75,8 @@ import org.springframework.stereotype.Component;
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
-@SuppressWarnings("javadoc")
-// This is to prevent that a click on the hierachy column expands/collapses the subtree in a TreeGrid
+@SuppressWarnings({"javadoc", "deprecation"})
+// This is to prevent that a click on the hierarchy column expands/collapses the subtree in a TreeGrid
 // see https://github.com/vaadin/vaadin-grid/issues/1934
 // With this annotation one has to click the *twisty* to collapse/expand, not the column.
 @CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
@@ -96,7 +96,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	private static final int MAX_DESCRIPTION_LENGTH =
 		Integer.parseInt(AppProperties.getProperties().getProperty("NodeForm.MaxDescriptionLength", //$NON-NLS-1$
-		                                                           "100")); //$NON-NLS-1$
+		                                                              "100")); //$NON-NLS-1$
 
 	private NodeService nodeService;
 	private NodeFactory<N> nodeFactory;
@@ -163,6 +163,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
+	@SuppressWarnings("removal")
 	private HorizontalLayout createToolbar() {
 		log.trace("Creating toolbar:"); //$NON-NLS-1$
 
@@ -175,16 +176,16 @@ public class NodeView <N extends Node> extends VerticalLayout
 			});
 
 		Button addNodeButton = new Button(Messages.getString("NodeView.Button.AddNode.Label")); //$NON-NLS-1$
-		addNodeButton.addClickListener(click -> addNode(nodeTypeSelector.getValue()));
+		addNodeButton.addClickListener(_ -> addNode(nodeTypeSelector.getValue()));
 
 		Button duplicateNodeButton = new Button(Messages.getString("NodeView.Button.DuplicateNode.Label")); //$NON-NLS-1$
-		duplicateNodeButton.addClickListener(click -> duplicateNode());
+		duplicateNodeButton.addClickListener(_ -> duplicateNode());
 
 		Button delNodeButton = new Button(Messages.getString("NodeView.Button.DeleteNode.Label")); //$NON-NLS-1$
-		delNodeButton.addClickListener(click -> deleteNode());
+		delNodeButton.addClickListener(_ -> deleteNode());
 
 		Button directionButton = new Button(String.format(Messages.getString("NodeView.Button.Direction.Label"), LayoutDirection.invert(this.contentDirection).toString())); //$NON-NLS-1$
-		directionButton.addClickListener(click ->
+		directionButton.addClickListener(_ ->
 			{
 				// We re-label the button with the current direction...
 				directionButton.setText(String.format(Messages.getString("NodeView.Button.Direction.Label"), this.contentDirection.toString())); //$NON-NLS-1$
@@ -195,19 +196,19 @@ public class NodeView <N extends Node> extends VerticalLayout
 			});
 
 		Button moveUpButton = new Button(Messages.getString("NodeView.Button.MoveUp.Label")); //$NON-NLS-1$
-		moveUpButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveUp(node)));
+		moveUpButton.addClickListener(_ -> ifSingleNodeSelectedDo(node -> moveUp(node)));
 
 		Button moveDownButton = new Button(Messages.getString("NodeView.Button.MoveDown.Label")); //$NON-NLS-1$
-		moveDownButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> moveDown(node)));
+		moveDownButton.addClickListener(_ -> ifSingleNodeSelectedDo(node -> moveDown(node)));
 
 		Button promoteButton = new Button(Messages.getString("NodeView.Button.Promote.Label")); //$NON-NLS-1$
-		promoteButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> promote(node)));
+		promoteButton.addClickListener(_ -> ifSingleNodeSelectedDo(node -> promote(node)));
 
 		Button demoteButton = new Button(Messages.getString("NodeView.Button.Demote.Label")); //$NON-NLS-1$
-		demoteButton.addClickListener(click -> ifSingleNodeSelectedDo(node -> demote(node)));
+		demoteButton.addClickListener(_ -> ifSingleNodeSelectedDo(node -> demote(node)));
 
 		this.saveAllButton = new Button(Messages.getString("NodeView.Button.SaveAll.Label")); //$NON-NLS-1$
-		this.saveAllButton.addClickListener(click ->
+		this.saveAllButton.addClickListener(_ ->
 			{
 				log.info("saveAllButton clicked"); //$NON-NLS-1$
 				if (saveAllRootNodes()) { // saving was successful:
@@ -290,7 +291,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				log.info("Upload of file '{}' succeeded.", fileName); //$NON-NLS-1$
 				try (InputStream is = buffer.getInputStream();
 				     BufferedInputStream bis = new BufferedInputStream(is)) {
-					RootNode rootNode = this.nodeService.readStream(is, fileName);
+					RootNode rootNode = this.nodeService.readStream(bis, fileName);
 					reportUploadResult(rootNode, fileName);
 				} catch (Throwable t) {
 					reportFileReadException(fileName, t);
@@ -398,7 +399,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 				if (event.isFromClient()) { // can also be triggered programmatically!
 					@SuppressWarnings("unchecked")
 					N node = (N)event.getValue(); // getValue() returns the selected Node or null if none is selected /
-					log.info("Selection changed: node='{}'.", (node != null ? node.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
+					log.debug("Selection changed: node='{}'.", (node != null ? node.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 					if (this.form != null) {
 						if (this.form.isVisible()) {
 							if (node != null) {
@@ -407,13 +408,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 								closeEditor();
 							}
 						} else {
-							log.info("form not visible"); //$NON-NLS-1$
+							log.debug("form not visible"); //$NON-NLS-1$
 						}
 						if (this.form != null) { // editNode() may change that, so need to check again!
 							this.form.setUiChanges(false);
 						}
 					} else {
-						log.info("form is null"); //$NON-NLS-1$
+						log.debug("form is null"); //$NON-NLS-1$
 					}
 				}
 			});
@@ -741,9 +742,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 
 	@SuppressWarnings("unchecked")
 	public void editNode(N node, IntermediateNode parentNode) {
-		log.info("editNode '{}' (parent='{}')", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
+		log.debug("editNode '{}' (parent='{}')", node.getName(), (parentNode != null ? parentNode.getName() : "null")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (this.form != null) { // form displayed?
-			log.info("form for '{}' has changes: {}", node.getName(), this.form.hasUiChanges()); //$NON-NLS-1$
+			log.debug("form for '{}' has changes: {}", node.getName(), this.form.hasUiChanges()); //$NON-NLS-1$
 			N currentNode = this.form.getNode();
 			if (!this.form.setNode(null, false)) { // signal that we want to leave that node:
 				select(currentNode); // if there are unsaved changes remain on form's current node
@@ -764,7 +765,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			}
 
 			if (newForm != this.form) { // new or different form assigned:
-				log.info("editNode: new form {}", newForm); //$NON-NLS-1$
+				log.debug("editNode: new form {}", newForm); //$NON-NLS-1$
 				newForm.getElement().removeFromTree(); // make sure this is not attached to any old tree anymore.
 				//or?: newForm.removeFromParent();
 				this.form = newForm;
@@ -772,13 +773,13 @@ public class NodeView <N extends Node> extends VerticalLayout
 				this.formWrapper.removeAll();
 				this.formWrapper.add(newForm);
 				this.formWrapper.setSizeFull();
-				log.info("editNode: setting splitter to 50:"); //$NON-NLS-1$
+				log.debug("editNode: setting splitter to 50:"); //$NON-NLS-1$
 				this.content.setSplitterPosition(50);
 			}
 			if (SecurityUtils.isAdminUser()) {
 				this.form.addListener(NodeForm.SaveEvent.class, (event) -> saveNodeAfterEditing(event.getNode(), parentNode));
 				this.form.addListener(NodeForm.DeleteEvent.class, this::deleteNode);
-				this.form.addListener(NodeForm.CloseEvent.class, (event) -> closeEditor());
+				this.form.addListener(NodeForm.CloseEvent.class, (_) -> closeEditor());
 				this.form.addListener(NodeForm.UpdateEvent.class, (event) -> updateNode(event.getNode()));
 				addClassName(ViewClassEditing);
 			} else {
@@ -799,7 +800,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		if (this.form.setNode(null, false)) {
 			removeClassName("editing"); //$NON-NLS-1$
 			this.formWrapper.setSizeUndefined();
-			log.info("closeEditor: setting splitter to 100:"); //$NON-NLS-1$
+			log.debug("closeEditor: setting splitter to 100:"); //$NON-NLS-1$
 			this.content.setSplitterPosition(100);
 			this.form.setVisible(false);
 			this.form = null;
@@ -818,8 +819,8 @@ public class NodeView <N extends Node> extends VerticalLayout
 			                            Messages.getString("NodeView.Deletion.Question.Prefix"), //$NON-NLS-1$
 			                            Messages.getString("NodeView.Deletion.Question.Suffix"))); //$NON-NLS-1$
 		new ConfirmDialog(Messages.getString("NodeView.Deletion.Header"), question, //$NON-NLS-1$
-		                  Messages.getString("NodeView.Deletion.Confirm"), evt -> { log.info("delete '{}':", nodeNames); deleteNodes(nodes); }, //$NON-NLS-1$ //$NON-NLS-2$
-		                  Messages.getString("NodeView.Deletion.Cancel"), evt -> { log.info("cancel '{}':", nodeNames); } //$NON-NLS-1$ //$NON-NLS-2$
+		                  Messages.getString("NodeView.Deletion.Confirm"), _ -> { log.info("delete '{}':", nodeNames); deleteNodes(nodes); }, //$NON-NLS-1$ //$NON-NLS-2$
+		                  Messages.getString("NodeView.Deletion.Cancel"), _ -> { log.info("cancel '{}':", nodeNames); } //$NON-NLS-1$ //$NON-NLS-2$
 		                 ).open();
 	}
 
@@ -907,7 +908,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			} else {
 				List<Node> newSiblings = grandParent.getChildren();
 				int parentPos = newSiblings.indexOf(parent);
-				log.info("promote '{}' old parent '{}' -> new parent: '{}'", //$NON-NLS-1$
+				log.debug("promote '{}' old parent '{}' -> new parent: '{}'", //$NON-NLS-1$
 				         node.getName(), parent.getName(), grandParent.getName());
 				grandParent.addChildAtPos(parentPos+1, node);
 				saveNode(node);
@@ -963,7 +964,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			updateTree();
 		} else {
 			String msg = String.format(Messages.getString("NodeView.ErrorMsg.IllegalFileName"), sourceName); //$NON-NLS-1$
-			log.info(msg);
+			log.error(msg);
 			NodeService.createNotification(msg);
 		}
 	}
@@ -1044,7 +1045,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 	private void reportFileReadException(String sourceName, Throwable t) {
 		String hdr = "Exception:"; //$NON-NLS-1$
 		String msg = String.format(Messages.getString("NodeView.ErrorMsg.ExceptionReading"), sourceName, t); //$NON-NLS-1$
-		log.info(hdr + ": " + msg, t); //$NON-NLS-1$
+		log.error(hdr + ": " + msg, t); //$NON-NLS-1$
 		openDialog(hdr, msg, t);
 	}
 
