@@ -8,11 +8,7 @@ package net.mmo.utils.kism.security;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.shared.ApplicationConstants;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.CommonConstants;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -25,12 +21,6 @@ public final class SecurityUtils
 {
 	private SecurityUtils() {
 		// static - util methods only
-	}
-
-	static boolean isFrameworkInternalRequest(HttpServletRequest request) {
-		final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-		return parameterValue != null
-			&& Stream.of(HandlerHelper.RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
 	}
 
 	public static Authentication getAuthentication() {
