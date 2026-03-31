@@ -25,11 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
 import jakarta.annotation.PostConstruct;
@@ -45,6 +40,12 @@ import net.mmo.utils.kism.utils.PrettyPrint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Implements the service to access and store Nodes
@@ -75,8 +76,18 @@ public class NodeService
 	public NodeService() {
 		log.debug("{} c'tor", this.getClass()); //$NON-NLS-1$
 		this.mapper = JsonMapper.builder()
-			.enable(SerializationFeature.INDENT_OUTPUT)
+			// do NOT emit transient fields:
 			.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+			// I didn't like that:
+			.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, false)
+			// much nicer to read:
+			.enable(SerializationFeature.INDENT_OUTPUT)
+			// .disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+			// we want the DefaultPrettyPrinter to use \t instead of 2 spaces for indentation:
+			.defaultPrettyPrinter(new DefaultPrettyPrinter()
+			                      .withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))) //$NON-NLS-1$
+			// on read-error: include the entire path to an offending field in the error message:
+			.enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
 			.build();
 	}
 
@@ -241,7 +252,7 @@ public class NodeService
 		});
 		if (durationInMillis == 0) {
 			final Button closeButton = new Button(Messages.getString("Notification.CloseButton.Label")); //$NON-NLS-1$
-			closeButton.addSingleClickListener(event -> notif.close());
+			closeButton.addSingleClickListener(_ -> notif.close());
 			notif.add(closeButton);
 		}
 		notif.open();
@@ -262,11 +273,8 @@ public class NodeService
 		}
 	}
 
-	public void writeStream(Object obj, OutputStream out) throws IOException {
-		// we want the DefaultPrettyPrinter to use \t instead of 2 spaces for indentation:
-		this.mapper.writer(new DefaultPrettyPrinter()
-		                   .withObjectIndenter(new DefaultIndenter("\t", DefaultIndenter.SYS_LF))) //$NON-NLS-1$
-			.writeValue(out, obj);
+	public void writeStream(Object obj, OutputStream out) {
+		this.mapper.writer().writeValue(out, obj);
 
 	}
 
@@ -292,7 +300,7 @@ public class NodeService
 		}
 	}
 
-	public RootNode readStream(InputStream inp, String fileName) throws IOException {
+	public RootNode readStream(InputStream inp, String fileName) {
 		AbstractEntity.initializing = true; // since our "beans" also contain logic we need to prevent certain functions from being called while the are being deserialized
 		RootNode newRoot = this.mapper.readValue(inp, RootNode.class);
 		// restoreParents(newRoot); // not necessary anymore thanks to @JsonManagedReference/@JsonBackReference, instead of @JsonIgnore
