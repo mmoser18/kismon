@@ -23,7 +23,7 @@ import net.mmo.utils.kism.ui.views.history.HistoryInfoGraph;
 import net.mmo.utils.kism.ui.views.history.HistoryInfoTable;
 import net.mmo.utils.kism.ui.views.nodes.NodeView;
 
-@SuppressWarnings("javadoc")
+@SuppressWarnings({"javadoc", "deprecation"})
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-button-styles.css", themeFor = "vaadin-button")
 @CssImport(value = "./styles/vaadin-checkbox-styles.css", themeFor = "vaadin-checkbox")
