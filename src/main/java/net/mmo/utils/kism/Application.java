@@ -21,7 +21,6 @@ import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 /**
@@ -30,7 +29,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * Note: We need to disable Spring MVC auto configuration on the Application class,
  * as this interferes with how Vaadin works and can cause strange reloading behavior.
  */
-@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
+@SpringBootApplication //(exclude = ErrorMvcAutoConfiguration.class)
 @Slf4j
 public class Application extends SpringBootServletInitializer
 {
