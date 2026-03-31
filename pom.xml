@@ -38,39 +38,43 @@
 	 -->
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- some local settings: -->
+		<!-- 
 		<user.home>${env.USERPROFILE}</user.home>
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
+		-->
 		<!-- worked with Vaadin: 18.0.4 and then again with 22.0.1, 22.0.2, 23.0.1, 23.0.2, 
 		     but did NOT work with v19.0.x..v21.0.4: -->
 		<!-- last version that does NOT validate the Chart license during build time ->
 		<vaadin.version>23.1.7</vaadin.version> 
 		<!- -->
 		<!-- newest version / but since v23.2.0 this refuses to build without license ||-( : -->
-		<vaadin.version>24.3.8</vaadin.version>
+		<!-- vaadin.version>24.3.8</vaadin.version -->
+		<vaadin.version>25.1.0</vaadin.version>
 		<!-- -->
-		<wdm.version>5.9.1</wdm.version>	<!-- wdm = WebDriver Manager -->
+		<wdm.version>6.3.3</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
 		<webdriver.maven.repo>${user.repo}</webdriver.maven.repo>
 		
-		<h2.version>2.2.224</h2.version>
+		<h2.version>2.4.240</h2.version>
 		<archunit-junit5.version>1.4.1</archunit-junit5.version>
 		
-		<sshj.version>0.38.0</sshj.version>
-		<mail.version>1.4</mail.version>
+		<sshj.version>0.40.0</sshj.version>
+		<mail.version>1.4.7</mail.version>
 		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
 	</properties>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.4</version>
+		<version>4.0.5</version> <!-- for some stupid reason one can not use a placeholder for this version ||-( -->
+		<!-- <relativePath/> lookup parent from repository -->
 	</parent>
 
 	<repositories>
@@ -103,14 +107,30 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-	<dependencyManagement>
+    <dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin</artifactId>
+				<version>${vaadin.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-core</artifactId>
+				<version>${vaadin.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.vaadin</groupId>
 				<artifactId>vaadin-bom</artifactId>
 				<version>${vaadin.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-dev</artifactId>
+				<version>${vaadin.version}</version>
+				<optional>true</optional>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -119,14 +139,10 @@
 		<!-- Vaadin stuff: -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<!-- Replace artifactId 'vaadin' with 'vaadin-core' to use only free components -->
-			<!-- -->
-			<artifactId>vaadin</artifactId> 
-			<!-- ->
-			<artifactId>vaadin-core</artifactId>
-			<!- -->
+			<!-- Replace artifactId with vaadin-core to use only free components -->
+			<artifactId>vaadin</artifactId>
+			<!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
 			<exclusions>
-				<!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
 				<exclusion>
 					<groupId>com.vaadin.webjar</groupId>
 					<artifactId>*</artifactId>
@@ -153,17 +169,31 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-dev</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot-starter</artifactId>
+			<!-- Excluding so that webjars are not included. / is this still required? -->
 			<exclusions>
-				<!-- Excluding so that webjars are not included. -->
 				<exclusion>
 					<groupId>com.vaadin</groupId>
 					<artifactId>vaadin-core</artifactId>
 				</exclusion>
 			</exclusions>
+			<!-- -->
 		</dependency>
+
+		<!-- enable Spring Security: -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
 		<!-- to enable live reload in the application (see https://vaadin.com/docs/latest/configuration/live-reload/spring-boot): -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -185,13 +215,14 @@
 			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
 		<!-- -->
-		
+
+		<!-- ->
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-testbench</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<!- -->
 		<!-- SpringBoot security (for login screen) -->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -238,8 +269,7 @@
 			<version>${mail.version}</version>
 		</dependency>
 
-		<!-- dependency already included in SpringBoot: ->
-		<!- jackson-core ->
+		<!-- jackson-core ->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -247,7 +277,6 @@
 		<!- -->
 
 		<!-- JUnit 5 = JUnit Platform + JUnit Jupiter + JUnit Vintage -->
-
 		<!-- required for IT tests with SpringBoot: -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -324,14 +353,15 @@
 			This is used from the JUnit test class and downloads the correct version 
 			of the Chrome web driver, if it is missing. 
 			The webdriver itself is then used by the integration tests. 
-		-->
+		->
 		<dependency>
 			<groupId>io.github.bonigarcia</groupId>
 			<artifactId>webdrivermanager</artifactId>
 			<version>${wdm.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		-->
+		
 		<!-- Lombok - generates setters and getters and allows for other goodies like @Slf4j, toString(), etc. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -393,9 +423,27 @@
 	</dependencies>
 
 	<build>
-	
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<!-- put Lombok on the APT path
+							Without this I got lots of compile errors re. missing "log"-variables 
+							(obviously "@Slf4j" had not been properly resolved...). 
+							See https://stackoverflow.com/questions/79738546/maven-lombok-slf4j-on-jdk-21-cannot-find-symbol-variable-log-even-though 
+						-->
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+								<version>${lombok.version}</version>
+							</path>
+						</annotationProcessorPaths>
+						<!-- -->
+					</configuration>
+				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
@@ -432,58 +480,64 @@
 					</configuration>
 				</plugin>
 				<!- -->
+				
+				<!-- check for valid license headers: -->
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>5.0.0</version>
+					<configuration>
+						<properties>
+							<owner>Michael Moser</owner>
+							<email>17732576+mmoser18@users.noreply.github.com</email>
+							<years>2020-2026</years>
+							<skip>false</skip>
+						</properties>
+						<licenseSets>
+							<licenseSet>
+								<header>${project.basedir}/LicenseHeader.txt</header>
+								<includes>
+									<include>**/src/**/*.java</include>
+								</includes>
+								<excludes>
+									<exclude>**/target/**</exclude>
+									<exclude>**/config/**</exclude>
+									<exclude>**/data/**</exclude>
+									<exclude>**/docs/**</exclude>
+									<exclude>**/frontend/**</exclude>
+									<exclude>**/garage/**</exclude> <!-- leave my private stuff alone! -->
+									<exclude>**/vaadin/**</exclude>
+								</excludes>
+							</licenseSet>
+						</licenseSets>
+						<mapping>
+							<java>JAVADOC_STYLE</java>
+						</mapping>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		
 		<defaultGoal>spring-boot:run</defaultGoal>
+		
 		<plugins>
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>5.0.0</version>
-				<configuration>
-					<properties>
-						<owner>Michael Moser</owner>
-						<email>17732576+mmoser18@users.noreply.github.com</email>
-						<years>2020-2026</years>
-						<skip>false</skip>
-					</properties>
-					<licenseSets>
-						<licenseSet>
-							<header>${project.basedir}/LicenseHeader.txt</header>
-							<includes>
-								<include>**/src/**/*.java</include>
-							</includes>
-							<excludes>
-								<exclude>**/target/**</exclude>
-								<exclude>**/config/**</exclude>
-								<exclude>**/data/**</exclude>
-								<exclude>**/docs/**</exclude>
-								<exclude>**/frontend/**</exclude>
-								<exclude>**/garage/**</exclude> <!-- leave my private stuff alone! -->
-								<exclude>**/vaadin/**</exclude>
-							</excludes>
-						</licenseSet>
-					</licenseSets>
-					<mapping>
-						<java>JAVADOC_STYLE</java>
-					</mapping>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
+			<!-- -->
 			
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse> <!-- use "true" to force usage of javac if the default maven compiler crashes -->
-				</configuration>
 			</plugin>
+			
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -510,7 +564,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- Take care of synchronizing java dependencies and imports in package.json 
+			<!-- Takes care of synchronizing java dependencies and imports in package.json 
 				and main.js files. It also creates webpack.config.js if not exists yet. -->
 			<plugin>
 				<groupId>com.vaadin</groupId>
@@ -548,7 +602,9 @@
 					</excludes>
 					<archive>
 						<manifestEntries>
-							<!-- to be able to locate application.properties and logback.xml files in the same folder as the .jar: -->
+							<!-- to be able to locate application.properties and 
+								logback.xml files in the same folder as the .jar: 
+							-->
 							<Class-Path>.</Class-Path>
 						</manifestEntries>
 					</archive>
@@ -574,11 +630,12 @@
 
 			<build>
 				<plugins>
+					<!-- -->
 					<plugin>
 						<groupId>com.mycila</groupId>
 						<artifactId>license-maven-plugin</artifactId>
 					</plugin>
-					
+					<!-- -->
 					<plugin>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>
@@ -611,7 +668,6 @@
 					<plugin> <!-- this plugin runs the Unit Tests (Integrations Tests are excluded) -->
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<version>3.5.4</version>
 						<executions>
 							<execution>
 								<goals>
@@ -701,7 +757,7 @@
 
 					<!-- This plugin runs the integration tests:
 					     Note: The name of the test classes needs to end in '...IT' for the test runner to pick it up as an 
-					     integration test. Otherwise they will be picked up as unit-test and the test will most likely fail 
+					     integration test. Otherwise they will be picked up as unit-test and the test will (most likely) fail 
 					-->
 					<plugin> <!-- This plugin runs the integration tests (i.e. tests named *IT) after the server is started -->
 						<groupId>org.apache.maven.plugins</groupId>
@@ -727,6 +783,7 @@
 						</configuration>
 					</plugin>
 					
+					<!-- what is/was that for? -->
 					<plugin>
 						<groupId>org.owasp</groupId>
 						<artifactId>dependency-check-maven</artifactId>
