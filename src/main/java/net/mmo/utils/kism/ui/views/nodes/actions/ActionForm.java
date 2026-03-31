@@ -86,7 +86,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 		this.actionEnabled.setEnabled(this.isAdminUser);
 		this.actionEnabled.addValueChangeListener(event ->
 		{
-			this.log.debug("checkResults value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.debug("actionEnabled value changed from {} to {} (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				boolean visible = event.getValue();
 				if (this.node != null) {
@@ -133,7 +133,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 
 		this.resetSameStateCounterButton = new Button(Messages.getString("ActionForm.ResetStateCounter.Label")); //$NON-NLS-1$
 		this.resetSameStateCounterButton.addClassName(ActionResetStateCounterClassName);
-		this.resetSameStateCounterButton.addClickListener(event ->
+		this.resetSameStateCounterButton.addClickListener(_ ->
 		{
 			if (this.node != null) {
 				this.node.setSameStateSince(0);
@@ -144,7 +144,7 @@ public abstract class ActionForm <N extends ActionableNode> extends NodeForm<N>
 
 		this.triggerActionButton = new Button(Messages.getString("ActionForm.TriggerAction.Label")); //$NON-NLS-1$
 		this.triggerActionButton.addClassName(ActionTriggerClassName);
-		this.triggerActionButton.addClickListener(event ->
+		this.triggerActionButton.addClickListener(_ ->
 		{
 			if (this.node != null) {
 				IAction<ActionableNode> action = this.node.getAction();

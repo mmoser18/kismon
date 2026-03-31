@@ -162,7 +162,7 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 		filters.setWidth("13em"); // seems impossible to assign that via styling ||-(  //$NON-NLS-1$
 
 		this.refreshAll = new Button(Messages.getString("HistoryView.Button.RefreshData.Label")); //$NON-NLS-1$
-		this.refreshAll.addClickListener(e -> {
+		this.refreshAll.addClickListener(_ -> {
 			log.info("refreshAll clicked"); //$NON-NLS-1$
 			this.nameFilter.setItems(getFilteredNodeNames()); // this may have changed as well...
 			resetMinMaxValues();

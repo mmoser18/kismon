@@ -115,7 +115,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 		this.includeBasicAuthHeader.setClassName(BasicAuthHdrClassName);
 		this.includeBasicAuthHeader.setEnabled(this.isAdminUser);
 		this.binder.forField(this.includeBasicAuthHeader)
-			.withValidator((value, context) ->
+			.withValidator((value, _) ->
 				{ // Explicit validator instance:
 					if (value) {
 						if (this.node != null) {
@@ -165,7 +165,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 			}
 		});
 		this.binder.forField(this.headers)
-			.withValidator((value, context) ->
+			.withValidator((value, _) ->
 				{ // Explicit validator instance:
 					try {
 						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(value));
@@ -237,11 +237,11 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 
 		this.prettyPrintRequestXml = new Checkbox(Messages.getString("HTTPConnectionForm.PrettyPrintXml.Label")); //$NON-NLS-1$
 		this.prettyPrintRequestXml.setClassName(BasicAuthHdrClassName);
-		this.prettyPrintRequestXml.addValueChangeListener((value) -> this.requestBody.setValue(requestBodyAsString(this.node)));
+		this.prettyPrintRequestXml.addValueChangeListener((_) -> this.requestBody.setValue(requestBodyAsString(this.node)));
 
 		this.prettyPrintResponseXml = new Checkbox(Messages.getString("HTTPConnectionForm.PrettyPrintXml.Label")); //$NON-NLS-1$
 		this.prettyPrintResponseXml.setClassName(BasicAuthHdrClassName);
-		this.prettyPrintResponseXml.addValueChangeListener((value) -> this.responseBody.setValue(responseBodyAsString(this.node)));
+		this.prettyPrintResponseXml.addValueChangeListener((_) -> this.responseBody.setValue(responseBodyAsString(this.node)));
 
 		this.acceptableReturnCodes = new TextField(Messages.getString("HTTPConnectionForm.AcceptableResponseCodes.Label")); //$NON-NLS-1$
 		this.acceptableReturnCodes.setClassName(AcceptableReturnCodesClassName);
@@ -264,7 +264,7 @@ public abstract class HTTPConnectionForm<N extends HTTPConnection> extends TCPCo
 
 		this.checkResults.addValueChangeListener(event ->
 		{
-			this.log.info("checkResults value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
+			this.log.debug("checkResults value changed from '{}' to '{}' (fromClient:{})", event.getOldValue(), event.getValue(), event.isFromClient()); //$NON-NLS-1$
 			if (event.isFromClient()) {
 				adaptAcceptableReturnCodesVisibility(event.getValue());
 				acceptableReturnCodesBinding.validate();

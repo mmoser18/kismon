@@ -108,6 +108,13 @@ abstract public class LeafNode extends ActionableNode
 		Boolean.parseBoolean(AppProperties.getProperties().getProperty("LeafNode.ShortRequestLogEntries", //$NON-NLS-1$
 		                                                               "true")); //$NON-NLS-1$
 
+	@JsonIgnore
+	public transient static boolean logRootCauseOnly =
+		Boolean.parseBoolean(AppProperties.getProperties().getProperty("LeafNode.LogRootCauseOnly", //$NON-NLS-1$
+		                                                               "false")); //$NON-NLS-1$
+
+
+
 	public transient static HistoryInfoService requestInfoService;
 
 
@@ -194,11 +201,11 @@ abstract public class LeafNode extends ActionableNode
 	public void executeRequest() throws Exception {
 		if (asyncRequests) {
 			this.interactiveExecutor.execute(() -> {
-				this.log.info("executing sendRequest(async): '{}' [{}]", getName(), this.getClass().getName()); //$NON-NLS-1$
+				this.log.debug("executing sendRequest(async): '{}' [{}]", getName(), this.getClass().getName()); //$NON-NLS-1$
 				executeRequestInternal("executing(async)"); //$NON-NLS-1$
 			});
 		} else {
-			this.log.info("executing sendRequest(sync):  '{}' [{}]", getName(), this.getClass().getName()); //$NON-NLS-1$
+			this.log.debug("executing sendRequest(sync):  '{}' [{}]", getName(), this.getClass().getName()); //$NON-NLS-1$
 			executeRequestInternal("executing(sync)"); //$NON-NLS-1$
 		}
 	}
@@ -213,7 +220,7 @@ abstract public class LeafNode extends ActionableNode
 				if (this.log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
 					this.log.debug("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 				} else {
-					String msg = ExceptionUtils.exceptionRootCauseMsg(ex);
+					String msg = logRootCauseOnly ? ExceptionUtils.exceptionRootCauseMsg(ex) : ExceptionUtils.exceptionCauseSummary(ex);
 					this.log.info("Error {} '{}': {}", logFragment, getName(), (msg != null && !msg.isBlank() ? msg : ex)); //$NON-NLS-1$
 				}
 			} else {

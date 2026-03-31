@@ -42,7 +42,7 @@ public class SOAPConnectionForm extends HTTPConnectionForm<SOAPConnection>
 		this.soapAction.setEnabled(this.isAdminUser);
 		this.binder.forField(this.soapAction)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator((value, context) ->
+			.withValidator((value, _) ->
 			{ // Explicit validator instance:
 				this.log.trace("validating soapAction: '{}'", value); //$NON-NLS-1$
 				String errMsg = checkSoapAction(value); // no error message -> OK

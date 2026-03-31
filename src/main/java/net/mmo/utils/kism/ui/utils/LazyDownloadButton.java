@@ -116,6 +116,7 @@ public class LazyDownloadButton extends Button
 	 * @param fileNameCallback callback for file name generation
 	 * @param inputStreamCallback callback for input stream generation
 	 */
+	@SuppressWarnings({"removal", "resource"})
 	public LazyDownloadButton(String text, Component icon,
 	                          Supplier<String> fileNameCallback,
 	                          Supplier<InputStream> inputStreamCallback) {
@@ -130,7 +131,7 @@ public class LazyDownloadButton extends Button
 			setIcon(icon);
 		}
 
-		super.addClickListener(event -> {
+		super.addClickListener(_ -> {
 			log.info("Download button clicked"); //$NON-NLS-1$
 			String filename = fileNameCallback.get();
 			if (filename == null) {
@@ -163,8 +164,8 @@ public class LazyDownloadButton extends Button
 					Optional<UI> optionalUI = getUI();
 					Executors.newSingleThreadExecutor().execute(() -> {
 						try {
-							@SuppressWarnings("resource") // Note: the stream must NOT be defined in the // try (...)-clause
-							                              // here, because then it gets closed too early!
+							// Note: the stream must NOT be defined in the // try (...)-clause
+							// here, because then it gets closed too early!
 							InputStream inputStream = inputStreamCallback.get();
 							if (inputStream != null) {
 								log.info("Download-Inputstream obtained for '{}'", filename); //$NON-NLS-1$

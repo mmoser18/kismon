@@ -139,7 +139,7 @@ public class SSHConnectionForm extends IPConnectionForm<SSHConnection>
 		this.fingerprint.setEnabled(this.isAdminUser);
 		this.binder.forField(this.fingerprint)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator((value, context) -> {
+			.withValidator((value, _) -> {
 					String fp;
 					try {
 						fp = this.node.resolveProperties(value);

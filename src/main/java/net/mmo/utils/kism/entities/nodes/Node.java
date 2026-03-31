@@ -37,14 +37,14 @@ import org.springframework.util.Assert;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "className")
 public abstract class Node extends AbstractEntity
 {
+	@JsonIgnore
+	transient protected Logger log = LoggerFactory.getLogger(this.getClass());
+
 	private static final long serialVersionUID = 3875470009216934341L;
 
 	public final static String PROPERTYNAME_STATE = "state";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_PARENT = "parent";  //$NON-NLS-1$
 	public final static String PROPERTYNAME_APPLICABLE = "applicable";  //$NON-NLS-1$
-
-	@JsonIgnore
-	transient protected Logger log;
 
 	public enum State {
 		FAILED,
@@ -81,7 +81,6 @@ public abstract class Node extends AbstractEntity
 	// required for deserialization
 	protected Node() {
 		super();
-		this.log = LoggerFactory.getLogger(this.getClass());
 		this.log.debug("New {} created.", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	protected Node(String name, String description) {

@@ -51,7 +51,7 @@ public class FormFactory <N extends Node> extends VerticalLayout
 	NodeForm<N> createForm(Class<N> clazz, NodeService nodeService) {
 		NodeForm<N> form = this.forms.get(clazz);
 		if (form == null) {
-			log.info("creating new form for node-class {}:", clazz); //$NON-NLS-1$
+			log.debug("creating new form for node-class {}:", clazz); //$NON-NLS-1$
 			if (clazz == RootNode.class) {
 				form = (NodeForm<N>)new RootNodeForm();
 			} else if (clazz == IntermediateNode.class) {
@@ -71,9 +71,9 @@ public class FormFactory <N extends Node> extends VerticalLayout
 			}
 			form.init(nodeService);
 			this.forms.put(clazz, form); // cache it
-			log.info("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
+			log.debug("created new form for class {}: {}", clazz, form); //$NON-NLS-1$
 		} else {
-			log.info("found existing form for {}: {}", clazz, form); //$NON-NLS-1$
+			log.debug("found existing form for {}: {}", clazz, form); //$NON-NLS-1$
 		}
 		form.initFlags(); // these may have changed (e.g. by a logout/login with a different uid)
 		return form;

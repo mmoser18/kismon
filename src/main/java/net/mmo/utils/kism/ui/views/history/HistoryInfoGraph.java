@@ -80,10 +80,10 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 		this.typeFilter.addValueChangeListener(e -> { if (e.isFromClient()) adjustVisibility(); });
 
 		this.selectAll = new Button(Messages.getString("HistoryGraph.Button.SelectAll.Label")); //$NON-NLS-1$
-		this.selectAll.addClickListener(e -> selectAll());
+		this.selectAll.addClickListener(_ -> selectAll());
 
 		this.selectNone = new Button(Messages.getString("HistoryGraph.Button.SelectNone.Label")); //$NON-NLS-1$
-		this.selectNone.addClickListener(e -> selectNone());
+		this.selectNone.addClickListener(_ -> selectNone());
 
 		toolbar.addComponentAtIndex(toolbar.getComponentCount()-1, this.selectAll);
 		toolbar.addComponentAtIndex(toolbar.getComponentCount()-1, this.selectNone);

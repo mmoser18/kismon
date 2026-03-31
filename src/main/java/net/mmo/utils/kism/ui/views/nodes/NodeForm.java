@@ -188,15 +188,15 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 	 *         changes and the user responded with "cancel/stayOnNode"
 	 */
 	public boolean setNode(N newNode, boolean abandonChanges) {
-		this.log.info("setNode({}) - UI has changes: {}", newNode, hasUiChanges()); //$NON-NLS-1$
+		this.log.debug("setNode({}) - UI has changes: {}", newNode, hasUiChanges()); //$NON-NLS-1$
 		if (this.node != null) {
 			if (hasUiChanges() && !abandonChanges) {
-				this.log.info("we have unsaved UI changes!"); //$NON-NLS-1$
+				this.log.debug("we have unsaved UI changes!"); //$NON-NLS-1$
 				new ConfirmDialog(Messages.getString("NodeForm.UnsavedChanges.Label"), //$NON-NLS-1$
 				                  Messages.getString("NodeForm.UnsavedChanges.Question"), //$NON-NLS-1$
-				                  Messages.getString("NodeForm.UnsavedChanges.Confirm"), (confirmEvent) -> { validateAndSave(); this.uiChanges = false; }, //$NON-NLS-1$
-				                  Messages.getString("NodeForm.UnsavedChanges.Reject"), (rejectEvent) -> { readBean(this.node); this.uiChanges = false; }, //$NON-NLS-1$
-				                  Messages.getString("NodeForm.UnsavedChanges.Cancel"), (cancelEvent)  -> { /*nothing to do*/ } //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Confirm"), (_) -> { validateAndSave(); this.uiChanges = false; }, //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Reject"), (_) -> { readBean(this.node); this.uiChanges = false; }, //$NON-NLS-1$
+				                  Messages.getString("NodeForm.UnsavedChanges.Cancel"), (_)  -> { /*nothing to do*/ } //$NON-NLS-1$
 				                  ).open();
 				return false;
 			}
@@ -279,7 +279,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.name.setEnabled(this.isAdminUser);
 		this.binder.forField(this.name)
 			.withValidator(this.propertiesResolvableValidator)
-			.withValidator((value, context) ->
+			.withValidator((value, _) ->
 				{ // Explicit validator instance
 					try {
 						this.getNode().onRootNodeDo((rootnode) -> rootnode.trickleDown((n) -> {
@@ -327,7 +327,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.properties.setEnabled(this.isAdminUser);
 
 		this.binder.forField(this.properties)
-			.withValidator((value, context) ->
+			.withValidator((value, _) ->
 				{ // Explicit validator instance:
 					try {
 						if (this.node != null) KeyValuesConverter.convertStringToMap(this.node.resolveProperties(value));
@@ -355,7 +355,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.executeButton = new Button(Messages.getString("NodeForm.Execute.Label")); //$NON-NLS-1$
 		this.executeButton.setClassName(ExecuteClassName);
 		this.executeButton.setThemeName(UIConstants.LabelPaddingTheme);
-		this.executeButton.addClickListener(event ->
+		this.executeButton.addClickListener(_ ->
 			{
 				this.log.info("executeButton clicked"); //$NON-NLS-1$
 				if (SecurityUtils.isAdminUser() && hasUiChanges()) {
@@ -517,7 +517,8 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 
 
 	// We need to prevent bean validation when there is currently no bean set or else we get
-	// another one of these dreaded IllegalStateException. I don't why this is not done by default :-(
+	// another one of these dreaded IllegalStateException.
+	// I don't  know why this is not done by default ||-(
 	protected boolean binderIsValid() {
 		boolean res = (this.binder.getBean() != null ? this.binder.isValid() : true);
 		this.log.debug("binderIsValid(): {})", res); //$NON-NLS-1$
@@ -599,7 +600,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		this.saveButton.setId("nodeform-saveButton-button"); //$NON-NLS-1$
 		this.saveButton.addClickShortcut(Key.ENTER);
-		this.saveButton.addClickListener(event -> {
+		this.saveButton.addClickListener(_ -> {
 			this.log.info("saveButton clicked."); //$NON-NLS-1$
 			validateAndSave();
 		});
@@ -609,7 +610,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.deleteButton = new Button(Messages.getString("NodeForm.Button.Delete.Label")); //$NON-NLS-1$
 		this.deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		this.deleteButton.setId("nodeform-deleteButton-button"); //$NON-NLS-1$
-		this.deleteButton.addClickListener(event -> {
+		this.deleteButton.addClickListener(_ -> {
 			this.log.info("deleteButton clicked."); //$NON-NLS-1$
 			fireEvent(new DeleteEvent(this, this.node));
 		});
@@ -617,7 +618,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.revertButton = new Button(Messages.getString("NodeForm.Button.Revert.Label")); //$NON-NLS-1$
 		this.revertButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 		this.revertButton.setId("nodeform-revertButton-button"); //$NON-NLS-1$
-		this.revertButton.addClickListener(event -> {
+		this.revertButton.addClickListener(_ -> {
 			this.log.info("revertButton clicked."); //$NON-NLS-1$
 			readBean(this.node);
 		});
@@ -627,7 +628,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 		this.closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 		this.closeButton.setId("nodeform-closeButton-button"); //$NON-NLS-1$
 		this.closeButton.addClickShortcut(Key.ESCAPE);
-		this.closeButton.addClickListener(event -> {
+		this.closeButton.addClickListener(_ -> {
 			this.log.info("closeButton clicked."); //$NON-NLS-1$
 			fireEvent(new CloseEvent(this));
 		});

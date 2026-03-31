@@ -31,7 +31,7 @@ public class ConfigureUIServiceInitListener implements VaadinServiceInitListener
 			});
 	}
 
-	// the BeforeEnterListener that's called before each transition:
+	// the BeforeEnterListener is called before each transition:
 	private void authenticateNavigation(BeforeEnterEvent event) {
 		// as long as the user is not logged in (and we are not already
 		// on the login-view) the event is rerouted to the LoginView:

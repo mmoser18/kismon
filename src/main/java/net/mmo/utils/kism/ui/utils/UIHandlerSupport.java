@@ -88,7 +88,7 @@ public class UIHandlerSupport
 	                                Command uiActivity) { // ui-activity to be started after delay
 		executeLater(comp,
 		             0, null,
-		             delay, (_1_) -> uiActivity.execute());
+		             delay, (_) -> uiActivity.execute());
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class UIHandlerSupport
 	                                                   Consumer<O> uiActivity) {
 		executeLater(comp,
 		             0, null,
-		             0, (_1_) -> uiActivity.accept(obj));
+		             0, (_) -> uiActivity.accept(obj));
 	}
 
 	/**

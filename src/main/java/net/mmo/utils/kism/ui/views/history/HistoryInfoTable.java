@@ -89,7 +89,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 			.setHeader(Messages.getString("HistoryTable.Grid.ColumnName.Result")) //$NON-NLS-1$
 			;
 
-		this.grid.asSingleSelect().addValueChangeListener(event -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
+		this.grid.asSingleSelect().addValueChangeListener(_ -> { /* tbd */ }); // getValue() returns the selected item or null if none is selected
 		this.grid.addAttachListener(e -> { if (e.isFromClient()) { refreshData(); }});
 
 		this.content.add(this.grid);

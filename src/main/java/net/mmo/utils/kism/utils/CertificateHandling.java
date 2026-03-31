@@ -85,7 +85,7 @@ public class CertificateHandling
 		log.info("Preloaded certificate descriptors are: {}", this.descriptors); //$NON-NLS-1$
 
 		this.descriptors.forEach(desc -> this.keyAndCertificateFiles.put(desc.getHostPattern(), desc));
-		this.keyAndCertificateFiles.forEach((key, fd) -> {
+		this.keyAndCertificateFiles.forEach((_, fd) -> {
 			getKeyManagerFactory(fd.getHostPattern());
 		});
 	}
