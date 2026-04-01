@@ -44,18 +44,18 @@ import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
 import net.mmo.utils.kism.ui.views.nodes.NodeTypeLabelProvider;
 
 
-@SuppressWarnings("javadoc")
 @Route(value = "history-graph", layout = MainLayout.class) // route-name, parent // Note: this also acts as @Component annotation!
 @PageTitle("History Graph | " + CommonConstants.ApplicationFullName)
 @RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Slf4j
+@SuppressWarnings("javadoc")
 public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Object>>
 {
 	static {
-		log.info("HistoryInfoGraph static c'tor begin:"); //$NON-NLS-1$;
+		log.debug("{} static c'tor begin:", HistoryInfoGraph.class.getName()); //$NON-NLS-1$;
 	}
-	{
-		log.info("HistoryInfoGraph instance c'tor begin:"); //$NON-NLS-1$;
+	{ // instance c'tor:
+		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 	}
 	private static final long serialVersionUID = -1954281705187898725L;
 	private static final boolean LEGENDS_AT_LEFT = false;
@@ -69,7 +69,7 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 
 	public HistoryInfoGraph(HistoryInfoService historyInfoService) {
 		super(historyInfoService);
-		log.info("HistoryInfoGraph instance c'tor end."); //$NON-NLS-1$;
+		log.debug(this.getClass().getSimpleName() + " created."); //$NON-NLS-1$
 	}
 
 	@Override
@@ -236,6 +236,6 @@ public class HistoryInfoGraph extends AbstractHistoryInfoView<HashMap<String, Ob
 	}
 
 	static {
-		log.info("HistoryInfoGraph static c'tor end."); //$NON-NLS-1$;
+		log.debug("{} static c'tor end.", HistoryInfoTable.class.getName()); //$NON-NLS-1$;
 	}
 }

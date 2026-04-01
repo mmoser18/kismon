@@ -82,6 +82,12 @@ import org.springframework.stereotype.Component;
 @CssImport(value="./styles/grid-tree-toggle-adjust.css", themeFor="vaadin-grid-tree-toggle")
 public class NodeView <N extends Node> extends VerticalLayout
 {
+	static {
+		log.info("{} static c'tor begin:", NodeView.class.getName()); //$NON-NLS-1$;
+	}
+	{ // instance c'tor:
+		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
+	}
 	private static final long serialVersionUID = -352635233754729967L;
 
 	// public to allow access by test classes
@@ -120,7 +126,6 @@ public class NodeView <N extends Node> extends VerticalLayout
 	public NodeView(NodeService nodeService,
 	                NodeFactory<N> nodeFactory,
 	                FormFactory<N> formFactory) { // defined as constructor args to force order
-		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		try {
 			this.nodeService = nodeService;
 			this.nodeFactory = nodeFactory;
@@ -160,7 +165,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 		recalculateColumnWidths(1000); // make sure the column widths are adjusted
 
 		nodeView = this;
-		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
+		log.debug("{} created.", this.getClassName()); //$NON-NLS-1$
 	}
 
 	@SuppressWarnings("removal")
@@ -1146,5 +1151,9 @@ public class NodeView <N extends Node> extends VerticalLayout
 				add(label);
 			}
 		}
+	}
+
+	static {
+		log.debug("{} static c'tor end.", NodeView.class.getName()); //$NON-NLS-1$;
 	}
 }

@@ -38,15 +38,21 @@ import org.springframework.stereotype.Component;
 /**
  * Defines the application's main view, routed to via the base URL
  */
-@SuppressWarnings("javadoc")
 @Route(value="history-table", layout = MainLayout.class)
 @PageTitle("History Table | " + CommonConstants.ApplicationFullName)
 @RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Component // to make it possible to @Autowire it
 @Scope("prototype") // to ensure every test run gets a fresh instance.
 @Slf4j
+@SuppressWarnings("javadoc")
 public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Object>>
 {
+	static {
+		log.debug("{} static c'tor begin:", HistoryInfoTable.class.getName()); //$NON-NLS-1$;
+	}
+	{ // instance c'tor:
+		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
+	}
 	private static final long serialVersionUID = -352635233754729967L;
 
 	protected static final String MinDurationValueKey = "minDurationValue"; //$NON-NLS-1$
@@ -61,6 +67,7 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 	// This gets autowired but still puzzled which annotation causes this...
 	public HistoryInfoTable(HistoryInfoService historyInfoService) {
 		super(historyInfoService);
+		log.debug(this.getClass().getSimpleName() + " created."); //$NON-NLS-1$
 	}
 
 	@Override
@@ -297,5 +304,9 @@ public class HistoryInfoTable extends AbstractHistoryInfoView<HashMap<String, Ob
 				}
 			});
 		}
+	}
+
+	static {
+		log.debug("{} static c'tor end.", HistoryInfoTable.class.getName()); //$NON-NLS-1$;
 	}
 }

@@ -93,7 +93,6 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 
 	// This gets autowired but still puzzled which annotation causes this...
 	public AbstractHistoryInfoView(HistoryInfoService historyInfoService) {
-		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
 		this.historyInfoService = historyInfoService;
 		addClassName(ViewClassName);
 		setSizeFull(); // use entire browser window
@@ -111,7 +110,6 @@ abstract public class AbstractHistoryInfoView <T extends Object> extends Vertica
 			this.content = new Div();
 			this.content.add(new H1("no DB available for HistoryData! Check/start H2-DB")); //$NON-NLS-1$
 		}
-		log.debug("{} complete.", this.getClassName()); //$NON-NLS-1$
 	}
 
 	abstract protected void configureContent();
