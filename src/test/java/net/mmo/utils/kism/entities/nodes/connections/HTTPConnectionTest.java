@@ -285,7 +285,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
@@ -336,7 +336,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 
 		Assertions.assertEquals(expectedHeader, responseHeader);
@@ -541,7 +541,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -621,7 +621,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -703,7 +703,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -815,7 +815,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
@@ -868,7 +868,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader, "created response header doesn't match the expected result");
 	}
@@ -922,7 +922,7 @@ public class HTTPConnectionTest
 			                                            method,
 			                                            HTTPConnection.EMPTY_BODY,
 			                                            new URI(uri),
-			                                            (str) -> nc,
+			                                            (_) -> nc,
 			                                            () -> cnonce);
 		Assertions.assertEquals(expectedHeader, responseHeader);
 	}
