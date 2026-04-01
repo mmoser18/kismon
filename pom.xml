@@ -45,10 +45,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- some local settings: -->
-		<!-- 
 		<user.home>${env.USERPROFILE}</user.home>
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
-		-->
 		<!-- worked with Vaadin: 18.0.4 and then again with 22.0.1, 22.0.2, 23.0.1, 23.0.2, 
 		     but did NOT work with v19.0.x..v21.0.4: -->
 		<!-- last version that does NOT validate the Chart license during build time ->
@@ -56,7 +54,7 @@
 		<!- -->
 		<!-- newest version / but since v23.2.0 this refuses to build without license ||-( : -->
 		<!-- vaadin.version>24.3.8</vaadin.version -->
-		<vaadin.version>25.1.0</vaadin.version>
+		<vaadin.version>25.1.1</vaadin.version>
 		<!-- -->
 		<wdm.version>6.3.3</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
@@ -73,7 +71,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.5</version> <!-- for some stupid reason one can not use a placeholder for this version ||-( -->
+		<version>4.0.5</version> <!-- for some stupid reason one can not use a placeholder for this version number ||-( -->
 		<!-- <relativePath/> lookup parent from repository -->
 	</parent>
 
@@ -107,30 +105,14 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-    <dependencyManagement>
+	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>com.vaadin</groupId>
-				<artifactId>vaadin</artifactId>
-				<version>${vaadin.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.vaadin</groupId>
-				<artifactId>vaadin-core</artifactId>
-				<version>${vaadin.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>com.vaadin</groupId>
 				<artifactId>vaadin-bom</artifactId>
 				<version>${vaadin.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.vaadin</groupId>
-				<artifactId>vaadin-dev</artifactId>
-				<version>${vaadin.version}</version>
-				<optional>true</optional>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -141,7 +123,7 @@
 			<groupId>com.vaadin</groupId>
 			<!-- Replace artifactId with vaadin-core to use only free components -->
 			<artifactId>vaadin</artifactId>
-			<!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
+			<!-- Webjars are only needed when running in Vaadin 13 compatibility mode ->
 			<exclusions>
 				<exclusion>
 					<groupId>com.vaadin.webjar</groupId>
@@ -168,30 +150,31 @@
 					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-dev</artifactId>
+			<!- -->
 		</dependency>
 
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot-starter</artifactId>
-			<!-- Excluding so that webjars are not included. / is this still required? -->
+			<!-- Excluding so that webjars are not included. / is this still required? ->
 			<exclusions>
 				<exclusion>
 					<groupId>com.vaadin</groupId>
 					<artifactId>vaadin-core</artifactId>
 				</exclusion>
 			</exclusions>
-			<!-- -->
+			<!- -->
 		</dependency>
 
-		<!-- enable Spring Security: -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-dev</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
 		<!-- to enable live reload in the application (see https://vaadin.com/docs/latest/configuration/live-reload/spring-boot): -->
@@ -201,20 +184,11 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- logback classic has a transitive reference to slf4j - so no explicit slf4j dependency should be required, but... -->
+		<!-- enable Spring Security: -->
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-		</dependency>
-		<!-- -->
 
 		<!-- ->
 		<dependency>
@@ -255,6 +229,21 @@
 			<scope>provided</scope>
 		</dependency>
 		<!- -->
+
+		<!-- logback classic has a transitive reference to slf4j - so no explicit slf4j dependency should be required, but... -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+		</dependency>
+		<!-- -->
 
 		<dependency>
 			<groupId>com.hierynomus</groupId>
@@ -420,6 +409,16 @@
 			<version>1.86.0</version>
 		</dependency>
 		<!- -->
+		
+		<!-- Plugin for library version checks and updates
+		     Source: https://mvnrepository.com/artifact/org.codehaus.mojo/versions-maven-plugin 
+		-->
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>versions-maven-plugin</artifactId>
+			<version>2.21.0</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -480,7 +479,7 @@
 					</configuration>
 				</plugin>
 				<!- -->
-				
+
 				<!-- check for valid license headers: -->
 				<plugin>
 					<groupId>com.mycila</groupId>
@@ -521,6 +520,35 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+				
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<configuration>
+						<!-- Ignore unstable versions globally: -->
+						<ignoredVersions>
+							<ignoredVersion>.*-M.*</ignoredVersion>
+							<ignoredVersion>.*-alpha*</ignoredVersion>
+							<ignoredVersion>.*-Alpha*</ignoredVersion>
+							<ignoredVersion>.*-beta*</ignoredVersion>
+							<ignoredVersion>.*-Beta*</ignoredVersion>
+							<ignoredVersion>.*-rc*</ignoredVersion>
+							<ignoredVersion>.*-SNAPSHOT</ignoredVersion>
+						</ignoredVersions>
+						<!-- Example: Exclude specific project dependencies ->
+						<dependencyExcludes>
+							<dependencyExclude>org.slf4j:slf4j-simple</dependencyExclude>
+							<dependencyExclude>dom4j:dom4j</dependencyExclude>
+						</dependencyExcludes>
+						<!- -->
+						<!-- Example: Exclude plugin transitive dependencies ->
+						<pluginDependencyExcludes>
+							<pluginDependencyExclude>
+								org.codehaus.plexus:plexus-utils</pluginDependencyExclude>
+						</pluginDependencyExcludes>
+						<!- -->
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -598,7 +626,7 @@
 					<excludes> <!-- these should be provided externally to the .jar: -->
 						<exclude>**/application.properties</exclude>
 						<exclude>**/logback.xml</exclude>
-						<exclude>com/vaadin/**</exclude>
+						<exclude>com/vaadin/flow/components/charts**</exclude>
 					</excludes>
 					<archive>
 						<manifestEntries>
@@ -609,6 +637,10 @@
 						</manifestEntries>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
@@ -782,7 +814,7 @@
 							<!- -->
 						</configuration>
 					</plugin>
-					
+
 					<!-- what is/was that for? -->
 					<plugin>
 						<groupId>org.owasp</groupId>
