@@ -6,58 +6,63 @@
 
 package net.mmo.utils.kism.security;
 
+
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.views.login.LoginView;
 import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.SecurityFilterChain;
 
 @SuppressWarnings({"nls", "javadoc"})
 @EnableWebSecurity
 @Configuration
 @Slf4j
-public class SecurityConfiguration extends VaadinWebSecurity
+public class SecurityConfiguration
 {
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) {
 		log.info("configure: http={}", http);
-		// Delegating the responsibility of general configurations
-		// of http security to the super class. It's configuring
-		// the followings: Vaadin's CSRF protection by ignoring
-		// framework's internal requests, default request cache,
-		// ignoring public views annotated with @AnonymousAllowed,
-		// restricting access to other views/endpoints, and enabling
-		// NavigationAccessControl authorization.
-		// You can add any possible extra configurations of your own
-		// here (the following is just an example):
-		//
-		// http.rememberMe().alwaysRemember(false);
-		//
-		// Configure your static resources with public access before calling
-		// super.configure(HttpSecurity) as it adds final anyRequest matcher
-		http.authorizeHttpRequests(auth -> auth	.requestMatchers(new AntPathRequestMatcher("/help/**"))
-												.permitAll());
-		super.configure(http);
+		// Configure your static resources with public access:
+		http.authorizeHttpRequests(authorize -> authorize
+			.requestMatchers(HttpMethod.GET, "/login", "/images/*.png", "/icons/**", "/help/**")
+			.permitAll()
+			// not used - just as example:
+			//.requestMatchers(HttpMethod.GET, "/public/**")
+			//.anonymous()
+			.requestMatchers(HttpMethod.GET, "/nodes", "/history*")
+			.hasAnyRole("USER", "ADMIN")
+//			.requestMatchers(HttpMethod.GET, "/**")
+//			.hasAnyRole("USER", "ADMIN")
+		);
 
-		// This is important to register your login view to the view
-		// access checker mechanism:
-		setLoginView(http, LoginView.class);
+		// Configure Vaadin's security using VaadinSecurityConfigurer
+		http.with(VaadinSecurityConfigurer.vaadin(), configurer -> configurer
+			// This is important to register your login view to the navigation access control mechanism:
+			.loginView(LoginView.class)
+			// You can add any possible extra configurations of your own
+			// here (the following is just an example):
+			//.enableCsrfConfiguration(false);
+		);
 
 		// You can add any possible extra configurations of your own here
+
+		return http.build();
 	}
+
 
 	@Bean
 	public UserDetailsService userDetailsService() {
@@ -80,28 +85,28 @@ public class SecurityConfiguration extends VaadinWebSecurity
 				throw new IllegalArgumentException("No value for '" + pwdPropertyName + "' found in application.properties");
 			}
 			userDetails.add(User.withUsername(uid)
-			                    .password("{noop}" + pwd)
-			                    .roles(role)
-			                    .build());
+			                .password("{noop}" + pwd)
+			                .roles(role)
+			                .build());
 		}
 		return new InMemoryUserDetailsManager(userDetails);
 	}
 
-	/* exclude Vaadin-framework communication and static assets from Spring Security. */
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		log.info("configure: web={}", web);
-		web.ignoring()
-			.requestMatchers("/VAADIN/**",
-			                 "/favicon.ico",
-			                 "/robots.txt",
-			                 "/manifest.webmanifest",
-			                 "/sw.js",
-			                 "/offline.html",
-			                 "/icons/**",
-			                 "/images/**",
-			                 "/styles/**",
-			                 "/h2-console/**");
-		super.configure(web);
-	}
+//	/* exclude Vaadin-framework communication and static assets from Spring Security. */
+//	@Override
+//	public void configure(WebSecurity web) throws Exception {
+//		log.info("configure: web={}", web);
+//		web.ignoring()
+//			.requestMatchers("/VAADIN/**",
+//			                 "/favicon.ico",
+//			                 "/robots.txt",
+//			                 "/manifest.webmanifest",
+//			                 "/sw.js",
+//			                 "/offline.html",
+//			                 "/icons/**",
+//			                 "/images/**",
+//			                 "/styles/**",
+//			                 "/h2-console/**");
+//		super.configure(web);
+//	}
 }

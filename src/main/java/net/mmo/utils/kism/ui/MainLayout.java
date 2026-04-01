@@ -16,14 +16,16 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.NodeService;
 import net.mmo.utils.kism.security.SecurityUtils;
+import net.mmo.utils.kism.ui.utils.ThemeChanger;
 import net.mmo.utils.kism.ui.views.history.HistoryInfoGraph;
 import net.mmo.utils.kism.ui.views.history.HistoryInfoTable;
 import net.mmo.utils.kism.ui.views.nodes.NodeView;
 
-@SuppressWarnings({"javadoc", "deprecation"})
+@RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/vaadin-button-styles.css", themeFor = "vaadin-button")
 @CssImport(value = "./styles/vaadin-checkbox-styles.css", themeFor = "vaadin-checkbox")
@@ -39,6 +41,7 @@ import net.mmo.utils.kism.ui.views.nodes.NodeView;
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./styles/vaadin-upload-styles.css", themeFor = "vaadin-upload")
 @Slf4j
+@SuppressWarnings({"javadoc", "deprecation"})
 public class MainLayout extends AppLayout
 {
 	private static final long serialVersionUID = 8922152078442380813L;
@@ -49,6 +52,8 @@ public class MainLayout extends AppLayout
 	public static final String HeaderClassName = "main-header"; //$NON-NLS-1$
 	public static final String LogoutLinkClassName = "logout-link"; //$NON-NLS-1$
 	public static final String HelpLinkClassName = "help-link"; //$NON-NLS-1$
+	public static final String ThemeSelectorClassName = "theme-selector"; //$NON-NLS-1$
+
 	public static final String StartupErrorMessageClassName = "startup-error"; //$NON-NLS-1$
 
 	public MainLayout() {
@@ -69,8 +74,12 @@ public class MainLayout extends AppLayout
 		// add a logout link to the page:
 		Anchor logout = new Anchor(CommonConstants.LogoutURL, LogoutLinkLabel);
 		logout.addClassName(LogoutLinkClassName);
+		// add a theme selector to the page:
+		ThemeChanger themeSelector = new ThemeChanger();
+		themeSelector.addClassName(ThemeSelectorClassName);
 
-		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), appTitle, help, logout);
+		HorizontalLayout header =
+			new HorizontalLayout(new DrawerToggle(), appTitle, help, logout, themeSelector);
 		header.addClassName(HeaderClassName);
 //		header.expand(appTitle);
 //		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
