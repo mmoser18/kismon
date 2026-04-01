@@ -1,4 +1,5 @@
-/*
+/* CSS conventions:
+
 <tag>
 .<class>
 #<id>
@@ -236,11 +237,11 @@ vaadin-chart {
 }
 
 .main-title {
-	width: 85%;
+	width: 70%;
 }
 
 .main-header {
-	height: 3em;
+	height: 4em;
 	width: 100%;
 	align-items: flex-end;
 	margin-top: 0px;
@@ -254,6 +255,12 @@ vaadin-chart {
 .logout-link .help-link {
 	padding: 10px;
 	text-decoration: underline;
+}
+
+.theme-selector {
+	height: 3em;
+	width: 10%;
+	font-size: 5;
 }
 
 /* to get rid of this stupid message box: */
