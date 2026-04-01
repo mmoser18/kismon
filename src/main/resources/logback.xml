@@ -29,16 +29,15 @@
 	
 	<!-- silence the LogBacks startup mumbling : -->
 	<logger name="ch.qos.logback" level="warn"/>
-	<logger name="net.schmizz.sshj" level="warn"/> <!-- why does this have no influence? info messages still appear ||-(  -->
+	<logger name="net.schmizz.sshj" level="warn"/> <!-- why does this have no influence? Some info messages still appear ||-(  -->
+	<logger name="logging.level.web" level="debug"/> <!-- "For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'" -->
+
 
 	<logger name="org.springframework.security.web.savedrequest.HttpSessionRequestCache" level="warn"/>
 	<logger name="net.mmo.utils.kism.security.CustomRequestCache" level="warn"/>
-	<logger name="net.mmo.utils.kism.security.SecurityUtils" level="warn"/>
+	<logger name="net.mmo.utils.kism.security.SecurityUtils" level="info"/>
 	<logger name="net.mmo.utils.kism.ui.utils.UIHandlerSupport" level="info"/>
-	<logger name="net.mmo.utils.kism.ui.view.results" level="debug"/>
-	<logger name="net.mmo.utils.kism.ui.views.history" level="debug"/>
 	<!--
-	<logger name="net.mmo.utils.kism" level="info"/>
 	<logger name="net.mmo.utils.kism.backend.service.NodeService" level="trace"/>
 	<logger name="net.mmo.utils.kism.ui.views.nodes" level="debug"/>
 	<logger name="net.mmo.utils.kism.ui.views.nodes.NodeForm" level="debug"/>
@@ -50,7 +49,10 @@
 	<logger name="net.mmo.utils.kism.entities.nodes.connections.RESTConnection" level="debug"/>
 	<logger name="net.mmo.utils.kism.entities.nodes.ResultChecker" level="trace"/>
 	<logger name="com.vaadin.flow.data.binder.Binder" level="debug"/>
+	<logger name="net.mmo.utils.kism.ui.views.history" level="debug"/>
+	<logger name="net.mmo.utils.kism.ui.views.results" level="debug"/>
 	-->
+	<logger name="net.mmo.utils.kism" level="debug"/>
 
 	<root level="info">
 		<appender-ref ref="Console" />
