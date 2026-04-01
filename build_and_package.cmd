@@ -1,7 +1,7 @@
 @echo off
 
 cd U:\Documents\eclipse\workspace_Vaadin\KIS-Monitoring
-set JAVA_HOME=C:\Program Files\Java\jdk-21.0
+set JAVA_HOME=C:\Program Files\Java\jdk-25.0
 echo building using %JAVA_HOME%:
 rem echo ========================
 rem echo JAVA_HOME=%JAVA_HOME%

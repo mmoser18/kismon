@@ -4,7 +4,7 @@ rem note: adapt to the location where the KISMON jar and other files are located
 set KISMON_HOME=U:\Documents\eclipse\workspace_Vaadin\KIS-Monitoring
 cd %KISMON_HOME%
 
-set JAVA_HOME=C:\Program Files\Java\jdk-24.0
+set JAVA_HOME=C:\Program Files\Java\jdk-25.0
 echo running KISMON using %JAVA_HOME%:
 set KISMON_JAR=kis-monitoring-1.1-SNAPSHOT.jar
 
