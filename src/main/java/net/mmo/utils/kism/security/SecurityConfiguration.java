@@ -18,7 +18,6 @@ import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -36,18 +35,19 @@ public class SecurityConfiguration
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) {
 		log.info("configure: http={}", http);
-		// Configure your static resources with public access:
-		http.authorizeHttpRequests(authorize -> authorize
-			.requestMatchers(HttpMethod.GET, "/login", "/images/*.png", "/icons/**", "/help/**")
-			.permitAll()
-			// not used - just as example:
-			//.requestMatchers(HttpMethod.GET, "/public/**")
-			//.anonymous()
-			.requestMatchers(HttpMethod.GET, "/nodes", "/history*")
-			.hasAnyRole("USER", "ADMIN")
-//			.requestMatchers(HttpMethod.GET, "/**")
+// as turned out, this is not necessary, when using annotations on the Views. Then Vaadin takes care of
+// all the permissions...
+//		// Configure your static resources with public access:
+//		http.authorizeHttpRequests(authorize -> authorize
+//			// not used - just as example:
+//			//.requestMatchers(HttpMethod.GET, "/images/*.png", "/icons/**", "/help/**")
+//			//.permitAll()
+//			//.requestMatchers(HttpMethod.GET, "/public/**")
+//			//.anonymous()
+//			// not needed - Vaadin adds that based on the Views' annotations:
+//			.requestMatchers(HttpMethod.GET, "/nodes", "/history*")
 //			.hasAnyRole("USER", "ADMIN")
-		);
+//		);
 
 		// Configure Vaadin's security using VaadinSecurityConfigurer
 		http.with(VaadinSecurityConfigurer.vaadin(), configurer -> configurer

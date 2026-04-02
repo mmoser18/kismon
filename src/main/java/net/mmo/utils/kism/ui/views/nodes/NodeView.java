@@ -69,7 +69,7 @@ import org.springframework.stereotype.Component;
  * Defines the application's main view, routed to via the base URL
  * @param <N> the node-type
  */
-@Route(value="nodes", layout = MainLayout.class)
+@Route(value="", layout = MainLayout.class)
 @PageTitle("Nodes | " + CommonConstants.ApplicationFullName)
 @RolesAllowed({CommonConstants.Role_ADMIN, CommonConstants.Role_READ_ONLY})
 @Component // to make it possible to @Autowire it
