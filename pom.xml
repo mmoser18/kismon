@@ -65,7 +65,7 @@
 		
 		<sshj.version>0.40.0</sshj.version>
 		<mail.version>1.4.7</mail.version>
-		<jaxb.version>4.0.0</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+		<jaxb.version>4.0.7</jaxb.version> <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
 	</properties>
 
 	<parent>
@@ -310,13 +310,13 @@
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
-			<version>23.3.0.23.09</version><!--$NO-MVN-MAN-VER$-->
+			<version>23.26.1.0.0</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
-			<version>3.3.1</version><!--$NO-MVN-MAN-VER$-->
+			<version>3.5.8</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 		<!-- required when using Vaadin BeanValidators: -->
@@ -324,6 +324,7 @@
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
+			<version>9.1.0.Final</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 		<!-- the following are obviously referenced by hibernate validator - why are these not in its pom? -->
@@ -335,7 +336,7 @@
 		<dependency>
 			<groupId>org.glassfish.web</groupId>
 			<artifactId>javax.el</artifactId>
-			<version>2.2.4</version>
+			<version>2.2.6</version>
 		</dependency>
 
 		<!-- webdriver-manager to allow running the Integration Tests on Chrome
@@ -446,7 +447,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>2.22.2</version>
+					<version>3.5.5</version>
 				</plugin>
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.->
@@ -526,14 +527,19 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
 					<configuration>
+						<processDependencyManagement>false</processDependencyManagement>
+						<processPluginDependenciesInPluginManagement>false</processPluginDependenciesInPluginManagement>
 						<!-- Ignore unstable versions globally: -->
 						<ignoredVersions>
 							<ignoredVersion>.*-M.*</ignoredVersion>
-							<ignoredVersion>.*-alpha*</ignoredVersion>
-							<ignoredVersion>.*-Alpha*</ignoredVersion>
-							<ignoredVersion>.*-beta*</ignoredVersion>
-							<ignoredVersion>.*-Beta*</ignoredVersion>
-							<ignoredVersion>.*-rc*</ignoredVersion>
+							<ignoredVersion>.*-alpha.*</ignoredVersion>
+							<ignoredVersion>.*-Alpha.*</ignoredVersion>
+							<ignoredVersion>.*-beta.*</ignoredVersion>
+							<ignoredVersion>.*-Beta.*</ignoredVersion>
+							<ignoredVersion>.*-b\d*</ignoredVersion> <!---b06 -->
+							<ignoredVersion>.*-rc.*</ignoredVersion>
+							<ignoredVersion>.*-RC.*</ignoredVersion>
+							<ignoredVersion>.*\.Dev.*</ignoredVersion>
 							<ignoredVersion>.*-SNAPSHOT</ignoredVersion>
 						</ignoredVersions>
 						<!-- Example: Exclude specific project dependencies ->
@@ -819,7 +825,7 @@
 					<plugin>
 						<groupId>org.owasp</groupId>
 						<artifactId>dependency-check-maven</artifactId>
-						<version>12.1.3</version>
+						<version>12.2.0</version>
 
 						<configuration>
 							<formats>
