@@ -181,15 +181,11 @@ vaadin-upload {
 }
 
 .Horizontal {
-	/*
-	orientation: horizontal;
-	*/
+	/* orientation: horizontal; */
 	flex-direction: row;
 }
 .Vertical {
-	/*
-	orientation: vertical;
-	*/
+	/* orientation: vertical; */
 	flex-direction: column;
 }
 
@@ -237,11 +233,11 @@ vaadin-chart {
 }
 
 .main-title {
-	width: 70%;
+	width: 75%;
 }
 
 .main-header {
-	height: 4em;
+	height: 3em;
 	width: 100%;
 	align-items: flex-end;
 	margin-top: 0px;
@@ -258,9 +254,11 @@ vaadin-chart {
 }
 
 .theme-selector {
-	height: 3em;
-	width: 10%;
-	font-size: 5;
+	align-items: flex-end;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	width: var(--vaadin-form-item-label-width);
 }
 
 /* to get rid of this stupid message box: */
