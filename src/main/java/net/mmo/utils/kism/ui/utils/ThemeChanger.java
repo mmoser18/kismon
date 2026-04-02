@@ -1,6 +1,7 @@
 /**
- * @author Michael Moser (michael.moser@freesurf.ch)
- * @since 1 Apr 2026
+ * Copyright © 2020-2026 by Michael Moser
+ *
+ * @author Michael Moser (17732576+mmoser18@users.noreply.github.com)
  */
 
 package net.mmo.utils.kism.ui.utils;
@@ -14,7 +15,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.aura.Aura;
 import com.vaadin.flow.theme.lumo.Lumo;
 import lombok.extern.slf4j.Slf4j;
-import net.mmo.utils.kism.utils.Messages;
 
 /**
  * Copied from here: {@link "https://vaadin.com/docs/latest/styling/advanced/dynamic-stylesheets"}
