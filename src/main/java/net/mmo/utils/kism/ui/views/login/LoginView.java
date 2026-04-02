@@ -13,14 +13,14 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 
 @Route(CommonConstants.LoginURL) // Note: this also acts as @Component annotation!
 @PageTitle("Login | " + CommonConstants.ApplicationFullName)
-@PermitAll
+@AnonymousAllowed
 @Slf4j
 @SuppressWarnings({"nls", "javadoc"})
 public class LoginView extends VerticalLayout implements BeforeEnterObserver
