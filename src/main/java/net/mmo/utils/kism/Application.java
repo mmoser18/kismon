@@ -229,10 +229,17 @@ public class Application extends SpringBootServletInitializer
 	private static void checkAndRemoveAcceptableProtocolsFromDisabledList() {
 		String disabledAlgorithms = Security.getProperty("jdk.tls.disabledAlgorithms"); //$NON-NLS-1$
 		for (String acceptableSSLVersion: TCPConnection.acceptableSSLVersions) {
-			if (disabledAlgorithms.contains(acceptableSSLVersion)) { // we accept an SSL version that the JDK has disabled -> remove it from that list!
-				disabledAlgorithms = disabledAlgorithms.replace(acceptableSSLVersion + ",", ""); //$NON-NLS-1$ //$NON-NLS-2$ // this works only if the protocol to be removed is not at the end of the list but this is typically the case as the list ends with something like "include jdk.disabled.namedCurves"
+			if (disabledAlgorithms.contains(acceptableSSLVersion)) { // we accept an SSL version that the normal JDK has disabled -> we remove it from that list!
+				log.info("Enabling disabled SSL-version {}.", acceptableSSLVersion); //$NON-NLS-1$
+				disabledAlgorithms = disabledAlgorithms.replace(acceptableSSLVersion + ",", ""); //$NON-NLS-1$ //$NON-NLS-2$ // Note: this works only if the protocol to be removed is not at the end of the list but this is typically the case as the list ends with something like "include jdk.disabled.namedCurves"
 			}
 		}
+		// finally we set this as the new list of disabled algos:
 		Security.setProperty("jdk.tls.disabledAlgorithms", disabledAlgorithms); //$NON-NLS-1$
+		// these did not fix the "SSL Handshake exception":
+		//Security.setProperty("jdk.certpath.disabledAlgorithms", "none"); //$NON-NLS-1$ //$NON-NLS-2$
+		//Security.setProperty("http.auth.digest.disabledAlgorithms", "none"); //$NON-NLS-1$ //$NON-NLS-2$
+		//Security.setProperty("http.auth.digest.disabledAlgorithms", "none"); //$NON-NLS-1$ //$NON-NLS-2$
+		//Security.setProperty("jdk.xml.dsig.secureValidationPolicy", ""); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 }
