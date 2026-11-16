@@ -45,7 +45,11 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- some local settings: -->
+		<!-- ->
 		<user.home>${env.USERPROFILE}</user.home>
+		<!- -->
+		<user.home>U:</user.home>
+		<!-- -->
 		<user.repo>${user.home}/.m2/m2repository/</user.repo>
 		<!-- worked with Vaadin: 18.0.4 and then again with 22.0.1, 22.0.2, 23.0.1, 23.0.2, 
 		     but did NOT work with v19.0.x..v21.0.4: -->
@@ -54,7 +58,7 @@
 		<!- -->
 		<!-- newest version / but since v23.2.0 this refuses to build without license ||-( : -->
 		<!-- vaadin.version>24.3.8</vaadin.version -->
-		<vaadin.version>25.1.1</vaadin.version>
+		<vaadin.version>25.1.6</vaadin.version>
 		<!-- -->
 		<wdm.version>6.3.3</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
@@ -71,7 +75,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.5</version> <!-- for some stupid reason one can not use a placeholder for this version number ||-( -->
+		<!-- for some stupid reason one can not use a placeholder for this version number. It has to sit here in clear text ||-( -->
+		<version>4.0.5</version>
 		<!-- <relativePath/> lookup parent from repository -->
 	</parent>
 
@@ -113,6 +118,12 @@
 				<version>${vaadin.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.21.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -417,7 +428,6 @@
 		<dependency>
 			<groupId>org.codehaus.mojo</groupId>
 			<artifactId>versions-maven-plugin</artifactId>
-			<version>2.21.0</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
@@ -563,12 +573,6 @@
 		
 		<plugins>
 			<plugin>
-				<groupId>com.mycila</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-			</plugin>
-			<!-- -->
-			
-			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 			
@@ -644,6 +648,14 @@
 					</archive>
 				</configuration>
 			</plugin>
+			
+			<!-- ->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-pluginlicense-maven-plugin</artifactId>
+			</plugin>
+			<!- -->
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
@@ -668,12 +680,12 @@
 
 			<build>
 				<plugins>
-					<!-- -->
+					<!-- ->
 					<plugin>
 						<groupId>com.mycila</groupId>
 						<artifactId>license-maven-plugin</artifactId>
 					</plugin>
-					<!-- -->
+					<!- -->
 					<plugin>
 						<groupId>org.springframework.boot</groupId>
 						<artifactId>spring-boot-maven-plugin</artifactId>
