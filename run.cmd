@@ -28,13 +28,13 @@ echo starting in directory:
 pwd
 
 rem useful Java options (in case of handshake issues):
-rem "-Djavax.net.debug=ssl:handshake" 
+rem set OPTS=-Djavax.net.debug=ssl:handshake
 
 rem standard version - with config file names (with path) as args - e.g.:
 rem set configFile=test.kmc
 set configFile=home.kmc
 echo using config-file "%KISMON_HOME%\%configFile%":
-"%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\%configFile%"
+"%JAVA_HOME%\bin\java" %OPTS% -cp . -jar "%KISMON_JAR%" "%KISMON_HOME%\%configFile%"
 
 rem starting without args --> will use the config file specified in application.properties:
 rem "%JAVA_HOME%\bin\java" -cp . -jar "%KISMON_JAR%"
