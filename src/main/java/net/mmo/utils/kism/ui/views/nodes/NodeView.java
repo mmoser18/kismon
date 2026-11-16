@@ -83,7 +83,7 @@ import org.springframework.stereotype.Component;
 public class NodeView <N extends Node> extends VerticalLayout
 {
 	static {
-		log.info("{} static c'tor begin:", NodeView.class.getName()); //$NON-NLS-1$;
+		log.debug("{} static c'tor begin:", NodeView.class.getName()); //$NON-NLS-1$;
 	}
 	{ // instance c'tor:
 		log.debug("Creating {}:", this.getClass().getSimpleName()); //$NON-NLS-1$
