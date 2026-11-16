@@ -17,12 +17,13 @@ drivers/
 error-screenshots/
 
 webpack.generated.js
-/frontend/generated/*
-/frontend/index.html
 /logs/
 /data/
 /garage/*
 /debug.log
+/src/main/bundles
+/src/main/frontend/generated
+/src/main/frontend/index.html
 /src - */
 /tsconfig.json
 /types.d.ts
@@ -37,7 +38,6 @@ webpack.generated.js
 /.pnpm-debug.log
 /vite.config.ts
 /vite.generated.ts
-*.bundle
 /ksta.kmc
 /*.bak
 /* - Copy.kmc
