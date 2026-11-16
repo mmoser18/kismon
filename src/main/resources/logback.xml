@@ -51,8 +51,8 @@
 	<logger name="com.vaadin.flow.data.binder.Binder" level="debug"/>
 	<logger name="net.mmo.utils.kism.ui.views.history" level="debug"/>
 	<logger name="net.mmo.utils.kism.ui.views.results" level="debug"/>
-	-->
 	<logger name="net.mmo.utils.kism" level="debug"/>
+	-->
 
 	<root level="info">
 		<appender-ref ref="Console" />
