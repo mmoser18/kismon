@@ -216,7 +216,8 @@ abstract public class LeafNode extends ActionableNode
 			sendRequest();
 			resultMsg = getRequestResult();
 		} catch (Throwable ex) {
-			if (shortRequestLogEntries) {
+			// final boolean isSSLHandshakeException = (ex.getCause() instanceof javax.net.ssl.SSLHandshakeException);
+			if (shortRequestLogEntries /* && !isSSLHandshakeException */) {
 				if (this.log.isDebugEnabled()) { // debug since info was still too verbose / note the info() below is on purpose!
 					this.log.debug("Error {} '{}': {}", logFragment, getName(), ExceptionUtils.exceptionCauseSummary(ex)); //$NON-NLS-1$
 				} else {
