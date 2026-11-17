@@ -93,7 +93,7 @@ public abstract class Node extends AbstractEntity
 		this.description = description;
 		this.state = state;
 		this.log = LoggerFactory.getLogger(this.getClass());
-		this.log.info("New {} with name {} created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
+		this.log.info("New {} with name \"{}\" created.", this.getClass().getSimpleName(), name); //$NON-NLS-1$
 	}
 
 	public Node(String name, String description, State state, IntermediateNode parent) {

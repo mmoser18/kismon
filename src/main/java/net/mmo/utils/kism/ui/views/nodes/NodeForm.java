@@ -646,7 +646,7 @@ public abstract class NodeForm <N extends Node> extends VerticalLayout
 					fireEvent(new SaveEvent(this, this.node));
 					setUiChanges(false);
 				} catch (ValidationException ex) { // throws ValidationException if data not valid
-					this.log.info("ValidationException:", ex); //$NON-NLS-1$
+					this.log.info("ValidationException for node '" + this.node.getName() + "' :", ex); //$NON-NLS-1$
 					java.util.List<ValidationResult> beanValidationErrors = ex.getBeanValidationErrors();
 					String errorMsg = "Validation failed: " + ex.getMessage() + ": "; //$NON-NLS-1$ //$NON-NLS-2$
 					if (beanValidationErrors.isEmpty()) {
