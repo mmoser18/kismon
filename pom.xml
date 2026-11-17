@@ -58,7 +58,8 @@
 		<!- -->
 		<!-- newest version / but since v23.2.0 this refuses to build without license ||-( : -->
 		<!-- vaadin.version>24.3.8</vaadin.version -->
-		<vaadin.version>25.1.6</vaadin.version>
+		<!-- vaadin.version>25.1.6</vaadin.version -->
+		<vaadin.version>25.3.5</vaadin.version>
 		<!-- -->
 		<wdm.version>6.3.3</wdm.version>	<!-- wdm = WebDriver Manager -->
 		<!-- should be passed in via an environment variable or some -D option -->
@@ -76,7 +77,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<!-- for some stupid reason one can not use a placeholder for this version number. It has to sit here in clear text ||-( -->
-		<version>4.0.5</version>
+		<version>4.1.2</version>
 		<!-- <relativePath/> lookup parent from repository -->
 	</parent>
 
@@ -457,7 +458,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>3.5.5</version>
+					<version>3.6.1</version>
 				</plugin>
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.->
@@ -575,6 +576,29 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
+
+			<!-- Declare the minimum requires Maven version. If a version is missing I get an error.
+			     v2.9.14 is probably too high but that's what I am using right now
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>[3.9.14,)</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -648,7 +672,7 @@
 					</archive>
 				</configuration>
 			</plugin>
-			
+
 			<!-- ->
 			<plugin>
 				<groupId>com.mycila</groupId>
@@ -751,7 +775,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.13</version>
+						<version>0.8.16</version>
 						<executions>
 							<!-- Prepares the property pointing to the JaCoCo runtime agent which 
 								is passed as VM argument when the Maven Surefire plugin is executed. -->
@@ -837,7 +861,7 @@
 					<plugin>
 						<groupId>org.owasp</groupId>
 						<artifactId>dependency-check-maven</artifactId>
-						<version>12.2.0</version>
+						<version>13.0.0</version>
 
 						<configuration>
 							<formats>
