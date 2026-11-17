@@ -70,7 +70,16 @@ public class Application extends SpringBootServletInitializer
 			// This should disable the SpringBoot devtools from reloading the thread - but didn't work:
 			//System.setProperty("spring.devtools.restart.enabled", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 
-			String JavaHome = System.getProperty("$JAVA HOME"); //$NON-NLS-1$
+			if (log.isDebugEnabled()) {
+				log.debug("Env-Vars are:"); //$NON-NLS-1$
+				System.getenv().forEach((key, value) -> log.debug("\tkey: {} - value: {}", key, value)); //$NON-NLS-1$
+				log.debug("---"); //$NON-NLS-1$
+				log.debug("Properties are:", System.getProperties()); //$NON-NLS-1$
+				System.getProperties().forEach((key, value) -> log.debug("\tkey: {} - value: {}", key, value)); //$NON-NLS-1$
+				log.debug("---"); //$NON-NLS-1$
+			}
+			String JavaHome = System.getProperty("java.home"); //$NON-NLS-1$
+			log.info("JavaHome: '{}'", JavaHome); //$NON-NLS-1$
 
 			Properties appProperties = AppProperties.getProperties();
 			TCPConnection.acceptableSSLVersions =
