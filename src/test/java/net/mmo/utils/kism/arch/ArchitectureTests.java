@@ -126,7 +126,7 @@ public class ArchitectureTests
 
 		JavaClasses allExceptFormFactory = classes.that(not(belongToAnyOf(FormFactory.class)));
 		rule = layers
-			.whereLayer("UINodesConnections").mayOnlyBeAccessedByLayers("UINodes") // violated by FormFactory but that's OK
+			.whereLayer("UINodesConnections").mayOnlyBeAccessedByLayers("UINodes") // violated by FormFactory but that's OK and excluded
 			;
 		rule.check(allExceptFormFactory);
 	}
