@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -56,7 +55,6 @@ import net.mmo.utils.kism.security.SecurityUtils;
 import net.mmo.utils.kism.ui.CommonConstants;
 import net.mmo.utils.kism.ui.CommonConstants.LayoutDirection;
 import net.mmo.utils.kism.ui.MainLayout;
-import net.mmo.utils.kism.ui.utils.ConfirmDialog;
 import net.mmo.utils.kism.ui.utils.LazyDownloadButton;
 import net.mmo.utils.kism.ui.utils.PropertyChangeListenerWithPriorUIReservation;
 import net.mmo.utils.kism.ui.utils.UIHandlerSupport;
@@ -64,6 +62,12 @@ import net.mmo.utils.kism.utils.AppProperties;
 import net.mmo.utils.kism.utils.ExceptionUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.upload.receivers.FileBuffer;
+import com.vaadin.flow.component.html.Header;
+import com.vaadin.flow.component.charts.model.Label;
+import com.vaadin.flow.component.notification.Notification;
+
 
 /**
  * Defines the application's main view, routed to via the base URL
@@ -139,8 +143,10 @@ public class NodeView <N extends Node> extends VerticalLayout
 			log.trace("Creating content:"); //$NON-NLS-1$
 			this.tree.setSizeFull();
 
+
 			this.formWrapper = new Div(); // the framing Div is to force a scrollbar when the inner form gets too to fit its half of the screen
 			this.formWrapper.setSizeFull();
+			this.formWrapper.getStyle().set("overflow", "auto");
 
 			this.content = new SplitLayout(this.tree, this.formWrapper);
 			this.content.addClassName(ViewContentClassName);
@@ -240,7 +246,7 @@ public class NodeView <N extends Node> extends VerticalLayout
 			                        	if (root != null) { // error message already give in getSelectedNodeRootNodeFilename()
 			                        		File file = new File(root.getFilePath());
 			                        		String fullPath = file.getAbsolutePath();
-			                        		if (file.exists() && file.isFile() && file.canRead()) {
+					if (file.exists() && file.isFile() && file.canRead()) {
 			                        			try {
 			                        				log.info("Opening file '{}':", fullPath); //$NON-NLS-1$
 			                        				return new FileInputStream(file);
