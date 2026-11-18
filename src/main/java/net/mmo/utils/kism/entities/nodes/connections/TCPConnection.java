@@ -38,7 +38,7 @@ abstract public class TCPConnection extends CheckableNode
 	protected transient String resultingUrl;
 
 	@JsonIgnore
-	public transient static String[] acceptableSSLVersions;
+	public transient static String[] acceptableAlgorithms;
 	@JsonIgnore
 	public transient static boolean disableHostNameVerification;
 	@JsonIgnore

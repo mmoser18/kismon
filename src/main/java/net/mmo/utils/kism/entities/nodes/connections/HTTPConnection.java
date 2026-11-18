@@ -44,7 +44,6 @@ import java.util.zip.ZipInputStream;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -374,11 +373,6 @@ abstract public class HTTPConnection extends TCPConnection
 		this.log.debug("creating HTTP client for: {}", getResolvedURI()); //$NON-NLS-1$
 		if (getResolvedURI().getScheme().equalsIgnoreCase("https")) { //$NON-NLS-1$
 			// for SSL/TLS we need to jump through a few extra-loops:
-			if (acceptableSSLVersions != null && acceptableSSLVersions.length > 0) {
-				SSLParameters sslParameters = new SSLParameters();
-				sslParameters.setProtocols(acceptableSSLVersions);
-				builder.sslParameters(sslParameters);
-			}
 
 			KeyManager kms [] = null;
 			TrustManager tms [] = null;

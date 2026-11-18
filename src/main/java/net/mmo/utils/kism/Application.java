@@ -10,6 +10,7 @@ import java.security.Security;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import lombok.extern.slf4j.Slf4j;
 import net.mmo.utils.kism.backend.service.HistoryInfoService;
@@ -82,11 +83,11 @@ public class Application extends SpringBootServletInitializer
 			log.info("JavaHome: '{}'", JavaHome); //$NON-NLS-1$
 
 			Properties appProperties = AppProperties.getProperties();
-			TCPConnection.acceptableSSLVersions =
-				appProperties.getProperty("SupportedSslVersions", //$NON-NLS-1$
-				                          "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,SSLv3") //$NON-NLS-1$
-				             .split(",|\\s"); //$NON-NLS-1$
-			log.info("Acceptable SSL-versions are: {}", Arrays.toString(TCPConnection.acceptableSSLVersions)); //$NON-NLS-1$
+			TCPConnection.acceptableAlgorithms = // by default we re-enable old TLS versions and RSA-ciphers:
+				appProperties.getProperty("SupportedAlgorithms", //$NON-NLS-1$
+				                          "TLSv1.1,TLSv1.2,TLSv1.3,SSLv3,TLS_RSA_*") //$NON-NLS-1$
+				             .split(",\\s*"); //$NON-NLS-1$
+			log.info("Added acceptable SSL-algorithms are: {}", Arrays.toString(TCPConnection.acceptableAlgorithms)); //$NON-NLS-1$
 			// in case the list contains TLSv1(.0) and/or TLSv1.1:
 			checkAndRemoveAcceptableProtocolsFromDisabledList();
 
@@ -124,18 +125,10 @@ public class Application extends SpringBootServletInitializer
 			}
 
 			// https:
-			if (proxyHost != null) {
-				System.setProperty("https.proxyHost", proxyHost); //$NON-NLS-1$
-			}
-			if (proxyPort != null) {
-				System.setProperty("https.proxyPort", String.valueOf(proxyPort)); //$NON-NLS-1$
-			}
-			if (proxyUsername != null) {
-				System.setProperty("https.proxyUser", proxyUsername); //$NON-NLS-1$
-			}
-			if (proxyPassword != null) {
-				System.setProperty("https.proxyPassword", proxyPassword); //$NON-NLS-1$
-			}
+			if (proxyHost != null) { System.setProperty("https.proxyHost", proxyHost); } //$NON-NLS-1$
+			if (proxyPort != null) { System.setProperty("https.proxyPort", String.valueOf(proxyPort)); } //$NON-NLS-1$
+			if (proxyUsername != null) { System.setProperty("https.proxyUser", proxyUsername); } //$NON-NLS-1$
+			if (proxyPassword != null) { System.setProperty("https.proxyPassword", proxyPassword); } //$NON-NLS-1$
 
 			if (proxyHost != null) {
 				// allow also basic authentication scheme for Proxy albeit this is not encouraged...
@@ -164,16 +157,9 @@ public class Application extends SpringBootServletInitializer
 				                                               "true")); //$NON-NLS-1$
 
 			// the truststore for certificates that we trust (only relevant, if we trustAllCertificates == false)
-			// not yet supported:
-			String trustStoreType =
-				appProperties.getProperty("TrustStoreType", //$NON-NLS-1$
-				                          "pkcs12"); //$NON-NLS-1$
-			String trustStorePath =
-				appProperties.getProperty("TrustStorePath", //$NON-NLS-1$
-				                          (JavaHome != null ? JavaHome : ".") + "/lib/security/cacerts"); //$NON-NLS-1$ //$NON-NLS-2$
-			String trustStorePwd =
-				appProperties.getProperty("TrustStorePassword", //$NON-NLS-1$
-				                          "changeit"); //$NON-NLS-1$
+			String trustStoreType = appProperties.getProperty("TrustStoreType", "pkcs12"); //$NON-NLS-1$ //$NON-NLS-2$
+			String trustStorePath = appProperties.getProperty("TrustStorePath", (JavaHome != null ? JavaHome : ".") + "/lib/security/cacerts"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			String trustStorePwd  = appProperties.getProperty("TrustStorePassword", "changeit"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			log.info("Truststore path: '{}' / nodeType: '{}'", trustStorePath, trustStoreType); //$NON-NLS-1$
 			if (!StringUtils.isEmpty(trustStoreType)) System.setProperty("javax.net.ssl.trustStoreType", trustStoreType); //$NON-NLS-1$
@@ -181,20 +167,19 @@ public class Application extends SpringBootServletInitializer
 			if (!StringUtils.isEmpty(trustStorePwd))  System.setProperty("javax.net.ssl.trustStorePassword", trustStorePwd); //$NON-NLS-1$
 
 			// the keystore we use to connect to other systems:
-			String keyStoreType =
-				appProperties.getProperty("KeyStoreType", //$NON-NLS-1$
-				                          "jks"); //$NON-NLS-1$
-			String keyStorePath =
-				appProperties.getProperty("KeyStorePath", //$NON-NLS-1$
-				                          "keystore.p12"); //$NON-NLS-1$
-			String keyStorePwd =
-				appProperties.getProperty("KeyStorePassword", //$NON-NLS-1$
-				                          "password"); //$NON-NLS-1$
+			String keyStoreType = appProperties.getProperty("KeyStoreType", "jks"); //$NON-NLS-1$ //$NON-NLS-2$
+			String keyStorePath = appProperties.getProperty("KeyStorePath", "keystore.p12"); //$NON-NLS-1$ //$NON-NLS-2$
+			String keyStorePwd  = appProperties.getProperty("KeyStorePassword", "password"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			log.info("Keystore path: '{}' / nodeType: '{}'", keyStorePath, keyStoreType); //$NON-NLS-1$
 			if (!StringUtils.isEmpty(keyStoreType)) System.setProperty("javax.net.ssl.keyStoreType", keyStoreType); //$NON-NLS-1$
 			if (!StringUtils.isEmpty(keyStorePath)) System.setProperty("javax.net.ssl.keyStore", keyStorePath); //$NON-NLS-1$
 			if (!StringUtils.isEmpty(keyStorePwd))  System.setProperty("javax.net.ssl.keyStorePassword", keyStorePwd); //$NON-NLS-1$
+
+			String netDebugFlag = appProperties.getProperty("javax.net.debug"); //$NON-NLS-1$
+			if (!StringUtils.isEmpty(netDebugFlag)) {
+				System.setProperty("javax.net.debug", netDebugFlag); //$NON-NLS-1$
+			}
 
 			String localeStr = appProperties.getProperty("Locale"); //$NON-NLS-1$
 			if (!StringUtils.isEmpty(localeStr)) {
@@ -237,17 +222,21 @@ public class Application extends SpringBootServletInitializer
 	 **/
 	private static void checkAndRemoveAcceptableProtocolsFromDisabledList() {
 		String disabledAlgorithms = Security.getProperty("jdk.tls.disabledAlgorithms"); //$NON-NLS-1$
-		for (String acceptableSSLVersion: TCPConnection.acceptableSSLVersions) {
-			if (disabledAlgorithms.contains(acceptableSSLVersion)) { // we accept an SSL version that the normal JDK has disabled -> we remove it from that list!
-				log.info("Enabling disabled SSL-version {}.", acceptableSSLVersion); //$NON-NLS-1$
-				disabledAlgorithms = disabledAlgorithms.replace(acceptableSSLVersion + ",", ""); //$NON-NLS-1$ //$NON-NLS-2$ // Note: this works only if the protocol to be removed is not at the end of the list but this is typically the case as the list ends with something like "include jdk.disabled.namedCurves"
+		boolean modified = false;
+		for (String acceptableAlgorithm: TCPConnection.acceptableAlgorithms) {
+			if (disabledAlgorithms.contains(acceptableAlgorithm)) { // we accept an SSL version that the normal JDK has disabled -> we remove it from that list!
+				log.info("Enabling disabled SSL-algorithm '{}'.", acceptableAlgorithm); //$NON-NLS-1$
+				// we need to escape regex-relevant characters from the pattern:
+				disabledAlgorithms = disabledAlgorithms.replaceAll(Pattern.quote(acceptableAlgorithm) + "(,( )+)+", ""); //$NON-NLS-1$ //$NON-NLS-2$
+				modified = true;
 			}
 		}
-		// finally we set this as the new list of disabled algos:
-		Security.setProperty("jdk.tls.disabledAlgorithms", disabledAlgorithms); //$NON-NLS-1$
+		if (modified) { // we set this as the new list of disabled algos:
+			log.info("disabled SSL-algorithms are: '{}'.", disabledAlgorithms); //$NON-NLS-1$
+			Security.setProperty("jdk.tls.disabledAlgorithms", disabledAlgorithms); //$NON-NLS-1$
+		}
 		// these did not fix the "SSL Handshake exception":
 		//Security.setProperty("jdk.certpath.disabledAlgorithms", "none"); //$NON-NLS-1$ //$NON-NLS-2$
-		//Security.setProperty("http.auth.digest.disabledAlgorithms", "none"); //$NON-NLS-1$ //$NON-NLS-2$
 		//Security.setProperty("http.auth.digest.disabledAlgorithms", "none"); //$NON-NLS-1$ //$NON-NLS-2$
 		//Security.setProperty("jdk.xml.dsig.secureValidationPolicy", ""); //$NON-NLS-1$ //$NON-NLS-2$
 	}
