@@ -28,7 +28,7 @@ echo starting in directory:
 pwd
 
 rem useful Java options (in case of handshake issues):
-rem set OPTS=-Djavax.net.debug=ssl:handshake
+rem set OPTS=-Djavax.net.debug=ssl,handshake,trustmanager,keymanager
 
 rem standard version - with config file names (with path) as args - e.g.:
 rem set configFile=test.kmc
